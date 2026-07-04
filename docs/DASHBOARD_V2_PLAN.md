@@ -15,6 +15,7 @@ homeassistant/dashboards/hioc_dashboard_v2.yaml
 - Reduce Executive to a true command page.
 - Add Operations as the wallboard/live-state page.
 - Turn Diagnostics into Mission Control for active troubleshooting.
+- Restore the darker HIOC/NOC visual language while preserving the v2 information architecture.
 - Preserve all current dashboard capabilities.
 - Eliminate duplicate information.
 - Standardize terminology and visual hierarchy.
@@ -66,7 +67,7 @@ Recommended layout:
 - Status Banner across top.
 - Incident Card and Action Card as primary left/center content.
 - Affected Systems below incident.
-- Domain Health grid.
+- Domain Health as a compact vertical drill-down list.
 - Top Risks, Latest Events, and Data Freshness in right column on desktop.
 
 ## Operations Page
@@ -96,6 +97,7 @@ Rules:
 - each domain gets one Health Card
 - all cards use identical structure
 - domain cards link to drill-down page or popup
+- status colors must be visible at a glance
 
 Recommended layout:
 

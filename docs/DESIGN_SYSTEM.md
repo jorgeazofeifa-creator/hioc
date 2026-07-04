@@ -264,6 +264,15 @@ Rules:
 
 Color is reserved for state.
 
+Dashboard v2 uses a dark NOC shell:
+
+- card surfaces use dark blue/black tones
+- borders are subtle blue-gray lines
+- severity is shown with a narrow left accent or top status bar
+- green, amber, red, and blue accents communicate state
+- plain white/default Home Assistant card surfaces are avoided
+- card density should use available desktop width without large empty centered columns
+
 ### Green
 
 Meaning: healthy, confirmed operational.
@@ -446,6 +455,19 @@ Use three intentional columns on Executive:
 - center: affected systems and domain health
 - right: risks, events, freshness
 
+Dashboard v2 may use four section columns when it improves NOC density, but Executive must still preserve exactly seven visual elements.
+
+## Drill-Down Navigation
+
+Domain Health rows should navigate to the page that owns their detail:
+
+- Incident -> Diagnostics
+- Inventory -> Inventory
+- Internet Forecast -> Network
+- DNS Forecast -> Network
+- MQTT Forecast -> Diagnostics
+- Pi4 Forecast -> Servers
+
 ## Anti-Patterns
 
 Avoid:
@@ -460,4 +482,3 @@ Avoid:
 - spacer cards
 - one-off card styles
 - color used only for decoration
-
