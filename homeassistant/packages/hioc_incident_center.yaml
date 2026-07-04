@@ -1,0 +1,170 @@
+mqtt:
+  sensor:
+    - name: HIOC Incident Active
+      unique_id: hioc_incident_active
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.title | default('No active incident') }}"
+      json_attributes_topic: home/infrastructure/hioc/incidents/active
+      icon: mdi:alert-decagram
+
+    - name: HIOC Incident Status
+      unique_id: hioc_incident_status
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.status | default('none') }}"
+      icon: mdi:list-status
+
+    - name: HIOC Incident Severity
+      unique_id: hioc_incident_severity
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.severity | default('info') }}"
+      icon: mdi:alert-circle
+
+    - name: HIOC Incident System
+      unique_id: hioc_incident_system
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.system | default('HIOC') }}"
+      icon: mdi:server-network
+
+    - name: HIOC Incident Reason
+      unique_id: hioc_incident_reason
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.reason | default('No active incident') }}"
+      icon: mdi:comment-alert
+
+    - name: HIOC Incident Recommendation
+      unique_id: hioc_incident_recommendation
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.recommendation | default('No action required') }}"
+      icon: mdi:lightbulb-alert
+
+    - name: HIOC Incident Current Value
+      unique_id: hioc_incident_current_value
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.current_value | default('normal') }}"
+      icon: mdi:chart-timeline-variant
+
+    - name: HIOC Incident Started
+      unique_id: hioc_incident_started
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.started | default('none') }}"
+      icon: mdi:clock-start
+
+    - name: HIOC Incident Updated
+      unique_id: hioc_incident_updated
+      state_topic: home/infrastructure/hioc/incidents/active
+      value_template: "{{ value_json.updated | default('unknown') }}"
+      icon: mdi:clock-check
+
+    - name: HIOC Incident Summary
+      unique_id: hioc_incident_summary_v1
+      state_topic: home/infrastructure/hioc/incidents/summary
+      value_template: "{{ value_json.active_title | default('No active incident') }}"
+      json_attributes_topic: home/infrastructure/hioc/incidents/summary
+      icon: mdi:clipboard-pulse
+
+    - name: HIOC Incident History Count
+      unique_id: hioc_incident_history_count
+      state_topic: home/infrastructure/hioc/incidents/summary
+      value_template: "{{ value_json.history_count | default(0) }}"
+      unit_of_measurement: incidents
+      icon: mdi:counter
+
+    - name: HIOC Latest Timeline Event
+      unique_id: hioc_latest_timeline_event_v1
+      state_topic: home/infrastructure/hioc/timeline/latest
+      value_template: "{{ value_json.title | default('No recent events') }}"
+      json_attributes_topic: home/infrastructure/hioc/timeline/latest
+      icon: mdi:timeline-clock
+
+    - name: HIOC Engine Status
+      unique_id: hioc_engine_status
+      state_topic: home/infrastructure/hioc/status
+      icon: mdi:heart-pulse
+
+input_boolean:
+  hioc_incident_notifications:
+    name: HIOC Incident Notifications
+    icon: mdi:bell-alert
+
+input_text:
+  hioc_last_notified_incident_id:
+    name: HIOC Last Notified Incident ID
+    max: 255
+  hioc_last_notified_resolution_id:
+    name: HIOC Last Notified Resolution ID
+    max: 255
+
+template:
+  - binary_sensor:
+      - name: HIOC Incident Active Binary
+        unique_id: hioc_incident_active_binary
+        state: "{{ states('sensor.hioc_incident_status') == 'active' }}"
+        icon: >-
+          {% if is_state('sensor.hioc_incident_status','active') %}
+            mdi:alert
+          {% else %}
+            mdi:check-circle
+          {% endif %}
+
+  - sensor:
+      - name: HIOC Incident Display
+        unique_id: hioc_incident_display
+        state: >-
+          {% if is_state('sensor.hioc_incident_status','active') %}
+            {{ states('sensor.hioc_incident_system') }}: {{ states('sensor.hioc_incident_active') }}
+          {% else %}
+            No active incident
+          {% endif %}
+        attributes:
+          severity: "{{ states('sensor.hioc_incident_severity') }}"
+          reason: "{{ states('sensor.hioc_incident_reason') }}"
+          recommendation: "{{ states('sensor.hioc_incident_recommendation') }}"
+          current_value: "{{ states('sensor.hioc_incident_current_value') }}"
+          started: "{{ states('sensor.hioc_incident_started') }}"
+          updated: "{{ states('sensor.hioc_incident_updated') }}"
+
+automation:
+  - alias: HIOC v1 - Incident Started Notification
+    id: hioc_v1_incident_started_notification
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: sensor.hioc_incident_status
+        to: active
+    condition:
+      - condition: state
+        entity_id: input_boolean.hioc_incident_notifications
+        state: "on"
+      - condition: template
+        value_template: >-
+          {{ state_attr('sensor.hioc_incident_active','id') != states('input_text.hioc_last_notified_incident_id') }}
+    action:
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.hioc_last_notified_incident_id
+        data:
+          value: "{{ state_attr('sensor.hioc_incident_active','id') }}"
+      - service: notify.mobile_app_pixel_9_pro_xl
+        data:
+          title: >-
+            HIOC {{ states('sensor.hioc_incident_severity') | title }}: {{ states('sensor.hioc_incident_system') }}
+          message: >-
+            {{ states('sensor.hioc_incident_active') }}. {{ states('sensor.hioc_incident_reason') }}. Current: {{ states('sensor.hioc_incident_current_value') }}. Recommendation: {{ states('sensor.hioc_incident_recommendation') }}
+          data:
+            tag: "hioc_incident_{{ state_attr('sensor.hioc_incident_active','id') }}"
+            channel: HIOC
+            importance: high
+
+  - alias: HIOC v1 - Incident Timeline Logger
+    id: hioc_v1_incident_timeline_logger
+    mode: queued
+    trigger:
+      - platform: state
+        entity_id: sensor.hioc_latest_timeline_event
+    action:
+      - service: logbook.log
+        data:
+          name: HIOC
+          message: >-
+            {{ states('sensor.hioc_latest_timeline_event') }} - {{ state_attr('sensor.hioc_latest_timeline_event','message') }}
+          entity_id: sensor.hioc_latest_timeline_event
