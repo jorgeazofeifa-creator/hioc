@@ -4,9 +4,10 @@ views:
     path: hioc-v2-executive
     icon: mdi:monitor-dashboard
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Mission Status
@@ -31,6 +32,35 @@ views:
 
               HIOC status data is incomplete.
               {% endif %}
+            grid_options:
+              columns: 12
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 188px;
+                  border-radius: 18px;
+                  border: 1px solid rgba(90, 140, 185, .28);
+                  background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98));
+                  box-shadow: 0 18px 48px rgba(0,0,0,.36);
+                  color: #dcecff;
+                }
+                ha-card:before {
+                  content: "";
+                  position: absolute;
+                  inset: 0 0 auto 0;
+                  height: 4px;
+                  background: {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %};
+                  border-radius: 18px 18px 0 0;
+                }
+                ha-markdown {
+                  --mdc-typography-body1-font-size: 15px;
+                  line-height: 1.35;
+                }
+                h1 {
+                  color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %};
+                  font-size: 30px;
+                  margin: 0 0 12px 0;
+                }
 
           - type: markdown
             title: Current Incident
@@ -52,6 +82,20 @@ views:
 
               Latest event: {{ states('sensor.hioc_latest_timeline_event') }}
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 250px;
+                  border-radius: 14px;
+                  border: 1px solid rgba(90, 140, 185, .24);
+                  border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %};
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  color: #dcecff;
+                }
+                ha-markdown { line-height: 1.36; }
 
           - type: markdown
             title: Affected Systems
@@ -68,16 +112,86 @@ views:
               {% else %}
               No systems currently affected by an active incident.
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 250px;
+                  border-radius: 14px;
+                  border: 1px solid rgba(90, 140, 185, .24);
+                  border-left: 5px solid #38bdf8;
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  color: #dcecff;
+                }
+                ha-markdown { line-height: 1.34; }
 
-          - type: markdown
+          - type: entities
             title: Domain Health
-            content: >-
-              - Incident: {{ states('sensor.hioc_incident_status') | title }}
-              - Inventory: {{ states('sensor.hioc_inventory_operations_summary') }}
-              - Internet Forecast: {{ states('sensor.hioc_forecast_internet_latency_trend') | title }}
-              - DNS Forecast: {{ states('sensor.hioc_forecast_dns_trend') | title }}
-              - MQTT Forecast: {{ states('sensor.hioc_forecast_mqtt_trend') | title }}
-              - Pi4 Forecast: Temp {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}, Memory {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
+            show_header_toggle: false
+            entities:
+              - entity: sensor.hioc_incident_status
+                name: Incident
+                icon: mdi:alert-decagram
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-diagnostics
+              - entity: sensor.hioc_inventory_operations_summary
+                name: Inventory
+                icon: mdi:devices
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-inventory
+              - entity: sensor.hioc_forecast_internet_latency_trend
+                name: Internet Forecast
+                icon: mdi:web-check
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-network
+              - entity: sensor.hioc_forecast_dns_trend
+                name: DNS Forecast
+                icon: mdi:dns
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-network
+              - entity: sensor.hioc_forecast_mqtt_trend
+                name: MQTT Forecast
+                icon: mdi:message-processing
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-diagnostics
+              - entity: sensor.hioc_forecast_pi4_temperature_trend
+                name: Pi4 Forecast - Temperature
+                icon: mdi:raspberry-pi
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-servers
+              - entity: sensor.hioc_forecast_pi4_memory_trend
+                name: Pi4 Forecast - Memory
+                icon: mdi:memory
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-servers
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 290px;
+                  border-radius: 14px;
+                  border: 1px solid rgba(90, 140, 185, .24);
+                  border-left: 5px solid #60a5fa;
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  --primary-text-color: #dcecff;
+                  --secondary-text-color: #93a4b8;
+                  --paper-item-icon-color: #38bdf8;
+                }
+                .card-content { padding-top: 4px; }
+                hui-generic-entity-row {
+                  border-bottom: 1px solid rgba(148, 163, 184, .12);
+                }
 
           - type: markdown
             title: Top Risks
@@ -94,12 +208,35 @@ views:
               {% if states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
               - Packet loss trend is rising
               {% endif %}
+              {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              - DNS forecast is rising
+              {% endif %}
+              {% if states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              - Pi4 forecast is rising
+              {% endif %}
               {% if states('sensor.hioc_inventory_offline_devices') | int(0) == 0
                     and states('sensor.hioc_inventory_degraded_devices') | int(0) == 0
                     and states('sensor.hioc_forecast_packet_loss_trend') != 'rising'
+                    and states('sensor.hioc_forecast_dns_trend') != 'rising'
+                    and states('sensor.hioc_forecast_pi4_temperature_trend') != 'rising'
+                    and states('sensor.hioc_forecast_pi4_memory_trend') != 'rising'
                     and states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') in ['unknown', 'unavailable', 'none', 'None'] %}
               No current HIOC risks reported.
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 290px;
+                  border-radius: 14px;
+                  border: 1px solid rgba(90, 140, 185, .24);
+                  border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %};
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  color: #dcecff;
+                }
+                ha-markdown { line-height: 1.34; }
 
           - type: markdown
             title: Latest Events
@@ -109,11 +246,24 @@ views:
               **Incident history:** {{ states('sensor.hioc_incident_history_count') }} recorded incidents
 
               **Inventory state:** {{ states('sensor.hioc_inventory_operations_summary') }}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 220px;
+                  border-radius: 14px;
+                  border: 1px solid rgba(90, 140, 185, .24);
+                  border-left: 5px solid #38bdf8;
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  color: #dcecff;
+                }
 
           - type: markdown
             title: Data Freshness
             content: >-
-              - Platform: HIOC {{ states('sensor.hioc_platform_version') }} · {{ states('sensor.hioc_platform_status') }}
+              - Platform: HIOC {{ states('sensor.hioc_platform_version') }} - {{ states('sensor.hioc_platform_status') }}
               - Core: {{ states('sensor.hioc_core_version') }}
               - Correlation: {{ states('sensor.hioc_correlation_engine_version') }}
               - Dashboard: {{ states('sensor.hioc_dashboard_version') }}
@@ -125,6 +275,20 @@ views:
               - History engine: {{ states('sensor.hioc_history_engine_status') }}
               - Inventory engine: {{ states('sensor.hioc_inventory_status') }}
               - Inventory devices: {{ states('sensor.hioc_inventory_device_count') }}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 220px;
+                  border-radius: 14px;
+                  border: 1px solid rgba(90, 140, 185, .24);
+                  border-left: 5px solid #64748b;
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  color: #dcecff;
+                }
+                ha-markdown { line-height: 1.28; }
 
   - title: Operations
     path: hioc-v2-operations
@@ -133,6 +297,7 @@ views:
     max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Live Operational State
@@ -146,63 +311,127 @@ views:
 
               No active incident reported by HIOC.
               {% endif %}
+            grid_options:
+              columns: 12
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 150px;
+                  border-radius: 18px;
+                  border: 1px solid rgba(90, 140, 185, .28);
+                  background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98));
+                  box-shadow: 0 18px 48px rgba(0,0,0,.36);
+                  color: #dcecff;
+                }
+                ha-card:before {
+                  content: "";
+                  position: absolute;
+                  inset: 0 0 auto 0;
+                  height: 4px;
+                  background: {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %};
+                  border-radius: 18px 18px 0 0;
+                }
+                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Incident
             content: >-
-              **{{ states('sensor.hioc_incident_status') | title }}**
+              # {{ states('sensor.hioc_incident_status') | title }}
 
               {{ states('sensor.hioc_incident_active') }}
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 156px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; font-size: 24px; }
 
           - type: markdown
             title: Inventory
             content: >-
-              **{{ states('sensor.hioc_inventory_operations_summary') }}**
+              # {{ states('sensor.hioc_inventory_operations_summary') }}
 
-              {{ states('sensor.hioc_inventory_device_count') }} devices, {{ states('sensor.hioc_inventory_service_count') }} services
+              {{ states('sensor.hioc_inventory_device_count') }} devices - {{ states('sensor.hioc_inventory_service_count') }} services
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 156px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Internet
             content: >-
-              **{{ states('sensor.hioc_forecast_internet_latency_trend') | title }}**
+              # {{ states('sensor.hioc_forecast_internet_latency_trend') | title }}
 
-              24h avg latency {{ states('sensor.hioc_forecast_internet_24h_average_latency') }} ms
+              24h avg {{ states('sensor.hioc_forecast_internet_24h_average_latency') }} ms
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 156px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 24px; }
 
           - type: markdown
             title: DNS
             content: >-
-              **{{ states('sensor.hioc_forecast_dns_trend') | title }}**
+              # {{ states('sensor.hioc_forecast_dns_trend') | title }}
 
-              Forecast trend from HIOC history engine
+              Forecast trend from HIOC history
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 156px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 24px; }
 
           - type: markdown
             title: MQTT
             content: >-
-              **{{ states('sensor.hioc_forecast_mqtt_trend') | title }}**
+              # {{ states('sensor.hioc_forecast_mqtt_trend') | title }}
 
               History engine {{ states('sensor.hioc_history_engine_status') }}
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 156px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 24px; }
 
           - type: markdown
             title: Pi4
             content: >-
-              **Temp {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}**
+              # Temp {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}
 
-              Memory {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }} · Disk growth {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
+              Memory {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }} - Disk {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 156px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Forecasts
             content: >-
-              **Network samples {{ states('sensor.hioc_statistics_samples_network') }}**
+              # Samples
 
-              Host samples {{ states('sensor.hioc_statistics_samples_host') }}
+              Network {{ states('sensor.hioc_statistics_samples_network') }} - Host {{ states('sensor.hioc_statistics_samples_host') }}
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 156px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: #bae6fd; font-size: 24px; }
 
   - title: Diagnostics
     path: hioc-v2-diagnostics
     icon: mdi:stethoscope
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Incident Mission Control
@@ -226,6 +455,20 @@ views:
 
               Diagnostics are ready. Latest event: {{ states('sensor.hioc_latest_timeline_event') }}
               {% endif %}
+            grid_options:
+              columns: 12
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 210px;
+                  border-radius: 18px;
+                  border: 1px solid rgba(90, 140, 185, .28);
+                  border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %};
+                  background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98));
+                  box-shadow: 0 18px 48px rgba(0,0,0,.36);
+                  color: #dcecff;
+                }
+                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Evidence
@@ -238,6 +481,12 @@ views:
               {% else %}
               {{ states('sensor.hioc_incident_reason') }}
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 240px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #f59e0b; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-markdown { line-height: 1.32; }
 
           - type: markdown
             title: Dependency Path
@@ -254,6 +503,11 @@ views:
               {% else %}
               No active dependency path.
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 240px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: markdown
             title: Timeline
@@ -261,6 +515,11 @@ views:
               Latest: {{ states('sensor.hioc_latest_timeline_event') }}
 
               Incident history count: {{ states('sensor.hioc_incident_history_count') }}
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 190px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #60a5fa; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: entities
             title: Live Telemetry
@@ -272,6 +531,11 @@ views:
               - sensor.hioc_forecast_dns_trend
               - sensor.hioc_forecast_mqtt_trend
               - sensor.hioc_history_engine_status
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 260px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: entities
             title: Engine State
@@ -285,21 +549,33 @@ views:
               - sensor.hioc_inventory_status
               - sensor.hioc_statistics_samples_network
               - sensor.hioc_statistics_samples_host
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 260px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #64748b; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #60a5fa; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
   - title: Inventory
     path: hioc-v2-inventory
     icon: mdi:devices
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Inventory Status
             content: >-
               # {{ states('sensor.hioc_inventory_operations_summary') }}
 
-              {{ states('sensor.hioc_inventory_device_count') }} devices · {{ states('sensor.hioc_inventory_service_count') }} services · lowest health {{ states('sensor.hioc_inventory_lowest_health') }}%
+              {{ states('sensor.hioc_inventory_device_count') }} devices - {{ states('sensor.hioc_inventory_service_count') }} services - lowest health {{ states('sensor.hioc_inventory_lowest_health') }}%
+            grid_options:
+              columns: 8
+            card_mod:
+              style: |
+                ha-card { min-height: 150px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: entities
             title: Counts
@@ -313,47 +589,81 @@ views:
               - sensor.hioc_inventory_service_count
               - sensor.hioc_inventory_topology_edges
               - sensor.hioc_inventory_dependency_edges
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 300px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: markdown
             title: Device Health
             content: >-
               {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
               {% if devices is iterable and devices is not string %}
+              | Device | State | Health | IP |
+              |---|---:|---:|---|
               {% for device in devices | sort(attribute='health_score') %}
-              - **{{ device.display_name }}**: {{ device.health_status }} · {{ device.health_score }}% · {{ device.ip | default('no ip') }}
+              | **{{ device.display_name }}** | {{ device.health_status }} | {{ device.health_score }}% | {{ device.ip | default('no ip') }} |
               {% endfor %}
               {% else %}
               Inventory device attributes have not arrived.
               {% endif %}
+            grid_options:
+              columns: 8
+            card_mod:
+              style: |
+                ha-card { min-height: 420px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #60a5fa; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-markdown { line-height: 1.22; }
+                table { width: 100%; border-collapse: collapse; font-size: 13px; }
+                th { color: #93c5fd; text-align: left; border-bottom: 1px solid rgba(148,163,184,.24); padding: 6px 4px; }
+                td { border-bottom: 1px solid rgba(148,163,184,.12); padding: 5px 4px; }
 
           - type: markdown
             title: Services
             content: >-
               {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
               {% if services is iterable and services is not string %}
+              | Service | Type | Status |
+              |---|---|---:|
               {% for service in services %}
-              - **{{ service.name }}**: {{ service.type }} · {{ service.status }}
+              | **{{ service.name }}** | {{ service.type }} | {{ service.status }} |
               {% endfor %}
               {% else %}
               Inventory service attributes have not arrived.
               {% endif %}
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 420px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-markdown { line-height: 1.22; }
+                table { width: 100%; border-collapse: collapse; font-size: 13px; }
+                th { color: #93c5fd; text-align: left; border-bottom: 1px solid rgba(148,163,184,.24); padding: 6px 4px; }
+                td { border-bottom: 1px solid rgba(148,163,184,.12); padding: 5px 4px; }
 
   - title: Network
     path: hioc-v2-network
     icon: mdi:web-check
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Network Health
             content: >-
-              Internet latency trend is **{{ states('sensor.hioc_forecast_internet_latency_trend') }}**.
+              # Internet {{ states('sensor.hioc_forecast_internet_latency_trend') | title }}
 
               24h average latency: {{ states('sensor.hioc_forecast_internet_24h_average_latency') }} ms
 
-              Packet loss trend: {{ states('sensor.hioc_forecast_packet_loss_trend') }}
+              Packet loss trend: {{ states('sensor.hioc_forecast_packet_loss_trend') | title }}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 220px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: entities
             title: Internet Forecast
@@ -362,6 +672,11 @@ views:
               - sensor.hioc_forecast_internet_latency_trend
               - sensor.hioc_forecast_internet_24h_average_latency
               - sensor.hioc_forecast_packet_loss_trend
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 220px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: entities
             title: DNS And MQTT Forecast
@@ -370,25 +685,39 @@ views:
               - sensor.hioc_forecast_dns_trend
               - sensor.hioc_forecast_mqtt_trend
               - sensor.hioc_history_engine_status
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 220px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#60a5fa{% endif %}; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: {% if states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#60a5fa{% endif %}; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
   - title: Servers
     path: hioc-v2-servers
     icon: mdi:server
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Pi4 Health
             content: >-
-              Temperature trend: **{{ states('sensor.hioc_forecast_pi4_temperature_trend') }}**
+              # Pi4 Forecast
 
-              Memory trend: **{{ states('sensor.hioc_forecast_pi4_memory_trend') }}**
+              Temperature trend: **{{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}**
+
+              Memory trend: **{{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}**
 
               Disk growth: {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
 
               Days to 90% disk: {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 270px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: entities
             title: Pi4 Forecast
@@ -399,6 +728,11 @@ views:
               - sensor.hioc_forecast_pi4_disk_growth
               - sensor.hioc_forecast_pi4_days_to_90_percent_disk
               - sensor.hioc_statistics_samples_host
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 270px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#38bdf8{% endif %}; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: {% if states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#38bdf8{% endif %}; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: entities
             title: HIOC Engines
@@ -412,3 +746,8 @@ views:
               - sensor.hioc_engine_status
               - sensor.hioc_history_engine_status
               - sensor.hioc_inventory_status
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 270px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #64748b; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #60a5fa; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
