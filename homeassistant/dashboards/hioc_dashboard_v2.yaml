@@ -1,0 +1,407 @@
+title: HIOC Dashboard v2
+views:
+  - title: Executive
+    path: hioc-v2-executive
+    icon: mdi:monitor-dashboard
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            title: Mission Status
+            content: >-
+              {% set incident = states('sensor.hioc_incident_status') %}
+              {% set offline = states('sensor.hioc_inventory_offline_devices') | int(0) %}
+              {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(0) %}
+              {% if incident == 'active' %}
+              # Critical
+
+              Active {{ states('sensor.hioc_incident_severity') }} incident affecting {{ states('sensor.hioc_incident_system') }}.
+              {% elif offline > 0 or degraded > 0 %}
+              # Degraded
+
+              Inventory reports {{ degraded }} degraded and {{ offline }} offline devices.
+              {% elif states('sensor.hioc_engine_status') == 'online' and states('sensor.hioc_inventory_status') in ['online', 'degraded'] %}
+              # Operational
+
+              No active incident. HIOC engines are reporting.
+              {% else %}
+              # Unknown
+
+              HIOC status data is incomplete.
+              {% endif %}
+
+          - type: markdown
+            title: Current Incident
+            content: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+              **{{ states('sensor.hioc_incident_severity') | title }} - {{ states('sensor.hioc_incident_active') }}**
+
+              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('unknown') }}
+
+              Confidence: {{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}%
+
+              Started: {{ states('sensor.hioc_incident_started') }}
+
+              Recommendation: {{ states('sensor.hioc_incident_recommendation') }}
+              {% else %}
+              **No active incident**
+
+              Latest event: {{ states('sensor.hioc_latest_timeline_event') }}
+              {% endif %}
+
+          - type: markdown
+            title: Affected Systems
+            content: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+              {% set affected = state_attr('sensor.hioc_incident_active','affected') %}
+              {% if affected is iterable and affected is not string %}
+              {% for item in affected %}
+              - {{ item }}
+              {% endfor %}
+              {% else %}
+              {{ state_attr('sensor.hioc_incident_active','impact') | default('Affected systems unavailable') }}
+              {% endif %}
+              {% else %}
+              No systems currently affected by an active incident.
+              {% endif %}
+
+          - type: markdown
+            title: Domain Health
+            content: >-
+              - Incident: {{ states('sensor.hioc_incident_status') | title }}
+              - Inventory: {{ states('sensor.hioc_inventory_operations_summary') }}
+              - Internet Forecast: {{ states('sensor.hioc_forecast_internet_latency_trend') | title }}
+              - DNS Forecast: {{ states('sensor.hioc_forecast_dns_trend') | title }}
+              - MQTT Forecast: {{ states('sensor.hioc_forecast_mqtt_trend') | title }}
+              - Pi4 Forecast: Temp {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}, Memory {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
+
+          - type: markdown
+            title: Top Risks
+            content: >-
+              {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}
+              - Offline inventory devices: {{ states('sensor.hioc_inventory_offline_devices') }}
+              {% endif %}
+              {% if states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}
+              - Degraded inventory devices: {{ states('sensor.hioc_inventory_degraded_devices') }}
+              {% endif %}
+              {% if states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') not in ['unknown', 'unavailable', 'none', 'None'] %}
+              - Pi4 disk reaches 90% in {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }} days
+              {% endif %}
+              {% if states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+              - Packet loss trend is rising
+              {% endif %}
+              {% if states('sensor.hioc_inventory_offline_devices') | int(0) == 0
+                    and states('sensor.hioc_inventory_degraded_devices') | int(0) == 0
+                    and states('sensor.hioc_forecast_packet_loss_trend') != 'rising'
+                    and states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') in ['unknown', 'unavailable', 'none', 'None'] %}
+              No current HIOC risks reported.
+              {% endif %}
+
+          - type: markdown
+            title: Latest Events
+            content: >-
+              **Timeline:** {{ states('sensor.hioc_latest_timeline_event') }}
+
+              **Incident history:** {{ states('sensor.hioc_incident_history_count') }} recorded incidents
+
+              **Inventory state:** {{ states('sensor.hioc_inventory_operations_summary') }}
+
+          - type: markdown
+            title: Data Freshness
+            content: >-
+              - Platform: HIOC {{ states('sensor.hioc_platform_version') }} · {{ states('sensor.hioc_platform_status') }}
+              - Core: {{ states('sensor.hioc_core_version') }}
+              - Dashboard: {{ states('sensor.hioc_dashboard_version') }}
+              - Schema: {{ states('sensor.hioc_schema_version') }}
+              - MQTT API: {{ states('sensor.hioc_mqtt_api_version') }}
+              - Build: {{ states('sensor.hioc_build') }}
+              - Incident engine: {{ states('sensor.hioc_engine_status') }}
+              - Incident updated: {{ states('sensor.hioc_incident_updated') }}
+              - History engine: {{ states('sensor.hioc_history_engine_status') }}
+              - Inventory engine: {{ states('sensor.hioc_inventory_status') }}
+              - Inventory devices: {{ states('sensor.hioc_inventory_device_count') }}
+
+  - title: Operations
+    path: hioc-v2-operations
+    icon: mdi:view-dashboard
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            title: Live Operational State
+            content: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+              # Critical
+
+              {{ states('sensor.hioc_incident_system') }} incident is active.
+              {% else %}
+              # Operational
+
+              No active incident reported by HIOC.
+              {% endif %}
+
+          - type: markdown
+            title: Incident
+            content: >-
+              **{{ states('sensor.hioc_incident_status') | title }}**
+
+              {{ states('sensor.hioc_incident_active') }}
+
+          - type: markdown
+            title: Inventory
+            content: >-
+              **{{ states('sensor.hioc_inventory_operations_summary') }}**
+
+              {{ states('sensor.hioc_inventory_device_count') }} devices, {{ states('sensor.hioc_inventory_service_count') }} services
+
+          - type: markdown
+            title: Internet
+            content: >-
+              **{{ states('sensor.hioc_forecast_internet_latency_trend') | title }}**
+
+              24h avg latency {{ states('sensor.hioc_forecast_internet_24h_average_latency') }} ms
+
+          - type: markdown
+            title: DNS
+            content: >-
+              **{{ states('sensor.hioc_forecast_dns_trend') | title }}**
+
+              Forecast trend from HIOC history engine
+
+          - type: markdown
+            title: MQTT
+            content: >-
+              **{{ states('sensor.hioc_forecast_mqtt_trend') | title }}**
+
+              History engine {{ states('sensor.hioc_history_engine_status') }}
+
+          - type: markdown
+            title: Pi4
+            content: >-
+              **Temp {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}**
+
+              Memory {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }} · Disk growth {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
+
+          - type: markdown
+            title: Forecasts
+            content: >-
+              **Network samples {{ states('sensor.hioc_statistics_samples_network') }}**
+
+              Host samples {{ states('sensor.hioc_statistics_samples_host') }}
+
+  - title: Diagnostics
+    path: hioc-v2-diagnostics
+    icon: mdi:stethoscope
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            title: Incident Mission Control
+            content: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+              # {{ states('sensor.hioc_incident_active') }}
+
+              Severity: {{ states('sensor.hioc_incident_severity') | title }}
+
+              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('unknown') }}
+
+              Confidence: {{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}%
+
+              Started: {{ states('sensor.hioc_incident_started') }}
+
+              Recommendation: {{ states('sensor.hioc_incident_recommendation') }}
+              {% else %}
+              # No active incident
+
+              Diagnostics are ready. Latest event: {{ states('sensor.hioc_latest_timeline_event') }}
+              {% endif %}
+
+          - type: markdown
+            title: Evidence
+            content: >-
+              {% set evidence = state_attr('sensor.hioc_incident_active','evidence') %}
+              {% if evidence is iterable and evidence is not string %}
+              {% for item in evidence %}
+              - {{ item }}
+              {% endfor %}
+              {% else %}
+              {{ states('sensor.hioc_incident_reason') }}
+              {% endif %}
+
+          - type: markdown
+            title: Dependency Path
+            content: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+              {% set affected = state_attr('sensor.hioc_incident_active','affected') %}
+              {% if affected is iterable and affected is not string %}
+              {% for item in affected %}
+              {{ item }}{% if not loop.last %} -> {% endif %}
+              {% endfor %}
+              {% else %}
+              {{ state_attr('sensor.hioc_incident_active','impact') | default('No dependency path available') }}
+              {% endif %}
+              {% else %}
+              No active dependency path.
+              {% endif %}
+
+          - type: markdown
+            title: Timeline
+            content: >-
+              Latest: {{ states('sensor.hioc_latest_timeline_event') }}
+
+              Incident history count: {{ states('sensor.hioc_incident_history_count') }}
+
+          - type: entities
+            title: Live Telemetry
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_forecast_internet_latency_trend
+              - sensor.hioc_forecast_internet_24h_average_latency
+              - sensor.hioc_forecast_packet_loss_trend
+              - sensor.hioc_forecast_dns_trend
+              - sensor.hioc_forecast_mqtt_trend
+              - sensor.hioc_history_engine_status
+
+          - type: entities
+            title: Engine State
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_platform_status
+              - sensor.hioc_platform_version
+              - sensor.hioc_engine_status
+              - sensor.hioc_incident_updated
+              - sensor.hioc_inventory_status
+              - sensor.hioc_statistics_samples_network
+              - sensor.hioc_statistics_samples_host
+
+  - title: Inventory
+    path: hioc-v2-inventory
+    icon: mdi:devices
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            title: Inventory Status
+            content: >-
+              # {{ states('sensor.hioc_inventory_operations_summary') }}
+
+              {{ states('sensor.hioc_inventory_device_count') }} devices · {{ states('sensor.hioc_inventory_service_count') }} services · lowest health {{ states('sensor.hioc_inventory_lowest_health') }}%
+
+          - type: entities
+            title: Counts
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_inventory_device_count
+              - sensor.hioc_inventory_healthy_devices
+              - sensor.hioc_inventory_watch_devices
+              - sensor.hioc_inventory_degraded_devices
+              - sensor.hioc_inventory_offline_devices
+              - sensor.hioc_inventory_service_count
+              - sensor.hioc_inventory_topology_edges
+              - sensor.hioc_inventory_dependency_edges
+
+          - type: markdown
+            title: Device Health
+            content: >-
+              {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
+              {% if devices is iterable and devices is not string %}
+              {% for device in devices | sort(attribute='health_score') %}
+              - **{{ device.display_name }}**: {{ device.health_status }} · {{ device.health_score }}% · {{ device.ip | default('no ip') }}
+              {% endfor %}
+              {% else %}
+              Inventory device attributes have not arrived.
+              {% endif %}
+
+          - type: markdown
+            title: Services
+            content: >-
+              {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
+              {% if services is iterable and services is not string %}
+              {% for service in services %}
+              - **{{ service.name }}**: {{ service.type }} · {{ service.status }}
+              {% endfor %}
+              {% else %}
+              Inventory service attributes have not arrived.
+              {% endif %}
+
+  - title: Network
+    path: hioc-v2-network
+    icon: mdi:web-check
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            title: Network Health
+            content: >-
+              Internet latency trend is **{{ states('sensor.hioc_forecast_internet_latency_trend') }}**.
+
+              24h average latency: {{ states('sensor.hioc_forecast_internet_24h_average_latency') }} ms
+
+              Packet loss trend: {{ states('sensor.hioc_forecast_packet_loss_trend') }}
+
+          - type: entities
+            title: Internet Forecast
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_forecast_internet_latency_trend
+              - sensor.hioc_forecast_internet_24h_average_latency
+              - sensor.hioc_forecast_packet_loss_trend
+
+          - type: entities
+            title: DNS And MQTT Forecast
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_forecast_dns_trend
+              - sensor.hioc_forecast_mqtt_trend
+              - sensor.hioc_history_engine_status
+
+  - title: Servers
+    path: hioc-v2-servers
+    icon: mdi:server
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            title: Pi4 Health
+            content: >-
+              Temperature trend: **{{ states('sensor.hioc_forecast_pi4_temperature_trend') }}**
+
+              Memory trend: **{{ states('sensor.hioc_forecast_pi4_memory_trend') }}**
+
+              Disk growth: {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
+
+              Days to 90% disk: {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }}
+
+          - type: entities
+            title: Pi4 Forecast
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_forecast_pi4_temperature_trend
+              - sensor.hioc_forecast_pi4_memory_trend
+              - sensor.hioc_forecast_pi4_disk_growth
+              - sensor.hioc_forecast_pi4_days_to_90_percent_disk
+              - sensor.hioc_statistics_samples_host
+
+          - type: entities
+            title: HIOC Engines
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_platform_status
+              - sensor.hioc_platform_version
+              - sensor.hioc_core_version
+              - sensor.hioc_dashboard_version
+              - sensor.hioc_engine_status
+              - sensor.hioc_history_engine_status
+              - sensor.hioc_inventory_status

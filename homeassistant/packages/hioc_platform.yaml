@@ -1,0 +1,46 @@
+mqtt:
+  sensor:
+    - name: HIOC Platform Version
+      unique_id: hioc_platform_version
+      state_topic: home/infrastructure/hioc/platform/status
+      value_template: "{{ value_json.hioc_version | default('unknown') }}"
+      json_attributes_topic: home/infrastructure/hioc/platform/version
+      icon: mdi:package-variant-closed
+
+    - name: HIOC Platform Status
+      unique_id: hioc_platform_status
+      state_topic: home/infrastructure/hioc/platform/status
+      value_template: "{{ value_json.status | default('unknown') }}"
+      json_attributes_topic: home/infrastructure/hioc/platform/status
+      icon: mdi:check-decagram
+
+    - name: HIOC Core Version
+      unique_id: hioc_core_version
+      state_topic: home/infrastructure/hioc/platform/status
+      value_template: "{{ value_json.core | default('unknown') }}"
+      icon: mdi:cube-outline
+
+    - name: HIOC Dashboard Version
+      unique_id: hioc_dashboard_version
+      state_topic: home/infrastructure/hioc/platform/status
+      value_template: "{{ value_json.dashboard | default('unknown') }}"
+      icon: mdi:view-dashboard
+
+    - name: HIOC Schema Version
+      unique_id: hioc_schema_version
+      state_topic: home/infrastructure/hioc/platform/status
+      value_template: "{{ value_json.schema | default('unknown') }}"
+      icon: mdi:code-json
+
+    - name: HIOC MQTT API Version
+      unique_id: hioc_mqtt_api_version
+      state_topic: home/infrastructure/hioc/platform/status
+      value_template: "{{ value_json.mqtt_api | default('unknown') }}"
+      icon: mdi:api
+
+    - name: HIOC Build
+      unique_id: hioc_build
+      state_topic: home/infrastructure/hioc/platform/status
+      value_template: "{{ value_json.build | default('unknown') }}"
+      icon: mdi:calendar-clock
+
