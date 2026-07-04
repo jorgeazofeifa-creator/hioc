@@ -1,0 +1,11 @@
+hioc_version: 1.0.0
+core: 1.0.0
+incident_engine: 1.2.0
+forecast_engine: 1.1.0
+inventory_engine: 1.0.0
+dashboard: 2.0.0
+schema: 3
+mqtt_api: 2
+installer: 1.0.0
+build: 2026.07
+
