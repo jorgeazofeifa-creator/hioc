@@ -1,0 +1,2289 @@
+title: Home Infrastructure
+views:
+  - title: Executive
+    path: executive
+    icon: mdi:view-dashboard
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            content: >-
+              ## MISSION STATUS
+
+
+              # 🟢 {{ states('sensor.hioc_mission_status') }}
+
+
+              **Active Incidents**  
+
+              {{ state_attr('sensor.hioc_mission_status','active_incidents') }}
+
+
+              **Infrastructure Score**  
+
+              {{ state_attr('sensor.hioc_mission_status','infrastructure_score')
+              }}
+
+
+              **Protected Devices**  
+
+              {{ state_attr('sensor.hioc_mission_status','protected_devices') }}
+              devices
+
+
+              **Services**  
+
+              {{ state_attr('sensor.hioc_mission_status','services_healthy')
+              }}/{{ state_attr('sensor.hioc_mission_status','services_total') }}
+              Healthy
+
+
+              **Internet**  
+
+              {{ state_attr('sensor.hioc_mission_status','internet_health') }}
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 240px;
+                  border-radius: 28px;
+                  padding: 22px;
+                  background: linear-gradient(135deg, rgba(16,70,95,.98), rgba(8,18,30,.98));
+                  box-shadow: 0 16px 45px rgba(0,0,0,.35);
+                }
+            grid_options:
+              columns: 12
+              rows: 8
+          - type: custom:mini-graph-card
+            name: Infrastructure Score
+            entities:
+              - sensor.infrastructure_score
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: false
+              icon: false
+            height: 140
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Incident Center
+            subtitle: Pi4 Incident Engine v1.2.0, root cause, evidence, recovery, and recommendations
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+                {{ states('sensor.hioc_incident_system') }} Incident
+              {% elif is_state('sensor.hioc_incident_status','recovering') %}
+                Incident Recovering
+              {% else %}
+                No Active Incident
+              {% endif %}
+            secondary: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+                {{ states('sensor.hioc_incident_active') }} · {{ state_attr('sensor.hioc_incident_active','root_cause') }} · {{ state_attr('sensor.hioc_incident_active','confidence_percent') }}% confidence
+              {% else %}
+                Engine {{ state_attr('sensor.hioc_incident_summary','engine_version') | default('1.2.0') }} · Signals {{ state_attr('sensor.hioc_incident_summary','signals_detected') | default(0) }} · History {{ states('sensor.hioc_incident_history_count') }} incidents
+              {% endif %}
+            icon: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+                mdi:alert-decagram
+              {% else %}
+                mdi:shield-check
+              {% endif %}
+            icon_color: >-
+              {% set sev = states('sensor.hioc_incident_severity') %}
+              {% if is_state('sensor.hioc_incident_status','active') and sev == 'critical' %}
+                red
+              {% elif is_state('sensor.hioc_incident_status','active') and sev == 'major' %}
+                deep-orange
+              {% elif is_state('sensor.hioc_incident_status','active') and sev == 'warning' %}
+                amber
+              {% else %}
+                green
+              {% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: markdown
+            content: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+
+              ## Current Incident
+
+              **{{ states('sensor.hioc_incident_severity') | title }} · {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}**
+
+              **Title**  
+              {{ states('sensor.hioc_incident_active') }}
+
+              **Root Cause**  
+              {{ state_attr('sensor.hioc_incident_active','root_cause') }}
+
+              **Confidence**  
+              {{ state_attr('sensor.hioc_incident_active','confidence_percent') }}%
+
+              **Impact**  
+              {{ state_attr('sensor.hioc_incident_active','impact') }}
+
+              **Current Value**  
+              {{ states('sensor.hioc_incident_current_value') }}
+
+              **Evidence**  
+              {% set evidence = state_attr('sensor.hioc_incident_active','evidence') %}
+              {% if evidence is iterable and evidence is not string %}
+              {% for item in evidence %}✓ {{ item }}  
+              {% endfor %}
+              {% else %}
+              {{ states('sensor.hioc_incident_reason') }}
+              {% endif %}
+
+              **Recommendation**  
+              {{ states('sensor.hioc_incident_recommendation') }}
+
+              **Started**  
+              {{ states('sensor.hioc_incident_started') }}
+
+              {% else %}
+
+              ## Incident Center
+
+              🟢 **No active incident**
+
+              **Engine**  
+              v{{ state_attr('sensor.hioc_incident_summary','engine_version') | default('1.2.0') }} · {{ states('sensor.hioc_engine_status') | title }}
+
+              **Signals Detected**  
+              {{ state_attr('sensor.hioc_incident_summary','signals_detected') | default(0) }}
+
+              **Last Timeline Event**  
+              {{ states('sensor.hioc_latest_timeline_event') }}
+
+              **Incident History**  
+              {{ states('sensor.hioc_incident_history_count') }} recorded incidents
+
+              {% endif %}
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 320px;
+                  border-radius: 24px;
+                  padding: 18px;
+                  background: rgba(18,31,45,0.92);
+                }
+                ha-markdown {
+                  line-height: 1.28;
+                }
+            grid_options:
+              columns: 12
+              rows: 8
+          - type: custom:mushroom-template-card
+            primary: Internet Score
+            secondary: >-
+              {{ states('sensor.hioc_internet_score') }}% · {{
+              states('sensor.hioc_internet_intelligence') }}
+            icon: mdi:web-check
+            icon_color: >-
+              {% if states('sensor.hioc_internet_score') | int(0) >= 95
+              %}green{% elif states('sensor.hioc_internet_score') | int(0) >= 80
+              %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: DNS Score
+            secondary: >-
+              {{ states('sensor.hioc_dns_score') }}% · {{
+              states('sensor.hioc_dns_intelligence') }}
+            icon: mdi:dns
+            icon_color: >-
+              {% if states('sensor.hioc_dns_score') | int(0) >= 95 %}green{%
+              elif states('sensor.hioc_dns_score') | int(0) >= 80 %}amber{% else
+              %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Power Score
+            secondary: >-
+              {{ states('sensor.hioc_power_score') }}% · {{
+              states('sensor.hioc_ups_summary') }}
+            icon: mdi:power-plug-battery
+            icon_color: >-
+              {% if states('sensor.hioc_power_score') | int(0) >= 95 %}green{%
+              elif states('sensor.hioc_power_score') | int(0) >= 80 %}amber{%
+              else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Services Score
+            secondary: >-
+              {{ states('sensor.hioc_services_score') }}% · MQTT {{
+              states('sensor.hioc_mqtt_intelligence') }}
+            icon: mdi:server-network
+            icon_color: >-
+              {% if states('sensor.hioc_services_score') | int(0) >= 95
+              %}green{% elif states('sensor.hioc_services_score') | int(0) >= 80
+              %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.hioc_noc_summary') }}"
+            secondary: >-
+              {{ state_attr('sensor.hioc_noc_summary', 'status') }} · Latest: {{
+              states('input_text.hioc_latest_event') }}
+            icon: mdi:monitor-dashboard
+            icon_color: >-
+              {% if states('sensor.hioc_noc_summary') == 'Operational' %}green{%
+              else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: markdown
+            content: >-
+              ## Score Breakdown
+
+
+              {% set internet = states('sensor.hioc_internet_score') | int(0) %}
+
+              {% set dns = states('sensor.hioc_dns_score') | int(0) %}
+
+              {% set power = states('sensor.hioc_power_score') | int(0) %}
+
+              {% set services = states('sensor.hioc_services_score') | int(0) %}
+
+              {% set internet_quality = states('sensor.hioc_internet_quality')
+              %}
+
+              {% set dns_quality = states('sensor.hioc_dns_quality') %}
+
+              {% set mqtt_quality = states('sensor.hioc_mqtt_quality') %}
+
+              {% set ups_summary = states('sensor.hioc_ups_summary') %}
+
+
+              🟢 **Internet**  
+
+              {{ internet }} · {{ internet_quality }}
+
+
+              🟢 **DNS**  
+
+              {{ dns }} · {{ dns_quality }}
+
+
+              🟢 **UPS**  
+
+              {{ power }} · {{ ups_summary }}
+
+
+              🟢 **Services**  
+
+              {{ services }} · Healthy
+
+
+              🟢 **MQTT**  
+
+              {{ mqtt_quality }}
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 230px;
+                  border-radius: 24px;
+                  padding: 18px;
+                  background: rgba(18,31,45,0.92);
+                }
+                ha-markdown {
+                  line-height: 1.28;
+                }
+            grid_options:
+              columns: 12
+              rows: 6
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Live Trend Strip
+            subtitle: >-
+              Compact 2-column heartbeat across internet, DNS, gateway, MQTT,
+              UPS, WAN, and hosts
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:mini-graph-card
+                name: Internet Latency
+                entities:
+                  - sensor.pi4_network_probe_average_internet_latency
+                hours_to_show: 24
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:speedometer
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: Packet Loss
+                entities:
+                  - sensor.pi4_network_probe_average_packet_loss
+                hours_to_show: 24
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:chart-line
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: DNS Latency
+                entities:
+                  - sensor.pi4_network_probe_pi_hole_dns_latency
+                hours_to_show: 24
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:dns
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: Gateway Latency
+                entities:
+                  - sensor.pi4_network_probe_gateway_latency
+                hours_to_show: 24
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:router-network
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: Pi4 Temperature
+                entities:
+                  - sensor.pi4_infrastructure_temperature
+                hours_to_show: 24
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:thermometer
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: Pi5 CPU
+                entities:
+                  - sensor.system_monitor_processor_use
+                hours_to_show: 24
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:cpu-64-bit
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: MQTT Latency
+                entities:
+                  - sensor.pi4_network_probe_mqtt_publish_duration
+                hours_to_show: 24
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:message-fast
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: UPS Load
+                entities:
+                  - entity: sensor.ups1_load
+                    name: UPS1
+                  - entity: sensor.ups2_load
+                    name: UPS2
+                hours_to_show: 24
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:power-plug-battery
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: WAN Download
+                entities:
+                  - sensor.huawei_igd_download_speed
+                hours_to_show: 12
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:download-network
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+              - type: custom:mini-graph-card
+                name: WAN Upload
+                entities:
+                  - sensor.huawei_igd_upload_speed
+                hours_to_show: 12
+                points_per_hour: 4
+                show:
+                  fill: true
+                  extrema: true
+                  icon: true
+                icon: mdi:upload-network
+                height: 92
+                card_mod:
+                  style: |2-
+
+                              ha-card {
+                                margin: 6px;
+                                border-radius: 18px;
+                              }
+                            
+            card_mod:
+              style: |2-
+
+                          ha-card {
+                            background: transparent;
+                            box-shadow: none;
+                            padding: 8px 8px 64px 8px;
+                            margin-bottom: 64px;
+                          }
+                        
+            grid_options:
+              columns: 12
+              rows: 19
+          - type: markdown
+            content: <br>
+            grid_options:
+              columns: full
+              rows: auto
+            text_only: true
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 1px;
+                  background: transparent;
+                  box-shadow: none;
+                  border: none;
+                  padding: 0;
+                  margin: 0;
+                }
+                ha-markdown {
+                  display: block;
+                  min-height: 1px;
+                }
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Quick Metrics
+            subtitle: Fast-read infrastructure ribbon
+          - type: custom:mushroom-template-card
+            primary: WAN IP
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_public_ip') }} · Outages {{
+              states('sensor.pi4_network_probe_internet_outage_count') }}
+            icon: mdi:ip-network
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_internet_health') ==
+              'healthy' %}green{% else %}amber{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Pi-hole Live
+            secondary: >-
+              {{ states('sensor.pi_hole_dns_queries_today') }} queries · {{
+              states('sensor.pi_hole_ads_percentage_blocked_today') | float(0) |
+              round(1) }}% blocked · {{ states('sensor.pi_hole_seen_clients') }}
+              clients
+            icon: mdi:pi-hole
+            icon_color: >-
+              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% else
+              %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: UPS
+            secondary: >-
+              UPS1 {{ states('sensor.pi4_infrastructure_ups1_battery') }}% ·
+              UPS2 {{ states('sensor.pi4_infrastructure_ups2_battery') }}%
+            icon: mdi:power-plug-battery
+            icon_color: green
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Pi 4
+            secondary: >-
+              {{ states('sensor.pi4_infrastructure_temperature') }}°C · RAM {{
+              states('sensor.pi4_infrastructure_memory_usage') }}% · Disk {{
+              states('sensor.pi4_infrastructure_disk_usage') }}%
+            icon: mdi:raspberry-pi
+            icon_color: green
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Pi 5
+            secondary: >-
+              CPU {{ states('sensor.system_monitor_processor_use') }}% · RAM {{
+              states('sensor.system_monitor_memory_usage') }}% · {{
+              states('sensor.system_monitor_processor_temperature') }}°C
+            icon: mdi:home-assistant
+            icon_color: green
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Network
+            secondary: >-
+              Latency {{
+              states('sensor.pi4_network_probe_average_internet_latency') |
+              float(0) | round(1) }} ms · Loss {{
+              states('sensor.pi4_network_probe_average_packet_loss') | float(0)
+              | round(1) }}% · Jitter {{
+              states('sensor.pi4_network_probe_internet_jitter') | float(0) |
+              round(1) }} ms
+            icon: mdi:wan
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_internet_health') ==
+              'healthy' %}green{% elif
+              states('sensor.pi4_network_probe_internet_health') == 'degraded'
+              %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Critical Status
+            subtitle: Systems that must stay healthy
+          - type: custom:mushroom-template-card
+            primary: Internet
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_internet_health') | title }} ·
+              {{ states('sensor.pi4_network_probe_average_internet_latency') |
+              float(0) | round(1) }} ms · {{
+              states('sensor.pi4_network_probe_average_packet_loss') | float(0)
+              | round(1) }}% loss
+            icon: mdi:web-check
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_internet_health') ==
+              'healthy' %}green{% elif
+              states('sensor.pi4_network_probe_internet_health') == 'degraded'
+              %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: DNS
+            secondary: >-
+              Pi-hole {{ states('sensor.pi4_network_probe_pi_hole_dns_latency')
+              }} ms · Cloudflare {{
+              states('sensor.pi4_network_probe_cloudflare_dns_latency') }} ms ·
+              {{ states('sensor.pi_hole_dns_queries_frequency') }} q/min
+            icon: mdi:dns
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_pi_hole_dns_latency') |
+              float(999) < 50 %}green{% elif
+              states('sensor.pi4_network_probe_pi_hole_dns_latency') |
+              float(999) < 150 %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Power
+            secondary: >-
+              UPS1 {{ states('sensor.pi4_infrastructure_ups1_battery') }}% ·
+              UPS2 {{ states('sensor.pi4_infrastructure_ups2_battery') }}%
+            icon: mdi:power-plug
+            icon_color: green
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Cameras
+            secondary: >-
+              Frigate stopped · go2rtc {{ 'running' if
+              is_state('binary_sensor.go2rtc_running','on') else 'stopped' }}
+            icon: mdi:cctv
+            icon_color: grey
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Probe
+            secondary: >-
+              Last update {{
+              states('sensor.pi4_network_probe_network_probe_last_update') }} ·
+              MQTT {{ states('sensor.pi4_network_probe_mqtt_publish_duration')
+              }} ms
+            icon: mdi:radar
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_mqtt_publish_failures') |
+              int(0) == 0 %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Service Health
+            subtitle: Infrastructure services and add-ons
+          - type: custom:mushroom-template-card
+            primary: Pi-hole FTL
+            secondary: "{{ states('sensor.pi4_infrastructure_pi_hole_ftl_status') }}"
+            icon: mdi:shield-check
+            icon_color: >-
+              {% if states('sensor.pi4_infrastructure_pi_hole_ftl_status') in
+              ['on','On'] %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: NUT Server
+            secondary: "{{ states('sensor.pi4_infrastructure_nut_server_status') }}"
+            icon: mdi:server
+            icon_color: >-
+              {% if states('sensor.pi4_infrastructure_nut_server_status') in
+              ['on','On'] %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: MQTT Broker
+            secondary: >-
+              {% set s = states('binary_sensor.mosquitto_broker_running') %}{%
+              set cpu = states('sensor.mosquitto_broker_cpu_percent') %}{% set
+              mem = states('sensor.mosquitto_broker_memory_percent') %}{% set
+              ver = states('sensor.mosquitto_broker_version') %}{% if s in
+              ['on','On'] %}Running{% else %}Stopped{% endif %} · CPU {{ cpu }}%
+              · Mem {{ mem }}% · v{{ ver }}
+            icon: mdi:message-processing
+            icon_color: >-
+              {% if states('binary_sensor.mosquitto_broker_running') in
+              ['on','On'] %}green{% else %}grey{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Ring-MQTT
+            secondary: >-
+              {% set s =
+              states('binary_sensor.ring_mqtt_with_video_streaming_running')
+              %}{% set cpu =
+              states('sensor.ring_mqtt_with_video_streaming_cpu_percent') %}{%
+              set mem =
+              states('sensor.ring_mqtt_with_video_streaming_memory_percent')
+              %}{% set ver =
+              states('sensor.ring_mqtt_with_video_streaming_version') %}{% if s
+              in ['on','On'] %}Running{% else %}Stopped{% endif %} · CPU {{ cpu
+              }}% · Mem {{ mem }}% · v{{ ver }}
+            icon: mdi:doorbell-video
+            icon_color: >-
+              {% if
+              states('binary_sensor.ring_mqtt_with_video_streaming_running') in
+              ['on','On'] %}green{% else %}grey{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Z-Wave JS
+            secondary: >-
+              {% set s = states('binary_sensor.z_wave_js_running') %}{% set cpu
+              = states('sensor.z_wave_js_cpu_percent') %}{% set mem =
+              states('sensor.z_wave_js_memory_percent') %}{% set ver =
+              states('sensor.z_wave_js_version') %}{% if s in ['on','On']
+              %}Running{% else %}Stopped{% endif %} · CPU {{ cpu }}% · Mem {{
+              mem }}% · v{{ ver }}
+            icon: mdi:z-wave
+            icon_color: >-
+              {% if states('binary_sensor.z_wave_js_running') in ['on','On']
+              %}green{% else %}grey{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Matter Server
+            secondary: >-
+              {% set s = states('binary_sensor.matter_server_running') %}{% set
+              cpu = states('sensor.matter_server_cpu_percent') %}{% set mem =
+              states('sensor.matter_server_memory_percent') %}{% set ver =
+              states('sensor.matter_server_version') %}{% if s in ['on','On']
+              %}Running{% else %}Stopped{% endif %} · CPU {{ cpu }}% · Mem {{
+              mem }}% · v{{ ver }}
+            icon: mdi:chip
+            icon_color: >-
+              {% if states('binary_sensor.matter_server_running') in ['on','On']
+              %}green{% else %}grey{% endif %}
+            layout: horizontal
+            fill_container: true
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Live Operations Values
+            subtitle: Color-coded live operational status
+          - type: custom:mushroom-template-card
+            primary: WAN
+            secondary: >-
+              {{ '🟢 Connected' if
+              is_state('binary_sensor.huawei_igd_wan_status','on') else '🔴
+              Disconnected' }} · IP {{ states('sensor.huawei_igd_external_ip')
+              }}
+            icon: mdi:wan
+            icon_color: >-
+              {% if is_state('binary_sensor.huawei_igd_wan_status','on')
+              %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Internet Traffic
+            secondary: >-
+              🔵 Down {{ states('sensor.huawei_igd_download_speed') | float(0) |
+              round(2) }} KiB/s · Up {{ states('sensor.huawei_igd_upload_speed')
+              | float(0) | round(2) }} KiB/s
+            icon: mdi:speedometer
+            icon_color: blue
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Pi-hole
+            secondary: >-
+              {{ '🟢 Healthy' if is_state('binary_sensor.pi_hole_status','on')
+              else '🔴 Offline' }} · {{
+              states('sensor.pi_hole_dns_queries_today') }} queries · {{
+              states('sensor.pi_hole_ads_percentage_blocked_today') | float(0) |
+              round(1) }}% blocked
+            icon: mdi:shield-half-full
+            icon_color: >-
+              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% else
+              %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Clients
+            secondary: >-
+              🟢 {{ states('sensor.pi_hole_seen_clients') }} seen · {{
+              states('sensor.pi_hole_dns_unique_clients') }} unique DNS · {{
+              states('sensor.pi_hole_dhcp_leases') }} DHCP leases
+            icon: mdi:devices
+            icon_color: >-
+              {% if states('sensor.pi_hole_seen_clients') | int(0) >= 1
+              %}green{% else %}amber{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: UPS
+            secondary: >-
+              {% set ups1_ok = states('sensor.pi4_infrastructure_ups1_status')
+              == 'OL' %} {% set ups2_ok =
+              states('sensor.pi4_infrastructure_ups2_status') == 'OL' %} {% if
+              ups1_ok and ups2_ok %}🟢 Utility Power{% elif ups1_ok or ups2_ok
+              %}🟠 Partial Protection{% else %}🔴 On Battery{% endif %} · UPS1
+              {{ states('sensor.pi4_infrastructure_ups1_battery') }}% · UPS2 {{
+              states('sensor.pi4_infrastructure_ups2_battery') }}%
+            icon: mdi:power-plug-battery
+            icon_color: >-
+              {% if states('sensor.pi4_infrastructure_ups1_status') == 'OL' and
+              states('sensor.pi4_infrastructure_ups2_status') == 'OL' %}green{%
+              elif states('sensor.pi4_infrastructure_ups1_status') == 'OL' or
+              states('sensor.pi4_infrastructure_ups2_status') == 'OL' %}amber{%
+              else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: MQTT
+            secondary: >-
+              {{ '🟢 Running' if
+              is_state('binary_sensor.mosquitto_broker_running','on') else '🔴
+              Offline' }} · CPU {{ states('sensor.mosquitto_broker_cpu_percent')
+              }}% · Mem {{ states('sensor.mosquitto_broker_memory_percent') }}%
+            icon: mdi:message-processing
+            icon_color: >-
+              {% if is_state('binary_sensor.mosquitto_broker_running','on')
+              %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Database & Domains
+            secondary: >-
+              🔵 Pi-hole DB {{
+              states('sensor.pi4_infrastructure_pi_hole_db_size') }} · Domains
+              {{ states('sensor.pi_hole_domains_blocked') }} · Cache {{
+              states('sensor.pi_hole_dns_queries_cached') }}
+            icon: mdi:database-search
+            icon_color: blue
+            layout: horizontal
+            fill_container: true
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Infrastructure Topology
+            subtitle: Logical map
+          - type: markdown
+            content: |
+
+              ### Network path
+
+              ```
+                      Internet
+                          │
+                    Huawei Gateway      192.168.100.1
+                          │
+                      Orbi Mesh
+                    ┌─────┴─────┐
+                    │           │
+                Pi 4 Infra   Pi 5 HAOS
+                192.168.100.252   192.168.100.152
+                    │           │
+               DNS DHCP NUT   HA MQTT Z-Wave Matter
+               UPS1 UPS2      go2rtc Dashboards
+              ```
+            card_mod:
+              style: |
+                ha-card {
+                  border-radius: 24px;
+                  padding: 18px;
+                  background: radial-gradient(circle at top, rgba(44,80,115,0.36), rgba(14,24,36,0.96));
+                  border: 1px solid rgba(140,180,220,0.18);
+                }
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Event Timeline
+            subtitle: Last 24 hours of infrastructure events
+          - type: logbook
+            hours_to_show: 24
+            entities:
+              - sensor.infrastructure_score
+              - binary_sensor.infrastructure_healthy
+              - binary_sensor.pi4_dns_healthy
+              - binary_sensor.pi4_pi_hole_healthy
+              - binary_sensor.pi4_ups_healthy
+              - binary_sensor.mosquitto_broker_running
+              - binary_sensor.ring_mqtt_with_video_streaming_running
+              - binary_sensor.z_wave_js_running
+              - binary_sensor.matter_server_running
+              - binary_sensor.go2rtc_running
+              - binary_sensor.frigate_running
+    theme: HIOC Operations
+    cards: []
+  - title: Servers
+    path: servers
+    icon: mdi:server
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Pi 4 Infrastructure
+            subtitle: DNS, DHCP, Pi-hole, NUT, UPS, Toolkit
+          - type: custom:mini-graph-card
+            name: Pi 4 Temperature
+            entities:
+              - sensor.pi4_infrastructure_temperature
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:thermometer
+          - type: custom:mini-graph-card
+            name: Pi 4 Memory
+            entities:
+              - sensor.pi4_infrastructure_memory_usage
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:memory
+          - type: custom:mini-graph-card
+            name: Pi 4 Disk Usage
+            entities:
+              - sensor.pi4_infrastructure_disk_usage
+            hours_to_show: 72
+            points_per_hour: 1
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:harddisk
+          - type: entities
+            title: Pi 4 Details
+            show_header_toggle: false
+            entities:
+              - sensor.pi4_infrastructure_hostname
+              - sensor.pi4_infrastructure_ip_address
+              - sensor.pi4_infrastructure_uptime
+              - sensor.pi4_infrastructure_temperature
+              - sensor.pi4_infrastructure_memory_usage
+              - sensor.pi4_infrastructure_disk_usage
+              - sensor.pi4_infrastructure_pi_hole_db_size
+              - sensor.pi4_infrastructure_toolkit_version
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Pi 5 Home Assistant
+            subtitle: HAOS host health
+          - type: custom:mini-graph-card
+            name: Pi 5 CPU
+            entities:
+              - sensor.system_monitor_processor_use
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:cpu-64-bit
+          - type: custom:mini-graph-card
+            name: Pi 5 Memory
+            entities:
+              - sensor.system_monitor_memory_usage
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:memory
+          - type: custom:mini-graph-card
+            name: Pi 5 Temperature
+            entities:
+              - sensor.system_monitor_processor_temperature
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:thermometer
+          - type: entities
+            title: Pi 5 Details
+            show_header_toggle: false
+            entities:
+              - sensor.system_monitor_processor_use
+              - sensor.system_monitor_memory_usage
+              - sensor.system_monitor_disk_usage
+              - sensor.system_monitor_processor_temperature
+              - sensor.system_monitor_load_1_min
+              - sensor.system_monitor_load_5_min
+              - sensor.system_monitor_load_15_min
+              - sensor.system_monitor_last_boot
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Host Comparison
+            subtitle: Resource trends
+          - type: history-graph
+            title: CPU, Memory, Temperature
+            hours_to_show: 12
+            entities:
+              - sensor.system_monitor_processor_use
+              - sensor.system_monitor_memory_usage
+              - sensor.system_monitor_processor_temperature
+              - sensor.pi4_infrastructure_memory_usage
+              - sensor.pi4_infrastructure_temperature
+    theme: HIOC Operations
+    cards: []
+  - title: Network
+    path: network
+    icon: mdi:lan
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Network Incident Console
+            subtitle: WAN reachability, latency, packet loss, DNS, and probe health
+          - type: custom:mushroom-template-card
+            primary: Internet Quality
+            secondary: >-
+              {{ states('sensor.hioc_internet_intelligence') }} · {{
+              state_attr('sensor.hioc_internet_intelligence','latency_ms') }} ms
+              · {{
+              state_attr('sensor.hioc_internet_intelligence','packet_loss_percent')
+              }}% loss
+            icon: mdi:web-check
+            icon_color: >-
+              {% if states('sensor.hioc_internet_intelligence') == 'Healthy'
+              %}green{% elif states('sensor.hioc_internet_intelligence') ==
+              'Degraded' %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: WAN / Public IP
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_public_ip') }} · Outages {{
+              states('sensor.pi4_network_probe_internet_outage_count') }}
+            icon: mdi:ip-network
+            icon_color: blue
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Gateway Path
+            secondary: >-
+              Gateway {{ states('sensor.pi4_network_probe_gateway_latency') |
+              float(0) | round(1) }} ms · Pi5 {{
+              states('sensor.pi4_network_probe_pi5_latency') | float(0) |
+              round(1) }} ms
+            icon: mdi:router-network
+            icon_color: green
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: DNS Quality
+            secondary: >-
+              Pi-hole {{ states('sensor.pi4_network_probe_pi_hole_dns_latency')
+              }} ms · Cloudflare {{
+              states('sensor.pi4_network_probe_cloudflare_dns_latency') }} ms ·
+              {{ state_attr('sensor.hioc_dns_intelligence','queries_per_minute')
+              }} q/min
+            icon: mdi:dns
+            icon_color: >-
+              {% if states('sensor.hioc_dns_intelligence') == 'Healthy'
+              %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Probe MQTT
+            secondary: >-
+              Duration {{
+              states('sensor.pi4_network_probe_mqtt_publish_duration') }} ms ·
+              failures {{
+              states('sensor.pi4_network_probe_mqtt_publish_failures') }}
+            icon: mdi:message-fast
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_mqtt_publish_failures') |
+              int(0) == 0 %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Internet Operations
+            subtitle: >-
+              Reachability, latency, packet loss, jitter, and WAN IP from the
+              Pi4 probe
+          - type: custom:mushroom-template-card
+            primary: Internet Health
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_internet_health') | title }} ·
+              {{ states('sensor.pi4_network_probe_average_internet_latency') }}
+              ms avg
+            icon: mdi:web-check
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_internet_health') ==
+              'healthy' %}green{% elif
+              states('sensor.pi4_network_probe_internet_health') == 'degraded'
+              %}amber{% else %}red{% endif %}
+            layout: vertical
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 2
+          - type: custom:mushroom-template-card
+            primary: WAN IP
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_public_ip') }} · Outages {{
+              states('sensor.pi4_network_probe_internet_outage_count') }}
+            icon: mdi:ip-network
+            icon_color: blue
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Packet Loss
+            secondary: >-
+              Average {{ states('sensor.pi4_network_probe_average_packet_loss')
+              }}% · CF {{
+              states('sensor.pi4_network_probe_cloudflare_packet_loss') }}% ·
+              Google {{ states('sensor.pi4_network_probe_google_packet_loss')
+              }}%
+            icon: mdi:chart-line
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_average_packet_loss') |
+              float(0) == 0 %}green{% elif
+              states('sensor.pi4_network_probe_average_packet_loss') | float(0)
+              <= 2 %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Jitter
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_internet_jitter') }} ms ·
+              Publish {{
+              states('sensor.pi4_network_probe_mqtt_publish_duration') }} ms
+            icon: mdi:pulse
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_internet_jitter') |
+              float(0) < 20 %}green{% elif
+              states('sensor.pi4_network_probe_internet_jitter') | float(0) < 80
+              %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Latency Targets
+            subtitle: Probe measurements every 5 minutes
+          - type: custom:mini-graph-card
+            name: Average Internet Latency
+            entities:
+              - sensor.pi4_network_probe_average_internet_latency
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:speedometer
+          - type: custom:mini-graph-card
+            name: Cloudflare Latency
+            entities:
+              - sensor.pi4_network_probe_cloudflare_latency
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:cloud
+          - type: custom:mini-graph-card
+            name: Google Latency
+            entities:
+              - sensor.pi4_network_probe_google_latency
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:google
+          - type: custom:mini-graph-card
+            name: Packet Loss
+            entities:
+              - sensor.pi4_network_probe_average_packet_loss
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:chart-line
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Gateway & Internal Path
+            subtitle: Local network checks from Pi4
+          - type: custom:mushroom-template-card
+            primary: Gateway
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_gateway_status') }} · {{
+              states('sensor.pi4_network_probe_gateway_latency') }} ms
+            icon: mdi:router-network
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_gateway_status') ==
+              'online' %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Pi5
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_pi5_status') }} · {{
+              states('sensor.pi4_network_probe_pi5_latency') }} ms
+            icon: mdi:home-assistant
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_pi5_status') == 'online'
+              %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mini-graph-card
+            name: Gateway Latency
+            entities:
+              - sensor.pi4_network_probe_gateway_latency
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:router-network
+          - type: custom:mini-graph-card
+            name: Pi5 Latency
+            entities:
+              - sensor.pi4_network_probe_pi5_latency
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:home-assistant
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: DNS Operations
+            subtitle: Pi-hole and external DNS response time
+          - type: custom:mushroom-template-card
+            primary: Pi-hole DNS
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_pi_hole_dns_latency') }} ms ·
+              FTL {{ states('sensor.pi4_infrastructure_pi_hole_ftl_status') }}
+            icon: mdi:pi-hole
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_pi_hole_dns_latency') |
+              float(999) < 50 %}green{% elif
+              states('sensor.pi4_network_probe_pi_hole_dns_latency') |
+              float(999) < 150 %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Cloudflare DNS
+            secondary: "{{ states('sensor.pi4_network_probe_cloudflare_dns_latency') }} ms"
+            icon: mdi:dns
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_cloudflare_dns_latency') |
+              float(999) < 100 %}green{% elif
+              states('sensor.pi4_network_probe_cloudflare_dns_latency') |
+              float(999) < 250 %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mini-graph-card
+            name: Pi-hole DNS Latency
+            entities:
+              - sensor.pi4_network_probe_pi_hole_dns_latency
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:dns
+          - type: custom:mini-graph-card
+            name: Cloudflare DNS Latency
+            entities:
+              - sensor.pi4_network_probe_cloudflare_dns_latency
+            hours_to_show: 24
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:dns
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: WAN & Traffic
+            subtitle: Huawei data plus probe health
+          - type: entities
+            title: Huawei Gateway
+            show_header_toggle: false
+            entities:
+              - binary_sensor.huawei_igd_wan_status
+              - sensor.huawei_igd_external_ip
+              - sensor.pi4_network_probe_public_ip
+              - sensor.huawei_igd_uptime
+              - sensor.huawei_igd_download_speed
+              - sensor.huawei_igd_upload_speed
+              - sensor.huawei_igd_data_received
+              - sensor.huawei_igd_data_sent
+              - sensor.huawei_igd_packets_received
+              - sensor.huawei_igd_packets_sent
+          - type: custom:mini-graph-card
+            name: Huawei Download
+            entities:
+              - sensor.huawei_igd_download_speed
+            hours_to_show: 12
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:download-network
+          - type: custom:mini-graph-card
+            name: Huawei Upload
+            entities:
+              - sensor.huawei_igd_upload_speed
+            hours_to_show: 12
+            points_per_hour: 4
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            icon: mdi:upload-network
+          - type: entities
+            title: Probe Diagnostics
+            show_header_toggle: false
+            entities:
+              - sensor.pi4_network_probe_network_probe_last_update
+              - sensor.pi4_network_probe_mqtt_publish_duration
+              - sensor.pi4_network_probe_mqtt_publish_failures
+              - sensor.pi4_network_probe_internet_outage_count
+    theme: HIOC Operations
+    cards: []
+  - title: Diagnostics
+    path: diagnostics
+    icon: mdi:stethoscope
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Diagnostics Command Center
+            subtitle: One page for deep troubleshooting across every subsystem
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.hioc_current_incident_detail') }}"
+            secondary: >-
+              Score {{ states('sensor.infrastructure_score') }}% · Internet {{
+              states('sensor.hioc_internet_quality') }} · DNS {{
+              states('sensor.hioc_dns_quality') }} · MQTT {{
+              states('sensor.hioc_mqtt_quality') }}
+            icon: mdi:stethoscope
+            grid_options:
+              columns: 12
+              rows: 2
+            color: >-
+              {% if states('sensor.hioc_current_incident_detail') == 'No active
+              incident' %}green{% else %}red{% endif %}
+            features_position: bottom
+            multiline_secondary: true
+          - type: custom:mushroom-template-card
+            primary: Latest Event
+            secondary: "{{ states('input_text.hioc_latest_event') }}"
+            icon: mdi:timeline-clock
+            grid_options:
+              columns: 12
+              rows: 2
+            color: blue
+            features_position: bottom
+            multiline_secondary: true
+          - type: entities
+            title: Operations State
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_noc_summary
+              - sensor.hioc_current_incident_detail
+              - sensor.hioc_alert_summary
+              - sensor.hioc_active_alert_count
+              - input_boolean.hioc_maintenance_mode
+              - sensor.infrastructure_score
+              - sensor.infrastructure_health
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Internet Diagnostics
+            subtitle: Reachability, latency, packet loss, jitter, and public IP
+          - type: custom:mushroom-template-card
+            primary: Internet Health
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_internet_health') | title }} ·
+              {{ states('sensor.pi4_network_probe_average_internet_latency') }}
+              ms avg · {{ states('sensor.pi4_network_probe_average_packet_loss')
+              }}% loss
+            icon: mdi:web-check
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_internet_health') ==
+              'healthy' %}green{% elif
+              states('sensor.pi4_network_probe_internet_health') == 'degraded'
+              %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Public IP
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_public_ip') }} · Outages {{
+              states('sensor.pi4_network_probe_internet_outage_count') }}
+            icon: mdi:ip-network
+            icon_color: blue
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Jitter
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_internet_jitter') }} ms ·
+              Publish {{
+              states('sensor.pi4_network_probe_mqtt_publish_duration') }} ms
+            icon: mdi:pulse
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_internet_jitter') |
+              float(0) < 20 %}green{% elif
+              states('sensor.pi4_network_probe_internet_jitter') | float(0) < 80
+              %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: entities
+            title: Internet Detail
+            show_header_toggle: false
+            entities:
+              - entity: sensor.pi4_network_probe_average_internet_latency
+                name: Average Latency
+              - entity: sensor.pi4_network_probe_average_packet_loss
+                name: Packet Loss
+              - entity: sensor.pi4_network_probe_internet_jitter
+                name: Jitter
+              - entity: sensor.pi4_network_probe_cloudflare_latency
+                name: Cloudflare Latency
+              - entity: sensor.pi4_network_probe_google_latency
+                name: Google Latency
+              - entity: sensor.pi4_network_probe_cloudflare_packet_loss
+                name: Cloudflare Packet Loss
+              - entity: sensor.pi4_network_probe_google_packet_loss
+                name: Google Packet Loss
+          - type: custom:mini-graph-card
+            name: Internet Latency
+            entities:
+              - sensor.pi4_network_probe_average_internet_latency
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:speedometer
+          - type: custom:mini-graph-card
+            name: Packet Loss
+            entities:
+              - sensor.pi4_network_probe_average_packet_loss
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:chart-line
+          - type: custom:mini-graph-card
+            name: Internet Jitter
+            entities:
+              - sensor.pi4_network_probe_internet_jitter
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:pulse
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Gateway & Internal Path
+            subtitle: Local network path checks from the Pi4 probe
+          - type: custom:mushroom-template-card
+            primary: Gateway
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_gateway_status') | title }} ·
+              {{ states('sensor.pi4_network_probe_gateway_latency') }} ms
+            icon: mdi:router-network
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_gateway_status') ==
+              'online' %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Pi5 Path
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_pi5_status') | title }} · {{
+              states('sensor.pi4_network_probe_pi5_latency') }} ms
+            icon: mdi:home-assistant
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_pi5_status') == 'online'
+              %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: entities
+            title: Path Detail
+            show_header_toggle: false
+            entities:
+              - sensor.pi4_network_probe_gateway_status
+              - sensor.pi4_network_probe_gateway_latency
+              - sensor.pi4_network_probe_gateway_latency_min
+              - sensor.pi4_network_probe_gateway_latency_max
+              - sensor.pi4_network_probe_gateway_jitter
+              - sensor.pi4_network_probe_pi5_status
+              - sensor.pi4_network_probe_pi5_latency
+          - type: custom:mini-graph-card
+            name: Gateway Latency
+            entities:
+              - sensor.pi4_network_probe_gateway_latency
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:router-network
+          - type: custom:mini-graph-card
+            name: Pi5 Latency
+            entities:
+              - sensor.pi4_network_probe_pi5_latency
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:home-assistant
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: DNS & Pi-hole Diagnostics
+            subtitle: DNS timing, filtering, cache, forwarding, and client pressure
+          - type: custom:mushroom-template-card
+            primary: DNS
+            secondary: >-
+              {{ states('sensor.hioc_dns_quality') }} · Pi-hole {{
+              states('sensor.pi4_network_probe_pi_hole_dns_latency') }} ms ·
+              Cloudflare {{
+              states('sensor.pi4_network_probe_cloudflare_dns_latency') }} ms
+            icon: mdi:dns
+            icon_color: >-
+              {% if states('sensor.hioc_dns_quality') == 'Excellent' %}green{%
+              elif states('sensor.hioc_dns_quality') == 'Watch' %}amber{% else
+              %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:mushroom-template-card
+            primary: Pi-hole Live
+            secondary: >-
+              {{ states('sensor.pi_hole_dns_queries_frequency') }} q/min · {{
+              states('sensor.pi_hole_ads_percentage_blocked_today') | float(0) |
+              round(1) }}% blocked · {{ states('sensor.pi_hole_seen_clients') }}
+              clients
+            icon: mdi:pi-hole
+            icon_color: >-
+              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% else
+              %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: entities
+            title: DNS / Pi-hole Detail
+            show_header_toggle: false
+            entities:
+              - entity: binary_sensor.pi_hole_status
+                name: Pi-hole Status
+              - entity: sensor.pi4_infrastructure_pi_hole_ftl_status
+                name: FTL Status
+              - entity: sensor.pi4_network_probe_pi_hole_dns_latency
+                name: Pi-hole Lookup
+              - entity: sensor.pi4_network_probe_cloudflare_dns_latency
+                name: Cloudflare Lookup
+              - entity: sensor.pi_hole_dns_queries_frequency
+                name: Queries/min
+              - entity: sensor.hioc_dns_queries_per_second
+                name: Queries/sec
+              - entity: sensor.pi_hole_ads_percentage_blocked_today
+                name: Blocked %
+              - entity: sensor.pi_hole_dns_queries_cached
+                name: Cached Queries
+              - entity: sensor.pi_hole_dns_queries_forwarded
+                name: Forwarded Queries
+              - entity: sensor.hioc_pi_hole_cache_hit_ratio
+                name: Cache Hit Ratio
+              - entity: sensor.hioc_pi_hole_forwarded_ratio
+                name: Forwarded Ratio
+              - entity: sensor.pi_hole_seen_clients
+                name: Seen Clients
+              - entity: sensor.pi_hole_dns_unique_clients
+                name: Unique DNS Clients
+              - entity: sensor.pi_hole_dhcp_leases
+                name: DHCP Leases
+              - entity: sensor.hioc_dhcp_pool_usage
+                name: DHCP Pool Usage
+              - entity: sensor.pi_hole_ftl_info_message_count
+                name: FTL Diagnostic Messages
+              - entity: sensor.pi4_infrastructure_pi_hole_db_size
+                name: Pi-hole DB Size
+          - type: custom:mini-graph-card
+            name: DNS Queries/min
+            entities:
+              - sensor.pi_hole_dns_queries_frequency
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:dns
+          - type: custom:mini-graph-card
+            name: Blocked %
+            entities:
+              - sensor.pi_hole_ads_percentage_blocked_today
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:shield-half-full
+          - type: custom:mini-graph-card
+            name: Pi-hole DNS Latency
+            entities:
+              - sensor.pi4_network_probe_pi_hole_dns_latency
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:pi-hole
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Pi4 Probe Appliance
+            subtitle: Infrastructure probe, Pi-hole, NUT, DHCP, and toolkit host
+          - type: custom:mushroom-template-card
+            primary: Pi4 Health
+            secondary: >-
+              {{ states('sensor.pi4_infrastructure_temperature') }}°C · RAM {{
+              states('sensor.pi4_infrastructure_memory_usage') }}% · Disk {{
+              states('sensor.pi4_infrastructure_disk_usage') }}%
+            icon: mdi:raspberry-pi
+            icon_color: >-
+              {% if states('sensor.pi4_infrastructure_temperature') | float(0) <
+              65 and states('sensor.pi4_infrastructure_disk_usage') | float(0) <
+              80 %}green{% elif states('sensor.pi4_infrastructure_temperature')
+              | float(0) < 75 %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Probe Freshness
+            secondary: >-
+              Last update {{
+              states('sensor.pi4_network_probe_network_probe_last_update') }} ·
+              MQTT {{ states('sensor.pi4_network_probe_mqtt_publish_duration')
+              }} ms
+            icon: mdi:radar
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_mqtt_publish_failures') |
+              int(0) == 0 %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: entities
+            title: Pi4 Detail
+            show_header_toggle: false
+            entities:
+              - sensor.pi4_infrastructure_hostname
+              - sensor.pi4_infrastructure_ip_address
+              - sensor.pi4_infrastructure_uptime
+              - sensor.pi4_infrastructure_temperature
+              - sensor.pi4_infrastructure_memory_usage
+              - sensor.pi4_infrastructure_disk_usage
+              - sensor.pi4_infrastructure_toolkit_version
+              - sensor.pi4_infrastructure_dns_status
+              - sensor.pi4_infrastructure_pi_hole_ftl_status
+              - sensor.pi4_infrastructure_nut_server_status
+              - sensor.pi4_infrastructure_nut_monitor_status
+          - type: entities
+            title: Probe Detail
+            show_header_toggle: false
+            entities:
+              - sensor.pi4_network_probe_network_probe_last_update
+              - sensor.pi4_network_probe_mqtt_last_publish_success
+              - sensor.pi4_network_probe_mqtt_publish_duration
+              - sensor.pi4_network_probe_mqtt_publish_failures
+              - sensor.pi4_network_probe_internet_outage_count
+          - type: custom:mini-graph-card
+            name: Pi4 Temperature
+            entities:
+              - sensor.pi4_infrastructure_temperature
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:thermometer
+          - type: custom:mini-graph-card
+            name: Pi4 Memory
+            entities:
+              - sensor.pi4_infrastructure_memory_usage
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:memory
+          - type: custom:mini-graph-card
+            name: Pi4 Disk
+            entities:
+              - sensor.pi4_infrastructure_disk_usage
+            hours_to_show: 168
+            points_per_hour: 1
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:harddisk
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Pi5 Home Assistant Host
+            subtitle: >-
+              HAOS host load, recorder/storage pressure, and supervisor/core
+              health
+          - type: custom:mushroom-template-card
+            primary: Pi5 Host
+            secondary: >-
+              CPU {{ states('sensor.system_monitor_processor_use') }}% · RAM {{
+              states('sensor.system_monitor_memory_usage') }}% · {{
+              states('sensor.system_monitor_processor_temperature') }}°C
+            icon: mdi:home-assistant
+            icon_color: >-
+              {% if states('sensor.system_monitor_processor_temperature') |
+              float(0) < 70 and states('sensor.system_monitor_disk_usage') |
+              float(0) < 80 %}green{% elif
+              states('sensor.system_monitor_processor_temperature') | float(0) <
+              80 %}amber{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: entities
+            title: Pi5 Host Detail
+            show_header_toggle: false
+            entities:
+              - sensor.system_monitor_processor_use
+              - sensor.system_monitor_memory_usage
+              - sensor.system_monitor_disk_usage
+              - sensor.system_monitor_processor_temperature
+              - sensor.system_monitor_load_1_min
+              - sensor.system_monitor_load_5_min
+              - sensor.system_monitor_load_15_min
+              - sensor.system_monitor_last_boot
+              - sensor.home_assistant_core_cpu_percent
+              - sensor.home_assistant_core_memory_percent
+              - sensor.home_assistant_supervisor_cpu_percent
+              - sensor.home_assistant_supervisor_memory_percent
+          - type: custom:mini-graph-card
+            name: Pi5 CPU
+            entities:
+              - sensor.system_monitor_processor_use
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:cpu-64-bit
+          - type: custom:mini-graph-card
+            name: Pi5 Memory
+            entities:
+              - sensor.system_monitor_memory_usage
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:memory
+          - type: custom:mini-graph-card
+            name: Pi5 Temperature
+            entities:
+              - sensor.system_monitor_processor_temperature
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:thermometer
+          - type: custom:mini-graph-card
+            name: Pi5 Storage
+            entities:
+              - sensor.system_monitor_disk_usage
+            hours_to_show: 168
+            points_per_hour: 1
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:harddisk
+          - type: markdown
+            content: >-
+              ### Pending Pi5 telemetry
+
+
+              Recorder database size is not currently exposed as a confirmed
+              entity in this dashboard baseline. It belongs here once we add or
+              verify a recorder/database size sensor.
+            card_mod:
+              style: |
+                ha-card {
+                  border-radius: 24px;
+                  padding: 18px;
+                  background: rgba(18,31,45,0.92);
+                }
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: MQTT & Service Bus Diagnostics
+            subtitle: >-
+              Broker state, publish latency, connected services, and add-on
+              resource use
+          - type: custom:mushroom-template-card
+            primary: MQTT Broker
+            secondary: >-
+              {{ 'Running' if
+              is_state('binary_sensor.mosquitto_broker_running','on') else
+              'Stopped' }} · CPU {{
+              states('sensor.mosquitto_broker_cpu_percent') }}% · Mem {{
+              states('sensor.mosquitto_broker_memory_percent') }}%
+            icon: mdi:message-processing
+            icon_color: >-
+              {% if is_state('binary_sensor.mosquitto_broker_running','on')
+              %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: custom:mushroom-template-card
+            primary: Probe Publish
+            secondary: >-
+              {{ states('sensor.pi4_network_probe_mqtt_publish_duration') }} ms
+              · failures {{
+              states('sensor.pi4_network_probe_mqtt_publish_failures') }}
+            icon: mdi:message-fast
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_mqtt_publish_failures') |
+              int(0) == 0 %}green{% else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: entities
+            title: MQTT Detail
+            show_header_toggle: false
+            entities:
+              - binary_sensor.mosquitto_broker_running
+              - sensor.mosquitto_broker_cpu_percent
+              - sensor.mosquitto_broker_memory_percent
+              - sensor.mosquitto_broker_version
+              - sensor.mosquitto_broker_newest_version
+              - sensor.pi4_network_probe_mqtt_publish_duration
+              - sensor.pi4_network_probe_mqtt_publish_failures
+              - sensor.pi4_network_probe_mqtt_last_publish_success
+          - type: entities
+            title: Connected Service Add-ons
+            show_header_toggle: false
+            entities:
+              - binary_sensor.ring_mqtt_with_video_streaming_running
+              - binary_sensor.z_wave_js_running
+              - binary_sensor.matter_server_running
+              - binary_sensor.go2rtc_running
+              - binary_sensor.frigate_running
+              - binary_sensor.studio_code_server_running
+              - binary_sensor.advanced_ssh_web_terminal_running
+          - type: custom:mini-graph-card
+            name: MQTT Publish Duration
+            entities:
+              - sensor.pi4_network_probe_mqtt_publish_duration
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:message-fast
+          - type: custom:mini-graph-card
+            name: Mosquitto CPU
+            entities:
+              - sensor.mosquitto_broker_cpu_percent
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:cpu-64-bit
+          - type: custom:mini-graph-card
+            name: Mosquitto Memory
+            entities:
+              - sensor.mosquitto_broker_memory_percent
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:memory
+          - type: markdown
+            content: >-
+              ### Pending MQTT telemetry
+
+
+              Connected clients and messages/sec are not currently exposed as
+              confirmed entities. They belong here once we add broker-side
+              instrumentation or verify a reliable MQTT statistics source.
+            card_mod:
+              style: |
+                ha-card {
+                  border-radius: 24px;
+                  padding: 18px;
+                  background: rgba(18,31,45,0.92);
+                }
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: UPS Diagnostics
+            subtitle: Battery, runtime, load, line status, and NUT protection
+          - type: custom:mushroom-template-card
+            primary: UPS Protection
+            secondary: >-
+              UPS1 {{ states('sensor.pi4_infrastructure_ups1_status') }} · {{
+              states('sensor.pi4_infrastructure_ups1_battery') }}% · {{
+              states('sensor.ups1_runtime_friendly') }} / UPS2 {{
+              states('sensor.pi4_infrastructure_ups2_status') }} · {{
+              states('sensor.pi4_infrastructure_ups2_battery') }}% · {{
+              states('sensor.ups2_runtime_friendly') }}
+            icon: mdi:power-plug-battery
+            icon_color: >-
+              {% if states('sensor.pi4_infrastructure_ups1_status') == 'OL' and
+              states('sensor.pi4_infrastructure_ups2_status') == 'OL' %}green{%
+              else %}red{% endif %}
+            layout: horizontal
+            fill_container: true
+          - type: entities
+            title: UPS Detail
+            show_header_toggle: false
+            entities:
+              - sensor.pi4_infrastructure_ups1_status
+              - sensor.pi4_infrastructure_ups1_battery
+              - sensor.ups1_load
+              - sensor.ups1_runtime_friendly
+              - sensor.pi4_infrastructure_ups2_status
+              - sensor.pi4_infrastructure_ups2_battery
+              - sensor.ups2_load
+              - sensor.ups2_runtime_friendly
+              - sensor.hioc_power_score
+              - sensor.hioc_ups_summary
+          - type: custom:mini-graph-card
+            name: UPS1 Battery
+            entities:
+              - sensor.pi4_infrastructure_ups1_battery
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:battery
+          - type: custom:mini-graph-card
+            name: UPS2 Battery
+            entities:
+              - sensor.pi4_infrastructure_ups2_battery
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:battery
+          - type: custom:mini-graph-card
+            name: UPS Load
+            entities:
+              - entity: sensor.ups1_load
+                name: UPS1
+              - entity: sensor.ups2_load
+                name: UPS2
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:power-plug-battery
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Huawei Gateway Diagnostics
+            subtitle: WAN state, traffic, uptime, and public address
+          - type: entities
+            title: Huawei WAN Detail
+            show_header_toggle: false
+            entities:
+              - binary_sensor.huawei_igd_wan_status
+              - sensor.huawei_igd_external_ip
+              - sensor.pi4_network_probe_public_ip
+              - sensor.huawei_igd_uptime
+              - sensor.huawei_igd_download_speed
+              - sensor.huawei_igd_upload_speed
+              - sensor.huawei_igd_data_received
+              - sensor.huawei_igd_data_sent
+              - sensor.huawei_igd_packets_received
+              - sensor.huawei_igd_packets_sent
+          - type: custom:mini-graph-card
+            name: WAN Download
+            entities:
+              - sensor.huawei_igd_download_speed
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:download-network
+          - type: custom:mini-graph-card
+            name: WAN Upload
+            entities:
+              - sensor.huawei_igd_upload_speed
+            hours_to_show: 24
+            points_per_hour: 12
+            show:
+              fill: true
+              extrema: true
+              icon: true
+            height: 130
+            icon: mdi:upload-network
+          - type: markdown
+            content: >-
+              ### Pending Huawei telemetry
+
+
+              Firmware, port speed, reconnect count, and optical/WAN diagnostics
+              are not exposed as confirmed entities in this baseline.
+            card_mod:
+              style: |
+                ha-card {
+                  border-radius: 24px;
+                  padding: 18px;
+                  background: rgba(18,31,45,0.92);
+                }
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Cameras & Video Services
+            subtitle: Camera platform, RTSP, go2rtc, Frigate, and Ring-MQTT
+          - type: entities
+            title: Video Service Detail
+            show_header_toggle: false
+            entities:
+              - binary_sensor.go2rtc_running
+              - sensor.go2rtc_cpu_percent
+              - sensor.go2rtc_memory_percent
+              - sensor.go2rtc_version
+              - binary_sensor.frigate_running
+              - sensor.frigate_cpu_percent
+              - sensor.frigate_memory_percent
+              - sensor.frigate_version
+              - binary_sensor.ring_mqtt_with_video_streaming_running
+              - sensor.ring_mqtt_with_video_streaming_cpu_percent
+              - sensor.ring_mqtt_with_video_streaming_memory_percent
+              - sensor.ring_mqtt_with_video_streaming_version
+          - type: markdown
+            content: >-
+              ### Pending camera telemetry
+
+
+              RTSP resolution, FPS, firmware, codec, bitrate, and per-camera
+              stream health are not exposed as confirmed entities in this
+              dashboard baseline.
+            card_mod:
+              style: |
+                ha-card {
+                  border-radius: 24px;
+                  padding: 18px;
+                  background: rgba(18,31,45,0.92);
+                }
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Diagnostics Telemetry Gaps
+            subtitle: What still needs instrumentation
+          - type: markdown
+            content: >-
+              ## Confirmed gaps
+
+
+              **Pi5**  
+
+              Recorder DB size, HA backup size, filesystem growth, and add-on
+              storage pressure.
+
+
+              **MQTT**  
+
+              Connected clients and messages/sec from broker statistics.
+
+
+              **Huawei**  
+
+              Firmware, reconnect count, port speed, WAN diagnostics, optical
+              signal if available.
+
+
+              **Orbi**  
+
+              Router/satellite firmware, backhaul quality, RSSI, connected
+              clients, satellite health.
+
+
+              **Cameras**  
+
+              RTSP health, resolution, FPS, bitrate, codec, firmware.
+
+
+              **Living Inventory**  
+
+              Device model, firmware, serial, MAC, IP, last seen, topology, and
+              dependency mapping.
+            card_mod:
+              style: |
+                ha-card {
+                  border-radius: 24px;
+                  padding: 18px;
+                  background: linear-gradient(135deg, rgba(55,34,8,.92), rgba(18,31,45,.94));
+                }
+    theme: HIOC Operations
+    cards: []
