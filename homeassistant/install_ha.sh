@@ -8,13 +8,15 @@ BACKUP_DIR="$HA_CONFIG/backups/hioc-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$PACKAGE_DIR" "$BACKUP_DIR"
 
-if [ -f "$PACKAGE_DIR/hioc_incident_center.yaml" ]; then
-  cp "$PACKAGE_DIR/hioc_incident_center.yaml" "$BACKUP_DIR/hioc_incident_center.yaml.before"
-fi
+for package in "$SRC_DIR"/packages/*.yaml; do
+  name="$(basename "$package")"
+  if [ -f "$PACKAGE_DIR/$name" ]; then
+    cp "$PACKAGE_DIR/$name" "$BACKUP_DIR/$name.before"
+  fi
+  cp "$package" "$PACKAGE_DIR/$name"
+  echo "Installed $PACKAGE_DIR/$name"
+done
 
-cp "$SRC_DIR/packages/hioc_incident_center.yaml" "$PACKAGE_DIR/hioc_incident_center.yaml"
-
-echo "Installed Home Assistant HIOC package to $PACKAGE_DIR/hioc_incident_center.yaml"
 echo "Backup directory: $BACKUP_DIR"
 echo "Run: ha core check"
 echo "Then: ha core restart"
