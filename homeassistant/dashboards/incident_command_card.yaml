@@ -1,0 +1,96 @@
+# HIOC Incident Command Card
+# Replace the current Incident Command card in the Executive view with this card.
+
+- type: custom:mushroom-title-card
+  title: Incident Command
+  subtitle: Pi4 Incident Engine, current lifecycle, root cause, and recommendation
+
+- type: custom:mushroom-template-card
+  primary: >-
+    {% if is_state('sensor.hioc_incident_status','active') %}
+      {{ states('sensor.hioc_incident_system') }} Incident
+    {% else %}
+      No Active Incident
+    {% endif %}
+  secondary: >-
+    {% if is_state('sensor.hioc_incident_status','active') %}
+      {{ states('sensor.hioc_incident_active') }} · {{ states('sensor.hioc_incident_current_value') }}
+    {% else %}
+      {{ states('sensor.hioc_incident_summary') }}
+    {% endif %}
+  icon: >-
+    {% if is_state('sensor.hioc_incident_status','active') %}
+      mdi:alert-decagram
+    {% else %}
+      mdi:shield-check
+    {% endif %}
+  icon_color: >-
+    {% set sev = states('sensor.hioc_incident_severity') %}
+    {% if is_state('sensor.hioc_incident_status','active') and sev == 'critical' %}
+      red
+    {% elif is_state('sensor.hioc_incident_status','active') and sev == 'major' %}
+      deep-orange
+    {% elif is_state('sensor.hioc_incident_status','active') and sev == 'warning' %}
+      amber
+    {% else %}
+      green
+    {% endif %}
+  layout: horizontal
+  fill_container: true
+  grid_options:
+    columns: 12
+    rows: 1
+
+- type: markdown
+  content: >-
+    {% if is_state('sensor.hioc_incident_status','active') %}
+
+    ## Current Incident
+
+    **Severity**  
+    {{ states('sensor.hioc_incident_severity') | title }}
+
+    **Cause**  
+    {{ states('sensor.hioc_incident_reason') }}
+
+    **Impact**  
+    {{ state_attr('sensor.hioc_incident_active','impact') }}
+
+    **Affected**  
+    {{ state_attr('sensor.hioc_incident_active','affected') }}
+
+    **Started**  
+    {{ states('sensor.hioc_incident_started') }}
+
+    **Recommendation**  
+    {{ states('sensor.hioc_incident_recommendation') }}
+
+    {% else %}
+
+    ## Current Incident
+
+    🟢 **None**
+
+    **Status**  
+    {{ states('sensor.hioc_incident_summary') }}
+
+    **Latest timeline event**  
+    {{ states('sensor.hioc_latest_timeline_event') }}
+
+    **History**  
+    {{ states('sensor.hioc_incident_history_count') }} recorded incidents
+
+    {% endif %}
+  card_mod:
+    style: |
+      ha-card {
+        border-radius: 24px;
+        padding: 18px;
+        background: rgba(18,31,45,0.92);
+      }
+      ha-markdown {
+        line-height: 1.32;
+      }
+  grid_options:
+    columns: 12
+    rows: 5
