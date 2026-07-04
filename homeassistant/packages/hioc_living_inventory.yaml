@@ -1,0 +1,144 @@
+mqtt:
+  sensor:
+    - name: HIOC Inventory Status
+      unique_id: hioc_inventory_status
+      state_topic: home/infrastructure/hioc/inventory/status
+      value_template: "{{ value_json.status | default('unknown') }}"
+      json_attributes_topic: home/infrastructure/hioc/inventory/status
+      icon: mdi:database-check
+
+    - name: HIOC Inventory Device Count
+      unique_id: hioc_inventory_device_count
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.device_count | default(0) }}"
+      unit_of_measurement: devices
+      json_attributes_topic: home/infrastructure/hioc/inventory/summary
+      icon: mdi:devices
+
+    - name: HIOC Inventory Healthy Devices
+      unique_id: hioc_inventory_healthy_devices
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.healthy_count | default(0) }}"
+      unit_of_measurement: devices
+      icon: mdi:check-network
+
+    - name: HIOC Inventory Watch Devices
+      unique_id: hioc_inventory_watch_devices
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.watch_count | default(0) }}"
+      unit_of_measurement: devices
+      icon: mdi:eye
+
+    - name: HIOC Inventory Degraded Devices
+      unique_id: hioc_inventory_degraded_devices
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.degraded_count | default(0) }}"
+      unit_of_measurement: devices
+      icon: mdi:alert-network
+
+    - name: HIOC Inventory Offline Devices
+      unique_id: hioc_inventory_offline_devices
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.offline_count | default(0) }}"
+      unit_of_measurement: devices
+      icon: mdi:lan-disconnect
+
+    - name: HIOC Inventory Lowest Health
+      unique_id: hioc_inventory_lowest_health
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.lowest_health_score | default(0) }}"
+      unit_of_measurement: "%"
+      icon: mdi:heart-pulse
+
+    - name: HIOC Inventory Service Count
+      unique_id: hioc_inventory_service_count
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.service_count | default(0) }}"
+      unit_of_measurement: services
+      icon: mdi:server-network
+
+    - name: HIOC Inventory Topology Edges
+      unique_id: hioc_inventory_topology_edges
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.topology_edges | default(0) }}"
+      unit_of_measurement: links
+      icon: mdi:graph
+
+    - name: HIOC Inventory Dependency Edges
+      unique_id: hioc_inventory_dependency_edges
+      state_topic: home/infrastructure/hioc/inventory/summary
+      value_template: "{{ value_json.dependency_edges | default(0) }}"
+      unit_of_measurement: dependencies
+      icon: mdi:transit-connection-variant
+
+    - name: HIOC Inventory Devices
+      unique_id: hioc_inventory_devices
+      state_topic: home/infrastructure/hioc/inventory/devices
+      value_template: "{{ value_json | count }}"
+      unit_of_measurement: devices
+      json_attributes_topic: home/infrastructure/hioc/inventory
+      icon: mdi:format-list-bulleted
+
+    - name: HIOC Inventory Services
+      unique_id: hioc_inventory_services
+      state_topic: home/infrastructure/hioc/inventory/services
+      value_template: "{{ value_json | count }}"
+      unit_of_measurement: services
+      json_attributes_topic: home/infrastructure/hioc/inventory
+      icon: mdi:server
+
+template:
+  - binary_sensor:
+      - name: HIOC Inventory Healthy
+        unique_id: hioc_inventory_healthy
+        state: >-
+          {{ states('sensor.hioc_inventory_status') in ['online', 'degraded']
+             and states('sensor.hioc_inventory_degraded_devices') | int(0) == 0
+             and states('sensor.hioc_inventory_offline_devices') | int(0) == 0 }}
+        icon: >-
+          {% if is_state('binary_sensor.hioc_inventory_healthy','on') %}
+            mdi:check-network
+          {% else %}
+            mdi:alert-network
+          {% endif %}
+
+  - sensor:
+      - name: HIOC Inventory Operations Summary
+        unique_id: hioc_inventory_operations_summary
+        state: >-
+          {% set offline = states('sensor.hioc_inventory_offline_devices') | int(0) %}
+          {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(0) %}
+          {% set watch = states('sensor.hioc_inventory_watch_devices') | int(0) %}
+          {% if offline > 0 %}
+            {{ offline }} offline device{{ 's' if offline != 1 else '' }}
+          {% elif degraded > 0 %}
+            {{ degraded }} degraded device{{ 's' if degraded != 1 else '' }}
+          {% elif watch > 0 %}
+            {{ watch }} device{{ 's' if watch != 1 else '' }} need attention
+          {% else %}
+            Inventory healthy
+          {% endif %}
+        attributes:
+          devices: "{{ states('sensor.hioc_inventory_device_count') }}"
+          healthy: "{{ states('sensor.hioc_inventory_healthy_devices') }}"
+          watch: "{{ states('sensor.hioc_inventory_watch_devices') }}"
+          degraded: "{{ states('sensor.hioc_inventory_degraded_devices') }}"
+          offline: "{{ states('sensor.hioc_inventory_offline_devices') }}"
+          lowest_health: "{{ states('sensor.hioc_inventory_lowest_health') }}"
+
+      - name: HIOC Inventory Recommended Action
+        unique_id: hioc_inventory_recommended_action
+        state: >-
+          {% set offline = states('sensor.hioc_inventory_offline_devices') | int(0) %}
+          {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(0) %}
+          {% set watch = states('sensor.hioc_inventory_watch_devices') | int(0) %}
+          {% if offline > 0 %}
+            Open the inventory dashboard and verify power, Wi-Fi/Ethernet, and gateway reachability for offline devices.
+          {% elif degraded > 0 %}
+            Review degraded device health reasons and confirm whether the device has changed IP, MAC, or parent path.
+          {% elif watch > 0 %}
+            Watch stale devices and confirm whether lease, ARP, or subnet discovery still sees them.
+          {% else %}
+            No inventory action required.
+          {% endif %}
+        icon: mdi:clipboard-check

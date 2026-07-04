@@ -15,7 +15,27 @@ The installer uses the existing Pi4 toolkit configuration at:
 /home/jazofv1/pi4-tools/config/toolkit.conf
 ```
 
-It adds a cron entry that runs the incident engine once per minute.
+It adds cron entries for:
+
+- incident engine every minute
+- history engine every five minutes
+- Living Inventory engine every 30 minutes
+- platform status publisher daily at 03:17
+
+Optional Living Inventory settings can be added to `/home/jazofv1/hioc/config/hioc.conf`:
+
+```text
+HIOC_INVENTORY_SCAN_SUBNET=""
+HIOC_INVENTORY_ACTIVE_DISCOVERY="off"
+HIOC_INVENTORY_PING_COUNT="1"
+HIOC_INVENTORY_PING_TIMEOUT_SEC="1"
+HIOC_INVENTORY_STALE_AFTER_SEC="900"
+HIOC_INVENTORY_OFFLINE_AFTER_SEC="3600"
+HIOC_INVENTORY_SNMP_COMMUNITY=""
+HIOC_INVENTORY_INTEGRATION_DIR=""
+```
+
+Leave `HIOC_INVENTORY_ACTIVE_DISCOVERY` set to `off` for passive discovery from host facts, default route, neighbor table, DHCP leases, and integration hint files. Set it to `on` only when ping, subnet scan, reverse DNS, and SNMP discovery are explicitly approved. Set `HIOC_INVENTORY_SCAN_SUBNET` to a bounded subnet such as `192.168.1.0/24` only when active scan coverage is desired.
 
 ## Home Assistant
 
@@ -24,8 +44,25 @@ From the Home Assistant terminal after cloning or copying the repository:
 ```bash
 cd /config/hioc
 bash homeassistant/install_ha.sh
+bash homeassistant/validate_ha.sh
 ha core check
 ha core restart
+```
+
+## Release Install
+
+From a release package or repository checkout:
+
+```bash
+bash release/install.sh
+bash release/validate.sh
+```
+
+Upgrade and rollback:
+
+```bash
+bash release/upgrade.sh
+bash release/rollback.sh
 ```
 
 Then enable notifications:
@@ -33,6 +70,8 @@ Then enable notifications:
 ```text
 input_boolean.hioc_incident_notifications
 ```
+
+The Home Assistant installer copies packages into `/config/packages` and dashboard YAML into `/config/dashboards`.
 
 ## Rollback
 
@@ -46,6 +85,11 @@ On Home Assistant, remove:
 
 ```text
 /config/packages/hioc_incident_center.yaml
+/config/packages/hioc_predictive_analytics.yaml
+/config/packages/hioc_living_inventory.yaml
+/config/packages/hioc_platform.yaml
+/config/dashboards/living_inventory.yaml
+/config/dashboards/hioc_dashboard_v2.yaml
 ```
 
 Then run:

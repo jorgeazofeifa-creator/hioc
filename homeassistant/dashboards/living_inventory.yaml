@@ -1,0 +1,111 @@
+title: HIOC Living Inventory
+views:
+  - title: Inventory
+    path: hioc-living-inventory
+    icon: mdi:devices
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: custom:mushroom-title-card
+            title: Living Inventory
+            subtitle: Devices, topology, service dependencies, firmware, and health
+
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.hioc_inventory_operations_summary') }}"
+            secondary: >-
+              {{ states('sensor.hioc_inventory_device_count') }} devices ·
+              {{ states('sensor.hioc_inventory_service_count') }} services ·
+              lowest health {{ states('sensor.hioc_inventory_lowest_health') }}%
+            icon: mdi:devices
+            icon_color: >-
+              {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}
+                red
+              {% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}
+                deep-orange
+              {% elif states('sensor.hioc_inventory_watch_devices') | int(0) > 0 %}
+                amber
+              {% else %}
+                green
+              {% endif %}
+            layout: horizontal
+            fill_container: true
+
+          - type: markdown
+            content: >-
+              ## What is happening?
+
+              **{{ states('sensor.hioc_inventory_operations_summary') }}**
+
+              **Why?**  
+              {{ states('sensor.hioc_inventory_degraded_devices') }} degraded,
+              {{ states('sensor.hioc_inventory_offline_devices') }} offline, and
+              {{ states('sensor.hioc_inventory_watch_devices') }} watch devices.
+
+              **What is affected?**  
+              {{ states('sensor.hioc_inventory_dependency_edges') }} service dependency links and
+              {{ states('sensor.hioc_inventory_topology_edges') }} topology links are currently mapped.
+
+              **What should I do?**  
+              {{ states('sensor.hioc_inventory_recommended_action') }}
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Inventory Counts
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_inventory_status
+              - sensor.hioc_inventory_device_count
+              - sensor.hioc_inventory_healthy_devices
+              - sensor.hioc_inventory_watch_devices
+              - sensor.hioc_inventory_degraded_devices
+              - sensor.hioc_inventory_offline_devices
+              - sensor.hioc_inventory_lowest_health
+              - sensor.hioc_inventory_service_count
+
+          - type: entities
+            title: Graph Coverage
+            show_header_toggle: false
+            entities:
+              - sensor.hioc_inventory_topology_edges
+              - sensor.hioc_inventory_dependency_edges
+              - sensor.hioc_inventory_devices
+              - sensor.hioc_inventory_services
+
+      - type: grid
+        cards:
+          - type: markdown
+            content: >-
+              ## Device Health
+
+              {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
+              {% if devices is iterable and devices is not string %}
+              {% for device in devices | sort(attribute='health_score') %}
+              **{{ device.display_name }}**  
+              {{ device.health_status }} · {{ device.health_score }}% · {{ device.ip | default('no ip') }} · {{ device.mac | default('no mac') }}  
+              Roles: {{ device.roles | join(', ') if device.roles is iterable and device.roles is not string else device.roles }}  
+              Last seen: {{ device.last_seen }}  
+              {% if device.firmware %}Firmware: {{ device.firmware }}{% endif %}
+
+              {% endfor %}
+              {% else %}
+              Inventory device attributes have not arrived yet.
+              {% endif %}
+
+          - type: markdown
+            content: >-
+              ## Services
+
+              {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
+              {% if services is iterable and services is not string %}
+              {% for service in services %}
+              **{{ service.name }}**  
+              {{ service.type }} · {{ service.status }}{% if service.port is defined %} · port {{ service.port }}{% endif %}
+
+              {% endfor %}
+              {% else %}
+              Inventory service attributes have not arrived yet.
+              {% endif %}
+
