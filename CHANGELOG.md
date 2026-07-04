@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Living Inventory engine with local/network discovery, inventory database, topology, service dependency graph, firmware fields, MAC/IP tracking, health scoring, and last-seen timestamps.
+- Retained MQTT inventory topics under `home/infrastructure/hioc/inventory`.
+- Home Assistant Living Inventory package and dashboard.
+- Pi4 installer, uninstaller, and validation integration for inventory.
+- Unit tests for inventory identity, health scoring, topology, and dependencies.
+- Architecture, project, MQTT, Home Assistant, data model, roadmap, and decision documentation.
+- Passive-by-default inventory discovery with active discovery disabled unless explicitly configured.
+- Persistent MQTT client abstraction for Living Inventory publications.
+- 30-minute default inventory refresh interval.
+- Topology inference for intermediate infrastructure devices and integration-provided parent hints.
+- HIOC Core v1.0 shared runtime with StateStore, schema validation, event bus, driver registry, capability registry, configuration service, and structured logging.
+- Living Inventory internal events and capability state without changing public MQTT or Home Assistant entities.
+- Dashboard v2 with Executive, Operations, Diagnostics, Inventory, Network, and Servers views built from real HIOC-owned entities.
+- Release System v1.0 with version manifest, build/package/validate/install/upgrade/rollback scripts, platform status publisher, MQTT platform topics, and Home Assistant platform entities.
+
 ## v1.0.0-core
 
 Initial real HIOC core foundation.

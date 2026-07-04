@@ -16,6 +16,18 @@ This release adds the first real installable HIOC core:
 - phone notifications from one incident source of truth
 - install, uninstall, validation, and rollback-friendly backups
 
+## Current workspace additions
+
+- Living Inventory engine
+- automatic discovery from host facts, route table, neighbor table, DHCP leases, optional subnet scan, systemd, sockets, and optional SNMP
+- passive-first inventory discovery with active probing disabled by default
+- inventory database with device health, topology, service dependencies, firmware, MAC/IP, and last-seen data
+- retained MQTT inventory publications
+- Home Assistant Living Inventory entities and dashboard
+- roadmap and architecture decision records
+- HIOC Core runtime for shared state, events, drivers, capabilities, validation, logging, and configuration
+- release packaging, upgrade, rollback, and platform version reporting
+
 ## Architecture
 
 ```text
