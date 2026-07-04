@@ -5,7 +5,7 @@ SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INSTALL_DIR="${HIOC_INSTALL_DIR:-/home/jazofv1/hioc}"
 PI4_TOOLS_DIR="${PI4_TOOLS_DIR:-/home/jazofv1/pi4-tools}"
 BACKUP_DIR="$INSTALL_DIR/backups/install-$(date +%Y%m%d-%H%M%S)"
-CRON_INCIDENT="*/1 * * * * flock -n /tmp/hioc-incident-engine.lock $INSTALL_DIR/pi4/bin/hioc-incident-engine.sh"
+CRON_INCIDENT="*/1 * * * * flock -n /tmp/hioc-incident-engine.lock $INSTALL_DIR/pi4/bin/hioc-incident-engine-v2.py"
 CRON_HISTORY="*/5 * * * * flock -n /tmp/hioc-history-engine.lock $INSTALL_DIR/pi4/bin/hioc-history-engine.py"
 
 require() {
@@ -37,21 +37,22 @@ if [ ! -f "$INSTALL_DIR/config/hioc.conf" ]; then
 fi
 
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-incident-engine.sh"
+chmod +x "$INSTALL_DIR/pi4/bin/hioc-incident-engine-v2.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-history-engine.py"
 chmod +x "$INSTALL_DIR/pi4/validate_pi4.sh"
 chmod +x "$INSTALL_DIR/pi4/uninstall_pi4.sh"
 
 crontab -l > "$BACKUP_DIR/crontab.before" 2>/dev/null || true
 current_cron="$(crontab -l 2>/dev/null || true)"
-if ! printf '%s\n' "$current_cron" | grep -Fq "$INSTALL_DIR/pi4/bin/hioc-incident-engine.sh"; then
-  (printf '%s\n' "$current_cron"; echo "$CRON_INCIDENT") | crontab -
-fi
+current_cron="$(printf '%s\n' "$current_cron" | grep -Fv "$INSTALL_DIR/pi4/bin/hioc-incident-engine.sh" | grep -Fv "$INSTALL_DIR/pi4/bin/hioc-incident-engine-v2.py" || true)"
+(printf '%s\n' "$current_cron"; echo "$CRON_INCIDENT") | sed '/^$/d' | crontab -
+
 current_cron="$(crontab -l 2>/dev/null || true)"
 if ! printf '%s\n' "$current_cron" | grep -Fq "$INSTALL_DIR/pi4/bin/hioc-history-engine.py"; then
-  (printf '%s\n' "$current_cron"; echo "$CRON_HISTORY") | crontab -
+  (printf '%s\n' "$current_cron"; echo "$CRON_HISTORY") | sed '/^$/d' | crontab -
 fi
 
-"$INSTALL_DIR/pi4/bin/hioc-incident-engine.sh"
+"$INSTALL_DIR/pi4/bin/hioc-incident-engine-v2.py"
 "$INSTALL_DIR/pi4/bin/hioc-history-engine.py"
 
 echo "HIOC installed on Pi4."
