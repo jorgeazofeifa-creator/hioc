@@ -38,6 +38,8 @@ views:
               {% if is_state('sensor.hioc_incident_status','active') %}
               **{{ states('sensor.hioc_incident_severity') | title }} - {{ states('sensor.hioc_incident_active') }}**
 
+              Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}
+
               Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('unknown') }}
 
               Confidence: {{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}%
@@ -113,6 +115,7 @@ views:
             content: >-
               - Platform: HIOC {{ states('sensor.hioc_platform_version') }} · {{ states('sensor.hioc_platform_status') }}
               - Core: {{ states('sensor.hioc_core_version') }}
+              - Correlation: {{ states('sensor.hioc_correlation_engine_version') }}
               - Dashboard: {{ states('sensor.hioc_dashboard_version') }}
               - Schema: {{ states('sensor.hioc_schema_version') }}
               - MQTT API: {{ states('sensor.hioc_mqtt_api_version') }}
@@ -209,6 +212,8 @@ views:
 
               Severity: {{ states('sensor.hioc_incident_severity') | title }}
 
+              Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}
+
               Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('unknown') }}
 
               Confidence: {{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}%
@@ -274,6 +279,7 @@ views:
             entities:
               - sensor.hioc_platform_status
               - sensor.hioc_platform_version
+              - sensor.hioc_correlation_engine_version
               - sensor.hioc_engine_status
               - sensor.hioc_incident_updated
               - sensor.hioc_inventory_status
@@ -401,6 +407,7 @@ views:
               - sensor.hioc_platform_status
               - sensor.hioc_platform_version
               - sensor.hioc_core_version
+              - sensor.hioc_correlation_engine_version
               - sensor.hioc_dashboard_version
               - sensor.hioc_engine_status
               - sensor.hioc_history_engine_status

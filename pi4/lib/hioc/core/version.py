@@ -5,6 +5,7 @@ REQUIRED_VERSION_KEYS = [
     "hioc_version",
     "core",
     "incident_engine",
+    "correlation_engine",
     "forecast_engine",
     "inventory_engine",
     "dashboard",
@@ -29,4 +30,3 @@ def read_version_manifest(path: Path) -> dict:
     if missing:
         raise ValueError(f"Version manifest missing required keys: {', '.join(missing)}")
     return values
-

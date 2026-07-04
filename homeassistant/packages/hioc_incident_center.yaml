@@ -116,6 +116,10 @@ template:
             No active incident
           {% endif %}
         attributes:
+          phase: "{{ state_attr('sensor.hioc_incident_active','phase') | default('idle') }}"
+          root_cause: "{{ state_attr('sensor.hioc_incident_active','root_cause') | default('none') }}"
+          confidence_percent: "{{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}"
+          affected: "{{ state_attr('sensor.hioc_incident_active','affected') | default([]) }}"
           severity: "{{ states('sensor.hioc_incident_severity') }}"
           reason: "{{ states('sensor.hioc_incident_reason') }}"
           recommendation: "{{ states('sensor.hioc_incident_recommendation') }}"
