@@ -1,0 +1,78 @@
+mqtt:
+  sensor:
+    - name: HIOC Forecast Internet Latency Trend
+      unique_id: hioc_forecast_internet_latency_trend
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.internet.latency_trend | default('unknown') }}"
+      json_attributes_topic: home/infrastructure/hioc/forecast
+      icon: mdi:trending-up
+
+    - name: HIOC Forecast Internet 24h Average Latency
+      unique_id: hioc_forecast_internet_24h_average_latency
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.internet.average_latency_24h_ms | default(0) }}"
+      unit_of_measurement: ms
+      icon: mdi:speedometer
+
+    - name: HIOC Forecast Packet Loss Trend
+      unique_id: hioc_forecast_packet_loss_trend
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.internet.packet_loss_trend | default('unknown') }}"
+      icon: mdi:chart-line
+
+    - name: HIOC Forecast DNS Trend
+      unique_id: hioc_forecast_dns_trend
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.dns.trend | default('unknown') }}"
+      icon: mdi:dns
+
+    - name: HIOC Forecast MQTT Trend
+      unique_id: hioc_forecast_mqtt_trend
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.mqtt.trend | default('unknown') }}"
+      icon: mdi:message-fast
+
+    - name: HIOC Forecast Pi4 Temperature Trend
+      unique_id: hioc_forecast_pi4_temperature_trend
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.pi4.temperature_trend | default('unknown') }}"
+      icon: mdi:thermometer-lines
+
+    - name: HIOC Forecast Pi4 Memory Trend
+      unique_id: hioc_forecast_pi4_memory_trend
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.pi4.memory_trend | default('unknown') }}"
+      icon: mdi:memory
+
+    - name: HIOC Forecast Pi4 Disk Growth
+      unique_id: hioc_forecast_pi4_disk_growth
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.pi4.disk_growth_percent_per_day | default(0) }}"
+      unit_of_measurement: "%/day"
+      icon: mdi:harddisk-plus
+
+    - name: HIOC Forecast Pi4 Days To 90 Percent Disk
+      unique_id: hioc_forecast_pi4_days_to_90_percent_disk
+      state_topic: home/infrastructure/hioc/forecast
+      value_template: "{{ value_json.pi4.estimated_days_to_90_percent | default('unknown') }}"
+      unit_of_measurement: days
+      icon: mdi:calendar-clock
+
+    - name: HIOC History Engine Status
+      unique_id: hioc_history_engine_status
+      state_topic: home/infrastructure/hioc/history/status
+      value_template: "{{ value_json.status | default('unknown') }}"
+      json_attributes_topic: home/infrastructure/hioc/history/status
+      icon: mdi:database-clock
+
+    - name: HIOC Statistics Samples Network
+      unique_id: hioc_statistics_samples_network
+      state_topic: home/infrastructure/hioc/statistics
+      value_template: "{{ value_json.samples.network | default(0) }}"
+      icon: mdi:counter
+
+    - name: HIOC Statistics Samples Host
+      unique_id: hioc_statistics_samples_host
+      state_topic: home/infrastructure/hioc/statistics
+      value_template: "{{ value_json.samples.host | default(0) }}"
+      icon: mdi:counter
