@@ -53,3 +53,9 @@ Rationale: Commercial operations consoles need prioritization, consistent termin
 Decision: HIOC has a formal release process with a version manifest, build/package scripts, install/upgrade/rollback wrappers, and runtime version reporting.
 
 Rationale: HIOC should behave like installable software rather than a collection of copied files. Versioned artifacts and rollback metadata improve operator confidence and support long-term maintenance.
+
+## ADR-0010: Correlation v2 Preserves the Public Incident Contract
+
+Decision: Correlation Engine v2 consumes Core events and inventory context internally, but continues to publish incidents through the existing retained MQTT topics and Home Assistant incident sensors.
+
+Rationale: Root-cause analysis and lifecycle detail can evolve without forcing dashboard, automation, or user migration work. New fields live inside the existing incident JSON payloads while `status`, `severity`, `system`, and timeline compatibility remain intact.

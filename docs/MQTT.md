@@ -18,6 +18,8 @@ home/infrastructure/hioc/status
 home/infrastructure/hioc/status/detail
 ```
 
+Correlation Engine v2 publishes through the same incident topics. The public topic names are unchanged, and existing Home Assistant sensors continue to read `status`, `severity`, `system`, `title`, `root_cause`, `confidence_percent`, `affected`, and timeline fields from the retained JSON payloads.
+
 ## Forecast Topics
 
 ```text

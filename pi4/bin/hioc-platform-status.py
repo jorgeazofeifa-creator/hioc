@@ -30,6 +30,7 @@ def main() -> int:
             "updated": timestamp,
             "hioc_version": version["hioc_version"],
             "core": version["core"],
+            "correlation_engine": version["correlation_engine"],
             "dashboard": version["dashboard"],
             "schema": version["schema"],
             "mqtt_api": version["mqtt_api"],
@@ -58,4 +59,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

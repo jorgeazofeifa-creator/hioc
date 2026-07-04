@@ -20,6 +20,12 @@ mqtt:
       value_template: "{{ value_json.core | default('unknown') }}"
       icon: mdi:cube-outline
 
+    - name: HIOC Correlation Engine Version
+      unique_id: hioc_correlation_engine_version
+      state_topic: home/infrastructure/hioc/platform/status
+      value_template: "{{ value_json.correlation_engine | default('unknown') }}"
+      icon: mdi:source-branch-sync
+
     - name: HIOC Dashboard Version
       unique_id: hioc_dashboard_version
       state_topic: home/infrastructure/hioc/platform/status
@@ -43,4 +49,3 @@ mqtt:
       state_topic: home/infrastructure/hioc/platform/status
       value_template: "{{ value_json.build | default('unknown') }}"
       icon: mdi:calendar-clock
-
