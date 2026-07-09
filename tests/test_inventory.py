@@ -1,4 +1,5 @@
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -7,10 +8,14 @@ sys.path.insert(0, str(ROOT / "pi4" / "lib"))
 
 from hioc.inventory import (
     build_dependencies,
+    build_inventory_summary,
     build_topology,
     classify_device,
+    dhcp_lease_discovery,
+    dhcp_leases,
     enrich_services,
     health_score,
+    inventory_summary_lists,
     inventory_class,
     merge_records,
     normalize_mac,
@@ -90,6 +95,23 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(operator_role({}, roles), "Network Equipment")
         self.assertEqual(inventory_class("Network Equipment"), "infrastructure")
 
+    def test_gateway_is_network_equipment_infrastructure(self):
+        primary, roles = classify_device({"name": "Default Gateway", "ip": "192.168.1.1"}, "192.168.1.1", set())
+
+        self.assertEqual(primary, "gateway")
+        self.assertIn("gateway", roles)
+        self.assertEqual(operator_role({}, roles), "Network Equipment")
+        self.assertEqual(inventory_class("Network Equipment"), "infrastructure")
+
+    def test_local_pihole_host_is_core_infrastructure(self):
+        primary, roles = classify_device({"hostname": "nutandpihole", "ip": "192.168.1.252"}, "192.168.1.1", {"192.168.1.252"})
+
+        self.assertEqual(primary, "collector")
+        self.assertIn("collector", roles)
+        self.assertIn("dns", roles)
+        self.assertEqual(operator_role({}, roles), "Core Infrastructure")
+        self.assertEqual(inventory_class("Core Infrastructure"), "infrastructure")
+
     def test_classification_detects_client_roles(self):
         _, roles = classify_device({"hostname": "living-room-tv", "ip": "192.168.1.40"}, "192.168.1.1", set())
         self.assertIn("media", roles)
@@ -118,6 +140,63 @@ class InventoryModelTests(unittest.TestCase):
 
     def test_subnet_scan_is_disabled_for_safe_inventory(self):
         self.assertEqual(scan_subnet("192.168.1.0/24", 1, 1), {})
+
+    def test_dhcp_lease_parsing_when_file_is_present(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            lease_file = Path(tmp) / "dhcp.leases"
+            lease_file.write_text("1780000000 aa:bb:cc:dd:ee:ff 192.168.1.50 phone-one 01:aa:bb:cc:dd:ee:ff\n")
+
+            leases = dhcp_leases([lease_file])
+            discovered, status = dhcp_lease_discovery({"HIOC_INVENTORY_DHCP_LEASE_FILES": str(lease_file)})
+
+        self.assertEqual(leases["192.168.1.50"]["hostname"], "phone-one")
+        self.assertEqual(leases["192.168.1.50"]["source"], "dhcp_leases")
+        self.assertEqual(discovered["192.168.1.50"]["mac"], "aa:bb:cc:dd:ee:ff")
+        self.assertEqual(status, "dhcp_leases")
+
+    def test_dhcp_lease_unavailable_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "missing.leases"
+            discovered, status = dhcp_lease_discovery({"HIOC_INVENTORY_DHCP_LEASE_FILES": str(missing)})
+
+        self.assertEqual(discovered, {})
+        self.assertEqual(status, "dhcp_leases_unavailable")
+
+    def test_missing_optional_device_fields_do_not_break_dashboard_payloads(self):
+        infrastructure, _ = inventory_summary_lists([
+            {
+                "display_name": "Default Gateway",
+                "inventory_class": "infrastructure",
+                "health_status": "healthy",
+            }
+        ], [])
+
+        self.assertEqual(infrastructure[0]["name"], "Default Gateway")
+        self.assertEqual(infrastructure[0]["ip"], "")
+        self.assertEqual(infrastructure[0]["mac"], "")
+        self.assertEqual(infrastructure[0]["vendor"], "")
+        self.assertEqual(infrastructure[0]["source"], "")
+
+    def test_summary_counts_are_never_none(self):
+        summary = build_inventory_summary(
+            devices=[
+                {"inventory_class": "infrastructure", "health_status": "healthy", "health_score": 100},
+                {"inventory_class": "client", "health_status": "watch", "health_score": 80},
+            ],
+            services=[{"name": "Pi-hole FTL", "host": "Pi4", "type": "dns", "status": "active"}],
+            topology={"edges": []},
+            dependencies={"edges": []},
+            now="now",
+            discovery_sources=["local_host", "gateway", "arp_table", "dhcp_leases_unavailable"],
+            discovery_limited=True,
+            discovery_limit_reason="limited",
+        )
+
+        for key in ("infrastructure_count", "client_count", "network_client_count", "service_count", "healthy_count", "watch_count", "degraded_count", "offline_count"):
+            self.assertIsNotNone(summary[key])
+        self.assertEqual(summary["infrastructure_count"], 1)
+        self.assertEqual(summary["client_count"], 1)
+        self.assertEqual(summary["discovery_sources"][-1], "dhcp_leases_unavailable")
 
     def test_dependencies_include_core_services(self):
         devices = [{"id": "collector", "health_status": "healthy"}, {"id": "endpoint", "health_status": "healthy"}]

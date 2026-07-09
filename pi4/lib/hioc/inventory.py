@@ -81,21 +81,32 @@ def neighbor_table() -> dict:
         ip = ip_match.group(1)
         mac = normalize_mac(mac_match.group(0)) if mac_match else ""
         if ip:
-            neighbors[ip] = {"ip": ip, "mac": mac, "source": "neighbor_table", "last_seen_source": "neighbor_table"}
+            neighbors[ip] = {"ip": ip, "mac": mac, "source": "arp_table", "last_seen_source": "arp_table"}
     return neighbors
 
 
-def dhcp_leases() -> dict:
-    paths = [
+def dhcp_lease_paths(config: dict | None = None) -> list[Path]:
+    configured = (config or {}).get("HIOC_INVENTORY_DHCP_LEASE_FILES", "")
+    if configured:
+        return [Path(item.strip()) for item in configured.split(",") if item.strip()]
+    return [
         Path("/etc/pihole/dhcp.leases"),
         Path("/var/lib/misc/dnsmasq.leases"),
         Path("/var/lib/dhcp/dhcpd.leases"),
     ]
+
+
+def dhcp_leases(paths: list[Path] | None = None) -> dict:
+    paths = paths or dhcp_lease_paths()
     devices = {}
     for path in paths:
         if not path.exists():
             continue
-        for raw in path.read_text(errors="ignore").splitlines():
+        try:
+            lines = path.read_text(errors="ignore").splitlines()
+        except OSError:
+            continue
+        for raw in lines:
             parts = raw.split()
             if len(parts) < 3:
                 continue
@@ -105,10 +116,19 @@ def dhcp_leases() -> dict:
                     "ip": parts[2],
                     "mac": normalize_mac(parts[1]),
                     "hostname": hostname,
-                    "source": path.name,
-                    "last_seen_source": path.name,
+                    "source": "dhcp_leases",
+                    "last_seen_source": str(path),
                 }
     return devices
+
+
+def dhcp_lease_discovery(config: dict) -> tuple[dict, str]:
+    paths = dhcp_lease_paths(config)
+    existing = [path for path in paths if path.exists()]
+    if not existing:
+        return {}, "dhcp_leases_unavailable"
+    devices = dhcp_leases(existing)
+    return devices, "dhcp_leases" if devices else "dhcp_leases_empty"
 
 
 def integration_inventory(config: dict, state_dir: Path) -> dict:
@@ -210,7 +230,12 @@ class PassiveNetworkDriver:
     name = "passive_network"
 
     def discover(self, config: dict) -> DriverResult:
-        devices = list(neighbor_table().values()) + list(dhcp_leases().values())
+        devices = []
+        neighbors = neighbor_table()
+        if neighbors:
+            devices.extend(neighbors.values())
+        leases, _ = dhcp_lease_discovery(config)
+        devices.extend(leases.values())
         state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
         devices.extend(integration_inventory(config, state_root).values())
         return DriverResult(name=self.name, devices=devices)
@@ -275,10 +300,12 @@ def classify_device(record: dict, gateway_ip: str, local_ips: set[str]) -> tuple
 
 def operator_role(record: dict, roles: list[str]) -> str:
     role_set = set(roles)
-    if role_set & {"gateway", "collector", "dns", "dhcp", "mqtt", "ups"}:
-        return "Core Infrastructure"
+    if "gateway" in role_set:
+        return "Network Equipment"
     if role_set & {"wireless_infrastructure", "switch"}:
         return "Network Equipment"
+    if role_set & {"collector", "dns", "dhcp", "mqtt", "ups"}:
+        return "Core Infrastructure"
     if role_set & {"home_assistant", "server", "linux_host"}:
         return "Server"
     if "media" in role_set:
@@ -370,6 +397,13 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
     for old in previous.get("devices", []):
         if old.get("id") not in seen_ids:
             record = dict(old)
+            record.setdefault("display_name", record.get("name") or record.get("ip") or record.get("id", "unknown device"))
+            record.setdefault("name", record.get("display_name", "unknown device"))
+            record.setdefault("ip", "")
+            record.setdefault("mac", "")
+            record.setdefault("vendor", "")
+            record.setdefault("source", record.get("last_seen_source", "previous_inventory"))
+            record.setdefault("last_seen", "unknown")
             score, status, reasons = health_score(record, now_epoch, stale_after, offline_after)
             record["health_score"] = score
             record["health_status"] = status
@@ -513,6 +547,60 @@ def inventory_summary_lists(devices: list[dict], services: list[dict]) -> tuple[
     return infrastructure, service_rows
 
 
+def discovery_source_status(config: dict, local_addresses: list[dict], gateway: dict) -> tuple[list[str], bool, str]:
+    sources = []
+    if local_addresses:
+        sources.append("local_host")
+    if gateway.get("ip"):
+        sources.append("gateway")
+    neighbors = neighbor_table()
+    sources.append("arp_table" if neighbors else "arp_table_empty")
+    _, lease_status = dhcp_lease_discovery(config)
+    sources.append(lease_status)
+    state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
+    integration_root = Path(config.get("HIOC_INVENTORY_INTEGRATION_DIR", "")) if config.get("HIOC_INVENTORY_INTEGRATION_DIR", "") else state_root / "inventory" / "integrations"
+    if integration_root.exists():
+        sources.append("integration_inventory")
+    limited = "dhcp_leases_unavailable" in sources and not any(source == "integration_inventory" for source in sources)
+    reason = "Pi-hole/dnsmasq DHCP lease files were not found; inventory is limited to local host, gateway, ARP/neigh, integrations, and prior retained devices." if limited else ""
+    return sources, limited, reason
+
+
+def build_inventory_summary(
+    devices: list[dict],
+    services: list[dict],
+    topology: dict,
+    dependencies: dict,
+    now: str,
+    discovery_sources: list[str],
+    discovery_limited: bool,
+    discovery_limit_reason: str,
+) -> dict:
+    infrastructure_count = len([d for d in devices if d.get("inventory_class") == "infrastructure"])
+    client_count = len([d for d in devices if d.get("inventory_class") == "client"])
+    infrastructure_devices, service_rows = inventory_summary_lists(devices, services)
+    return {
+        "updated": now,
+        "device_count": len(devices),
+        "infrastructure_count": infrastructure_count,
+        "client_count": client_count,
+        "network_client_count": client_count,
+        "healthy_count": len([d for d in devices if d.get("health_status") == "healthy"]),
+        "watch_count": len([d for d in devices if d.get("health_status") == "watch"]),
+        "degraded_count": len([d for d in devices if d.get("health_status") == "degraded"]),
+        "offline_count": len([d for d in devices if d.get("health_status") == "offline"]),
+        "service_count": len(services),
+        "topology_edges": len(topology.get("edges", [])),
+        "dependency_edges": len(dependencies.get("edges", [])),
+        "lowest_health_score": min([d.get("health_score", 0) for d in devices], default=0),
+        "discovery_sources": discovery_sources,
+        "discovery_limited": bool(discovery_limited),
+        "discovery_limit_reason": discovery_limit_reason or "",
+        "infrastructure_devices": infrastructure_devices,
+        "services": service_rows,
+    }
+
+
 def discover_inventory(config: dict, previous: dict) -> dict:
     now = now_iso()
     now_epoch = int(time.time())
@@ -520,6 +608,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     local_ips = {item["ip"] for item in local_addresses}
     gateway = default_gateway()
     gateway_ip = gateway.get("ip", "")
+    discovery_sources, discovery_limited, discovery_limit_reason = discovery_source_status(config, local_addresses, gateway)
     active_discovery = str(config.get("HIOC_INVENTORY_ACTIVE_DISCOVERY", "off")).lower() in ("1", "true", "yes", "on", "enabled")
     records = []
     hostname = socket.gethostname()
@@ -545,7 +634,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         "last_seen_source": "local_host",
     })
     if gateway_ip:
-        records.append({"type": "network_device", "name": "Default Gateway", "ip": gateway_ip, "interface": gateway.get("interface", ""), "source": "default_route", "last_seen_source": "default_route"})
+        records.append({"type": "network_device", "name": "Default Gateway", "ip": gateway_ip, "interface": gateway.get("interface", ""), "source": "gateway", "last_seen_source": "gateway"})
     state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
     registry = DriverRegistry()
     registry.register(PassiveNetworkDriver())
@@ -588,29 +677,13 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     topology = build_topology(devices, gateway_ip, local_device_id)
     dependencies = build_dependencies(devices, services)
     services = enrich_services(services, devices, dependencies)
-    infrastructure_devices, service_rows = inventory_summary_lists(devices, services)
     capabilities = CapabilityRegistry()
     for device in devices:
         capabilities.infer_from_device(device)
     for service in services:
         capabilities.infer_from_service(service)
     capability_list = capabilities.all()
-    summary = {
-        "updated": now,
-        "device_count": len(devices),
-        "infrastructure_count": len([d for d in devices if d.get("inventory_class") == "infrastructure"]),
-        "network_client_count": len([d for d in devices if d.get("inventory_class") == "client"]),
-        "healthy_count": len([d for d in devices if d.get("health_status") == "healthy"]),
-        "watch_count": len([d for d in devices if d.get("health_status") == "watch"]),
-        "degraded_count": len([d for d in devices if d.get("health_status") == "degraded"]),
-        "offline_count": len([d for d in devices if d.get("health_status") == "offline"]),
-        "service_count": len(services),
-        "topology_edges": len(topology["edges"]),
-        "dependency_edges": len(dependencies["edges"]),
-        "lowest_health_score": min([d.get("health_score", 0) for d in devices], default=0),
-        "infrastructure_devices": infrastructure_devices,
-        "services": service_rows,
-    }
+    summary = build_inventory_summary(devices, services, topology, dependencies, now, discovery_sources, discovery_limited, discovery_limit_reason)
     return {
         "schema_version": "1.0",
         "updated": now,

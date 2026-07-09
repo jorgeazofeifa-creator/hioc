@@ -1236,8 +1236,11 @@ views:
           - type: markdown
             title: Inventory Summary
             content: >-
-              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') %}
-              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'network_client_count') %}
+              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') | default(0, true) %}
+              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'client_count') | default(state_attr('sensor.hioc_inventory_device_count', 'network_client_count'), true) | default(0, true) %}
+              {% set discovery_sources = state_attr('sensor.hioc_inventory_device_count', 'discovery_sources') %}
+              {% set discovery_limited = state_attr('sensor.hioc_inventory_device_count', 'discovery_limited') | default(false, true) %}
+              {% set discovery_reason = state_attr('sensor.hioc_inventory_device_count', 'discovery_limit_reason') | default('', true) %}
               {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
               {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
               # {{ states('sensor.hioc_inventory_operations_summary') }}
@@ -1256,11 +1259,25 @@ views:
 
               Offline: {{ states('sensor.hioc_inventory_offline_devices') }}
 
+              Discovery sources:
+
+              {% if discovery_sources is iterable and discovery_sources is not string %}
+              {% for source in discovery_sources %}
+              - {{ source }}
+              {% endfor %}
+              {% else %}
+              - Discovery source details are not available yet.
+              {% endif %}
+
+              {% if discovery_limited %}
+              Discovery is limited: {{ discovery_reason | default('A passive discovery source is unavailable.', true) }}
+              {% endif %}
+
               Infrastructure discovered:
 
               {% if devices is iterable and devices is not string %}
-              {% for device in devices if device.inventory_class == 'infrastructure' %}
-              - {{ device.display_name | default(device.name) }} · {{ device.ip | default('No IP') }} · {{ device.role | default('Unknown') }} · {{ device.health_status | default('unknown') | title }}
+              {% for device in devices if device.get('inventory_class', 'client') == 'infrastructure' %}
+              - {{ device.get('display_name') or device.get('name') or 'Unknown device' }} - {{ device.get('ip') or 'No IP' }} - {{ device.get('role') or 'Unknown' }} - {{ (device.get('health_status') or device.get('health') or 'unknown') | title }}
               {% else %}
               - No infrastructure devices have been classified yet.
               {% endfor %}
@@ -1272,7 +1289,7 @@ views:
 
               {% if services is iterable and services is not string %}
               {% for service in services %}
-              - {{ service.name }} · {{ service.host | default(service.device_id) }} · {{ service.type | title }} · {{ service.status | title }}
+              - {{ service.get('name') or 'Unknown service' }} - {{ service.get('host') or service.get('device_id') or 'Unknown host' }} - {{ (service.get('type') or 'service') | title }} - {{ (service.get('status') or 'unknown') | title }}
               {% else %}
               - No services have been discovered yet.
               {% endfor %}
@@ -1293,8 +1310,9 @@ views:
           - type: markdown
             title: Counts
             content: >-
-              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') %}
-              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'network_client_count') %}
+              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') | default(0, true) %}
+              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'client_count') | default(state_attr('sensor.hioc_inventory_device_count', 'network_client_count'), true) | default(0, true) %}
+              {% set discovery_sources = state_attr('sensor.hioc_inventory_device_count', 'discovery_sources') %}
               **Coverage**
 
               Infrastructure: {{ summary_infra | default(0) }}
@@ -1306,6 +1324,16 @@ views:
               Topology links: {{ states('sensor.hioc_inventory_topology_edges') }}
 
               Dependencies: {{ states('sensor.hioc_inventory_dependency_edges') }}
+
+              Discovery sources:
+
+              {% if discovery_sources is iterable and discovery_sources is not string %}
+              {% for source in discovery_sources %}
+              - {{ source }}
+              {% endfor %}
+              {% else %}
+              - Not available yet
+              {% endif %}
 
               **Health**
 
@@ -1328,20 +1356,20 @@ views:
             content: >-
               {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
               {% if devices is iterable and devices is not string %}
-              {% for device in devices | sort(attribute='display_name') %}
-              **{{ device.display_name }}**
+              {% for device in devices %}
+              **{{ device.get('display_name') or device.get('name') or 'Unknown device' }}**
 
-              {{ device.role | default('Unknown') }} · {{ device.status | default(device.health_status) | title }} · {{ device.health_score }}%
+              {{ device.get('role') or 'Unknown' }} - {{ (device.get('status') or device.get('health_status') or 'unknown') | title }} - {{ device.get('health_score') | default(0, true) }}%
 
-              IP: {{ device.ip | default('No IP reported') }}
+              IP: {{ device.get('ip') or 'No IP reported' }}
 
-              MAC: {{ device.mac | default('Not observed') }}
+              MAC: {{ device.get('mac') or 'Not observed' }}
 
-              Vendor: {{ device.vendor | default('Not available') }}
+              Vendor: {{ device.get('vendor') or 'Not available' }}
 
-              Last seen: {{ device.last_seen | default('Not available') }}
+              Last seen: {{ device.get('last_seen') or 'Not available' }}
 
-              Source: {{ device.source | default('unknown') }}
+              Source: {{ device.get('source') or 'unknown' }}
 
               {% endfor %}
               {% else %}
@@ -1361,13 +1389,13 @@ views:
               {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
               {% if services is iterable and services is not string %}
               {% for service in services %}
-              **{{ service.name }}**
+              **{{ service.get('name') or 'Unknown service' }}**
 
-              Host: {{ service.host | default(service.device_id) }}
+              Host: {{ service.get('host') or service.get('device_id') or 'Unknown host' }}
 
-              Type: {{ service.type | title }} · Status: {{ service.status | title }}
+              Type: {{ (service.get('type') or 'service') | title }} - Status: {{ (service.get('status') or 'unknown') | title }}
 
-              Dependency: {{ service.dependency | default('None recorded') }}
+              Dependency: {{ service.get('dependency') or 'None recorded' }}
 
               {% endfor %}
               {% else %}
