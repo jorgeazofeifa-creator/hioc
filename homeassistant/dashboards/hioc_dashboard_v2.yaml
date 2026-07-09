@@ -773,13 +773,85 @@ views:
                 h1 { color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
-            title: Forecasts
+            title: Forecast
             content: >-
-              # Informational
+              {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+              {% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              {% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
+              {% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              {% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+              {% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}
+              {% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}
+              {% if disk_days <= 1 %}
+              # Critical
 
-              {{ states('sensor.hioc_statistics_samples_network') }} network samples and {{ states('sensor.hioc_statistics_samples_host') }} host samples.
+              Summary: Pi4 disk is forecast to reach 90% within {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }} day{{ '' if disk_days == 1 else 's' }}.
 
-              Next step: open Diagnostics.
+              Risk: Critical
+
+              Recommendation: Open Servers and review Pi4 storage immediately.
+              {% elif disk_days <= 7 or trend_count >= 3 %}
+              # Attention
+
+              Summary: multiple forecast trends may become operational problems.
+
+              {% if internet_rising %}
+              Internet latency or packet loss is increasing.
+              {% endif %}
+              {% if dns_rising %}
+              DNS latency is increasing.
+              {% endif %}
+              {% if mqtt_rising %}
+              MQTT publish timing is increasing.
+              {% endif %}
+              {% if pi4_memory_rising %}
+              Pi4 memory usage is increasing.
+              {% endif %}
+              {% if pi4_temp_rising %}
+              Pi4 temperature is increasing.
+              {% endif %}
+              {% if disk_days <= 7 %}
+              Pi4 disk may reach 90% within {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }} days.
+              {% endif %}
+
+              Risk: Attention
+
+              Recommendation: Open Forecast Investigation and review the affected domains.
+              {% elif trend_count > 0 %}
+              # Watch
+
+              Summary: one or more forecast trends are rising.
+
+              {% if internet_rising %}
+              Internet latency or packet loss is increasing.
+              {% endif %}
+              {% if dns_rising %}
+              DNS latency is increasing.
+              {% endif %}
+              {% if mqtt_rising %}
+              MQTT publish timing is increasing.
+              {% endif %}
+              {% if pi4_memory_rising %}
+              Pi4 memory usage is increasing.
+              {% endif %}
+              {% if pi4_temp_rising %}
+              Pi4 temperature is increasing.
+              {% endif %}
+
+              Risk: Watch
+
+              Recommendation: Continue monitoring. Open Forecast Investigation if this persists.
+              {% else %}
+              # Healthy
+
+              Summary: No concerning trends detected.
+
+              All monitored systems remain within expected ranges.
+
+              Risk: Healthy
+
+              Recommendation: No action required.
+              {% endif %}
             tap_action:
               action: navigate
               navigation_path: /lovelace/hioc-v2-diagnostics
@@ -787,8 +859,8 @@ views:
               columns: 3
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: #bae6fd; font-size: 22px; }
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}{% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}{% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}{% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}{% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}{% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}{% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}{% if disk_days <= 1 %}#ef4444{% elif disk_days <= 7 or trend_count >= 3 %}#f59e0b{% elif trend_count > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}{% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}{% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}{% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}{% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}{% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}{% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}{% if disk_days <= 1 %}#fecaca{% elif disk_days <= 7 or trend_count > 0 %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Platform
