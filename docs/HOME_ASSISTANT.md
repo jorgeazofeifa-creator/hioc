@@ -24,3 +24,12 @@ The Dashboard v2 file is:
 The Living Inventory dashboard uses inventory sensors from `hioc_living_inventory.yaml`.
 
 Correlation Engine v2 uses the existing incident package and sensors wherever possible. Dashboard v2 displays current incident, root cause, confidence, affected systems, and timeline from the retained incident and timeline MQTT payloads without adding a new public MQTT contract.
+
+Dashboard v2 also uses the existing `sensor.hioc_incident_summary` attributes to show incident history context:
+
+- today, 7-day, and 30-day incident counts
+- automatic recovery count
+- manual intervention count when known
+- average and longest incident duration
+- recent completed incidents
+- the latest completed incident review with impact, evidence, timeline, recovery, and recommended action

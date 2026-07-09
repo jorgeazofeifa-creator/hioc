@@ -13,6 +13,7 @@ sys.path.insert(0, str(HIOC_HOME / "pi4" / "lib"))
 
 from hioc.core.correlation import build_event_signals, build_inventory_signals, build_telemetry_signals, correlate as core_correlate, lifecycle_phase
 from hioc.core.events import EventBus
+from hioc.core.incident_review import build_history_stats, compact_recent_incidents, enrich_history, recent_incident_reviews
 from hioc.core.state import StateStore
 
 CONFIG_FILE = HIOC_HOME / "config" / "hioc.conf"
@@ -245,9 +246,14 @@ def main():
         else:
             save_json(ACTIVE_FILE, {"status": "none", "phase": "idle", "severity": "info", "system": "HIOC", "title": "No active incident", "summary": "All monitored systems are within thresholds", "updated": timestamp, "telemetry": t})
 
-    history = history[:limit]
+    timeline = load_json(TIMELINE_FILE, [])
+    history = enrich_history(history[:limit], timeline)
     save_json(HISTORY_FILE, history)
     current = load_json(ACTIVE_FILE, {})
+    history_stats = build_history_stats(history)
+    recent_incidents = compact_recent_incidents(history)
+    recent_reviews = recent_incident_reviews(history)
+    latest_review = history[0].get("review", {}) if history else {}
     summary = {
         "updated": timestamp,
         "engine_version": "1.2.0",
@@ -262,6 +268,10 @@ def main():
         "signals_detected": len(signals),
         "correlation_engine": "2.0.0",
         "events_consumed": len(events),
+        "history_stats": history_stats,
+        "recent_incidents": recent_incidents,
+        "recent_incident_reviews": recent_reviews,
+        "latest_incident_review": latest_review,
     }
     save_json(SUMMARY_FILE, summary)
     save_json(STATUS_FILE, {"status": "online", "version": "1.2.0", "updated": timestamp})

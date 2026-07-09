@@ -20,6 +20,8 @@ home/infrastructure/hioc/status/detail
 
 Correlation Engine v2 publishes through the same incident topics. The public topic names are unchanged, and existing Home Assistant sensors continue to read `status`, `severity`, `system`, `title`, `root_cause`, `confidence_percent`, `affected`, and timeline fields from the retained JSON payloads.
 
+Completed incident history entries include a derived `review` object so operators can understand what happened after recovery. The `incidents/summary` payload also includes `history_stats`, `recent_incidents`, `recent_incident_reviews`, and `latest_incident_review` attributes for Dashboard v2. These are additive fields on existing retained topics.
+
 ## Forecast Topics
 
 ```text

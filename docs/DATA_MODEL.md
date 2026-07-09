@@ -88,6 +88,41 @@ Correlated incident state is stored in `state/incidents/active.json`, `state/inc
 - `evidence`: correlated signal reasons.
 - `started`, `updated`, `resolved`, `end_time`: ISO-8601 lifecycle timestamps.
 - `duration_seconds`: final incident duration after resolution or supersession.
+- `recovery_type`: derived recovery category such as `automatic`, `superseded`, `interrupted`, or `unknown`.
+- `review`: operator review generated for completed history entries.
+
+Incident review object:
+
+- `title`
+- `severity`
+- `started`
+- `resolved`
+- `duration`
+- `duration_seconds`
+- `root_cause`
+- `confidence_percent`
+- `affected_systems`
+- `affected_services`
+- `impact_summary`
+- `evidence`
+- `timeline`: chronological event rows with `timestamp` and `message`.
+- `recovery`
+- `recommended_action`
+- `incident_id`
+- `recovery_type`
+
+Incident summary includes derived history context:
+
+- `history_stats.today`
+- `history_stats.last_7_days`
+- `history_stats.last_30_days`
+- `history_stats.automatic_recoveries`
+- `history_stats.manual_intervention_required`
+- `history_stats.average_duration`
+- `history_stats.longest_incident`
+- `recent_incidents`: compact completed incident rows for dashboard review.
+- `recent_incident_reviews`: full review objects for the most recent completed incidents.
+- `latest_incident_review`: full review for the most recent completed incident.
 
 ## Capability
 

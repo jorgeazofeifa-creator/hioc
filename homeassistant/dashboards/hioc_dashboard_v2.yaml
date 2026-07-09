@@ -492,6 +492,7 @@ views:
           - type: markdown
             title: Latest Events
             content: >-
+              {% set stats = state_attr('sensor.hioc_incident_summary','history_stats') %}
               {% if states('sensor.hioc_latest_timeline_event') in ['unknown', 'unavailable', 'none', 'None', ''] %}
               # No Recent Event Recorded
 
@@ -503,7 +504,25 @@ views:
 
               Meaning: latest HIOC timeline event from the incident system.
 
-              Incident history: {{ states('sensor.hioc_incident_history_count') }} recorded incidents.
+              Incident history:
+
+              {% if stats is mapping %}
+              Today: {{ stats.today | default(0) }}
+
+              Last 7 days: {{ stats.last_7_days | default(0) }}
+
+              Last 30 days: {{ stats.last_30_days | default(states('sensor.hioc_incident_history_count')) }}
+
+              Automatic recoveries: {{ stats.automatic_recoveries | default(0) }}
+
+              Manual intervention required: {{ stats.manual_intervention_required | default(0) }}
+
+              Average duration: {{ stats.average_duration | default('Not available') }}
+
+              Longest incident: {{ stats.longest_incident | default('Not available') }}
+              {% else %}
+              Recorded incidents: {{ states('sensor.hioc_incident_history_count') }}
+              {% endif %}
 
               Recommended action: open Diagnostics for timeline context.
               {% endif %}
@@ -1023,6 +1042,7 @@ views:
           - type: markdown
             title: Timeline
             content: >-
+              {% set recent = state_attr('sensor.hioc_incident_summary','recent_incident_reviews') %}
               {% if states('sensor.hioc_latest_timeline_event') in ['unknown', 'unavailable', 'none', 'None', ''] %}
               No recent event recorded.
               {% else %}
@@ -1030,11 +1050,145 @@ views:
               {% endif %}
 
               Incident history count: {{ states('sensor.hioc_incident_history_count') }}
+
+              {% if recent is iterable and recent is not string and recent | count > 0 %}
+              Recent incidents:
+
+              {% for incident in recent %}
+              <details>
+              <summary>{{ incident.title | default('Incident') }} · {{ incident.recovery_type | default('resolved') | title }} · {{ incident.duration | default('Duration not available') }}</summary>
+
+              Severity: {{ incident.severity | default('info') | title }}
+
+              Started: {{ incident.started | default('Not available') }}
+
+              Resolved: {{ incident.resolved | default('Not available') }}
+
+              Root cause: {{ incident.root_cause | default('Not available') }}
+
+              Confidence: {{ incident.confidence_percent | default(0) }}%
+
+              Impact summary: {{ incident.impact_summary | default('Impact summary is not available.') }}
+
+              Recovery: {{ incident.recovery | default('Recovery details are not available.') }}
+
+              Evidence:
+
+              {% set evidence = incident.evidence | default([]) %}
+              {% if evidence is iterable and evidence is not string and evidence | count > 0 %}
+              {% for item in evidence %}
+              - {{ item }}
+              {% endfor %}
+              {% else %}
+              - Evidence was not recorded for this incident.
+              {% endif %}
+
+              Event log:
+
+              {% set events = incident.timeline | default([]) %}
+              {% if events is iterable and events is not string and events | count > 0 %}
+              {% for event in events %}
+              - {{ event.timestamp | default('Time not available') }}: {{ event.message | default('Incident event') }}
+              {% endfor %}
+              {% else %}
+              - Timeline was not recorded for this incident.
+              {% endif %}
+
+              Recommended action: {{ incident.recommended_action | default('No action required.') }}
+
+              Incident ID: {{ incident.incident_id | default('Not available') }}
+              </details>
+              {% endfor %}
+              {% else %}
+              No completed incidents are available for review yet.
+              {% endif %}
             grid_options:
               columns: 4
             card_mod:
               style: |
                 ha-card { min-height: 210px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #60a5fa; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+
+          - type: markdown
+            title: Latest Incident Review
+            content: >-
+              {% set review = state_attr('sensor.hioc_incident_summary','latest_incident_review') %}
+              {% if review is mapping and review.title is defined %}
+              # {{ review.title | default('Incident') }}
+
+              Severity: {{ review.severity | default('info') | title }}
+
+              Started: {{ review.started | default('Not available') }}
+
+              Resolved: {{ review.resolved | default('Not available') }}
+
+              Duration: {{ review.duration | default('Not available') }}
+
+              Root cause: {{ review.root_cause | default('Not available') }}
+
+              Confidence: {{ review.confidence_percent | default(0) }}%
+
+              Recovery: {{ review.recovery | default('Recovery details are not available.') }}
+
+              Recovery type: {{ review.recovery_type | default('unknown') | title }}
+
+              Impact summary: {{ review.impact_summary | default('Impact summary is not available.') }}
+
+              Affected systems:
+
+              {% set affected = review.affected_systems | default([]) %}
+              {% if affected is iterable and affected is not string and affected | count > 0 %}
+              {% for item in affected %}
+              - {{ item }}
+              {% endfor %}
+              {% else %}
+              - No affected systems recorded.
+              {% endif %}
+
+              Affected services:
+
+              {% set services = review.affected_services | default([]) %}
+              {% if services is iterable and services is not string and services | count > 0 %}
+              {% for item in services %}
+              - {{ item }}
+              {% endfor %}
+              {% else %}
+              - No affected services recorded.
+              {% endif %}
+
+              Evidence:
+
+              {% set evidence = review.evidence | default([]) %}
+              {% if evidence is iterable and evidence is not string and evidence | count > 0 %}
+              {% for item in evidence %}
+              - {{ item }}
+              {% endfor %}
+              {% else %}
+              - Evidence was not recorded for this incident.
+              {% endif %}
+
+              Event log:
+
+              {% set events = review.timeline | default([]) %}
+              {% if events is iterable and events is not string and events | count > 0 %}
+              {% for event in events %}
+              - {{ event.timestamp | default('Time not available') }}: {{ event.message | default('Incident event') }}
+              {% endfor %}
+              {% else %}
+              - Timeline was not recorded for this incident.
+              {% endif %}
+
+              Recommended action: {{ review.recommended_action | default('No action required.') }}
+
+              Incident ID: {{ review.incident_id | default('Not available') }}
+              {% else %}
+              No completed incident review is available yet.
+              {% endif %}
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 310px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: #bae6fd; font-size: 21px; }
 
           - type: entities
             title: Live Telemetry
