@@ -854,7 +854,7 @@ views:
               {% endif %}
             tap_action:
               action: navigate
-              navigation_path: /lovelace/hioc-v2-diagnostics
+              navigation_path: hioc-v2-diagnostics
             grid_options:
               columns: 3
             card_mod:
@@ -995,7 +995,7 @@ views:
               columns: 6
             card_mod:
               style: |
-                ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #f59e0b; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#f59e0b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' or states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: markdown
             title: Dependency Path
