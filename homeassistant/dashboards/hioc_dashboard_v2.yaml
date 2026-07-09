@@ -1236,11 +1236,49 @@ views:
           - type: markdown
             title: Inventory Summary
             content: >-
+              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') %}
+              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'network_client_count') %}
+              {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
+              {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
               # {{ states('sensor.hioc_inventory_operations_summary') }}
 
-              What exists: {{ states('sensor.hioc_inventory_device_count') }} devices and {{ states('sensor.hioc_inventory_service_count') }} services.
+              Infrastructure devices: {{ summary_infra | default(0) }}
 
-              What changed: latest inventory state is from the HIOC inventory engine.
+              Network clients: {{ summary_clients | default(0) }}
+
+              Services: {{ states('sensor.hioc_inventory_service_count') }}
+
+              Healthy: {{ states('sensor.hioc_inventory_healthy_devices') }}
+
+              Watch: {{ states('sensor.hioc_inventory_watch_devices') }}
+
+              Degraded: {{ states('sensor.hioc_inventory_degraded_devices') }}
+
+              Offline: {{ states('sensor.hioc_inventory_offline_devices') }}
+
+              Infrastructure discovered:
+
+              {% if devices is iterable and devices is not string %}
+              {% for device in devices if device.inventory_class == 'infrastructure' %}
+              - {{ device.display_name | default(device.name) }} · {{ device.ip | default('No IP') }} · {{ device.role | default('Unknown') }} · {{ device.health_status | default('unknown') | title }}
+              {% else %}
+              - No infrastructure devices have been classified yet.
+              {% endfor %}
+              {% else %}
+              - Inventory device attributes have not arrived.
+              {% endif %}
+
+              Services discovered:
+
+              {% if services is iterable and services is not string %}
+              {% for service in services %}
+              - {{ service.name }} · {{ service.host | default(service.device_id) }} · {{ service.type | title }} · {{ service.status | title }}
+              {% else %}
+              - No services have been discovered yet.
+              {% endfor %}
+              {% else %}
+              - Inventory service attributes have not arrived.
+              {% endif %}
 
               What is unhealthy: {{ states('sensor.hioc_inventory_degraded_devices') }} degraded and {{ states('sensor.hioc_inventory_offline_devices') }} offline devices.
 
@@ -1252,37 +1290,58 @@ views:
                 ha-card { min-height: 230px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
                 h1 { color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; }
 
-          - type: entities
+          - type: markdown
             title: Counts
-            show_header_toggle: false
-            entities:
-              - sensor.hioc_inventory_device_count
-              - sensor.hioc_inventory_healthy_devices
-              - sensor.hioc_inventory_watch_devices
-              - sensor.hioc_inventory_degraded_devices
-              - sensor.hioc_inventory_offline_devices
-              - sensor.hioc_inventory_service_count
-              - sensor.hioc_inventory_topology_edges
-              - sensor.hioc_inventory_dependency_edges
+            content: >-
+              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') %}
+              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'network_client_count') %}
+              **Coverage**
+
+              Infrastructure: {{ summary_infra | default(0) }}
+
+              Clients: {{ summary_clients | default(0) }}
+
+              Services: {{ states('sensor.hioc_inventory_service_count') }}
+
+              Topology links: {{ states('sensor.hioc_inventory_topology_edges') }}
+
+              Dependencies: {{ states('sensor.hioc_inventory_dependency_edges') }}
+
+              **Health**
+
+              Healthy: {{ states('sensor.hioc_inventory_healthy_devices') }}
+
+              Watch: {{ states('sensor.hioc_inventory_watch_devices') }}
+
+              Degraded: {{ states('sensor.hioc_inventory_degraded_devices') }}
+
+              Offline: {{ states('sensor.hioc_inventory_offline_devices') }}
             grid_options:
               columns: 4
             card_mod:
               style: |
-                ha-card { min-height: 300px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-card { min-height: 300px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                strong { color: #bfdbfe; }
 
           - type: markdown
-            title: Device Health
+            title: Inventory Explorer - Devices
             content: >-
               {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
               {% if devices is iterable and devices is not string %}
-              {% for device in devices | sort(attribute='health_score') %}
+              {% for device in devices | sort(attribute='display_name') %}
               **{{ device.display_name }}**
 
-              {{ device.health_status | title }} - {{ device.health_score }}%
+              {{ device.role | default('Unknown') }} · {{ device.status | default(device.health_status) | title }} · {{ device.health_score }}%
 
               IP: {{ device.ip | default('No IP reported') }}
 
-              Role: {{ device.roles | default(['endpoint']) | join(', ') }}
+              MAC: {{ device.mac | default('Not observed') }}
+
+              Vendor: {{ device.vendor | default('Not available') }}
+
+              Last seen: {{ device.last_seen | default('Not available') }}
+
+              Source: {{ device.source | default('unknown') }}
 
               {% endfor %}
               {% else %}
@@ -1297,14 +1356,18 @@ views:
                 strong { color: #bfdbfe; }
 
           - type: markdown
-            title: Services
+            title: Inventory Explorer - Services
             content: >-
               {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
               {% if services is iterable and services is not string %}
               {% for service in services %}
               **{{ service.name }}**
 
-              {{ service.type | title }} - {{ service.status | title }}
+              Host: {{ service.host | default(service.device_id) }}
+
+              Type: {{ service.type | title }} · Status: {{ service.status | title }}
+
+              Dependency: {{ service.dependency | default('None recorded') }}
 
               {% endfor %}
               {% else %}

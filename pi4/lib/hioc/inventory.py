@@ -1,5 +1,4 @@
 import hashlib
-import ipaddress
 import json
 import os
 import re
@@ -158,35 +157,7 @@ def ping_reachable(ip: str, count: int, timeout_sec: int) -> bool:
 
 
 def scan_subnet(cidr: str, count: int, timeout_sec: int) -> dict:
-    if not cidr:
-        return {}
-    try:
-        network = ipaddress.ip_network(cidr, strict=False)
-    except ValueError:
-        return {}
-    if network.num_addresses > 1024:
-        return {}
-    devices = {}
-    code, out, _ = run_command(["nmap", "-sn", str(network)], timeout=90)
-    if code == 0:
-        current_ip = ""
-        current_name = ""
-        for line in out.splitlines():
-            host = re.search(r"Nmap scan report for (?:([^\s]+) )?\(?(\d+\.\d+\.\d+\.\d+)\)?", line)
-            mac = re.search(r"MAC Address: ([0-9A-Fa-f:]{17})(?: \((.+)\))?", line)
-            if host:
-                current_name = host.group(1) or ""
-                current_ip = host.group(2)
-                devices[current_ip] = {"ip": current_ip, "hostname": current_name if current_name != current_ip else "", "source": "nmap", "last_seen_source": "nmap"}
-            elif mac and current_ip:
-                devices[current_ip]["mac"] = normalize_mac(mac.group(1))
-                devices[current_ip]["vendor"] = mac.group(2) or ""
-        return devices
-    for host in network.hosts():
-        ip = str(host)
-        if ping_reachable(ip, count, timeout_sec):
-            devices[ip] = {"ip": ip, "source": "ping_sweep", "last_seen_source": "ping_sweep"}
-    return devices
+    return {}
 
 
 def systemd_services() -> dict:
@@ -249,8 +220,7 @@ class ActiveNetworkDriver:
     name = "active_network"
 
     def discover(self, config: dict) -> DriverResult:
-        devices = list(scan_subnet(config.get("HIOC_INVENTORY_SCAN_SUBNET", ""), int(config.get("HIOC_INVENTORY_PING_COUNT", "1")), int(config.get("HIOC_INVENTORY_PING_TIMEOUT_SEC", "1"))).values())
-        return DriverResult(name=self.name, devices=devices)
+        return DriverResult(name=self.name, devices=[])
 
 
 class LocalServiceDriver:
@@ -285,10 +255,47 @@ def classify_device(record: dict, gateway_ip: str, local_ips: set[str]) -> tuple
         roles.append("wireless_infrastructure")
     if any(token in combined for token in ("switch", "netgear gs", "unifi usw", "tp-link sg", "managed-switch")):
         roles.append("switch")
+    if any(token in combined for token in ("ups", "apc", "eaton", "cyberpower")):
+        roles.append("ups")
+    if any(token in combined for token in ("camera", "cam-", "frigate", "doorbell", "printer", "thermostat", "sensor", "plug", "bulb", "matter", "zigbee", "zwave", "z-wave")):
+        roles.append("iot")
+    if any(token in combined for token in ("tv", "roku", "chromecast", "apple-tv", "shield", "sonos", "receiver", "media")):
+        roles.append("media")
+    if any(token in combined for token in ("iphone", "ipad", "pixel", "android", "galaxy", "phone", "mobile", "tablet")):
+        roles.append("mobile")
+    if any(token in combined for token in ("laptop", "desktop", "workstation", "macbook", "windows", "pc-")):
+        roles.append("workstation")
+    if any(token in combined for token in ("server", "nas", "proxmox", "docker", "ubuntu", "debian")):
+        roles.append("server")
     if not roles:
         roles.append("endpoint")
     primary = "gateway" if "gateway" in roles else "collector" if "collector" in roles else "network_infrastructure" if {"wireless_infrastructure", "switch"} & set(roles) else "home_assistant" if "home_assistant" in roles else "endpoint"
     return primary, sorted(set(roles))
+
+
+def operator_role(record: dict, roles: list[str]) -> str:
+    role_set = set(roles)
+    if role_set & {"gateway", "collector", "dns", "dhcp", "mqtt", "ups"}:
+        return "Core Infrastructure"
+    if role_set & {"wireless_infrastructure", "switch"}:
+        return "Network Equipment"
+    if role_set & {"home_assistant", "server", "linux_host"}:
+        return "Server"
+    if "media" in role_set:
+        return "Media"
+    if "workstation" in role_set:
+        return "Workstation"
+    if "mobile" in role_set:
+        return "Mobile"
+    if "iot" in role_set:
+        return "IoT"
+    return "Unknown"
+
+
+def inventory_class(role: str) -> str:
+    if role in ("Core Infrastructure", "Network Equipment", "Server"):
+        return "infrastructure"
+    return "client"
 
 
 def health_score(record: dict, now_epoch: int, stale_after: int, offline_after: int) -> tuple[int, str, list[str]]:
@@ -327,7 +334,14 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
         if not key:
             continue
         existing = by_key.setdefault(key, {})
+        sources = set(existing.get("sources", []))
+        if existing.get("source"):
+            sources.add(existing["source"])
+        if record.get("source"):
+            sources.add(record["source"])
         existing.update({k: v for k, v in record.items() if v not in ("", None, [])})
+        if sources:
+            existing["sources"] = sorted(sources)
     prev_by_id = {item.get("id"): item for item in previous.get("devices", []) if item.get("id")}
     stale_after = int(config.get("HIOC_INVENTORY_STALE_AFTER_SEC", "900"))
     offline_after = int(config.get("HIOC_INVENTORY_OFFLINE_AFTER_SEC", "3600"))
@@ -340,9 +354,16 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
         record["last_seen"] = now
         record["last_seen_epoch"] = now_epoch
         record["display_name"] = record.get("hostname") or record.get("name") or record.get("ip") or record["id"]
+        record["name"] = record["display_name"]
+        record.setdefault("vendor", "")
+        record.setdefault("role", operator_role(record, record.get("roles", [])))
+        record.setdefault("inventory_class", inventory_class(record["role"]))
+        record["source"] = ", ".join(record.get("sources", [])) if record.get("sources") else record.get("source", "unknown")
         score, status, reasons = health_score(record, now_epoch, stale_after, offline_after)
         record["health_score"] = score
         record["health_status"] = status
+        record["health"] = status
+        record["status"] = "online" if status in ("healthy", "watch") else status
         record["health_reasons"] = reasons
         devices.append(record)
     seen_ids = {d["id"] for d in devices}
@@ -352,6 +373,10 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
             score, status, reasons = health_score(record, now_epoch, stale_after, offline_after)
             record["health_score"] = score
             record["health_status"] = status
+            record["health"] = status
+            record["status"] = "online" if status in ("healthy", "watch") else status
+            record.setdefault("role", operator_role(record, record.get("roles", [])))
+            record.setdefault("inventory_class", inventory_class(record["role"]))
             record["health_reasons"] = reasons
             devices.append(record)
     return sorted(devices, key=lambda item: (item.get("type", ""), item.get("display_name", "")))
@@ -443,6 +468,51 @@ def build_dependencies(devices: list[dict], services: list[dict]) -> dict:
     return {"edges": edges}
 
 
+def enrich_services(services: list[dict], devices: list[dict], dependencies: dict) -> list[dict]:
+    devices_by_id = {device.get("id"): device for device in devices}
+    dependency_by_service = {}
+    for edge in dependencies.get("edges", []):
+        if str(edge.get("from_id", "")).startswith("svc_"):
+            dependency_by_service.setdefault(edge["from_id"], []).append(edge.get("type", "dependency"))
+    enriched = []
+    for service in services:
+        item = dict(service)
+        host = devices_by_id.get(item.get("device_id"), {})
+        item["host"] = host.get("display_name") or host.get("name") or host.get("ip") or item.get("device_id", "")
+        item["dependency"] = ", ".join(sorted(set(dependency_by_service.get(item.get("id"), [])))) or ""
+        enriched.append(item)
+    return enriched
+
+
+def inventory_summary_lists(devices: list[dict], services: list[dict]) -> tuple[list[dict], list[dict]]:
+    infrastructure = []
+    for device in devices:
+        if device.get("inventory_class") != "infrastructure":
+            continue
+        infrastructure.append({
+            "name": device.get("display_name", device.get("id", "")),
+            "ip": device.get("ip", ""),
+            "mac": device.get("mac", ""),
+            "vendor": device.get("vendor", ""),
+            "role": device.get("role", "Unknown"),
+            "status": device.get("status", device.get("health_status", "")),
+            "health": device.get("health_status", ""),
+            "health_score": device.get("health_score", 0),
+            "last_seen": device.get("last_seen", ""),
+            "source": device.get("source", ""),
+        })
+    service_rows = []
+    for service in services:
+        service_rows.append({
+            "name": service.get("name", ""),
+            "host": service.get("host", ""),
+            "type": service.get("type", ""),
+            "status": service.get("status", ""),
+            "dependency": service.get("dependency", ""),
+        })
+    return infrastructure, service_rows
+
+
 def discover_inventory(config: dict, previous: dict) -> dict:
     now = now_iso()
     now_epoch = int(time.time())
@@ -505,6 +575,8 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         else:
             record["type"] = record.get("type") or primary_type
         record["roles"] = roles
+        record["role"] = operator_role(record, roles)
+        record["inventory_class"] = inventory_class(record["role"])
         enriched.append(record)
     devices = merge_records(enriched, previous, now, now_epoch, config)
     local_device_id = next((d["id"] for d in devices if d.get("type") == "local_host"), devices[0]["id"] if devices else "")
@@ -515,6 +587,8 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         services.extend(result.services)
     topology = build_topology(devices, gateway_ip, local_device_id)
     dependencies = build_dependencies(devices, services)
+    services = enrich_services(services, devices, dependencies)
+    infrastructure_devices, service_rows = inventory_summary_lists(devices, services)
     capabilities = CapabilityRegistry()
     for device in devices:
         capabilities.infer_from_device(device)
@@ -524,6 +598,8 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     summary = {
         "updated": now,
         "device_count": len(devices),
+        "infrastructure_count": len([d for d in devices if d.get("inventory_class") == "infrastructure"]),
+        "network_client_count": len([d for d in devices if d.get("inventory_class") == "client"]),
         "healthy_count": len([d for d in devices if d.get("health_status") == "healthy"]),
         "watch_count": len([d for d in devices if d.get("health_status") == "watch"]),
         "degraded_count": len([d for d in devices if d.get("health_status") == "degraded"]),
@@ -532,6 +608,8 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         "topology_edges": len(topology["edges"]),
         "dependency_edges": len(dependencies["edges"]),
         "lowest_health_score": min([d.get("health_score", 0) for d in devices], default=0),
+        "infrastructure_devices": infrastructure_devices,
+        "services": service_rows,
     }
     return {
         "schema_version": "1.0",

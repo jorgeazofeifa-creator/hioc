@@ -9,9 +9,13 @@ from hioc.inventory import (
     build_dependencies,
     build_topology,
     classify_device,
+    enrich_services,
     health_score,
+    inventory_class,
     merge_records,
     normalize_mac,
+    operator_role,
+    scan_subnet,
     stable_device_id,
 )
 
@@ -83,6 +87,37 @@ class InventoryModelTests(unittest.TestCase):
         primary, roles = classify_device({"hostname": "orbi-satellite-office", "ip": "192.168.1.3"}, "192.168.1.1", set())
         self.assertEqual(primary, "network_infrastructure")
         self.assertIn("wireless_infrastructure", roles)
+        self.assertEqual(operator_role({}, roles), "Network Equipment")
+        self.assertEqual(inventory_class("Network Equipment"), "infrastructure")
+
+    def test_classification_detects_client_roles(self):
+        _, roles = classify_device({"hostname": "living-room-tv", "ip": "192.168.1.40"}, "192.168.1.1", set())
+        self.assertIn("media", roles)
+        self.assertEqual(operator_role({}, roles), "Media")
+        self.assertEqual(inventory_class("Media"), "client")
+
+    def test_merge_records_adds_operator_inventory_fields(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        devices = merge_records([
+            {
+                "ip": "192.168.1.3",
+                "mac": "11:22:33:44:55:66",
+                "hostname": "orbi-satellite-office",
+                "roles": ["wireless_infrastructure"],
+                "role": "Network Equipment",
+                "inventory_class": "infrastructure",
+                "source": "neighbor_table",
+            }
+        ], {"devices": []}, "now", 100, config)
+
+        self.assertEqual(devices[0]["name"], "orbi-satellite-office")
+        self.assertEqual(devices[0]["role"], "Network Equipment")
+        self.assertEqual(devices[0]["inventory_class"], "infrastructure")
+        self.assertEqual(devices[0]["status"], "online")
+        self.assertEqual(devices[0]["health"], "healthy")
+
+    def test_subnet_scan_is_disabled_for_safe_inventory(self):
+        self.assertEqual(scan_subnet("192.168.1.0/24", 1, 1), {})
 
     def test_dependencies_include_core_services(self):
         devices = [{"id": "collector", "health_status": "healthy"}, {"id": "endpoint", "health_status": "healthy"}]
@@ -91,6 +126,15 @@ class InventoryModelTests(unittest.TestCase):
         edge_types = {edge["type"] for edge in dependencies["edges"]}
         self.assertIn("depends_on_dns", edge_types)
         self.assertIn("depends_on_mqtt", edge_types)
+
+    def test_services_are_enriched_with_host_and_dependencies(self):
+        devices = [{"id": "collector", "display_name": "Pi4"}]
+        services = [{"id": "svc_mqtt", "name": "MQTT listener", "type": "mqtt", "device_id": "collector", "status": "listening"}]
+        dependencies = {"edges": [{"from_id": "svc_mqtt", "to_id": "svc_dns", "type": "depends_on_dns"}]}
+        enriched = enrich_services(services, devices, dependencies)
+
+        self.assertEqual(enriched[0]["host"], "Pi4")
+        self.assertEqual(enriched[0]["dependency"], "depends_on_dns")
 
 
 if __name__ == "__main__":
