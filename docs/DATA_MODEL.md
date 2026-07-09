@@ -72,6 +72,23 @@ Current inventory event types:
 - `InventoryChanged`
 - `TopologyChanged`
 
+## Correlated Incident
+
+Correlated incident state is stored in `state/incidents/active.json`, `state/incidents/history.json`, and `state/incidents/summary.json`.
+
+- `id`: stable incident identifier derived from the correlated root-cause key.
+- `key`: duplicate-suppression key for the probable root cause.
+- `status`: public compatibility status, typically `active`, `resolved`, or `none`.
+- `phase` / `lifecycle`: detailed lifecycle phase: `detected`, `confirmed`, `active`, `recovering`, or `resolved`.
+- `severity`: highest correlated severity.
+- `system`: primary affected domain.
+- `root_cause`: probable root cause.
+- `confidence_percent`: root-cause confidence from 0 to 100.
+- `affected`: impacted systems and services.
+- `evidence`: correlated signal reasons.
+- `started`, `updated`, `resolved`, `end_time`: ISO-8601 lifecycle timestamps.
+- `duration_seconds`: final incident duration after resolution or supersession.
+
 ## Capability
 
 Capabilities are stored locally in `state/inventory/capabilities.json`.

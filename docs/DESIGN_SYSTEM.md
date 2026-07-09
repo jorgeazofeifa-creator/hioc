@@ -19,6 +19,26 @@ The interface must help an operator understand:
 6. Color communicates state, not decoration.
 7. Terminology is stable across every page.
 8. Mobile views must show the operational answer before supporting data.
+9. Never show a warning without explaining what it means and what to do next.
+
+## Operator Guidance
+
+HIOC cards should guide an operator rather than merely show values. Important status, warning, risk, or trend cards must answer:
+
+- What is happening?
+- Why does it matter?
+- What should I do next?
+- Where do I click to investigate?
+
+Every warning or watch item must include:
+
+- label
+- explicit severity
+- plain-English meaning
+- recommended action
+- click path
+
+Use `Not available` only when missing data is operationally useful. Avoid exposing raw `null`, JSON, or long inline strings to the operator.
 
 ## Page Roles
 
@@ -69,6 +89,7 @@ Operations contains:
 - no raw entity tables
 - no long text blocks
 - no drill-down detail unless tapped
+- one clear next step on every domain card
 
 ### Diagnostics / Mission Control
 
@@ -264,6 +285,15 @@ Rules:
 
 Color is reserved for state.
 
+Dashboard v2 uses a dark NOC shell:
+
+- card surfaces use dark blue/black tones
+- borders are subtle blue-gray lines
+- severity is shown with a narrow left accent or top status bar
+- green, amber, red, and blue accents communicate state
+- plain white/default Home Assistant card surfaces are avoided
+- card density should use available desktop width without large empty centered columns
+
 ### Green
 
 Meaning: healthy, confirmed operational.
@@ -446,6 +476,22 @@ Use three intentional columns on Executive:
 - center: affected systems and domain health
 - right: risks, events, freshness
 
+Dashboard v2 may use four section columns when it improves NOC density, but Executive must still preserve exactly seven visual elements.
+
+## Drill-Down Navigation
+
+Domain Health rows should navigate to the page that owns their detail:
+
+- Incident -> Diagnostics
+- Inventory -> Inventory
+- Internet Forecast -> Network
+- DNS Forecast -> Network
+- MQTT Forecast -> Diagnostics
+- Pi4 Forecast -> Servers
+- Platform / Data Freshness -> Servers or Diagnostics
+- Latest Events -> Diagnostics
+- Top Risks -> the owning investigation page
+
 ## Anti-Patterns
 
 Avoid:
@@ -460,4 +506,3 @@ Avoid:
 - spacer cards
 - one-off card styles
 - color used only for decoration
-

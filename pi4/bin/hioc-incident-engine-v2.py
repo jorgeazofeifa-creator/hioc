@@ -1,17 +1,25 @@
 #!/usr/bin/env python3
-import hashlib
 import json
 import os
 import subprocess
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
 
 HIOC_HOME = Path(os.environ.get("HIOC_HOME", "/home/jazofv1/hioc"))
 PI4_TOOLS_HOME = Path(os.environ.get("PI4_TOOLS_HOME", "/home/jazofv1/pi4-tools"))
+sys.path.insert(0, str(HIOC_HOME / "pi4" / "lib"))
+
+from hioc.core.correlation import build_event_signals, build_inventory_signals, build_telemetry_signals, correlate as core_correlate, lifecycle_phase
+from hioc.core.events import EventBus
+from hioc.core.state import StateStore
+
 CONFIG_FILE = HIOC_HOME / "config" / "hioc.conf"
 TOOLKIT_CONFIG = PI4_TOOLS_HOME / "config" / "toolkit.conf"
 STATE_DIR = HIOC_HOME / "state" / "incidents"
+INVENTORY_FILE = HIOC_HOME / "state" / "inventory" / "inventory.json"
+EVENTS_FILE = HIOC_HOME / "state" / "events" / "events.json"
 LOG_DIR = HIOC_HOME / "logs"
 ACTIVE_FILE = STATE_DIR / "active.json"
 HISTORY_FILE = STATE_DIR / "history.json"
@@ -25,6 +33,7 @@ DEFAULTS = {
     "HIOC_LEGACY_BASE_TOPIC": "home/infrastructure/pi4",
     "HIOC_HISTORY_LIMIT": "100",
     "HIOC_RECOVERY_CONFIRM_CYCLES": "2",
+    "HIOC_INCIDENT_CONFIRM_CYCLES": "3",
     "HIOC_WARN_INTERNET_LATENCY_MS": "120",
     "HIOC_MAJOR_INTERNET_LATENCY_MS": "250",
     "HIOC_WARN_PACKET_LOSS_PERCENT": "1",
@@ -113,14 +122,6 @@ def save_json(path, data):
     path.write_text(json.dumps(data, indent=2))
 
 
-def stable_id(key):
-    return hashlib.sha1(key.encode()).hexdigest()
-
-
-def severity_rank(sev):
-    return {"critical": 4, "major": 3, "warning": 2, "info": 1}.get(sev, 0)
-
-
 def add_timeline(event):
     limit = int(cfg().get("HIOC_HISTORY_LIMIT", "100"))
     timeline = load_json(TIMELINE_FILE, [])
@@ -147,135 +148,19 @@ def read_telemetry():
     }
 
 
-def build_signals(t):
-    c = cfg()
-    signals = []
-
-    def add(name, system, severity, reason, value, affected):
-        signals.append({"name": name, "system": system, "severity": severity, "reason": reason, "value": value, "affected": affected})
-
-    if t["gateway_status"] != "online":
-        add("gateway_offline", "Gateway", "critical", "Gateway is unreachable from the Pi4 probe", t["gateway_status"], ["Gateway", "LAN", "Internet", "DNS", "MQTT", "Home Assistant"])
-    elif t["gateway_latency_ms"] >= num(c["HIOC_MAJOR_GATEWAY_LATENCY_MS"]):
-        add("gateway_latency", "Gateway", "major", f"Gateway latency is {t['gateway_latency_ms']} ms", f"{t['gateway_latency_ms']} ms", ["Gateway", "LAN", "DNS"])
-    elif t["gateway_latency_ms"] >= num(c["HIOC_WARN_GATEWAY_LATENCY_MS"]):
-        add("gateway_latency", "Gateway", "warning", f"Gateway latency is {t['gateway_latency_ms']} ms", f"{t['gateway_latency_ms']} ms", ["Gateway", "LAN"])
-
-    if t["packet_loss_percent"] >= num(c["HIOC_MAJOR_PACKET_LOSS_PERCENT"]):
-        add("packet_loss", "Internet", "major", f"Packet loss is {t['packet_loss_percent']}%", f"{t['packet_loss_percent']}%", ["Internet", "DNS", "MQTT", "Cloud services"])
-    elif t["packet_loss_percent"] >= num(c["HIOC_WARN_PACKET_LOSS_PERCENT"]):
-        add("packet_loss", "Internet", "warning", f"Packet loss is {t['packet_loss_percent']}%", f"{t['packet_loss_percent']}%", ["Internet"])
-
-    if t["internet_latency_ms"] >= num(c["HIOC_MAJOR_INTERNET_LATENCY_MS"]):
-        add("internet_latency", "Internet", "major", f"Average internet latency is {t['internet_latency_ms']} ms", f"{t['internet_latency_ms']} ms", ["Internet", "Cloud services"])
-    elif t["internet_latency_ms"] >= num(c["HIOC_WARN_INTERNET_LATENCY_MS"]):
-        add("internet_latency", "Internet", "warning", f"Average internet latency is {t['internet_latency_ms']} ms", f"{t['internet_latency_ms']} ms", ["Internet"])
-
-    if t["internet_health"] == "critical":
-        add("internet_health", "Internet", "critical", "Probe reports internet health as critical", t["internet_health"], ["Internet", "DNS", "MQTT"])
-    elif t["internet_health"] == "degraded":
-        add("internet_health", "Internet", "warning", "Probe reports internet health as degraded", t["internet_health"], ["Internet"])
-
-    if t["dns_latency_ms"] >= num(c["HIOC_MAJOR_DNS_LATENCY_MS"]):
-        add("dns_latency", "DNS", "major", f"Local DNS latency is {t['dns_latency_ms']} ms", f"{t['dns_latency_ms']} ms", ["DNS", "Pi-hole", "Internet"])
-    elif t["dns_latency_ms"] >= num(c["HIOC_WARN_DNS_LATENCY_MS"]):
-        add("dns_latency", "DNS", "warning", f"Local DNS latency is {t['dns_latency_ms']} ms", f"{t['dns_latency_ms']} ms", ["DNS", "Pi-hole"])
-
-    if t["mqtt_publish_ms"] >= num(c["HIOC_MAJOR_MQTT_PUBLISH_MS"]):
-        add("mqtt_publish", "MQTT", "major", f"MQTT publish duration is {t['mqtt_publish_ms']} ms", f"{t['mqtt_publish_ms']} ms", ["MQTT", "Telemetry", "Home Assistant"])
-    elif t["mqtt_publish_ms"] >= num(c["HIOC_WARN_MQTT_PUBLISH_MS"]):
-        add("mqtt_publish", "MQTT", "warning", f"MQTT publish duration is {t['mqtt_publish_ms']} ms", f"{t['mqtt_publish_ms']} ms", ["MQTT", "Telemetry"])
-
-    if t["pi5_status"] != "online":
-        add("pi5_offline", "Pi5", "critical", "Pi5 / Home Assistant host is unreachable from Pi4", t["pi5_status"], ["Home Assistant", "Dashboard", "Automations"])
-
-    if t["pi4_temperature_c"] >= num(c["HIOC_MAJOR_PI4_TEMP_C"]):
-        add("pi4_temperature", "Pi4", "major", f"Pi4 temperature is {t['pi4_temperature_c']}C", f"{t['pi4_temperature_c']}C", ["Pi4", "Pi-hole", "NUT", "Probe"])
-    elif t["pi4_temperature_c"] >= num(c["HIOC_WARN_PI4_TEMP_C"]):
-        add("pi4_temperature", "Pi4", "warning", f"Pi4 temperature is {t['pi4_temperature_c']}C", f"{t['pi4_temperature_c']}C", ["Pi4"])
-
-    return signals
+def load_inventory():
+    return load_json(INVENTORY_FILE, {"devices": [], "services": [], "topology": {"edges": []}, "dependencies": {"edges": []}, "summary": {}})
 
 
-def correlate(signals, t):
-    if not signals:
-        return None
-    names = {s["name"] for s in signals}
-    systems = {s["system"] for s in signals}
-    severity = max((s["severity"] for s in signals), key=severity_rank)
-    affected = sorted(set(a for s in signals for a in s["affected"]))
-    evidence = [f"{s['system']}: {s['reason']}" for s in signals]
+def load_events():
+    return load_json(EVENTS_FILE, [])
 
-    gateway_healthy = t["gateway_status"] == "online" and t["gateway_latency_ms"] < num(cfg()["HIOC_WARN_GATEWAY_LATENCY_MS"])
 
-    if "gateway_offline" in names or "gateway_latency" in names:
-        key = "network_path_degradation"
-        title = "Network path degradation"
-        system = "Gateway"
-        root = "Local gateway or LAN path"
-        confidence = 92
-        recommendation = "Check Huawei gateway, Orbi AP path, cabling, and local network load."
-    elif {"packet_loss", "internet_latency"} & names and gateway_healthy:
-        key = "internet_degradation_isp_likely"
-        title = "Internet degradation"
-        system = "Internet"
-        root = "ISP or upstream routing"
-        confidence = 94 if "packet_loss" in names else 88
-        recommendation = "Gateway is healthy. Monitor ISP path, compare external targets, and run a speed test if it persists."
-    elif "dns_latency" in names and not ({"packet_loss", "internet_latency"} & names):
-        key = "dns_degradation"
-        title = "DNS degradation"
-        system = "DNS"
-        root = "Pi-hole, upstream DNS, or resolver latency"
-        confidence = 86
-        recommendation = "Check Pi-hole FTL, upstream resolver, and Pi4 resource load."
-    elif "mqtt_publish" in names and len(names) == 1:
-        key = "mqtt_degradation"
-        title = "MQTT telemetry degradation"
-        system = "MQTT"
-        root = "MQTT broker or Home Assistant host load"
-        confidence = 82
-        recommendation = "Check Mosquitto broker status, HA host CPU/memory, and MQTT client load."
-    elif "pi5_offline" in names:
-        key = "home_assistant_host_unreachable"
-        title = "Home Assistant host unreachable"
-        system = "Pi5"
-        root = "Pi5 power, network, or HA host failure"
-        confidence = 95
-        recommendation = "Check Pi5 power, network link, and Home Assistant host status."
-    elif "pi4_temperature" in names:
-        key = "pi4_thermal_degradation"
-        title = "Pi4 thermal warning"
-        system = "Pi4"
-        root = "Pi4 thermal headroom reduced"
-        confidence = 90
-        recommendation = "Check Pi4 cooling, case airflow, and CPU load."
-    else:
-        key = "infrastructure_degradation"
-        title = "Infrastructure degradation"
-        system = sorted(systems)[0]
-        root = "Multiple infrastructure signals"
-        confidence = 75
-        recommendation = "Review the evidence list and open Diagnostics for the affected subsystem."
-
-    return {
-        "id": stable_id(key),
-        "key": key,
-        "status": "active",
-        "phase": "active",
-        "severity": severity,
-        "system": system,
-        "title": title,
-        "root_cause": root,
-        "confidence_percent": confidence,
-        "reason": "; ".join(evidence),
-        "impact": f"Affected systems: {', '.join(affected)}",
-        "affected": affected,
-        "recommendation": recommendation,
-        "current_value": signals[0]["value"],
-        "evidence": evidence,
-        "telemetry": t,
-    }
+def publish_event(event_bus, event_type, timestamp, payload):
+    try:
+        event_bus.publish(event_type, timestamp, payload)
+    except Exception:
+        pass
 
 
 def publish_all(base):
@@ -301,27 +186,44 @@ def main():
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     t = read_telemetry()
-    signals = build_signals(t)
-    candidate = correlate(signals, t)
+    inventory = load_inventory()
+    events = load_events()
+    signals = []
+    signals.extend(build_telemetry_signals(t, c))
+    signals.extend(build_inventory_signals(inventory))
+    signals.extend(build_event_signals(events))
+    candidate = core_correlate(signals, inventory)
     active = load_json(ACTIVE_FILE, {"status": "none"})
     history = load_json(HISTORY_FILE, [])
     timestamp = now_iso()
+    event_bus = EventBus(StateStore(HIOC_HOME / "state" / "events"), "incident", int(c.get("HIOC_EVENT_RETENTION", "500")))
 
     if candidate:
-        candidate.update({"started": active.get("started", timestamp) if active.get("key") == candidate["key"] and active.get("status") == "active" else timestamp,
+        same_active = active.get("key") == candidate["key"] and active.get("status") == "active"
+        occurrences = active.get("occurrences", 0) + 1 if same_active else 1
+        phase = lifecycle_phase(occurrences, int(c.get("HIOC_INCIDENT_CONFIRM_CYCLES", "3")))
+        candidate.update({"started": active.get("started", timestamp) if same_active else timestamp,
                           "updated": timestamp,
-                          "started_epoch": active.get("started_epoch", int(time.time())) if active.get("key") == candidate["key"] and active.get("status") == "active" else int(time.time()),
+                          "started_epoch": active.get("started_epoch", int(time.time())) if same_active else int(time.time()),
                           "updated_epoch": int(time.time()),
-                          "occurrences": active.get("occurrences", 0) + 1 if active.get("key") == candidate["key"] and active.get("status") == "active" else 1,
-                          "recovery_confirmations": 0})
+                          "occurrences": occurrences,
+                          "phase": phase,
+                          "lifecycle": phase,
+                          "recovery_confirmations": 0,
+                          "telemetry": t})
         if not (active.get("status") == "active" and active.get("key") == candidate["key"]):
             if active.get("status") == "active":
                 active["status"] = "superseded"
                 active["phase"] = "archived"
                 active["resolved"] = timestamp
                 active["duration_seconds"] = int(time.time()) - int(active.get("started_epoch", int(time.time())))
+                active["end_time"] = timestamp
                 history = [active] + history
+                publish_event(event_bus, "IncidentSuperseded", timestamp, {"incident_id": active.get("id", ""), "root_cause": active.get("root_cause", ""), "duration_seconds": active.get("duration_seconds", 0)})
             add_timeline({"timestamp": timestamp, "severity": candidate["severity"], "system": candidate["system"], "title": candidate["title"], "message": candidate["reason"], "incident_id": candidate["id"], "root_cause": candidate["root_cause"], "confidence_percent": candidate["confidence_percent"]})
+            publish_event(event_bus, "IncidentDetected", timestamp, {"incident_id": candidate["id"], "root_cause": candidate["root_cause"], "confidence_percent": candidate["confidence_percent"], "affected": candidate.get("affected", [])})
+        elif active.get("phase") != phase:
+            publish_event(event_bus, "IncidentLifecycleChanged", timestamp, {"incident_id": candidate["id"], "phase": phase, "root_cause": candidate["root_cause"]})
         save_json(ACTIVE_FILE, candidate)
     else:
         if active.get("status") == "active":
@@ -333,9 +235,11 @@ def main():
                 active["status"] = "resolved"
                 active["phase"] = "resolved"
                 active["resolved"] = timestamp
+                active["end_time"] = timestamp
                 active["duration_seconds"] = int(time.time()) - int(active.get("started_epoch", int(time.time())))
                 history = [active] + history
                 add_timeline({"timestamp": timestamp, "severity": "info", "system": active.get("system", "HIOC"), "title": "Incident resolved", "message": f"{active.get('title', 'Incident')} recovered after {active['duration_seconds']}s", "incident_id": active.get("id", ""), "root_cause": active.get("root_cause", "unknown"), "confidence_percent": active.get("confidence_percent", 0)})
+                publish_event(event_bus, "IncidentResolved", timestamp, {"incident_id": active.get("id", ""), "root_cause": active.get("root_cause", "unknown"), "confidence_percent": active.get("confidence_percent", 0), "duration_seconds": active.get("duration_seconds", 0), "affected": active.get("affected", [])})
                 active = {"status": "none", "phase": "idle", "severity": "info", "system": "HIOC", "title": "No active incident", "summary": "All monitored systems are within thresholds", "updated": timestamp, "telemetry": t}
             save_json(ACTIVE_FILE, active)
         else:
@@ -356,6 +260,8 @@ def main():
         "confidence_percent": current.get("confidence_percent", 0),
         "history_count": len(history),
         "signals_detected": len(signals),
+        "correlation_engine": "2.0.0",
+        "events_consumed": len(events),
     }
     save_json(SUMMARY_FILE, summary)
     save_json(STATUS_FILE, {"status": "online", "version": "1.2.0", "updated": timestamp})

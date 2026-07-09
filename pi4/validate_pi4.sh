@@ -28,6 +28,7 @@ check "History engine executable" test -x "$INSTALL_DIR/pi4/bin/hioc-history-eng
 check "Inventory engine executable" test -x "$INSTALL_DIR/pi4/bin/hioc-inventory-engine.py"
 check "Platform status executable" test -x "$INSTALL_DIR/pi4/bin/hioc-platform-status.py"
 check "Version manifest exists" test -f "$INSTALL_DIR/VERSION.yaml"
+check "Correlation engine version declared" grep -q '^correlation_engine:' "$INSTALL_DIR/VERSION.yaml"
 check "Active incident JSON exists" test -f "$INSTALL_DIR/state/incidents/active.json"
 check "Incident history JSON exists" test -f "$INSTALL_DIR/state/incidents/history.json"
 check "Incident summary JSON exists" test -f "$INSTALL_DIR/state/incidents/summary.json"
@@ -51,6 +52,7 @@ if [ -f "$INSTALL_DIR/state/incidents/history.json" ]; then
 fi
 if [ -f "$INSTALL_DIR/state/incidents/summary.json" ]; then
   check "Incident summary JSON valid" jq empty "$INSTALL_DIR/state/incidents/summary.json"
+  check "Incident summary reports correlation engine" jq -e '.correlation_engine == "2.0.0"' "$INSTALL_DIR/state/incidents/summary.json"
 fi
 if [ -f "$INSTALL_DIR/state/inventory/inventory.json" ]; then
   check "Inventory JSON valid" jq empty "$INSTALL_DIR/state/inventory/inventory.json"

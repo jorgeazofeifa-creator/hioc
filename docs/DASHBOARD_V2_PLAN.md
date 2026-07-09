@@ -15,6 +15,8 @@ homeassistant/dashboards/hioc_dashboard_v2.yaml
 - Reduce Executive to a true command page.
 - Add Operations as the wallboard/live-state page.
 - Turn Diagnostics into Mission Control for active troubleshooting.
+- Restore the darker HIOC/NOC visual language while preserving the v2 information architecture.
+- Make the dashboard guide operators with meaning, risk, recommended action, and investigation paths.
 - Preserve all current dashboard capabilities.
 - Eliminate duplicate information.
 - Standardize terminology and visual hierarchy.
@@ -60,13 +62,15 @@ Rules:
 - no inventory lists
 - no raw telemetry
 - no spacer cards
+- every warning explains meaning and next step
+- every domain item has a click path
 
 Recommended layout:
 
 - Status Banner across top.
 - Incident Card and Action Card as primary left/center content.
 - Affected Systems below incident.
-- Domain Health grid.
+- Domain Health as a compact vertical drill-down list.
 - Top Risks, Latest Events, and Data Freshness in right column on desktop.
 
 ## Operations Page
@@ -96,6 +100,7 @@ Rules:
 - each domain gets one Health Card
 - all cards use identical structure
 - domain cards link to drill-down page or popup
+- status colors must be visible at a glance
 
 Recommended layout:
 
@@ -151,6 +156,8 @@ graphs and raw values
 
 When no incident is active, Diagnostics should show readiness and telemetry health, not a wall of raw data.
 
+Diagnostics v2 must include a Recommended Action card. When no incident is active, it should still explain current watch items such as DNS trend rising or Pi4 memory rising using existing HIOC forecast entities.
+
 ## Inventory Page
 
 Purpose: What exists, what changed, what is unhealthy, and what depends on it?
@@ -171,6 +178,7 @@ Change:
 - replace long markdown loops with table/card rows
 - group by state first, device type second
 - move raw firmware/MAC/IP blobs to popups
+- do not use markdown pipe tables because Home Assistant may render them as raw text
 
 ## Network Page
 

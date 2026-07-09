@@ -17,7 +17,7 @@ check() {
 }
 
 check "VERSION.yaml exists" test -f "$ROOT/VERSION.yaml"
-for key in hioc_version core incident_engine forecast_engine inventory_engine dashboard schema mqtt_api installer build; do
+for key in hioc_version core incident_engine correlation_engine forecast_engine inventory_engine dashboard schema mqtt_api installer build; do
   check "VERSION has $key" bash -c "[ -n \"$(hioc_version_value "$key" "$ROOT")\" ]"
 done
 
@@ -46,4 +46,3 @@ else
   echo "HIOC release validation failed with $failures issue(s)."
   exit 1
 fi
-

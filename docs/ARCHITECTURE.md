@@ -6,7 +6,7 @@ HIOC is a self-hosted home infrastructure monitoring platform optimized for a Pi
 
 ```text
 Pi4 toolkit telemetry
-  -> HIOC incident engine
+  -> HIOC incident engine and Correlation Engine v2
   -> incident JSON state
   -> retained MQTT
   -> Home Assistant incident entities
@@ -27,6 +27,12 @@ Pi4 historical sampling
 ## HIOC Core
 
 HIOC Core provides shared runtime services for configuration, atomic JSON state, retained MQTT publishing, structured logging, schema validation, internal events, driver execution, and capability inference. New subsystems should use Core instead of creating local config, MQTT, state, or logging helpers.
+
+## Correlation Engine v2
+
+The incident engine delegates root-cause analysis to the shared Core correlation module. It consumes Pi4 telemetry, Living Inventory health, topology and dependency relationships, and contextual events from the internal event bus. Related failures are merged into a single stable incident key so repeated symptoms do not create duplicate incidents for the same root cause.
+
+Correlation Engine v2 assigns each incident a lifecycle phase of `detected`, `confirmed`, `active`, `recovering`, or `resolved`, calculates a 0-100 confidence score, records affected systems and services, and writes incident history with start time, end time, duration, root cause, confidence, and impacted systems. Public MQTT topics and Home Assistant incident entities remain backward compatible; new fields are added inside the existing JSON payloads.
 
 ## Living Inventory
 

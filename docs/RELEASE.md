@@ -15,6 +15,7 @@ Required keys:
 - `hioc_version`
 - `core`
 - `incident_engine`
+- `correlation_engine`
 - `forecast_engine`
 - `inventory_engine`
 - `dashboard`

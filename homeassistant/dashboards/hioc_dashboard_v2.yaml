@@ -4,9 +4,10 @@ views:
     path: hioc-v2-executive
     icon: mdi:monitor-dashboard
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Mission Status
@@ -14,114 +15,568 @@ views:
               {% set incident = states('sensor.hioc_incident_status') %}
               {% set offline = states('sensor.hioc_inventory_offline_devices') | int(0) %}
               {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(0) %}
+              {% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              {% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              {% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+              {% set packet_rising = states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+              {% set watch_count = (1 if dns_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) + (1 if packet_rising else 0) %}
               {% if incident == 'active' %}
               # Critical
 
-              Active {{ states('sensor.hioc_incident_severity') }} incident affecting {{ states('sensor.hioc_incident_system') }}.
+              What is happening: {{ states('sensor.hioc_incident_active') }} is active.
+
+              Why it matters: {{ states('sensor.hioc_incident_system') }} may affect dependent services.
+
+              Recommended action: Open Mission Control and follow the incident recommendation.
+
+              Click path: Diagnostics.
               {% elif offline > 0 or degraded > 0 %}
               # Degraded
 
-              Inventory reports {{ degraded }} degraded and {{ offline }} offline devices.
-              {% elif states('sensor.hioc_engine_status') == 'online' and states('sensor.hioc_inventory_status') in ['online', 'degraded'] %}
+              What is happening: Inventory reports {{ degraded }} degraded and {{ offline }} offline devices.
+
+              Why it matters: stale or offline devices can hide service dependency failures.
+
+              Recommended action: Open Inventory and review unhealthy devices.
+
+              Click path: Inventory.
+              {% elif watch_count > 0 %}
+              # Watch
+
+              What is happening: {{ watch_count }} watch item{{ 's' if watch_count != 1 else '' }} detected.
+
+              Why it matters: a rising trend can become an incident if it continues.
+
+              Recommended action: no immediate action required; open the relevant investigation page if the trend persists.
+
+              Click path: Domain Health or Top Risks.
+              {% else %}
               # Operational
 
-              No active incident. HIOC engines are reporting.
-              {% else %}
-              # Unknown
+              What is happening: no active incident and no HIOC watch items are currently detected.
 
-              HIOC status data is incomplete.
+              Why it matters: monitored domains are below operational thresholds.
+
+              Recommended action: no action required.
+
+              Click path: Diagnostics if you want supporting evidence.
               {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-diagnostics
+            grid_options:
+              columns: 5
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 315px;
+                  border-radius: 18px;
+                  border: 1px solid rgba(90, 140, 185, .28);
+                  border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %};
+                  background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98));
+                  box-shadow: 0 18px 48px rgba(0,0,0,.36);
+                  color: #dcecff;
+                }
+                ha-markdown { line-height: 1.36; }
+                h1 {
+                  color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %};
+                  font-size: 30px;
+                  margin: 0 0 12px 0;
+                }
 
           - type: markdown
             title: Current Incident
             content: >-
               {% if is_state('sensor.hioc_incident_status','active') %}
-              **{{ states('sensor.hioc_incident_severity') | title }} - {{ states('sensor.hioc_incident_active') }}**
+              # {{ states('sensor.hioc_incident_active') }}
 
-              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('unknown') }}
+              Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}
+
+              Severity: {{ states('sensor.hioc_incident_severity') | title }}
+
+              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}
 
               Confidence: {{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}%
 
-              Started: {{ states('sensor.hioc_incident_started') }}
+              Affected systems: {{ state_attr('sensor.hioc_incident_active','impact') | default('See affected systems') }}
 
-              Recommendation: {{ states('sensor.hioc_incident_recommendation') }}
+              Recommended action: {{ states('sensor.hioc_incident_recommendation') }}
+
+              Click path: Diagnostics.
               {% else %}
-              **No active incident**
+              # No Active Incident
 
-              Latest event: {{ states('sensor.hioc_latest_timeline_event') }}
+              What is happening: HIOC is not reporting an active incident.
+
+              Why it matters: Mission Control is available, but no response workflow is currently required.
+
+              Recommended action: no action required.
+
+              Click path: Diagnostics.
               {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-diagnostics
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 315px;
+                  border-radius: 18px;
+                  border: 1px solid rgba(90, 140, 185, .28);
+                  border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %};
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  color: #dcecff;
+                }
+                ha-markdown { line-height: 1.34; }
+                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; font-size: 24px; }
 
           - type: markdown
             title: Affected Systems
             content: >-
               {% if is_state('sensor.hioc_incident_status','active') %}
               {% set affected = state_attr('sensor.hioc_incident_active','affected') %}
+              What is affected:
+
               {% if affected is iterable and affected is not string %}
               {% for item in affected %}
               - {{ item }}
               {% endfor %}
               {% else %}
-              {{ state_attr('sensor.hioc_incident_active','impact') | default('Affected systems unavailable') }}
+              - {{ state_attr('sensor.hioc_incident_active','impact') | default('Affected systems are not available') }}
               {% endif %}
+
+              Recommended action: open Diagnostics to inspect dependency path.
+
+              Click path: Diagnostics.
               {% else %}
-              No systems currently affected by an active incident.
-              {% endif %}
+              # No Systems Currently Affected
 
-          - type: markdown
+              What is happening: no incident impact is reported.
+
+              Why it matters: no dependent services require response right now.
+
+              Recommended action: no action required.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-diagnostics
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 280px;
+                  border-radius: 16px;
+                  border: 1px solid rgba(90, 140, 185, .24);
+                  border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#38bdf8{% endif %};
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  color: #dcecff;
+                }
+                h1 { color: #bae6fd; font-size: 22px; }
+                ha-markdown { line-height: 1.34; }
+
+          - type: vertical-stack
             title: Domain Health
-            content: >-
-              - Incident: {{ states('sensor.hioc_incident_status') | title }}
-              - Inventory: {{ states('sensor.hioc_inventory_operations_summary') }}
-              - Internet Forecast: {{ states('sensor.hioc_forecast_internet_latency_trend') | title }}
-              - DNS Forecast: {{ states('sensor.hioc_forecast_dns_trend') | title }}
-              - MQTT Forecast: {{ states('sensor.hioc_forecast_mqtt_trend') | title }}
-              - Pi4 Forecast: Temp {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}, Memory {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
+            grid_options:
+              columns: 8
+            cards:
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+                  - type: markdown
+                    title: Incident
+                    content: >-
+                      {% if is_state('sensor.hioc_incident_status','active') %}
+                      # Critical
 
-          - type: markdown
+                      Meaning: active incident requires investigation.
+
+                      Action: open Mission Control.
+                      {% else %}
+                      # Healthy
+
+                      Meaning: no active incident.
+
+                      Action: no action required.
+                      {% endif %}
+
+                      Click: Diagnostics.
+                    tap_action:
+                      action: navigate
+                      navigation_path: /lovelace/hioc-v2-diagnostics
+                    card_mod:
+                      style: |
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; }
+                  - type: markdown
+                    title: Inventory
+                    content: >-
+                      {% set offline = states('sensor.hioc_inventory_offline_devices') | int(0) %}
+                      {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(0) %}
+                      {% if offline > 0 %}
+                      # Critical
+
+                      Meaning: {{ offline }} device{{ 's are' if offline != 1 else ' is' }} offline.
+
+                      Action: review unhealthy devices.
+                      {% elif degraded > 0 %}
+                      # Watch
+
+                      Meaning: {{ degraded }} device{{ 's are' if degraded != 1 else ' is' }} degraded.
+
+                      Action: review inventory health.
+                      {% else %}
+                      # Healthy
+
+                      Meaning: {{ states('sensor.hioc_inventory_device_count') }} devices and {{ states('sensor.hioc_inventory_service_count') }} services are known.
+
+                      Action: no action required.
+                      {% endif %}
+
+                      Click: Inventory.
+                    tap_action:
+                      action: navigate
+                      navigation_path: /lovelace/hioc-v2-inventory
+                    card_mod:
+                      style: |
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; }
+                  - type: markdown
+                    title: Internet
+                    content: >-
+                      {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+                      # Watch
+
+                      Meaning: internet latency or packet loss trend is rising.
+
+                      Action: open Network if this persists.
+                      {% else %}
+                      # Healthy
+
+                      Meaning: internet latency and packet loss trends are stable.
+
+                      Action: no action required.
+                      {% endif %}
+
+                      Click: Network.
+                    tap_action:
+                      action: navigate
+                      navigation_path: /lovelace/hioc-v2-network
+                    card_mod:
+                      style: |
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                  - type: markdown
+                    title: DNS
+                    content: >-
+                      {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+                      # Watch
+
+                      Meaning: DNS latency is increasing compared to recent baseline.
+
+                      Action: open Network diagnostics if this persists.
+                      {% else %}
+                      # Healthy
+
+                      Meaning: DNS forecast trend is not rising.
+
+                      Action: no action required.
+                      {% endif %}
+
+                      Click: Network.
+                    tap_action:
+                      action: navigate
+                      navigation_path: /lovelace/hioc-v2-network
+                    card_mod:
+                      style: |
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                  - type: markdown
+                    title: MQTT
+                    content: >-
+                      {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
+                      # Watch
+
+                      Meaning: MQTT publish timing trend is increasing.
+
+                      Action: open Diagnostics and check telemetry path.
+                      {% else %}
+                      # Healthy
+
+                      Meaning: MQTT trend is not rising.
+
+                      Action: no action required.
+                      {% endif %}
+
+                      Click: Diagnostics.
+                    tap_action:
+                      action: navigate
+                      navigation_path: /lovelace/hioc-v2-diagnostics
+                    card_mod:
+                      style: |
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                  - type: markdown
+                    title: Pi4
+                    content: >-
+                      {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+                      # Watch
+
+                      Meaning: Pi4 memory or temperature trend is rising.
+
+                      Action: open Servers and review Pi4 health.
+                      {% else %}
+                      # Healthy
+
+                      Meaning: Pi4 forecast trends do not require action.
+
+                      Action: no action required.
+                      {% endif %}
+
+                      Click: Servers.
+                    tap_action:
+                      action: navigate
+                      navigation_path: /lovelace/hioc-v2-servers
+                    card_mod:
+                      style: |
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                  - type: markdown
+                    title: Platform
+                    content: >-
+                      {% if states('sensor.hioc_platform_status') == 'online' %}
+                      # Healthy
+
+                      Meaning: platform status publisher is online.
+
+                      Action: no action required.
+                      {% else %}
+                      # Informational
+
+                      Meaning: platform status is {{ states('sensor.hioc_platform_status') }}.
+
+                      Action: open Servers or Diagnostics.
+                      {% endif %}
+
+                      Click: Servers.
+                    tap_action:
+                      action: navigate
+                      navigation_path: /lovelace/hioc-v2-servers
+                    card_mod:
+                      style: |
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_platform_status') == 'online' %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if states('sensor.hioc_platform_status') == 'online' %}#86efac{% else %}#cbd5e1{% endif %}; }
+
+          - type: vertical-stack
             title: Top Risks
-            content: >-
-              {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}
-              - Offline inventory devices: {{ states('sensor.hioc_inventory_offline_devices') }}
-              {% endif %}
-              {% if states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}
-              - Degraded inventory devices: {{ states('sensor.hioc_inventory_degraded_devices') }}
-              {% endif %}
-              {% if states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') not in ['unknown', 'unavailable', 'none', 'None'] %}
-              - Pi4 disk reaches 90% in {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }} days
-              {% endif %}
-              {% if states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
-              - Packet loss trend is rising
-              {% endif %}
-              {% if states('sensor.hioc_inventory_offline_devices') | int(0) == 0
-                    and states('sensor.hioc_inventory_degraded_devices') | int(0) == 0
-                    and states('sensor.hioc_forecast_packet_loss_trend') != 'rising'
-                    and states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') in ['unknown', 'unavailable', 'none', 'None'] %}
-              No current HIOC risks reported.
-              {% endif %}
+            grid_options:
+              columns: 6
+            cards:
+              - type: conditional
+                conditions:
+                  - entity: sensor.hioc_incident_status
+                    state: active
+                card:
+                  type: markdown
+                  title: Active Incident
+                  content: >-
+                    Severity: {{ states('sensor.hioc_incident_severity') | title }}
+
+                    Meaning: {{ states('sensor.hioc_incident_active') }} may affect {{ states('sensor.hioc_incident_system') }}.
+
+                    Recommended action: open Mission Control.
+
+                    Click: Diagnostics.
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/hioc-v2-diagnostics
+                  card_mod:
+                    style: |
+                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #ef4444; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+              - type: conditional
+                conditions:
+                  - entity: sensor.hioc_forecast_dns_trend
+                    state: rising
+                card:
+                  type: markdown
+                  title: DNS Trend Rising
+                  content: >-
+                    Severity: Watch
+
+                    Meaning: DNS latency is increasing compared to recent baseline.
+
+                    Recommended action: open Network diagnostics if this persists.
+
+                    Click: Network.
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/hioc-v2-network
+                  card_mod:
+                    style: |
+                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #f59e0b; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+              - type: conditional
+                conditions:
+                  - entity: sensor.hioc_forecast_pi4_memory_trend
+                    state: rising
+                card:
+                  type: markdown
+                  title: Pi4 Memory Rising
+                  content: >-
+                    Severity: Watch
+
+                    Meaning: Pi4 memory usage is trending upward.
+
+                    Recommended action: open Servers and review Pi4 health.
+
+                    Click: Servers.
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/hioc-v2-servers
+                  card_mod:
+                    style: |
+                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #f59e0b; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+              - type: conditional
+                conditions:
+                  - entity: sensor.hioc_forecast_packet_loss_trend
+                    state: rising
+                card:
+                  type: markdown
+                  title: Packet Loss Rising
+                  content: >-
+                    Severity: Watch
+
+                    Meaning: packet loss is increasing compared to recent baseline.
+
+                    Recommended action: open Network diagnostics if this persists.
+
+                    Click: Network.
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/hioc-v2-network
+                  card_mod:
+                    style: |
+                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #f59e0b; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+              - type: conditional
+                conditions:
+                  - entity: sensor.hioc_incident_status
+                    state_not: active
+                  - entity: sensor.hioc_forecast_dns_trend
+                    state_not: rising
+                  - entity: sensor.hioc_forecast_pi4_memory_trend
+                    state_not: rising
+                  - entity: sensor.hioc_forecast_packet_loss_trend
+                    state_not: rising
+                card:
+                  type: markdown
+                  title: No Current Action Required
+                  content: >-
+                    Severity: Healthy
+
+                    Meaning: detected watch items are below operational thresholds.
+
+                    Recommended action: continue monitoring.
+
+                    Click: Operations for live state.
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/hioc-v2-operations
+                  card_mod:
+                    style: |
+                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #22c55e; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
 
           - type: markdown
             title: Latest Events
             content: >-
-              **Timeline:** {{ states('sensor.hioc_latest_timeline_event') }}
+              {% if states('sensor.hioc_latest_timeline_event') in ['unknown', 'unavailable', 'none', 'None', ''] %}
+              # No Recent Event Recorded
 
-              **Incident history:** {{ states('sensor.hioc_incident_history_count') }} recorded incidents
+              Meaning: no incident timeline event is currently available.
 
-              **Inventory state:** {{ states('sensor.hioc_inventory_operations_summary') }}
+              Recommended action: no action required if platform status remains online.
+              {% else %}
+              # {{ states('sensor.hioc_latest_timeline_event') }}
 
-          - type: markdown
+              Meaning: latest HIOC timeline event from the incident system.
+
+              Incident history: {{ states('sensor.hioc_incident_history_count') }} recorded incidents.
+
+              Recommended action: open Diagnostics for timeline context.
+              {% endif %}
+
+              Click: Diagnostics.
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-diagnostics
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 265px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: #bae6fd; font-size: 21px; }
+
+          - type: entities
             title: Data Freshness
-            content: >-
-              - Platform: HIOC {{ states('sensor.hioc_platform_version') }} · {{ states('sensor.hioc_platform_status') }}
-              - Core: {{ states('sensor.hioc_core_version') }}
-              - Dashboard: {{ states('sensor.hioc_dashboard_version') }}
-              - Schema: {{ states('sensor.hioc_schema_version') }}
-              - MQTT API: {{ states('sensor.hioc_mqtt_api_version') }}
-              - Build: {{ states('sensor.hioc_build') }}
-              - Incident engine: {{ states('sensor.hioc_engine_status') }}
-              - Incident updated: {{ states('sensor.hioc_incident_updated') }}
-              - History engine: {{ states('sensor.hioc_history_engine_status') }}
-              - Inventory engine: {{ states('sensor.hioc_inventory_status') }}
-              - Inventory devices: {{ states('sensor.hioc_inventory_device_count') }}
+            show_header_toggle: false
+            entities:
+              - entity: sensor.hioc_platform_status
+                name: Platform
+                icon: mdi:server-network
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-servers
+              - entity: sensor.hioc_engine_status
+                name: Incident Engine
+                icon: mdi:alert-decagram
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-diagnostics
+              - entity: sensor.hioc_history_engine_status
+                name: History Engine
+                icon: mdi:history
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-diagnostics
+              - entity: sensor.hioc_inventory_status
+                name: Inventory Engine
+                icon: mdi:devices
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-inventory
+              - entity: sensor.hioc_dashboard_version
+                name: Dashboard
+                icon: mdi:monitor-dashboard
+              - entity: sensor.hioc_schema_version
+                name: Schema
+                icon: mdi:database-cog
+              - entity: sensor.hioc_mqtt_api_version
+                name: MQTT API
+                icon: mdi:message-processing
+              - entity: sensor.hioc_incident_updated
+                name: Incident Updated
+                icon: mdi:clock-check
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/hioc-v2-diagnostics
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card {
+                  min-height: 265px;
+                  border-radius: 16px;
+                  border: 1px solid rgba(90, 140, 185, .24);
+                  border-left: 5px solid {% if states('sensor.hioc_platform_status') == 'online' %}#22c55e{% else %}#64748b{% endif %};
+                  background: rgba(12, 27, 43, .96);
+                  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+                  --primary-text-color: #dcecff;
+                  --secondary-text-color: #93a4b8;
+                  --paper-item-icon-color: #38bdf8;
+                }
 
   - title: Operations
     path: hioc-v2-operations
@@ -130,6 +585,7 @@ views:
     max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Live Operational State
@@ -137,69 +593,309 @@ views:
               {% if is_state('sensor.hioc_incident_status','active') %}
               # Critical
 
-              {{ states('sensor.hioc_incident_system') }} incident is active.
+              What is happening: {{ states('sensor.hioc_incident_system') }} incident is active.
+
+              Recommended action: open Mission Control.
+              {% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              # Watch
+
+              What is happening: one or more operational trends are rising.
+
+              Recommended action: use the domain cards below to investigate only if the trend persists.
               {% else %}
               # Operational
 
-              No active incident reported by HIOC.
+              What is happening: no active incident reported by HIOC.
+
+              Recommended action: no action required.
               {% endif %}
+            grid_options:
+              columns: 12
+            card_mod:
+              style: |
+                ha-card { min-height: 150px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Incident
             content: >-
-              **{{ states('sensor.hioc_incident_status') | title }}**
+              {% if is_state('sensor.hioc_incident_status','active') %}
+              # Critical
 
               {{ states('sensor.hioc_incident_active') }}
+
+              Next step: open Mission Control.
+              {% else %}
+              # Healthy
+
+              No active incident.
+
+              Next step: click for Mission Control.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-diagnostics
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Inventory
             content: >-
-              **{{ states('sensor.hioc_inventory_operations_summary') }}**
+              {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}
+              # Watch
 
-              {{ states('sensor.hioc_inventory_device_count') }} devices, {{ states('sensor.hioc_inventory_service_count') }} services
+              {{ states('sensor.hioc_inventory_operations_summary') }}.
+
+              Next step: review unhealthy devices.
+              {% else %}
+              # Healthy
+
+              {{ states('sensor.hioc_inventory_device_count') }} devices and {{ states('sensor.hioc_inventory_service_count') }} services are known.
+
+              Next step: click for inventory.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-inventory
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Internet
             content: >-
-              **{{ states('sensor.hioc_forecast_internet_latency_trend') | title }}**
+              {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+              # Watch
 
-              24h avg latency {{ states('sensor.hioc_forecast_internet_24h_average_latency') }} ms
+              Internet latency or packet loss trend is rising.
+
+              Next step: open Network.
+              {% else %}
+              # Healthy
+
+              Internet latency and packet loss are stable.
+
+              Next step: no action required.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-network
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: DNS
             content: >-
-              **{{ states('sensor.hioc_forecast_dns_trend') | title }}**
+              {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              # Watch
 
-              Forecast trend from HIOC history engine
+              DNS latency trend is rising.
+
+              Next step: open DNS investigation.
+              {% else %}
+              # Healthy
+
+              DNS forecast is not rising.
+
+              Next step: no action required.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-network
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: MQTT
             content: >-
-              **{{ states('sensor.hioc_forecast_mqtt_trend') | title }}**
+              {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
+              # Watch
 
-              History engine {{ states('sensor.hioc_history_engine_status') }}
+              MQTT publish trend is rising.
+
+              Next step: open Diagnostics.
+              {% else %}
+              # Healthy
+
+              MQTT trend is not rising.
+
+              Next step: no action required.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-diagnostics
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Pi4
             content: >-
-              **Temp {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}**
+              {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+              # Watch
 
-              Memory {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }} · Disk growth {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
+              Pi4 memory or temperature trend is rising.
+
+              Next step: open Servers.
+              {% else %}
+              # Healthy
+
+              Pi4 forecast trends do not require action.
+
+              Next step: no action required.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-servers
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
-            title: Forecasts
+            title: Forecast
             content: >-
-              **Network samples {{ states('sensor.hioc_statistics_samples_network') }}**
+              {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+              {% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              {% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
+              {% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              {% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+              {% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}
+              {% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}
+              {% if disk_days <= 1 %}
+              # Critical
 
-              Host samples {{ states('sensor.hioc_statistics_samples_host') }}
+              Summary: Pi4 disk is forecast to reach 90% within {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }} day{{ '' if disk_days == 1 else 's' }}.
+
+              Risk: Critical
+
+              Recommendation: Open Servers and review Pi4 storage immediately.
+              {% elif disk_days <= 7 or trend_count >= 3 %}
+              # Attention
+
+              Summary: multiple forecast trends may become operational problems.
+
+              {% if internet_rising %}
+              Internet latency or packet loss is increasing.
+              {% endif %}
+              {% if dns_rising %}
+              DNS latency is increasing.
+              {% endif %}
+              {% if mqtt_rising %}
+              MQTT publish timing is increasing.
+              {% endif %}
+              {% if pi4_memory_rising %}
+              Pi4 memory usage is increasing.
+              {% endif %}
+              {% if pi4_temp_rising %}
+              Pi4 temperature is increasing.
+              {% endif %}
+              {% if disk_days <= 7 %}
+              Pi4 disk may reach 90% within {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }} days.
+              {% endif %}
+
+              Risk: Attention
+
+              Recommendation: Open Forecast Investigation and review the affected domains.
+              {% elif trend_count > 0 %}
+              # Watch
+
+              Summary: one or more forecast trends are rising.
+
+              {% if internet_rising %}
+              Internet latency or packet loss is increasing.
+              {% endif %}
+              {% if dns_rising %}
+              DNS latency is increasing.
+              {% endif %}
+              {% if mqtt_rising %}
+              MQTT publish timing is increasing.
+              {% endif %}
+              {% if pi4_memory_rising %}
+              Pi4 memory usage is increasing.
+              {% endif %}
+              {% if pi4_temp_rising %}
+              Pi4 temperature is increasing.
+              {% endif %}
+
+              Risk: Watch
+
+              Recommendation: Continue monitoring. Open Forecast Investigation if this persists.
+              {% else %}
+              # Healthy
+
+              Summary: No concerning trends detected.
+
+              All monitored systems remain within expected ranges.
+
+              Risk: Healthy
+
+              Recommendation: No action required.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-diagnostics
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}{% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}{% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}{% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}{% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}{% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}{% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}{% if disk_days <= 1 %}#ef4444{% elif disk_days <= 7 or trend_count >= 3 %}#f59e0b{% elif trend_count > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}{% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}{% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}{% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}{% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}{% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}{% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}{% if disk_days <= 1 %}#fecaca{% elif disk_days <= 7 or trend_count > 0 %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
+
+          - type: markdown
+            title: Platform
+            content: >-
+              {% if states('sensor.hioc_platform_status') == 'online' %}
+              # Healthy
+
+              HIOC {{ states('sensor.hioc_platform_version') }} platform status is online.
+
+              Next step: no action required.
+              {% else %}
+              # Informational
+
+              Platform status is {{ states('sensor.hioc_platform_status') }}.
+
+              Next step: open Servers.
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/hioc-v2-servers
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_platform_status') == 'online' %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_platform_status') == 'online' %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
 
   - title: Diagnostics
     path: hioc-v2-diagnostics
     icon: mdi:stethoscope
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Incident Mission Control
@@ -207,32 +903,99 @@ views:
               {% if is_state('sensor.hioc_incident_status','active') %}
               # {{ states('sensor.hioc_incident_active') }}
 
+              Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}
+
               Severity: {{ states('sensor.hioc_incident_severity') | title }}
 
-              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('unknown') }}
+              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}
 
               Confidence: {{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}%
 
               Started: {{ states('sensor.hioc_incident_started') }}
 
-              Recommendation: {{ states('sensor.hioc_incident_recommendation') }}
-              {% else %}
-              # No active incident
+              Updated: {{ states('sensor.hioc_incident_updated') }}
 
-              Diagnostics are ready. Latest event: {{ states('sensor.hioc_latest_timeline_event') }}
+              Duration: {{ state_attr('sensor.hioc_incident_active','duration_seconds') | default('Not available') }}
+              {% else %}
+              # No Active Incident
+
+              Diagnostics are ready.
+
+              Current watch items:
+              {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              - DNS trend rising
               {% endif %}
+              {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              - Pi4 memory trend rising
+              {% endif %}
+              {% if states('sensor.hioc_forecast_dns_trend') != 'rising' and states('sensor.hioc_forecast_pi4_memory_trend') != 'rising' %}
+              - No current watch items
+              {% endif %}
+              {% endif %}
+            grid_options:
+              columns: 7
+            card_mod:
+              style: |
+                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+
+          - type: markdown
+            title: Recommended Action
+            content: >-
+              {% if is_state('sensor.hioc_incident_status','active') %}
+              # Investigate Now
+
+              Action: {{ states('sensor.hioc_incident_recommendation') }}
+
+              Why: HIOC correlated an active incident with probable root cause {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}.
+              {% elif states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              # Review DNS If Trend Persists
+
+              Action: open Network diagnostics and check DNS trend.
+
+              Why: DNS latency is increasing compared to recent baseline.
+              {% elif states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              # Check Pi4 Memory
+
+              Action: open Servers and review Pi4 health.
+
+              Why: memory usage is trending upward.
+              {% else %}
+              # No Action Required
+
+              Action: continue monitoring.
+
+              Why: no active incident or significant watch item is detected.
+              {% endif %}
+            grid_options:
+              columns: 5
+            card_mod:
+              style: |
+                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Evidence
             content: >-
               {% set evidence = state_attr('sensor.hioc_incident_active','evidence') %}
-              {% if evidence is iterable and evidence is not string %}
+              {% if is_state('sensor.hioc_incident_status','active') and evidence is iterable and evidence is not string %}
               {% for item in evidence %}
               - {{ item }}
               {% endfor %}
+              {% elif is_state('sensor.hioc_incident_status','active') %}
+              - {{ states('sensor.hioc_incident_reason') }}
               {% else %}
-              {{ states('sensor.hioc_incident_reason') }}
+              - Internet latency trend: {{ states('sensor.hioc_forecast_internet_latency_trend') | title }}
+              - Packet loss trend: {{ states('sensor.hioc_forecast_packet_loss_trend') | title }}
+              - DNS trend: {{ states('sensor.hioc_forecast_dns_trend') | title }}
+              - MQTT trend: {{ states('sensor.hioc_forecast_mqtt_trend') | title }}
+              - Pi4 memory trend: {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #f59e0b; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: markdown
             title: Dependency Path
@@ -240,22 +1003,38 @@ views:
               {% if is_state('sensor.hioc_incident_status','active') %}
               {% set affected = state_attr('sensor.hioc_incident_active','affected') %}
               {% if affected is iterable and affected is not string %}
+              Likely affected chain:
+
               {% for item in affected %}
-              {{ item }}{% if not loop.last %} -> {% endif %}
+              - {{ item }}
               {% endfor %}
               {% else %}
-              {{ state_attr('sensor.hioc_incident_active','impact') | default('No dependency path available') }}
+              {{ state_attr('sensor.hioc_incident_active','impact') | default('Dependency path is not available') }}
               {% endif %}
               {% else %}
               No active dependency path.
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: markdown
             title: Timeline
             content: >-
-              Latest: {{ states('sensor.hioc_latest_timeline_event') }}
+              {% if states('sensor.hioc_latest_timeline_event') in ['unknown', 'unavailable', 'none', 'None', ''] %}
+              No recent event recorded.
+              {% else %}
+              Latest event: {{ states('sensor.hioc_latest_timeline_event') }}
+              {% endif %}
 
               Incident history count: {{ states('sensor.hioc_incident_history_count') }}
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 210px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #60a5fa; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: entities
             title: Live Telemetry
@@ -267,6 +1046,11 @@ views:
               - sensor.hioc_forecast_dns_trend
               - sensor.hioc_forecast_mqtt_trend
               - sensor.hioc_history_engine_status
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: entities
             title: Engine State
@@ -274,26 +1058,45 @@ views:
             entities:
               - sensor.hioc_platform_status
               - sensor.hioc_platform_version
+              - sensor.hioc_correlation_engine_version
               - sensor.hioc_engine_status
               - sensor.hioc_incident_updated
               - sensor.hioc_inventory_status
               - sensor.hioc_statistics_samples_network
               - sensor.hioc_statistics_samples_host
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #64748b; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #60a5fa; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
   - title: Inventory
     path: hioc-v2-inventory
     icon: mdi:devices
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
-            title: Inventory Status
+            title: Inventory Summary
             content: >-
               # {{ states('sensor.hioc_inventory_operations_summary') }}
 
-              {{ states('sensor.hioc_inventory_device_count') }} devices · {{ states('sensor.hioc_inventory_service_count') }} services · lowest health {{ states('sensor.hioc_inventory_lowest_health') }}%
+              What exists: {{ states('sensor.hioc_inventory_device_count') }} devices and {{ states('sensor.hioc_inventory_service_count') }} services.
+
+              What changed: latest inventory state is from the HIOC inventory engine.
+
+              What is unhealthy: {{ states('sensor.hioc_inventory_degraded_devices') }} degraded and {{ states('sensor.hioc_inventory_offline_devices') }} offline devices.
+
+              Recommended action: review Device Health when degraded or offline counts are nonzero.
+            grid_options:
+              columns: 8
+            card_mod:
+              style: |
+                ha-card { min-height: 230px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: entities
             title: Counts
@@ -307,6 +1110,11 @@ views:
               - sensor.hioc_inventory_service_count
               - sensor.hioc_inventory_topology_edges
               - sensor.hioc_inventory_dependency_edges
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 300px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: markdown
             title: Device Health
@@ -314,11 +1122,25 @@ views:
               {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
               {% if devices is iterable and devices is not string %}
               {% for device in devices | sort(attribute='health_score') %}
-              - **{{ device.display_name }}**: {{ device.health_status }} · {{ device.health_score }}% · {{ device.ip | default('no ip') }}
+              **{{ device.display_name }}**
+
+              {{ device.health_status | title }} - {{ device.health_score }}%
+
+              IP: {{ device.ip | default('No IP reported') }}
+
+              Role: {{ device.roles | default(['endpoint']) | join(', ') }}
+
               {% endfor %}
               {% else %}
               Inventory device attributes have not arrived.
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 500px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #60a5fa; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-markdown { line-height: 1.24; }
+                strong { color: #bfdbfe; }
 
           - type: markdown
             title: Services
@@ -326,66 +1148,168 @@ views:
               {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
               {% if services is iterable and services is not string %}
               {% for service in services %}
-              - **{{ service.name }}**: {{ service.type }} · {{ service.status }}
+              **{{ service.name }}**
+
+              {{ service.type | title }} - {{ service.status | title }}
+
               {% endfor %}
               {% else %}
               Inventory service attributes have not arrived.
               {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 500px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-markdown { line-height: 1.24; }
+                strong { color: #bfdbfe; }
 
   - title: Network
     path: hioc-v2-network
     icon: mdi:web-check
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Network Health
             content: >-
-              Internet latency trend is **{{ states('sensor.hioc_forecast_internet_latency_trend') }}**.
+              {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+              # Watch
 
-              24h average latency: {{ states('sensor.hioc_forecast_internet_24h_average_latency') }} ms
+              Internet latency or packet loss is trending upward.
 
-              Packet loss trend: {{ states('sensor.hioc_forecast_packet_loss_trend') }}
+              Current risk: Watch.
+
+              Recommended action: continue monitoring and open Diagnostics if the trend persists.
+              {% else %}
+              # Healthy
+
+              Internet latency and packet loss are stable.
+
+              Current risk: Healthy.
+
+              Recommended action: no action required.
+              {% endif %}
+            grid_options:
+              columns: 5
+            card_mod:
+              style: |
+                ha-card { min-height: 260px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+
+          - type: markdown
+            title: DNS Investigation
+            content: >-
+              {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              # Watch
+
+              DNS trend is rising.
+
+              Meaning: DNS latency is increasing compared to recent baseline.
+
+              Recommended action: review DNS diagnostics if this persists.
+              {% else %}
+              # Healthy
+
+              DNS forecast trend is not rising.
+
+              Recommended action: no action required.
+              {% endif %}
+            grid_options:
+              columns: 4
+            card_mod:
+              style: |
+                ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+
+          - type: markdown
+            title: MQTT Path
+            content: >-
+              {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
+              # Watch
+
+              MQTT forecast trend is rising.
+
+              Meaning: telemetry publication may be slowing.
+
+              Recommended action: open Diagnostics and check engine state.
+              {% else %}
+              # Healthy
+
+              MQTT forecast trend is not rising.
+
+              Recommended action: no action required.
+              {% endif %}
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: entities
-            title: Internet Forecast
+            title: Network Evidence
             show_header_toggle: false
             entities:
               - sensor.hioc_forecast_internet_latency_trend
               - sensor.hioc_forecast_internet_24h_average_latency
               - sensor.hioc_forecast_packet_loss_trend
-
-          - type: entities
-            title: DNS And MQTT Forecast
-            show_header_toggle: false
-            entities:
               - sensor.hioc_forecast_dns_trend
               - sensor.hioc_forecast_mqtt_trend
               - sensor.hioc_history_engine_status
+            grid_options:
+              columns: 12
+            card_mod:
+              style: |
+                ha-card { min-height: 210px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
   - title: Servers
     path: hioc-v2-servers
     icon: mdi:server
     type: sections
-    max_columns: 3
+    max_columns: 4
     sections:
       - type: grid
+        column_span: 4
         cards:
           - type: markdown
             title: Pi4 Health
             content: >-
-              Temperature trend: **{{ states('sensor.hioc_forecast_pi4_temperature_trend') }}**
+              {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+              # Watch
 
-              Memory trend: **{{ states('sensor.hioc_forecast_pi4_memory_trend') }}**
+              Memory trend: {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
+
+              Temperature trend: {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}
 
               Disk growth: {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
 
               Days to 90% disk: {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }}
 
+              Recommended action: review Pi4 health if rising trends persist.
+              {% else %}
+              # Healthy
+
+              Memory trend: {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
+
+              Temperature trend: {{ states('sensor.hioc_forecast_pi4_temperature_trend') | title }}
+
+              Disk growth: {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
+
+              Recommended action: no immediate action required.
+              {% endif %}
+            grid_options:
+              columns: 6
+            card_mod:
+              style: |
+                ha-card { min-height: 330px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+
           - type: entities
-            title: Pi4 Forecast
+            title: Pi4 Evidence
             show_header_toggle: false
             entities:
               - sensor.hioc_forecast_pi4_temperature_trend
@@ -393,6 +1317,11 @@ views:
               - sensor.hioc_forecast_pi4_disk_growth
               - sensor.hioc_forecast_pi4_days_to_90_percent_disk
               - sensor.hioc_statistics_samples_host
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 330px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#38bdf8{% endif %}; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#38bdf8{% endif %}; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: entities
             title: HIOC Engines
@@ -401,7 +1330,13 @@ views:
               - sensor.hioc_platform_status
               - sensor.hioc_platform_version
               - sensor.hioc_core_version
+              - sensor.hioc_correlation_engine_version
               - sensor.hioc_dashboard_version
               - sensor.hioc_engine_status
               - sensor.hioc_history_engine_status
               - sensor.hioc_inventory_status
+            grid_options:
+              columns: 3
+            card_mod:
+              style: |
+                ha-card { min-height: 330px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #64748b; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #60a5fa; box-shadow: 0 12px 32px rgba(0,0,0,.28); }

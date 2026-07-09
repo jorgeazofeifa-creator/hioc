@@ -37,6 +37,16 @@ Status: implemented in workspace.
 - Home Assistant platform version entities.
 - Dashboard v2 platform metadata display.
 
+## Milestone 5: Correlation Engine v2
+
+Status: implemented in workspace.
+
+- Core correlation module fed by telemetry, Living Inventory, topology, dependencies, and internal events.
+- Root-cause confidence scoring and incident lifecycle phases.
+- Duplicate suppression by stable root-cause key.
+- Incident history records start time, end time, duration, root cause, confidence, and impacted systems.
+- Existing MQTT incident API and Home Assistant incident entities preserved.
+
 ## Milestone 1: Living Inventory
 
 Status: implemented in workspace.
