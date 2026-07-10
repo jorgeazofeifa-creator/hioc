@@ -1,0 +1,422 @@
+# HIOC Master Plan
+
+**Version:** 1.0  
+**Status:** Active  
+**Owner:** Jorge Azofeifa  
+**Project:** Home Infrastructure Operations Center (HIOC)
+
+---
+
+## Purpose of this Document
+
+This document is the authoritative roadmap for the HIOC project.
+
+It defines the project's vision, guiding principles, architecture, implementation roadmap, and working agreements. When implementation decisions conflict with conversational guidance, this document takes precedence unless it is intentionally revised.
+
+Every contributor, human or AI, should read this document before making changes to the project.
+
+---
+
+# Vision
+
+HIOC (Home Infrastructure Operations Center) is an operational platform for monitoring, understanding, documenting, and troubleshooting a home infrastructure.
+
+Its primary purpose is **not** monitoring.
+
+Its primary purpose is helping the operator immediately answer:
+
+- What is happening?
+- Why is it happening?
+- What is affected?
+- What should I do?
+- What happened while I was away?
+
+HIOC should behave like a miniature Network Operations Center (NOC), providing operator-oriented information instead of raw metrics.
+
+---
+
+# Design Principles
+
+These principles override every implementation decision.
+
+## 1. Stability Before Features
+
+Never add features simply because they are possible.
+
+Every feature must improve operator awareness.
+
+---
+
+## 2. Follow the Current Phase
+
+Implement only the current planned phase.
+
+Avoid introducing unrelated improvements or redesigning existing systems unless fixing a defect or explicitly approved.
+
+When a phase is complete:
+
+- Validate
+- Commit
+- Return to this document
+- Continue with the next phase
+
+---
+
+## 3. One Problem at a Time
+
+Each phase has one primary objective.
+
+Complete it before beginning another.
+
+Avoid parallel feature development.
+
+---
+
+## 4. Operator First
+
+Dashboards exist for humans.
+
+Every card should answer an operational question.
+
+Avoid exposing implementation details whenever possible.
+
+---
+
+## 5. Explain, Don't Display
+
+Do not simply expose values.
+
+Explain:
+
+- Meaning
+- Impact
+- Recommendation
+
+The dashboard should reduce operator thinking, not increase it.
+
+---
+
+## 6. Passive Before Active
+
+Always prefer information already available from the infrastructure.
+
+Only perform active discovery when passive information cannot achieve the required objective.
+
+---
+
+## 7. Safe Operation
+
+HIOC must never negatively impact the infrastructure it monitors.
+
+Avoid unnecessary:
+
+- Polling
+- Network scans
+- Broadcast traffic
+- CPU usage
+- Disk writes
+
+---
+
+## 8. Reuse Existing Components
+
+Enhance existing systems whenever practical.
+
+Avoid duplicate engines or overlapping functionality.
+
+---
+
+## 9. Incremental Evolution
+
+Prefer extending existing architecture over replacing it.
+
+Large redesigns require explicit approval.
+
+---
+
+# Architecture
+
+Current major components include:
+
+- Platform Core
+- Inventory Engine
+- Incident Engine
+- Correlation Engine
+- History Engine
+- Dashboard v2
+- MQTT Publishing Layer
+- Home Assistant Integration
+
+Additional components should integrate cleanly into this architecture.
+
+---
+
+# Dashboard Philosophy
+
+Dashboard v2 is the primary operator interface.
+
+Each page has a specific purpose.
+
+## Operations
+
+Current infrastructure health.
+
+## Diagnostics
+
+Current evidence.
+
+## History
+
+Past incidents.
+
+## Inventory
+
+Living infrastructure documentation.
+
+## Network
+
+Network diagnostics.
+
+## Servers
+
+Server diagnostics.
+
+Future pages should have equally focused responsibilities.
+
+---
+
+# Incident Philosophy
+
+Every incident should produce:
+
+- Live status
+- Supporting evidence
+- Affected systems
+- Dependency path
+- Recommended action
+
+When resolved, every incident should automatically produce:
+
+- Timeline
+- Summary
+- Probable cause
+- Duration
+- Affected services
+- Operator review
+
+Historical analysis is considered a first-class feature.
+
+---
+
+# Inventory Philosophy
+
+The Inventory is the living documentation of the infrastructure.
+
+It should answer:
+
+- What exists?
+- Where is it?
+- What does it do?
+- What depends on it?
+- Is it healthy?
+- When was it last seen?
+- How was it discovered?
+
+Inventory information should become richer over time while remaining trustworthy.
+
+---
+
+# Development Roadmap
+
+## Completed
+
+- Platform Foundation
+- MQTT Publishing
+- Dashboard v2
+- Incident Engine
+- Correlation Engine
+- History Engine
+- Incident Review
+- Dashboard usability improvements
+- Initial Living Inventory
+
+---
+
+## Current Phase
+
+### Phase 7A - Passive Living Inventory
+
+Objective:
+
+Build the richest possible infrastructure inventory without performing active network discovery.
+
+Passive information sources include:
+
+- Pi-hole DHCP leases
+- Linux ARP / Neighbor tables
+- Home Assistant Device Registry
+- Home Assistant Entity Registry
+- MQTT Discovery
+- Existing integrations
+- Known infrastructure definitions
+- Routing information
+- Passive operating system information
+
+Expected outcome:
+
+The Inventory becomes the authoritative documentation of the infrastructure without requiring active scans.
+
+---
+
+## Planned Phase
+
+### Phase 7B - Safe Active Discovery
+
+Status:
+
+Not started.
+
+This phase is intentionally postponed until Phase 7A is complete.
+
+Goals include:
+
+- Manual discovery
+- Scheduled low-frequency discovery
+- Safe network probing
+- No continuous scanning
+- No aggressive port scanning
+
+---
+
+## Future Enhancements
+
+Potential future work includes:
+
+- Dependency graph visualization
+- Infrastructure topology
+- Automatic service relationships
+- Failure propagation visualization
+- Historical infrastructure trends
+- Predictive recommendations
+- Expanded operational analytics
+
+These items remain intentionally out of scope until the current roadmap reaches them.
+
+---
+
+# Repository Rules
+
+Every completed phase must:
+
+- Compile successfully
+- Pass unit tests
+- Validate Home Assistant YAML
+- Preserve backward compatibility unless explicitly approved
+
+Unless specifically requested:
+
+- Do not redesign unrelated code
+- Do not rename MQTT topics
+- Do not rename entities
+- Do not introduce breaking changes
+
+---
+
+# Commit Rules
+
+Every completed phase ends with:
+
+1. Validation
+2. Commit
+3. Push to main
+4. Clean working tree
+
+---
+
+# Working Agreement
+
+While implementing HIOC:
+
+- Stay focused on the current phase.
+- Avoid scope creep.
+- Record future ideas instead of implementing them immediately.
+- Return to this document whenever a phase is completed.
+- Keep changes consistent with the project's architecture and philosophy.
+
+---
+
+# Implementation Status
+
+This section reflects the current state of the project.
+
+It should be updated whenever a development phase is completed.
+
+## Current Branch
+
+main
+
+## Current Commit
+
+d4047d0
+
+## Current Phase
+
+Phase 7A - Passive Living Inventory
+
+## Phase Progress
+
+| Phase | Status |
+|--------|--------|
+| Platform Foundation | ✅ Complete |
+| MQTT Publishing | ✅ Complete |
+| Dashboard v2 | ✅ Complete |
+| Incident Engine | ✅ Complete |
+| Correlation Engine | ✅ Complete |
+| History Engine | ✅ Complete |
+| Incident Review | ✅ Complete |
+| Dashboard Usability Improvements | ✅ Complete |
+| Initial Living Inventory | ✅ Complete |
+| Phase 7A - Passive Living Inventory | 🚧 In Progress |
+| Phase 7B - Safe Active Discovery | ⏳ Planned |
+
+## Current Objective
+
+Enrich the Living Inventory using passive information sources only.
+
+## Next Planned Task
+
+Continue improving inventory richness using passive infrastructure data.
+
+Do not begin Active Discovery until Phase 7A has been completed.
+
+---
+
+# Decision Log
+
+## 2026-07
+
+Architectural decisions currently in effect:
+
+- Dashboard v2 is the primary operator interface.
+- Passive Living Inventory must be completed before Active Discovery.
+- HIOC favors operator explanations over raw metrics.
+- Historical incident review is a first-class feature.
+- Incident testing will occur during real operational events rather than synthetic simulations.
+- New features must not interrupt the current implementation phase.
+- Scope changes require an intentional revision of this master plan.
+
+---
+
+# Maintaining This Document
+
+This document should evolve deliberately.
+
+Routine implementation work should update only:
+
+- Current Commit
+- Current Phase
+- Phase Progress
+- Current Objective
+- Next Planned Task
+
+Changes to the project's philosophy, architecture, or roadmap should be made intentionally and reflected in the Decision Log.
