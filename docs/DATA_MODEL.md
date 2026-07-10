@@ -25,7 +25,7 @@ Inventory root object:
 Device object:
 
 - `id`: stable ID generated from MAC, then IP, then hostname.
-- `display_name`: hostname, name, IP, or ID.
+- `display_name`: operator name, hostname, IP, or ID.
 - `type`: local host, network device, collector, gateway, or endpoint.
 - `roles`: inferred operational roles.
 - `ip`
@@ -42,6 +42,46 @@ Device object:
 - `health_reasons`
 - `parent_id`
 - optional integration hints such as `parent_mac`, `parent_ip`, `uplink_mac`, `uplink_ip`, or `parent_device_id`
+
+Known infrastructure definitions are optional operator-supplied passive inventory input. The default file is:
+
+```text
+/home/jazofv1/hioc/config/inventory/known_infrastructure.json
+```
+
+Schema:
+
+```json
+{
+  "devices": [
+    {
+      "id": "operator-stable-alias",
+      "name": "Office Switch",
+      "hostname": "office-switch",
+      "ip": "192.168.1.10",
+      "mac": "aa:bb:cc:dd:ee:ff",
+      "role": "Network Equipment",
+      "type": "network_device",
+      "vendor": "Netgear",
+      "model": "GS108",
+      "location": "Network closet",
+      "area": "Infrastructure",
+      "parent_id": "gateway",
+      "parent_device_id": "gateway",
+      "parent_mac": "11:22:33:44:55:66",
+      "parent_ip": "192.168.1.1",
+      "uplink_mac": "11:22:33:44:55:66",
+      "uplink_ip": "192.168.1.1",
+      "notes": "Operator-owned metadata",
+      "enabled": true
+    }
+  ]
+}
+```
+
+Supported roles are `Core Infrastructure`, `Network Equipment`, `Server`, `IoT`, `Media`, `Workstation`, `Mobile`, and `Unknown`.
+
+Known definitions enrich observed passive inventory by normalized MAC first, then exact IP or normalized hostname when stronger identifiers do not conflict. Configured metadata can provide operator names, roles, model/vendor details, location, notes, and topology hints. Runtime fields such as observed status, health, last-seen timestamps, and service observations remain owned by passive discovery. A configured device that has never been observed is represented as offline and does not receive a fabricated `last_seen`.
 
 Service object:
 

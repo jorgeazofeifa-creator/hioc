@@ -39,11 +39,35 @@ HIOC_INVENTORY_STALE_AFTER_SEC="900"
 HIOC_INVENTORY_OFFLINE_AFTER_SEC="3600"
 HIOC_INVENTORY_SNMP_COMMUNITY=""
 HIOC_INVENTORY_INTEGRATION_DIR=""
+HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE="/home/jazofv1/hioc/config/inventory/known_infrastructure.json"
 ```
 
-Leave `HIOC_INVENTORY_ACTIVE_DISCOVERY` set to `off` for the currently approved passive discovery mode from host facts, default route, neighbor table, DHCP leases, and integration hint files.
+Leave `HIOC_INVENTORY_ACTIVE_DISCOVERY` set to `off` for the currently approved passive discovery mode from host facts, default route, neighbor table, DHCP leases, integration hint files, and optional known infrastructure definitions.
 
 Active-discovery configuration may exist, but operational use is governed by [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md) and should not be enabled until the planned Phase 7B Safe Active Discovery work is explicitly approved.
+
+To enrich inventory with operator-owned infrastructure metadata, create `/home/jazofv1/hioc/config/inventory/known_infrastructure.json`:
+
+```json
+{
+  "devices": [
+    {
+      "id": "gateway",
+      "name": "Internet Gateway",
+      "ip": "192.168.1.1",
+      "mac": "aa:bb:cc:dd:ee:ff",
+      "role": "Network Equipment",
+      "type": "gateway",
+      "vendor": "Huawei",
+      "model": "Gateway",
+      "location": "Network closet",
+      "enabled": true
+    }
+  ]
+}
+```
+
+The file is optional. A missing default file does not fail inventory. Set `HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE=""` to disable this source explicitly.
 
 ## Home Assistant
 

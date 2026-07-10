@@ -1,5 +1,7 @@
 import hashlib
+import ipaddress
 import json
+import logging
 import os
 import re
 import socket
@@ -12,6 +14,58 @@ from .core.drivers import DriverRegistry, DriverResult
 
 
 MAC_RE = re.compile(r"^[0-9a-f]{2}(:[0-9a-f]{2}){5}$")
+KNOWN_SOURCE = "known_infrastructure"
+KNOWN_FIELDS = {
+    "id",
+    "name",
+    "hostname",
+    "ip",
+    "mac",
+    "role",
+    "type",
+    "vendor",
+    "model",
+    "location",
+    "area",
+    "parent_id",
+    "parent_device_id",
+    "parent_mac",
+    "parent_ip",
+    "uplink_mac",
+    "uplink_ip",
+    "notes",
+    "enabled",
+}
+KNOWN_METADATA_FIELDS = {
+    "name",
+    "hostname",
+    "role",
+    "type",
+    "vendor",
+    "model",
+    "location",
+    "area",
+    "parent_id",
+    "parent_device_id",
+    "parent_mac",
+    "parent_ip",
+    "uplink_mac",
+    "uplink_ip",
+    "notes",
+}
+OPERATOR_ROLES = {
+    "Core Infrastructure",
+    "Network Equipment",
+    "Server",
+    "IoT",
+    "Media",
+    "Workstation",
+    "Mobile",
+    "Unknown",
+}
+
+
+LOG = logging.getLogger("hioc-inventory-engine")
 
 
 def normalize_mac(value: str) -> str:
@@ -19,8 +73,12 @@ def normalize_mac(value: str) -> str:
     return mac if MAC_RE.match(mac) else ""
 
 
+def normalize_hostname(value: str) -> str:
+    return str(value or "").strip().lower().rstrip(".")
+
+
 def stable_device_id(record: dict) -> str:
-    key = record.get("mac") or record.get("ip") or record.get("hostname") or record.get("name") or "unknown"
+    key = record.get("mac") or record.get("ip") or record.get("hostname") or record.get("_configured_id") or record.get("name") or "unknown"
     return "dev_" + hashlib.sha1(str(key).lower().encode()).hexdigest()[:16]
 
 
@@ -161,6 +219,182 @@ def integration_inventory(config: dict, state_dir: Path) -> dict:
                 record.setdefault("last_seen_source", f"integration:{path.stem}")
                 devices[str(key)] = record
     return devices
+
+
+def known_infrastructure_path(config: dict) -> Path | None:
+    raw = config.get("HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE")
+    if raw is None:
+        raw = str(Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "config" / "inventory" / "known_infrastructure.json")
+    raw = str(raw).strip()
+    if not raw:
+        return None
+    path = Path(raw)
+    if not path.is_absolute():
+        path = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / path
+    return path
+
+
+def _known_warning(message: str) -> None:
+    LOG.warning("known infrastructure: %s", message)
+
+
+def _valid_ip(value: str) -> bool:
+    if not value:
+        return True
+    try:
+        ipaddress.ip_address(value)
+        return True
+    except ValueError:
+        return False
+
+
+def _clean_known_record(raw: dict, index: int, seen_ids: set[str], seen_macs: set[str]) -> dict | None:
+    if not isinstance(raw, dict):
+        _known_warning(f"record {index} skipped: expected object")
+        return None
+    if raw.get("enabled") is False:
+        return None
+    unknown = sorted(set(raw) - KNOWN_FIELDS)
+    if unknown:
+        _known_warning(f"record {index} ignored unknown fields: {', '.join(unknown)}")
+    configured_id = str(raw.get("id", "") or "").strip()
+    if configured_id:
+        if configured_id in seen_ids:
+            _known_warning(f"record {index} id {configured_id} skipped: duplicate configured id")
+            return None
+        seen_ids.add(configured_id)
+    record = {}
+    for field in KNOWN_FIELDS - {"enabled", "id"}:
+        value = raw.get(field)
+        if value in ("", None, []):
+            continue
+        record[field] = str(value).strip() if isinstance(value, (str, int, float)) else value
+    if configured_id:
+        record["_configured_id"] = configured_id
+    if record.get("mac"):
+        mac = normalize_mac(record["mac"])
+        if not mac:
+            _known_warning(f"record {index} skipped: invalid MAC format")
+            return None
+        if mac in seen_macs:
+            _known_warning(f"record {index} mac {mac} skipped: duplicate configured MAC")
+            return None
+        seen_macs.add(mac)
+        record["mac"] = mac
+    for field in ("parent_mac", "uplink_mac"):
+        if record.get(field):
+            mac = normalize_mac(record[field])
+            if not mac:
+                _known_warning(f"record {index} skipped: invalid {field} format")
+                return None
+            record[field] = mac
+    for field in ("ip", "parent_ip", "uplink_ip"):
+        if record.get(field) and not _valid_ip(record[field]):
+            _known_warning(f"record {index} skipped: invalid {field}")
+            return None
+    if record.get("role") and record["role"] not in OPERATOR_ROLES:
+        _known_warning(f"record {index} skipped: unsupported role {record['role']}")
+        return None
+    if not any(record.get(field) for field in ("mac", "ip", "hostname", "name", "_configured_id")):
+        _known_warning(f"record {index} skipped: no usable identifier")
+        return None
+    record["source"] = KNOWN_SOURCE
+    record["last_seen_source"] = KNOWN_SOURCE
+    record["_observed"] = False
+    record["_known_metadata_fields"] = sorted(field for field in KNOWN_METADATA_FIELDS if record.get(field))
+    return record
+
+
+def known_infrastructure(config: dict) -> list[dict]:
+    path = known_infrastructure_path(config)
+    if path is None:
+        return []
+    if not path.exists():
+        return []
+    try:
+        text = path.read_text(errors="ignore").strip()
+    except OSError as exc:
+        _known_warning(f"{path} skipped: {exc}")
+        return []
+    if not text:
+        _known_warning(f"{path} skipped: file is empty")
+        return []
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        _known_warning(f"{path} skipped: invalid JSON at line {exc.lineno} column {exc.colno}")
+        return []
+    if not isinstance(payload, dict):
+        _known_warning(f"{path} skipped: top-level JSON must be an object")
+        return []
+    records = payload.get("devices", [])
+    if not isinstance(records, list):
+        _known_warning(f"{path} skipped: devices must be a list")
+        return []
+    seen_ids = set()
+    seen_macs = set()
+    accepted = []
+    for index, raw in enumerate(records):
+        record = _clean_known_record(raw, index, seen_ids, seen_macs)
+        if record:
+            accepted.append(record)
+    return accepted
+
+
+def _identifier_conflicts(left: dict, right: dict) -> list[str]:
+    conflicts = []
+    for field in ("mac", "ip"):
+        if left.get(field) and right.get(field) and left.get(field) != right.get(field):
+            conflicts.append(field)
+    left_host = normalize_hostname(left.get("hostname"))
+    right_host = normalize_hostname(right.get("hostname"))
+    if left_host and right_host and left_host != right_host:
+        conflicts.append("hostname")
+    return conflicts
+
+
+def _matching_identifier(left: dict, right: dict) -> str:
+    if left.get("mac") and left.get("mac") == right.get("mac"):
+        return "mac"
+    if left.get("ip") and left.get("ip") == right.get("ip"):
+        return "ip"
+    left_host = normalize_hostname(left.get("hostname"))
+    if left_host and left_host == normalize_hostname(right.get("hostname")):
+        return "hostname"
+    return ""
+
+
+def append_known_infrastructure(records: list[dict], known_records: list[dict]) -> list[dict]:
+    accepted = list(records)
+    observed = [record for record in records if record.get("_observed", True)]
+    for index, record in enumerate(known_records):
+        matches = []
+        if record.get("mac"):
+            matches = [item for item in observed if item.get("mac") == record["mac"]]
+        if not matches and record.get("ip"):
+            matches = [item for item in observed if item.get("ip") == record["ip"]]
+        if not matches and record.get("hostname"):
+            host = normalize_hostname(record["hostname"])
+            matches = [item for item in observed if normalize_hostname(item.get("hostname")) == host]
+        if matches:
+            conflict = next((item for item in matches if _identifier_conflicts(record, item)), None)
+            if conflict:
+                configured_id = record.get("_configured_id", f"record {index}")
+                matching = _matching_identifier(record, conflict) or "identifier"
+                conflicting = ", ".join(_identifier_conflicts(record, conflict))
+                _known_warning(f"{configured_id} skipped: matched by {matching} but conflicts on {conflicting}")
+                continue
+            record["_merge_key"] = _record_key(matches[0])
+        else:
+            weaker_conflict = next((item for item in observed if _matching_identifier(record, item) and _identifier_conflicts(record, item)), None)
+            if weaker_conflict:
+                configured_id = record.get("_configured_id", f"record {index}")
+                matching = _matching_identifier(record, weaker_conflict)
+                conflicting = ", ".join(_identifier_conflicts(record, weaker_conflict))
+                _known_warning(f"{configured_id} skipped: matched by {matching} but conflicts on {conflicting}")
+                continue
+        accepted.append(record)
+    return accepted
 
 
 def reverse_dns(ip: str) -> str:
@@ -329,6 +563,8 @@ def health_score(record: dict, now_epoch: int, stale_after: int, offline_after: 
     reasons = []
     score = 100
     last_seen = int(record.get("last_seen_epoch") or 0)
+    if record.get("_never_observed"):
+        return 0, "offline", ["not yet observed by passive discovery"]
     age = now_epoch - last_seen if last_seen else offline_after + 1
     if age > offline_after:
         score -= 55
@@ -354,37 +590,77 @@ def health_score(record: dict, now_epoch: int, stale_after: int, offline_after: 
     return score, status, reasons
 
 
+def _record_key(record: dict) -> str:
+    if record.get("_merge_key"):
+        return record["_merge_key"]
+    return normalize_mac(record.get("mac", "")) or record.get("ip") or normalize_hostname(record.get("hostname")) or record.get("_configured_id") or record.get("name", "")
+
+
+def _merge_record_values(records: list[dict]) -> dict:
+    observed_records = [record for record in records if record.get("_observed", True)]
+    known_records = [record for record in records if not record.get("_observed", True)]
+    merged = {}
+    sources = set()
+    for record in observed_records + known_records:
+        if record.get("source"):
+            sources.add(record["source"])
+        sources.update(record.get("sources", []))
+    for record in observed_records:
+        for key, value in record.items():
+            if key.startswith("_") or value in ("", None, []):
+                continue
+            merged[key] = value
+    for record in known_records:
+        for key in ("mac", "ip", "hostname"):
+            if record.get(key) and not merged.get(key):
+                merged[key] = record[key]
+        for key in record.get("_known_metadata_fields", []):
+            value = record.get(key)
+            if value not in ("", None, []):
+                merged[key] = value
+        if record.get("_configured_id") and not merged.get("_configured_id"):
+            merged["_configured_id"] = record["_configured_id"]
+    if sources:
+        merged["sources"] = sorted(sources)
+    merged["_observed"] = bool(observed_records)
+    return merged
+
+
 def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int, config: dict) -> list[dict]:
     by_key = {}
     for record in records:
-        key = normalize_mac(record.get("mac", "")) or record.get("ip") or record.get("hostname")
+        key = _record_key(record)
         if not key:
             continue
-        existing = by_key.setdefault(key, {})
-        sources = set(existing.get("sources", []))
-        if existing.get("source"):
-            sources.add(existing["source"])
-        if record.get("source"):
-            sources.add(record["source"])
-        existing.update({k: v for k, v in record.items() if v not in ("", None, [])})
-        if sources:
-            existing["sources"] = sorted(sources)
+        by_key.setdefault(key, []).append(record)
     prev_by_id = {item.get("id"): item for item in previous.get("devices", []) if item.get("id")}
     stale_after = int(config.get("HIOC_INVENTORY_STALE_AFTER_SEC", "900"))
     offline_after = int(config.get("HIOC_INVENTORY_OFFLINE_AFTER_SEC", "3600"))
     devices = []
-    for record in by_key.values():
+    for grouped_records in by_key.values():
+        record = _merge_record_values(grouped_records)
+        observed = record.pop("_observed", True)
         record["mac"] = normalize_mac(record.get("mac", ""))
         record["id"] = stable_device_id(record)
         prev = prev_by_id.get(record["id"], {})
-        record["first_seen"] = prev.get("first_seen", now)
-        record["last_seen"] = now
-        record["last_seen_epoch"] = now_epoch
-        record["display_name"] = record.get("hostname") or record.get("name") or record.get("ip") or record["id"]
+        if observed:
+            record["first_seen"] = prev.get("first_seen", now)
+            record["last_seen"] = now
+            record["last_seen_epoch"] = now_epoch
+        else:
+            if prev.get("first_seen"):
+                record["first_seen"] = prev["first_seen"]
+            if prev.get("last_seen"):
+                record["last_seen"] = prev["last_seen"]
+            if prev.get("last_seen_epoch"):
+                record["last_seen_epoch"] = prev["last_seen_epoch"]
+            if not prev.get("last_seen_epoch"):
+                record["_never_observed"] = True
+        record["display_name"] = record.get("name") or record.get("hostname") or record.get("ip") or record["id"]
         record["name"] = record["display_name"]
         record.setdefault("vendor", "")
         record.setdefault("role", operator_role(record, record.get("roles", [])))
-        record.setdefault("inventory_class", inventory_class(record["role"]))
+        record["inventory_class"] = inventory_class(record["role"])
         record["source"] = ", ".join(record.get("sources", [])) if record.get("sources") else record.get("source", "unknown")
         score, status, reasons = health_score(record, now_epoch, stale_after, offline_after)
         record["health_score"] = score
@@ -456,6 +732,19 @@ def _hinted_parent_id(device: dict, by_id: dict, by_mac: dict, by_ip: dict) -> s
         if value in lookup and lookup[value].get("id") != device.get("id"):
             return lookup[value]["id"]
     return ""
+
+
+def resolve_configured_parent_ids(devices: list[dict]) -> None:
+    by_configured_id = {
+        device.get("_configured_id"): device.get("id")
+        for device in devices
+        if device.get("_configured_id") and device.get("id")
+    }
+    for device in devices:
+        for field in ("parent_id", "parent_device_id"):
+            value = device.get(field)
+            if value in by_configured_id and by_configured_id[value] != device.get("id"):
+                device[field] = by_configured_id[value]
 
 
 def build_topology(devices: list[dict], gateway_ip: str, local_device_id: str) -> dict:
@@ -642,6 +931,10 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         registry.register(ActiveNetworkDriver())
     for result in registry.run(config):
         records.extend(result.devices)
+    known_records = known_infrastructure(config)
+    if known_records:
+        discovery_sources.append(KNOWN_SOURCE)
+        records = append_known_infrastructure(records, known_records)
     count = int(config.get("HIOC_INVENTORY_PING_COUNT", "1"))
     timeout = int(config.get("HIOC_INVENTORY_PING_TIMEOUT_SEC", "1"))
     community = config.get("HIOC_INVENTORY_SNMP_COMMUNITY", "")
@@ -664,10 +957,14 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         else:
             record["type"] = record.get("type") or primary_type
         record["roles"] = roles
-        record["role"] = operator_role(record, roles)
+        if record.get("role") in OPERATOR_ROLES:
+            record["role"] = record["role"]
+        else:
+            record["role"] = operator_role(record, roles)
         record["inventory_class"] = inventory_class(record["role"])
         enriched.append(record)
     devices = merge_records(enriched, previous, now, now_epoch, config)
+    resolve_configured_parent_ids(devices)
     local_device_id = next((d["id"] for d in devices if d.get("type") == "local_host"), devices[0]["id"] if devices else "")
     service_registry = DriverRegistry()
     service_registry.register(LocalServiceDriver(local_device_id))
@@ -684,6 +981,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         capabilities.infer_from_service(service)
     capability_list = capabilities.all()
     summary = build_inventory_summary(devices, services, topology, dependencies, now, discovery_sources, discovery_limited, discovery_limit_reason)
+    devices = [{key: value for key, value in device.items() if not key.startswith("_")} for device in devices]
     return {
         "schema_version": "1.0",
         "updated": now,

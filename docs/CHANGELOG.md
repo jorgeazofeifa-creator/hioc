@@ -35,6 +35,7 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 - Release System v1.0 with version manifest, build/package/validate/install/upgrade/rollback scripts, platform status publisher, MQTT platform topics, and Home Assistant platform entities.
 - Correlation Engine v2 with Core event context, topology-aware root-cause analysis, confidence scoring, lifecycle phases, duplicate suppression, and backward-compatible incident MQTT/Home Assistant output.
 - HIOC Master Plan as the authoritative project charter.
+- Passive known infrastructure definitions from `/home/jazofv1/hioc/config/inventory/known_infrastructure.json` to enrich Living Inventory without active discovery.
 
 ## v1.0.0-core
 

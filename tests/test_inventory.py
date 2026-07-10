@@ -2,6 +2,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "pi4" / "lib"))
@@ -17,9 +18,14 @@ from hioc.inventory import (
     health_score,
     inventory_summary_lists,
     inventory_class,
+    append_known_infrastructure,
+    discover_inventory,
+    integration_inventory,
+    known_infrastructure,
     merge_records,
     normalize_mac,
     operator_role,
+    resolve_configured_parent_ids,
     scan_subnet,
     stable_device_id,
 )
@@ -45,6 +51,13 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(healthy[1], "healthy")
         self.assertEqual(stale[1], "watch")
         self.assertEqual(offline[1], "offline")
+
+    def test_health_score_only_forces_offline_for_never_observed_records(self):
+        legacy_missing_timestamp = health_score({"mac": "aa:bb:cc:dd:ee:ff"}, 1010, 60, 120)
+        never_observed = health_score({"mac": "aa:bb:cc:dd:ee:ff", "_never_observed": True}, 1010, 60, 120)
+
+        self.assertEqual(legacy_missing_timestamp[1], "degraded")
+        self.assertEqual(never_observed[1], "offline")
 
     def test_merge_records_preserves_previous_unseen_devices(self):
         config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
@@ -137,6 +150,158 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(devices[0]["inventory_class"], "infrastructure")
         self.assertEqual(devices[0]["status"], "online")
         self.assertEqual(devices[0]["health"], "healthy")
+
+    def test_missing_known_infrastructure_file_is_nonfatal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "known_infrastructure.json"
+            records = known_infrastructure({"HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": str(missing)})
+
+        self.assertEqual(records, [])
+
+    def test_empty_known_infrastructure_config_disables_loading(self):
+        records = known_infrastructure({"HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": ""})
+
+        self.assertEqual(records, [])
+
+    def test_valid_known_infrastructure_definition_creates_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "known_infrastructure.json"
+            path.write_text('{"devices":[{"id":"gateway","name":"Huawei Gateway","ip":"192.168.1.1","mac":"aa-bb-cc-dd-ee-ff","role":"Network Equipment","type":"gateway","vendor":"Huawei","enabled":true}]}')
+            records = known_infrastructure({"HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": str(path)})
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["mac"], "aa:bb:cc:dd:ee:ff")
+        self.assertEqual(records[0]["source"], "known_infrastructure")
+        self.assertFalse(records[0]["_observed"])
+
+    def test_known_infrastructure_mac_match_enriches_existing_passive_device(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        observed = [{"ip": "192.168.1.2", "mac": "aa:bb:cc:dd:ee:ff", "source": "arp_table", "roles": ["endpoint"], "role": "Unknown", "inventory_class": "client"}]
+        known = [{"mac": "aa:bb:cc:dd:ee:ff", "name": "Office Switch", "role": "Network Equipment", "source": "known_infrastructure", "_observed": False, "_known_metadata_fields": ["name", "role"]}]
+
+        devices = merge_records(append_known_infrastructure(observed, known), {"devices": []}, "now", 100, config)
+
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["display_name"], "Office Switch")
+        self.assertEqual(devices[0]["role"], "Network Equipment")
+        self.assertEqual(devices[0]["inventory_class"], "infrastructure")
+        self.assertEqual(devices[0]["status"], "online")
+        self.assertIn("arp_table", devices[0]["source"])
+        self.assertIn("known_infrastructure", devices[0]["source"])
+
+    def test_known_metadata_does_not_override_observed_runtime_identity_with_empty_values(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        observed = [{"ip": "192.168.1.2", "mac": "aa:bb:cc:dd:ee:ff", "hostname": "observed-host", "source": "dhcp_leases"}]
+        known = [{"mac": "aa:bb:cc:dd:ee:ff", "name": "Preferred Name", "source": "known_infrastructure", "_observed": False, "_known_metadata_fields": ["name"]}]
+
+        devices = merge_records(append_known_infrastructure(observed, known), {"devices": []}, "now", 100, config)
+
+        self.assertEqual(devices[0]["hostname"], "observed-host")
+        self.assertEqual(devices[0]["display_name"], "Preferred Name")
+        self.assertEqual(devices[0]["last_seen"], "now")
+
+    def test_invalid_known_infrastructure_records_are_rejected_partially(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "known_infrastructure.json"
+            path.write_text('{"devices":[{"name":"Bad MAC","mac":"not-a-mac"},{"name":"UPS","role":"Core Infrastructure"}]}')
+            records = known_infrastructure({"HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": str(path)})
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["name"], "UPS")
+
+    def test_duplicate_known_identifiers_keep_first_valid_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "known_infrastructure.json"
+            path.write_text('{"devices":[{"id":"switch","name":"Switch A","mac":"aa:bb:cc:dd:ee:ff"},{"id":"switch","name":"Switch B","mac":"11:22:33:44:55:66"},{"id":"ap","name":"AP","mac":"aa:bb:cc:dd:ee:ff"}]}')
+            records = known_infrastructure({"HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": str(path)})
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["name"], "Switch A")
+
+    def test_disabled_known_definition_is_ignored(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "known_infrastructure.json"
+            path.write_text('{"devices":[{"name":"Disabled UPS","role":"Core Infrastructure","enabled":false}]}')
+            records = known_infrastructure({"HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": str(path)})
+
+        self.assertEqual(records, [])
+
+    def test_conflicting_known_identifiers_do_not_collapse_unrelated_devices(self):
+        observed = [{"ip": "192.168.1.20", "mac": "aa:bb:cc:dd:ee:ff", "source": "arp_table"}]
+        known = [{"ip": "192.168.1.20", "mac": "11:22:33:44:55:66", "name": "Wrong Device", "source": "known_infrastructure", "_observed": False, "_known_metadata_fields": ["name"]}]
+
+        records = append_known_infrastructure(observed, known)
+
+        self.assertEqual(records, observed)
+
+    def test_known_parent_alias_is_resolved_for_topology_hints(self):
+        parent = {"id": "dev_parent", "_configured_id": "switch"}
+        child = {"id": "dev_child", "parent_id": "switch"}
+
+        resolve_configured_parent_ids([parent, child])
+
+        self.assertEqual(child["parent_id"], "dev_parent")
+
+    def test_configured_never_observed_device_is_offline_without_last_seen(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "known_infrastructure.json"
+            path.write_text('{"devices":[{"id":"ups","name":"UPS","role":"Core Infrastructure","type":"network_device"}]}')
+            config = {
+                "HIOC_HOME": tmp,
+                "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": str(path),
+                "HIOC_INVENTORY_STALE_AFTER_SEC": "60",
+                "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120",
+                "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+            }
+            with patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
+                 patch("hioc.inventory.default_gateway", return_value={}), \
+                 patch("hioc.inventory.neighbor_table", return_value={}), \
+                 patch("hioc.inventory.systemd_services", return_value={}), \
+                 patch("hioc.inventory.listening_services", return_value=[]), \
+                 patch("hioc.inventory.package_version", return_value=""):
+                inventory = discover_inventory(config, {"devices": []})
+
+        device = next(item for item in inventory["devices"] if item["display_name"] == "UPS")
+        self.assertEqual(device["health_status"], "offline")
+        self.assertEqual(device["status"], "offline")
+        self.assertNotIn("last_seen", device)
+        self.assertNotIn("last_seen_epoch", device)
+        self.assertFalse(any(key.startswith("_") for key in device))
+
+    def test_known_parent_alias_flows_through_discovery_topology(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "known_infrastructure.json"
+            path.write_text('{"devices":[{"id":"gateway","name":"Gateway","ip":"192.168.1.1","role":"Network Equipment"},{"id":"switch","name":"Switch","role":"Network Equipment","parent_id":"gateway"}]}')
+            config = {
+                "HIOC_HOME": tmp,
+                "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": str(path),
+                "HIOC_INVENTORY_STALE_AFTER_SEC": "60",
+                "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120",
+                "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+            }
+            with patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
+                 patch("hioc.inventory.default_gateway", return_value={}), \
+                 patch("hioc.inventory.neighbor_table", return_value={}), \
+                 patch("hioc.inventory.systemd_services", return_value={}), \
+                 patch("hioc.inventory.listening_services", return_value=[]), \
+                 patch("hioc.inventory.package_version", return_value=""):
+                inventory = discover_inventory(config, {"devices": []})
+
+        devices = {item["display_name"]: item for item in inventory["devices"]}
+        gateway_id = devices["Gateway"]["id"]
+        switch_id = devices["Switch"]["id"]
+        self.assertIn({"parent_id": gateway_id, "child_id": switch_id, "relationship": "network_parent"}, inventory["topology"]["edges"])
+        self.assertFalse(any(any(key.startswith("_") for key in device) for device in inventory["devices"]))
+
+    def test_existing_integration_hint_behavior_remains_compatible(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "integrations"
+            root.mkdir()
+            (root / "orbi.json").write_text('{"devices":[{"name":"Orbi Satellite","ip":"192.168.1.3","mac":"aa:bb:cc:dd:ee:ff","parent_ip":"192.168.1.1"}]}')
+            devices = integration_inventory({"HIOC_INVENTORY_INTEGRATION_DIR": str(root)}, Path(tmp))
+
+        self.assertEqual(devices["aa:bb:cc:dd:ee:ff"]["source"], "integration:orbi")
+        self.assertEqual(devices["aa:bb:cc:dd:ee:ff"]["parent_ip"], "192.168.1.1")
 
     def test_subnet_scan_is_disabled_for_safe_inventory(self):
         self.assertEqual(scan_subnet("192.168.1.0/24", 1, 1), {})
