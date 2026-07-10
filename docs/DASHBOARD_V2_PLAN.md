@@ -2,6 +2,12 @@
 
 Dashboard v2 is a full information architecture redesign. It preserves existing capabilities, avoids adding new features, and reorganizes the interface into an operations platform.
 
+## Document Ownership
+
+This document owns Dashboard v2 page purposes, navigation, card philosophy, layout, drill-down decisions, and dashboard implementation decisions.
+
+It should not track implementation status or roadmap progress. For visual rules and card archetypes, see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md). For project direction and current phase, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
+
 No existing functionality should be removed. Detailed information should move to the correct page, popup, or drill-down.
 
 Implemented dashboard file:

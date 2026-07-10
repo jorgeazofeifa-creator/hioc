@@ -2,6 +2,19 @@
 
 HIOC is a self-hosted home infrastructure monitoring platform optimized for a Pi4 collector and Home Assistant operator console.
 
+## Document Ownership
+
+This document owns system architecture: component interactions, subsystem boundaries, and major runtime flow.
+
+It is not the roadmap and should not track current phase, implementation status, release history, or future task sequencing. For those, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md) and [../ROADMAP.md](../ROADMAP.md).
+
+Related technical documents:
+
+- Core runtime: [CORE.md](CORE.md)
+- Data model: [DATA_MODEL.md](DATA_MODEL.md)
+- MQTT contract: [MQTT.md](MQTT.md)
+- Home Assistant integration: [HOME_ASSISTANT.md](HOME_ASSISTANT.md)
+
 ## Runtime Flow
 
 ```text
@@ -36,7 +49,7 @@ Correlation Engine v2 assigns each incident a lifecycle phase of `detected`, `co
 
 ## Living Inventory
 
-The inventory engine uses passive discovery by default and can optionally run active discovery when configured. Passive sources are:
+The inventory engine prioritizes passive discovery. Passive sources are:
 
 - Pi4 host identity, interfaces, operating system, kernel, and package versions.
 - Default route and gateway.
@@ -45,7 +58,7 @@ The inventory engine uses passive discovery by default and can optionally run ac
 - Local systemd services and listening network sockets.
 - Integration hint JSON from `state/inventory/integrations` or `HIOC_INVENTORY_INTEGRATION_DIR`.
 
-Active discovery is disabled by default. When `HIOC_INVENTORY_ACTIVE_DISCOVERY=on`, HIOC may use reverse DNS, ping reachability checks, optional configured subnet scan using `nmap` when available, bounded ping sweep, and optional SNMP system description.
+Active-discovery configuration and code hooks may exist in the repository, but the currently approved operating mode is passive discovery. Broader Safe Active Discovery behavior belongs to the planned Phase 7B work described in [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md). It must remain safe, explicit, and non-disruptive before operational use is approved.
 
 Topology generation uses the default gateway as root, supports integration-provided parent hints, and can place endpoint devices behind intermediate infrastructure such as Orbi satellites and switches when those devices are discovered.
 

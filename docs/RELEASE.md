@@ -2,6 +2,12 @@
 
 HIOC releases are built from the repository into a versioned package.
 
+## Document Ownership
+
+This document owns release procedure, branch strategy, tagging expectations, packaging, versioning workflow, and release checklists.
+
+It should not contain roadmap or implementation status. For install and upgrade commands from an operator perspective, see [INSTALL.md](INSTALL.md). For the current development phase, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
+
 ## Version Manifest
 
 The authoritative version file is:

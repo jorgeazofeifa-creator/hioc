@@ -2,6 +2,19 @@
 
 HIOC is the Home Infrastructure Operations Center: a production-oriented, self-hosted monitoring stack for home infrastructure.
 
+## Document Ownership
+
+This document explains the project at a high level: major subsystems, how they fit together, and where files live.
+
+It links to focused documents instead of duplicating their details:
+
+- Project direction and current phase: [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md)
+- System architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
+- Installation and deployment: [INSTALL.md](INSTALL.md)
+- MQTT contract: [MQTT.md](MQTT.md)
+- Home Assistant integration: [HOME_ASSISTANT.md](HOME_ASSISTANT.md)
+- Data model: [DATA_MODEL.md](DATA_MODEL.md)
+
 ## Product Principles
 
 - Treat Home Assistant as an operator console, not only a sensor list.
@@ -22,3 +35,13 @@ docs/                     Project documentation
 tests/                    Unit tests
 ```
 
+## Major Subsystems
+
+- Platform Core: shared runtime services used by engines.
+- Inventory Engine: passive infrastructure discovery and living documentation.
+- Incident Engine and Correlation Engine: active incident state, root cause, evidence, and lifecycle.
+- History Engine: historical samples, forecast state, and trend data.
+- MQTT Publishing Layer: retained payload contract for Home Assistant.
+- Home Assistant Integration: packages, entities, dashboards, and operator console.
+
+For technical runtime flow and subsystem boundaries, see [ARCHITECTURE.md](ARCHITECTURE.md).

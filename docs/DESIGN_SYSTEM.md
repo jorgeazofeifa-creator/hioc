@@ -2,6 +2,12 @@
 
 HIOC is an operations platform rendered through Home Assistant. It is not a general-purpose Home Assistant dashboard collection.
 
+## Document Ownership
+
+This document owns HIOC visual language, card archetypes, colors, spacing, typography, icons, terminology, accessibility expectations, and operator UX principles.
+
+It should not track implementation status or roadmap sequence. For Dashboard v2 page structure and layout decisions, see [DASHBOARD_V2_PLAN.md](DASHBOARD_V2_PLAN.md). For project direction and phases, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
+
 The interface must help an operator understand:
 
 - What is happening?

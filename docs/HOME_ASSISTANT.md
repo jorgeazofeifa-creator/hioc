@@ -2,6 +2,12 @@
 
 HIOC integrates with Home Assistant through MQTT sensors, template sensors, and dashboard YAML.
 
+## Document Ownership
+
+This document owns Home Assistant integration: packages, entities, sensors, MQTT discovery behavior, dashboard installation, and dashboard integration points.
+
+It should not duplicate the MQTT contract, data model, or dashboard visual design. For topic details, see [MQTT.md](MQTT.md). For payload fields, see [DATA_MODEL.md](DATA_MODEL.md). For dashboard design and UX rules, see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and [DASHBOARD_V2_PLAN.md](DASHBOARD_V2_PLAN.md).
+
 ## Packages
 
 Installable packages are in `homeassistant/packages`:

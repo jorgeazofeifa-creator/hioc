@@ -1,5 +1,11 @@
 # HIOC MQTT Contract
 
+## Document Ownership
+
+This document owns MQTT topics, payload expectations, retention behavior, publishing strategy, topic hierarchy, and MQTT discovery/integration notes.
+
+It should not contain roadmap, dashboard design, installation, or Home Assistant UI details. For payload object fields, see [DATA_MODEL.md](DATA_MODEL.md). For Home Assistant entities, see [HOME_ASSISTANT.md](HOME_ASSISTANT.md).
+
 Default base topic:
 
 ```text

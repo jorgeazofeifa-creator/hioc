@@ -1,5 +1,11 @@
 # HIOC Data Model
 
+## Document Ownership
+
+This document owns entities, relationships, JSON structures, MQTT payload shapes, and internal objects such as inventory, incidents, history, forecasts, capabilities, and platform status.
+
+It should not contain roadmap or implementation-phase information. For roadmap and current phase, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md). For topic names and publishing strategy, see [MQTT.md](MQTT.md).
+
 ## Living Inventory
 
 Inventory root object:

@@ -2,6 +2,12 @@
 
 HIOC Core is the shared runtime layer used by engines and future subsystems.
 
+## Document Ownership
+
+This document owns the Core runtime: execution model, engine lifecycle, scheduling assumptions, shared services, subsystem initialization, internal events, drivers, and capabilities.
+
+It should not duplicate architecture diagrams or project roadmap content. For system architecture, see [ARCHITECTURE.md](ARCHITECTURE.md). For project direction and phases, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
+
 ## Core Services
 
 - `ConfigService`: loads defaults, Pi4 toolkit config, HIOC config, and environment overrides.
@@ -35,7 +41,7 @@ Events are internal contracts. They do not replace retained MQTT topics, which r
 Living Inventory now uses concrete drivers:
 
 - `PassiveNetworkDriver`: neighbor table, DHCP leases, and integration hint files.
-- `ActiveNetworkDriver`: optional subnet scan when active discovery is enabled.
+- `ActiveNetworkDriver`: existing extension point for active discovery; current approved inventory operation remains passive until Phase 7B safe active discovery is approved.
 - `LocalServiceDriver`: systemd and listening socket service discovery.
 
 Drivers return normalized devices and services. Future gateway, camera, MQTT broker, UPS, Home Assistant, SNMP, mDNS, and vendor-specific drivers should use the same `DriverResult` contract.
@@ -49,4 +55,3 @@ state/inventory/capabilities.json
 ```
 
 Capabilities are inferred from device roles, firmware, and detected services. They are currently internal state so existing MQTT topics and Home Assistant entities remain stable.
-

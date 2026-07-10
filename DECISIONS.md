@@ -1,61 +1,158 @@
 # HIOC Architecture Decisions
 
+## Document Ownership
+
+This file is the Architecture Decision Record log.
+
+The Master Plan says what HIOC is doing and where it is going. This file explains why long-term technical decisions were made.
+
+Each decision should contain:
+
+- Decision
+- Status
+- Context
+- Alternatives
+- Reason
+- Consequences
+
+Do not duplicate roadmap, current phase, or implementation status. Those belong in [docs/HIOC_MASTER_PLAN.md](docs/HIOC_MASTER_PLAN.md).
+
 ## ADR-0001: Keep Pi4 Toolkit Compatibility
 
 Decision: HIOC reads existing Pi4 telemetry and does not replace the Pi4 toolkit.
 
-Rationale: Existing installations remain stable while HIOC adds higher-level incident, forecast, and inventory behavior.
+Status: Accepted.
+
+Context: Existing installations already depend on Pi4 toolkit telemetry and scripts.
+
+Alternatives: Replace the Pi4 toolkit or require a migration before HIOC can run.
+
+Reason: Existing installations remain stable while HIOC adds higher-level incident, forecast, and inventory behavior.
+
+Consequences: HIOC must preserve compatibility with legacy telemetry sources and avoid breaking existing Pi4 toolkit workflows.
 
 ## ADR-0002: Use Retained MQTT as the Home Assistant Contract
 
 Decision: HIOC publishes retained JSON payloads under `home/infrastructure/hioc`.
 
-Rationale: Home Assistant restarts should recover the latest operational state without waiting for a fresh scan.
+Status: Accepted.
+
+Context: Home Assistant dashboards and sensors need current operational state after restarts.
+
+Alternatives: Poll local files directly from Home Assistant or use non-retained MQTT.
+
+Reason: Home Assistant restarts should recover the latest operational state without waiting for a fresh engine run.
+
+Consequences: Payload compatibility matters. New fields should be additive whenever possible, and public topic names should remain stable.
 
 ## ADR-0003: Store Local JSON Before MQTT Publication
 
 Decision: Engines persist state under `state/` before publishing MQTT.
 
-Rationale: Local files preserve diagnosis data when MQTT or Home Assistant is degraded.
+Status: Accepted.
+
+Context: MQTT or Home Assistant may be unavailable during an infrastructure incident.
+
+Alternatives: Publish only to MQTT or move persistence immediately into a database.
+
+Reason: Local files preserve diagnosis data when MQTT or Home Assistant is degraded.
+
+Consequences: JSON state files are part of the operational recovery story and must remain inspectable and valid.
 
 ## ADR-0004: Living Inventory Uses Real Discovery Sources
 
-Decision: Inventory discovery uses local host facts, routes, neighbor tables, DHCP leases, optional subnet scan, systemd, sockets, and optional SNMP.
+Decision: Inventory discovery uses real local and passive infrastructure sources before any active discovery.
 
-Rationale: Production inventory must reflect observed infrastructure rather than static demo data.
+Status: Accepted.
+
+Context: Inventory must represent observed infrastructure, not demo data.
+
+Alternatives: Static inventory files, mock data, hardcoded devices, or active discovery as the primary source.
+
+Reason: Production inventory must reflect trustworthy observed infrastructure while avoiding disruption.
+
+Consequences: Inventory richness depends on available passive sources such as local host facts, routes, neighbor tables, DHCP leases, integrations, systemd, and sockets.
 
 ## ADR-0005: Modular Python Runtime for New Subsystems
 
 Decision: New Python subsystem code lives in reusable modules under `pi4/lib/hioc`.
 
-Rationale: Configuration, logging, JSON state, MQTT, and data modeling should be shared as HIOC grows.
+Status: Accepted.
+
+Context: HIOC has multiple engines that need configuration, logging, JSON state, MQTT, validation, and data modeling.
+
+Alternatives: Keep helpers embedded in each executable or use only shell scripts.
+
+Reason: Configuration, logging, JSON state, MQTT, and data modeling should be shared as HIOC grows.
+
+Consequences: New engines should prefer shared runtime modules instead of duplicating local helpers.
 
 ## ADR-0006: Keep JSON And Cron While Adding Core Contracts
 
 Decision: HIOC Core v1.0 keeps JSON state files and cron scheduling, but centralizes state writes, config loading, logging, schemas, events, drivers, and capabilities.
 
-Rationale: Current deployment scale does not require a database or scheduler replacement. Shared contracts provide most of the maintainability gain without adding premature operational complexity.
+Status: Accepted.
+
+Context: Current deployment scale is a home infrastructure environment with a small number of hosts and devices.
+
+Alternatives: Move immediately to SQLite, replace cron with an internal scheduler, or leave every engine fully independent.
+
+Reason: Current deployment scale does not require a database or scheduler replacement. Shared contracts provide most of the maintainability gain without adding premature operational complexity.
+
+Consequences: Cron and JSON remain operationally simple, while future refactors can build on shared contracts.
 
 ## ADR-0007: Internal Events Are Local State
 
 Decision: Internal semantic events are written to local JSON state and do not replace public MQTT topics.
 
-Rationale: MQTT remains the Home Assistant and external integration contract. Local events reduce internal coupling while preserving compatibility.
+Status: Accepted.
+
+Context: Engines need semantic context without breaking Home Assistant or external MQTT consumers.
+
+Alternatives: Publish all internal events as public MQTT contracts, remove events, or require engines to poll each other.
+
+Reason: MQTT remains the Home Assistant and external integration contract. Local events reduce internal coupling while preserving compatibility.
+
+Consequences: Internal events can evolve faster than public MQTT, but they must remain bounded and valid local state.
 
 ## ADR-0008: HIOC Dashboards Are Operations Surfaces
 
-Decision: HIOC dashboard v2 will use a defined design system and operations hierarchy rather than continuing to add ad hoc Lovelace cards.
+Decision: HIOC dashboard v2 uses a defined design system and operations hierarchy rather than ad hoc Lovelace cards.
 
-Rationale: Commercial operations consoles need prioritization, consistent terminology, and repeatable card patterns. Executive, Operations, Diagnostics, Inventory, Network, and Servers each answer different operator questions.
+Status: Accepted.
+
+Context: HIOC is intended to guide an operator, not merely display sensor values.
+
+Alternatives: Continue adding cards organically or keep one broad dashboard where every card has similar visual weight.
+
+Reason: Commercial operations consoles need prioritization, consistent terminology, and repeatable card patterns. Executive, Operations, Diagnostics, Inventory, Network, and Servers each answer different operator questions.
+
+Consequences: Dashboard changes should preserve the design system and reduce cognitive load.
 
 ## ADR-0009: Releases Use Versioned Packages
 
 Decision: HIOC has a formal release process with a version manifest, build/package scripts, install/upgrade/rollback wrappers, and runtime version reporting.
 
-Rationale: HIOC should behave like installable software rather than a collection of copied files. Versioned artifacts and rollback metadata improve operator confidence and support long-term maintenance.
+Status: Accepted.
+
+Context: HIOC should be installable, upgradeable, and recoverable as production software.
+
+Alternatives: Continue copying files manually or rely only on Git checkout.
+
+Reason: HIOC should behave like installable software rather than a collection of copied files. Versioned artifacts and rollback metadata improve operator confidence and support long-term maintenance.
+
+Consequences: Release scripts, validation, and version manifest changes should be handled deliberately.
 
 ## ADR-0010: Correlation v2 Preserves the Public Incident Contract
 
 Decision: Correlation Engine v2 consumes Core events and inventory context internally, but continues to publish incidents through the existing retained MQTT topics and Home Assistant incident sensors.
 
-Rationale: Root-cause analysis and lifecycle detail can evolve without forcing dashboard, automation, or user migration work. New fields live inside the existing incident JSON payloads while `status`, `severity`, `system`, and timeline compatibility remain intact.
+Status: Accepted.
+
+Context: Root-cause analysis and incident lifecycle detail need to evolve without breaking dashboards and automations.
+
+Alternatives: Rename incident topics, replace existing sensors, or keep only the legacy incident model.
+
+Reason: Root-cause analysis and lifecycle detail can evolve without forcing dashboard, automation, or user migration work. New fields live inside the existing incident JSON payloads while `status`, `severity`, `system`, and timeline compatibility remain intact.
+
+Consequences: Incident payload additions must remain backward compatible unless a migration is explicitly approved.

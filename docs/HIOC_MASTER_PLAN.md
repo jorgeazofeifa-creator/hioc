@@ -17,6 +17,28 @@ Every contributor, human or AI, should read this document before making changes 
 
 ---
 
+## Document Ownership
+
+This document is the constitution of the project.
+
+It owns:
+
+- vision
+- philosophy
+- principles
+- roadmap
+- implementation phases
+- current phase
+- current objective
+- next task
+- working agreement
+
+It should not contain detailed architecture, MQTT documentation, Home Assistant documentation, data model details, installation instructions, release procedures, design system rules, or dashboard implementation details. Those belong in the focused documents linked from [../README.md](../README.md).
+
+Update this document only when project direction, roadmap, phase, objective, next task, or implementation status changes.
+
+---
+
 # Vision
 
 HIOC (Home Infrastructure Operations Center) is an operational platform for monitoring, understanding, documenting, and troubleshooting a home infrastructure.
@@ -357,7 +379,7 @@ main
 
 ## Current Commit
 
-d4047d0
+Tracked by Git history. Do not update this document solely to record documentation-only commit hashes.
 
 ## Current Phase
 
@@ -413,7 +435,6 @@ This document should evolve deliberately.
 
 Routine implementation work should update only:
 
-- Current Commit
 - Current Phase
 - Phase Progress
 - Current Objective

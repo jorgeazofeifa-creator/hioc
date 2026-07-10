@@ -1,5 +1,11 @@
 # HIOC Installation
 
+## Document Ownership
+
+This document owns installation, configuration, dependencies, deployment, upgrade, validation, and rollback instructions.
+
+It should not contain roadmap, architecture rationale, release history, or dashboard design. For release packaging workflow, see [RELEASE.md](RELEASE.md). For project direction, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
+
 ## Pi4
 
 ```bash
@@ -35,7 +41,9 @@ HIOC_INVENTORY_SNMP_COMMUNITY=""
 HIOC_INVENTORY_INTEGRATION_DIR=""
 ```
 
-Leave `HIOC_INVENTORY_ACTIVE_DISCOVERY` set to `off` for passive discovery from host facts, default route, neighbor table, DHCP leases, and integration hint files. Set it to `on` only when ping, subnet scan, reverse DNS, and SNMP discovery are explicitly approved. Set `HIOC_INVENTORY_SCAN_SUBNET` to a bounded subnet such as `192.168.1.0/24` only when active scan coverage is desired.
+Leave `HIOC_INVENTORY_ACTIVE_DISCOVERY` set to `off` for the currently approved passive discovery mode from host facts, default route, neighbor table, DHCP leases, and integration hint files.
+
+Active-discovery configuration may exist, but operational use is governed by [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md) and should not be enabled until the planned Phase 7B Safe Active Discovery work is explicitly approved.
 
 ## Home Assistant
 
