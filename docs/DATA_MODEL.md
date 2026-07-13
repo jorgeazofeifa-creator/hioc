@@ -85,6 +85,8 @@ Known definitions enrich observed passive inventory by normalized MAC first, the
 
 When exactly one MAC-less identity and exactly one MAC-backed identity share an IP, inventory reconciles the weak identity into the canonical MAC-derived device. This applies when either identity is current or retained, including a current IP-only observation matched to one retained MAC-backed identity. The earliest valid `first_seen` and combined discovery provenance are preserved, while current observation timestamps remain current and non-empty stable metadata remains authoritative from the MAC-backed identity. Conflicting or ambiguous MAC identities are never reconciled.
 
+Positive evidence creates or refreshes durable inventory. Unresolved neighbor-cache evidence such as `FAILED`, `INCOMPLETE`, `NONE`, or a MAC-less entry is diagnostic-only: it does not create an identity or refresh `last_seen`. Legacy MAC-less records are removed only when their complete provenance is exactly `arp_table`; records supported by any other source remain retained.
+
 Service object:
 
 - `id`

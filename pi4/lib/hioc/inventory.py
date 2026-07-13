@@ -67,6 +67,8 @@ OPERATOR_ROLES = {
 
 
 LOG = logging.getLogger("hioc-inventory-engine")
+NEIGHBOR_STATES = {"DELAY", "FAILED", "INCOMPLETE", "NOARP", "NONE", "PERMANENT", "PROBE", "REACHABLE", "STALE"}
+DURABLE_NEIGHBOR_STATES = {"DELAY", "PERMANENT", "PROBE", "REACHABLE", "STALE"}
 
 
 def normalize_mac(value: str) -> str:
@@ -130,8 +132,11 @@ def default_gateway() -> dict:
 def neighbor_table() -> dict:
     code, out, _ = run_command(["ip", "neigh", "show"], timeout=4)
     neighbors = {}
+    fallback = code != 0
     if code != 0:
         code, out, _ = run_command(["arp", "-an"], timeout=4)
+        if code != 0:
+            return neighbors
     for line in out.splitlines():
         ip_match = re.search(r"(\d+\.\d+\.\d+\.\d+)", line)
         mac_match = re.search(r"([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}", line)
@@ -139,8 +144,20 @@ def neighbor_table() -> dict:
             continue
         ip = ip_match.group(1)
         mac = normalize_mac(mac_match.group(0)) if mac_match else ""
-        if ip:
-            neighbors[ip] = {"ip": ip, "mac": mac, "source": "arp_table", "last_seen_source": "arp_table"}
+        parts = line.split()
+        interface = next((parts[index + 1] for index, token in enumerate(parts[:-1]) if token in ("dev", "on")), "")
+        if fallback:
+            if not mac:
+                state = "INCOMPLETE" if "<incomplete>" in line.lower() else "UNKNOWN"
+                LOG.debug("neighbor entry ignored ip=%s interface=%s state=%s reason=missing_valid_mac", ip, interface, state)
+                continue
+        else:
+            state = next((token.upper() for token in reversed(parts) if token.upper() in NEIGHBOR_STATES), "UNKNOWN")
+            if state not in DURABLE_NEIGHBOR_STATES or not mac:
+                reason = "unresolved_state" if state in {"FAILED", "INCOMPLETE", "NONE"} else "missing_valid_mac" if not mac else "non_durable_state"
+                LOG.debug("neighbor entry ignored ip=%s interface=%s state=%s reason=%s", ip, interface, state, reason)
+                continue
+        neighbors[ip] = {"ip": ip, "mac": mac, "source": "arp_table", "last_seen_source": "arp_table"}
     return neighbors
 
 
@@ -896,6 +913,9 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
     seen_ids = {d["id"] for d in devices}
     for old in previous_devices:
         if old.get("id") not in seen_ids and old.get("id") not in reconciled_previous_ids:
+            if not normalize_mac(old.get("mac", "")) and _record_sources(old) == {"arp_table"}:
+                LOG.debug("legacy unresolved neighbor removed ip=%s provenance=arp_table", old.get("ip", ""))
+                continue
             record = dict(old)
             record.setdefault("display_name", record.get("name") or record.get("ip") or record.get("id", "unknown device"))
             record.setdefault("name", record.get("display_name", "unknown device"))

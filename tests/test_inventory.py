@@ -209,7 +209,63 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(devices[0]["first_seen"], "2026-07-01T08:00:00-06:00")
         self.assertEqual(devices[0]["sources"], ["arp_table", "previous_strong", "previous_weak"])
 
-    def test_failed_neighbor_current_weak_reconciles_to_retained_strong(self):
+    def test_failed_neighbor_line_produces_no_device(self):
+        lines = (
+            "192.168.100.138 dev eth0 FAILED",
+            "192.168.100.138 dev eth0 lladdr 0e:38:76:1a:e3:ba FAILED",
+        )
+        for line in lines:
+            with self.subTest(line=line), self.assertLogs("hioc-inventory-engine", level="DEBUG") as logs, \
+                    patch("hioc.inventory.run_command", return_value=(0, line, "")):
+                self.assertEqual(neighbor_table(), {})
+            diagnostic = " ".join(logs.output)
+            self.assertIn("ip=192.168.100.138", diagnostic)
+            self.assertIn("interface=eth0", diagnostic)
+            self.assertIn("state=FAILED", diagnostic)
+
+    def test_incomplete_neighbor_line_produces_no_device(self):
+        with patch("hioc.inventory.run_command", return_value=(0, "192.168.100.58 dev eth0 INCOMPLETE", "")):
+            self.assertEqual(neighbor_table(), {})
+
+    def test_none_and_unknown_macless_neighbor_lines_produce_no_device(self):
+        for line in ("192.168.100.57 dev eth0 NONE", "192.168.100.58 dev eth0 UNKNOWN"):
+            with self.subTest(line=line), patch("hioc.inventory.run_command", return_value=(0, line, "")):
+                self.assertEqual(neighbor_table(), {})
+
+    def test_mac_backed_durable_neighbor_states_remain_accepted(self):
+        mac = "0e:38:76:1a:e3:ba"
+        for state in ("REACHABLE", "STALE", "DELAY", "PROBE", "PERMANENT"):
+            line = f"192.168.100.219 dev eth0 lladdr {mac} {state}"
+            with self.subTest(state=state), patch("hioc.inventory.run_command", return_value=(0, line, "")):
+                self.assertEqual(neighbor_table()["192.168.100.219"]["mac"], mac)
+
+    def test_complete_arp_fallback_entry_remains_accepted(self):
+        commands = [
+            (1, "", "ip unavailable"),
+            (0, "? (192.168.100.219) at 0e:38:76:1a:e3:ba [ether] on eth0", ""),
+        ]
+        with patch("hioc.inventory.run_command", side_effect=commands):
+            self.assertEqual(neighbor_table()["192.168.100.219"]["mac"], "0e:38:76:1a:e3:ba")
+
+    def test_incomplete_arp_fallback_entry_is_rejected(self):
+        commands = [
+            (1, "", "ip unavailable"),
+            (0, "? (192.168.100.58) at <incomplete> on eth0", ""),
+        ]
+        with patch("hioc.inventory.run_command", side_effect=commands):
+            self.assertEqual(neighbor_table(), {})
+
+    def test_repeated_failed_neighbor_never_enters_inventory(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        previous = {"devices": []}
+        for epoch in (1000, 1060, 1120):
+            with patch("hioc.inventory.run_command", return_value=(0, "192.168.100.138 dev eth0 FAILED", "")):
+                current = list(neighbor_table().values())
+            devices = merge_records(current, previous, f"run-{epoch}", epoch, config)
+            self.assertEqual(devices, [])
+            previous = {"devices": devices}
+
+    def test_failed_neighbor_does_not_refresh_retained_strong_identity(self):
         config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
         strong_id = stable_device_id({"mac": "0e:38:76:1a:e3:ba"})
         previous = {"devices": [{
@@ -217,17 +273,80 @@ class InventoryModelTests(unittest.TestCase):
             "ip": "192.168.100.219",
             "mac": "0e:38:76:1a:e3:ba",
             "first_seen": "2026-07-02T08:00:00-06:00",
+            "last_seen": "2026-07-12T22:36:11-06:00",
+            "last_seen_epoch": 900,
             "source": "arp_table",
         }]}
         with patch("hioc.inventory.run_command", return_value=(0, "192.168.100.219 dev eth0 FAILED", "")):
             current = list(neighbor_table().values())
         devices = merge_records(current, previous, "2026-07-12T23:21:19-06:00", 1000, config)
 
-        self.assertEqual(current[0]["mac"], "")
+        self.assertEqual(current, [])
         self.assertEqual(len(devices), 1)
         self.assertEqual(devices[0]["id"], strong_id)
-        self.assertEqual(devices[0]["last_seen"], "2026-07-12T23:21:19-06:00")
-        self.assertEqual(devices[0]["last_seen_source"], "arp_table")
+        self.assertEqual(devices[0]["mac"], "0e:38:76:1a:e3:ba")
+        self.assertEqual(devices[0]["last_seen"], "2026-07-12T22:36:11-06:00")
+        self.assertEqual(devices[0]["last_seen_epoch"], 900)
+        self.assertEqual(devices[0]["health_status"], "watch")
+
+        aged = merge_records([], {"devices": devices}, "2026-07-12T23:23:19-06:00", 1100, config)
+        self.assertEqual(aged[0]["id"], strong_id)
+        self.assertEqual(aged[0]["last_seen_epoch"], 900)
+        self.assertEqual(aged[0]["health_status"], "degraded")
+        self.assertIn("not seen within offline threshold", aged[0]["health_reasons"])
+
+    def test_legacy_macless_arp_only_record_is_removed(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        previous = {"devices": [{
+            "id": stable_device_id({"ip": "192.168.100.138"}),
+            "ip": "192.168.100.138",
+            "mac": "",
+            "last_seen_epoch": 100,
+            "source": "arp_table",
+            "sources": ["arp_table"],
+        }]}
+
+        self.assertEqual(merge_records([], previous, "now", 1000, config), [])
+
+    def test_macless_retained_integration_and_known_records_are_preserved(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        for source in ("integration:test", "known_infrastructure"):
+            ip = "192.168.100.80" if source.startswith("integration") else "192.168.100.81"
+            previous = {"devices": [{
+                "id": stable_device_id({"ip": ip}),
+                "ip": ip,
+                "mac": "",
+                "last_seen_epoch": 100,
+                "source": source,
+            }]}
+            with self.subTest(source=source):
+                devices = merge_records([], previous, "now", 1000, config)
+                self.assertEqual(len(devices), 1)
+                self.assertEqual(devices[0]["id"], stable_device_id({"ip": ip}))
+
+    def test_macless_retained_mixed_provenance_is_preserved(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        previous = {"devices": [{
+            "id": stable_device_id({"ip": "192.168.100.82"}),
+            "ip": "192.168.100.82",
+            "mac": "",
+            "last_seen_epoch": 100,
+            "source": "arp_table, integration:test",
+            "sources": ["arp_table", "integration:test"],
+        }]}
+
+        self.assertEqual(len(merge_records([], previous, "now", 1000, config)), 1)
+
+    def test_macless_gateway_and_local_host_records_are_preserved(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        previous = {"devices": [
+            {"id": "gateway", "ip": "192.168.100.1", "mac": "", "source": "gateway", "last_seen_epoch": 100},
+            {"id": "local", "ip": "192.168.100.252", "mac": "", "source": "local_host", "type": "local_host", "last_seen_epoch": 100},
+        ]}
+
+        devices = merge_records([], previous, "now", 1000, config)
+
+        self.assertEqual({device["id"] for device in devices}, {"gateway", "local"})
 
     def test_current_weak_does_not_reconcile_with_conflicting_retained_macs(self):
         config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
@@ -331,7 +450,7 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(devices[0]["role"], "Network Equipment")
         self.assertIn("known_infrastructure", devices[0]["source"])
 
-    def test_retained_weak_identity_without_strong_replacement_is_preserved(self):
+    def test_retained_non_arp_weak_identity_without_strong_replacement_is_preserved(self):
         config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
         weak_id = stable_device_id({"ip": "192.168.100.70"})
         previous = {"devices": [{
@@ -340,7 +459,7 @@ class InventoryModelTests(unittest.TestCase):
             "mac": "",
             "first_seen": "2026-07-01T08:00:00-06:00",
             "last_seen_epoch": 100,
-            "source": "arp_table",
+            "source": "integration:test",
         }]}
         devices = merge_records([
             {"ip": "192.168.100.71", "mac": "aa:bb:cc:dd:ee:71", "source": "arp_table"},

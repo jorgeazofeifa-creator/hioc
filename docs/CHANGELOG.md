@@ -42,6 +42,7 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 - Release upgrades now invoke the Pi4 installer through Bash so clean source-controlled copies do not require the executable bit before installation.
 - Platform-status logging now uses standard logging arguments so successful installation and upgrade runs can complete.
 - Inventory now reconciles unique current or retained IP-only identities with unique current or retained MAC-backed identities without merging conflicting MACs.
+- Inventory now excludes unresolved or MAC-less neighbor-cache entries from durable devices and removes legacy MAC-less records supported only by ARP provenance.
 
 ## v1.0.0-core
 

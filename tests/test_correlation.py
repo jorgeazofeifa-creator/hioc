@@ -1,6 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "pi4" / "lib"))
@@ -12,7 +13,7 @@ from hioc.core.correlation import (
     correlate,
     lifecycle_phase,
 )
-from hioc.inventory import merge_records
+from hioc.inventory import merge_records, neighbor_table
 
 
 DEFAULT_CONFIG = {
@@ -144,6 +145,15 @@ class CorrelationEngineTests(unittest.TestCase):
         self.assertEqual(len(devices), 1)
         self.assertEqual(len(signals), 1)
         self.assertEqual(signals[0]["device_id"], "dev_4e3690158b11961e")
+
+    def test_anonymous_failed_neighbor_produces_no_inventory_signal(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        with patch("hioc.inventory.run_command", return_value=(0, "192.168.100.138 dev eth0 FAILED", "")):
+            current = list(neighbor_table().values())
+        devices = merge_records(current, {"devices": []}, "2026-07-13T10:00:00-06:00", 1000, config)
+
+        self.assertEqual(devices, [])
+        self.assertEqual(build_inventory_signals({"devices": devices, "services": []}), [])
 
     def test_event_signals_are_context_not_standalone_incidents(self):
         signals = build_event_signals([
