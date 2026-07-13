@@ -12,6 +12,7 @@ from hioc.core.correlation import (
     correlate,
     lifecycle_phase,
 )
+from hioc.inventory import merge_records
 
 
 DEFAULT_CONFIG = {
@@ -92,6 +93,31 @@ class CorrelationEngineTests(unittest.TestCase):
         self.assertEqual(incident["root_cause"], "Office Switch")
         self.assertIn("Driveway Camera", incident["affected"])
         self.assertIn("Frigate Camera Stream", incident["affected"])
+
+    def test_reconciled_identity_produces_only_one_inventory_signal(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        previous = {"devices": [{
+            "id": "dev_365fd956236f46e5",
+            "ip": "192.168.100.219",
+            "mac": "",
+            "first_seen": "2026-07-01T08:00:00-06:00",
+            "last_seen_epoch": 100,
+            "source": "arp_table",
+        }]}
+        devices = merge_records([
+            {
+                "ip": "192.168.100.219",
+                "mac": "0e:38:76:1a:e3:ba",
+                "source": "dhcp_leases",
+                "reachable": False,
+            },
+        ], previous, "2026-07-12T22:26:48-06:00", 1000, config)
+
+        signals = build_inventory_signals({"devices": devices, "services": []})
+
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(len(signals), 1)
+        self.assertEqual(signals[0]["device_id"], devices[0]["id"])
 
     def test_event_signals_are_context_not_standalone_incidents(self):
         signals = build_event_signals([

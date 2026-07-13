@@ -6,6 +6,7 @@ import os
 import re
 import socket
 import time
+from datetime import datetime
 from pathlib import Path
 
 from .runtime import run_command, now_iso
@@ -626,6 +627,143 @@ def _merge_record_values(records: list[dict]) -> dict:
     return merged
 
 
+WEAK_IDENTITY_METADATA_FIELDS = {
+    "area",
+    "hostname",
+    "location",
+    "model",
+    "name",
+    "notes",
+    "parent_device_id",
+    "parent_id",
+    "parent_ip",
+    "parent_mac",
+    "uplink_ip",
+    "uplink_mac",
+    "vendor",
+}
+
+
+def _record_sources(record: dict) -> set[str]:
+    sources = {str(item).strip() for item in record.get("sources", []) if str(item).strip()}
+    sources.update(item.strip() for item in str(record.get("source", "")).split(",") if item.strip())
+    return sources
+
+
+def _weak_identity_metadata(record: dict) -> dict:
+    metadata = {}
+    for field in WEAK_IDENTITY_METADATA_FIELDS:
+        value = record.get(field)
+        if value in ("", None, []):
+            continue
+        if field == "name" and value in (record.get("ip"), record.get("id")):
+            continue
+        metadata[field] = value
+    sources = _record_sources(record)
+    if sources:
+        metadata["sources"] = sorted(sources)
+    metadata["_observed"] = record.get("_observed", True)
+    return metadata
+
+
+def _group_identities_by_ip(by_key: dict) -> dict:
+    identities = {}
+    for key, grouped_records in by_key.items():
+        ips = {str(record.get("ip", "")).strip() for record in grouped_records if str(record.get("ip", "")).strip()}
+        macs = {normalize_mac(record.get("mac", "")) for record in grouped_records}
+        macs.discard("")
+        for ip in ips:
+            entry = identities.setdefault(ip, {"weak_keys": set(), "strong_keys": set(), "macs": set()})
+            if macs:
+                entry["strong_keys"].add(key)
+                entry["macs"].update(macs)
+            else:
+                entry["weak_keys"].add(key)
+    return identities
+
+
+def _reconcile_current_weak_identities(by_key: dict) -> None:
+    for ip, identities in _group_identities_by_ip(by_key).items():
+        weak_keys = identities["weak_keys"]
+        strong_keys = identities["strong_keys"]
+        macs = identities["macs"]
+        if len(macs) > 1 or len(strong_keys) > 1:
+            LOG.warning("inventory identity reconciliation skipped ip=%s reason=multiple_mac_identities", ip)
+            continue
+        if not weak_keys:
+            continue
+        if len(weak_keys) != 1 or len(strong_keys) != 1:
+            if strong_keys:
+                LOG.warning("inventory identity reconciliation skipped ip=%s reason=ambiguous_weak_identity", ip)
+            continue
+        weak_key = next(iter(weak_keys))
+        strong_key = next(iter(strong_keys))
+        if weak_key == strong_key:
+            continue
+        weak_metadata = [_weak_identity_metadata(record) for record in by_key.pop(weak_key)]
+        by_key[strong_key] = weak_metadata + by_key[strong_key]
+
+
+def _valid_first_seen(record: dict) -> tuple[float, str] | None:
+    value = record.get("first_seen")
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        return parsed.timestamp(), value
+    except (ValueError, OSError):
+        return None
+
+
+def _earliest_first_seen(default: str, *records: dict) -> str:
+    valid = [item for item in (_valid_first_seen(record) for record in records) if item]
+    if valid:
+        return min(valid, key=lambda item: item[0])[1]
+    return next((record["first_seen"] for record in records if record.get("first_seen")), default)
+
+
+def _retained_weak_reconciliations(by_key: dict, previous_devices: list[dict]) -> dict[str, dict]:
+    current_by_ip = _group_identities_by_ip(by_key)
+    previous_by_ip = {}
+    for device in previous_devices:
+        ip = str(device.get("ip", "")).strip()
+        if ip:
+            previous_by_ip.setdefault(ip, []).append(device)
+    reconciliations = {}
+    for ip, identities in current_by_ip.items():
+        if len(identities["strong_keys"]) != 1 or len(identities["macs"]) != 1:
+            continue
+        current_mac = next(iter(identities["macs"]))
+        previous = previous_by_ip.get(ip, [])
+        weak = [device for device in previous if not normalize_mac(device.get("mac", ""))]
+        conflicting_macs = {
+            normalize_mac(device.get("mac", ""))
+            for device in previous
+            if normalize_mac(device.get("mac", "")) not in ("", current_mac)
+        }
+        if conflicting_macs:
+            if weak:
+                LOG.warning("inventory identity reconciliation skipped ip=%s reason=conflicting_retained_mac", ip)
+            continue
+        if len(weak) > 1:
+            LOG.warning("inventory identity reconciliation skipped ip=%s reason=ambiguous_retained_weak_identity", ip)
+            continue
+        if len(weak) == 1:
+            reconciliations[next(iter(identities["strong_keys"]))] = weak[0]
+    return reconciliations
+
+
+def _merge_retained_weak_identity(record: dict, weak: dict) -> None:
+    for field, value in _weak_identity_metadata(weak).items():
+        if field.startswith("_") or field in ("source", "sources"):
+            continue
+        if record.get(field) in ("", None, []):
+            record[field] = value
+    sources = _record_sources(record) | _record_sources(weak)
+    if sources:
+        record["sources"] = sorted(sources)
+
+
 def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int, config: dict) -> list[dict]:
     by_key = {}
     for record in records:
@@ -633,18 +771,27 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
         if not key:
             continue
         by_key.setdefault(key, []).append(record)
-    prev_by_id = {item.get("id"): item for item in previous.get("devices", []) if item.get("id")}
+    _reconcile_current_weak_identities(by_key)
+    previous_devices = previous.get("devices", [])
+    retained_reconciliations = _retained_weak_reconciliations(by_key, previous_devices)
+    reconciled_previous_ids = {
+        record.get("id") for record in retained_reconciliations.values() if record.get("id")
+    }
+    prev_by_id = {item.get("id"): item for item in previous_devices if item.get("id")}
     stale_after = int(config.get("HIOC_INVENTORY_STALE_AFTER_SEC", "900"))
     offline_after = int(config.get("HIOC_INVENTORY_OFFLINE_AFTER_SEC", "3600"))
     devices = []
-    for grouped_records in by_key.values():
+    for key, grouped_records in by_key.items():
         record = _merge_record_values(grouped_records)
         observed = record.pop("_observed", True)
         record["mac"] = normalize_mac(record.get("mac", ""))
         record["id"] = stable_device_id(record)
         prev = prev_by_id.get(record["id"], {})
+        retained_weak = retained_reconciliations.get(key, {})
+        if retained_weak:
+            _merge_retained_weak_identity(record, retained_weak)
         if observed:
-            record["first_seen"] = prev.get("first_seen", now)
+            record["first_seen"] = _earliest_first_seen(now, prev, retained_weak)
             record["last_seen"] = now
             record["last_seen_epoch"] = now_epoch
         else:
@@ -670,8 +817,8 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
         record["health_reasons"] = reasons
         devices.append(record)
     seen_ids = {d["id"] for d in devices}
-    for old in previous.get("devices", []):
-        if old.get("id") not in seen_ids:
+    for old in previous_devices:
+        if old.get("id") not in seen_ids and old.get("id") not in reconciled_previous_ids:
             record = dict(old)
             record.setdefault("display_name", record.get("name") or record.get("ip") or record.get("id", "unknown device"))
             record.setdefault("name", record.get("display_name", "unknown device"))
