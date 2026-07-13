@@ -119,6 +119,32 @@ class CorrelationEngineTests(unittest.TestCase):
         self.assertEqual(len(signals), 1)
         self.assertEqual(signals[0]["device_id"], devices[0]["id"])
 
+    def test_current_weak_reconciled_to_retained_strong_cannot_duplicate_signal(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        previous = {"devices": [{
+            "id": "dev_4e3690158b11961e",
+            "ip": "192.168.100.219",
+            "mac": "0e:38:76:1a:e3:ba",
+            "first_seen": "2026-07-01T08:00:00-06:00",
+            "source": "arp_table",
+        }]}
+        devices = merge_records([{
+            "ip": "192.168.100.219",
+            "source": "arp_table",
+            "last_seen_source": "arp_table",
+        }], previous, "2026-07-12T23:21:19-06:00", 1000, config)
+        devices[0].update({
+            "health_status": "degraded",
+            "health_score": 40,
+            "health_reasons": ["test degraded canonical identity"],
+        })
+
+        signals = build_inventory_signals({"devices": devices, "services": []})
+
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(len(signals), 1)
+        self.assertEqual(signals[0]["device_id"], "dev_4e3690158b11961e")
+
     def test_event_signals_are_context_not_standalone_incidents(self):
         signals = build_event_signals([
             {"id": "evt_1", "type": "InventoryChanged", "source": "inventory", "payload": {}}

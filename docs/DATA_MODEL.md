@@ -83,7 +83,7 @@ Supported roles are `Core Infrastructure`, `Network Equipment`, `Server`, `IoT`,
 
 Known definitions enrich observed passive inventory by normalized MAC first, then exact IP or normalized hostname when stronger identifiers do not conflict. Configured metadata can provide operator names, roles, model/vendor details, location, notes, and topology hints. Runtime fields such as observed status, health, last-seen timestamps, and service observations remain owned by passive discovery. A configured device that has never been observed is represented as offline and does not receive a fabricated `last_seen`.
 
-When exactly one MAC-less identity and exactly one MAC-backed identity share an IP, inventory reconciles the weak identity into the canonical MAC-derived device. The earliest valid `first_seen` and combined discovery provenance are preserved, while current timestamps, reachability, health evidence, and other runtime state remain authoritative from the MAC-backed observation. Conflicting or ambiguous MAC identities are never reconciled.
+When exactly one MAC-less identity and exactly one MAC-backed identity share an IP, inventory reconciles the weak identity into the canonical MAC-derived device. This applies when either identity is current or retained, including a current IP-only observation matched to one retained MAC-backed identity. The earliest valid `first_seen` and combined discovery provenance are preserved, while current observation timestamps remain current and non-empty stable metadata remains authoritative from the MAC-backed identity. Conflicting or ambiguous MAC identities are never reconciled.
 
 Service object:
 

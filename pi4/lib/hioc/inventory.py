@@ -642,6 +642,14 @@ WEAK_IDENTITY_METADATA_FIELDS = {
     "uplink_mac",
     "vendor",
 }
+RETAINED_STRONG_METADATA_FIELDS = WEAK_IDENTITY_METADATA_FIELDS | {
+    "firmware",
+    "interface",
+    "interfaces",
+    "role",
+    "roles",
+    "type",
+}
 
 
 def _record_sources(record: dict) -> set[str]:
@@ -702,6 +710,74 @@ def _reconcile_current_weak_identities(by_key: dict) -> None:
             continue
         weak_metadata = [_weak_identity_metadata(record) for record in by_key.pop(weak_key)]
         by_key[strong_key] = weak_metadata + by_key[strong_key]
+
+
+def _current_weak_as_retained_strong(weak_records: list[dict], strong: dict) -> dict:
+    weak = _merge_record_values(weak_records)
+    canonical = {
+        "ip": strong["ip"],
+        "mac": normalize_mac(strong.get("mac", "")),
+        "_observed": True,
+    }
+    for field in RETAINED_STRONG_METADATA_FIELDS:
+        strong_value = strong.get(field)
+        weak_value = weak.get(field)
+        if field == "name" and strong_value in (strong.get("ip"), strong.get("id")):
+            strong_value = ""
+        if strong_value not in ("", None, []):
+            canonical[field] = strong_value
+        elif weak_value not in ("", None, []):
+            canonical[field] = weak_value
+    sources = _record_sources(strong) | _record_sources(weak)
+    if sources:
+        canonical["sources"] = sorted(sources)
+    if weak.get("last_seen_source"):
+        canonical["last_seen_source"] = weak["last_seen_source"]
+    return canonical
+
+
+def _reconcile_current_weak_with_retained_strong(by_key: dict, previous_devices: list[dict]) -> None:
+    current_by_ip = _group_identities_by_ip(by_key)
+    previous_by_ip = {}
+    for device in previous_devices:
+        ip = str(device.get("ip", "")).strip()
+        if ip:
+            previous_by_ip.setdefault(ip, []).append(device)
+    for ip, identities in current_by_ip.items():
+        weak_keys = identities["weak_keys"]
+        if not weak_keys:
+            continue
+        retained_strong = [
+            device
+            for device in previous_by_ip.get(ip, [])
+            if normalize_mac(device.get("mac", ""))
+        ]
+        retained_macs = {normalize_mac(device.get("mac", "")) for device in retained_strong}
+        retained_ids = {
+            device.get("id") or stable_device_id(device)
+            for device in retained_strong
+        }
+        if identities["strong_keys"]:
+            if retained_macs and retained_macs != identities["macs"]:
+                LOG.warning("inventory identity reconciliation skipped ip=%s reason=conflicting_current_and_retained_macs", ip)
+            continue
+        if len(weak_keys) != 1:
+            if retained_strong:
+                LOG.warning("inventory identity reconciliation skipped ip=%s reason=multiple_current_weak_identities", ip)
+            continue
+        if len(retained_macs) > 1 or len(retained_ids) > 1:
+            LOG.warning("inventory identity reconciliation skipped ip=%s reason=multiple_retained_mac_identities", ip)
+            continue
+        if not retained_strong:
+            continue
+        weak_key = next(iter(weak_keys))
+        strong = retained_strong[0]
+        strong_key = normalize_mac(strong.get("mac", ""))
+        if strong_key in by_key and strong_key != weak_key:
+            LOG.warning("inventory identity reconciliation skipped ip=%s reason=retained_mac_observed_at_another_ip", ip)
+            continue
+        canonical = _current_weak_as_retained_strong(by_key.pop(weak_key), strong)
+        by_key[strong_key] = [canonical]
 
 
 def _valid_first_seen(record: dict) -> tuple[float, str] | None:
@@ -771,8 +847,9 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
         if not key:
             continue
         by_key.setdefault(key, []).append(record)
-    _reconcile_current_weak_identities(by_key)
     previous_devices = previous.get("devices", [])
+    _reconcile_current_weak_with_retained_strong(by_key, previous_devices)
+    _reconcile_current_weak_identities(by_key)
     retained_reconciliations = _retained_weak_reconciliations(by_key, previous_devices)
     reconciled_previous_ids = {
         record.get("id") for record in retained_reconciliations.values() if record.get("id")

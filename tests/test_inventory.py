@@ -23,6 +23,7 @@ from hioc.inventory import (
     integration_inventory,
     known_infrastructure,
     merge_records,
+    neighbor_table,
     normalize_mac,
     operator_role,
     resolve_configured_parent_ids,
@@ -131,6 +132,161 @@ class InventoryModelTests(unittest.TestCase):
         self.assertIn("arp_table", devices[0]["source"])
         self.assertIn("dhcp_leases", devices[0]["source"])
         self.assertEqual(devices[0]["sources"], ["arp_table", "dhcp_leases"])
+
+    def test_current_weak_ip_identity_reconciles_into_retained_mac_identity(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        weak_id = stable_device_id({"ip": "192.168.100.219"})
+        strong_id = stable_device_id({"mac": "0e:38:76:1a:e3:ba"})
+        previous = {"devices": [{
+            "id": strong_id,
+            "ip": "192.168.100.219",
+            "mac": "0e:38:76:1a:e3:ba",
+            "name": "Retained Device",
+            "vendor": "Retained Vendor",
+            "role": "IoT",
+            "firmware": "1.2.3",
+            "interface": "eth0",
+            "interfaces": [{"interface": "eth0", "ip": "192.168.100.219"}],
+            "first_seen": "2026-07-02T08:00:00-06:00",
+            "last_seen": "2026-07-11T09:00:00-06:00",
+            "last_seen_epoch": 900,
+            "source": "integration:retained",
+            "last_seen_source": "integration:retained",
+        }]}
+        devices = merge_records([{
+            "ip": "192.168.100.219",
+            "mac": "",
+            "name": "192.168.100.219",
+            "vendor": "",
+            "source": "arp_table",
+            "last_seen_source": "arp_table",
+        }], previous, "2026-07-12T23:21:19-06:00", 1000, config)
+
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["id"], strong_id)
+        self.assertNotEqual(devices[0]["id"], weak_id)
+        self.assertEqual(devices[0]["mac"], "0e:38:76:1a:e3:ba")
+        self.assertEqual(devices[0]["display_name"], "Retained Device")
+        self.assertEqual(devices[0]["vendor"], "Retained Vendor")
+        self.assertEqual(devices[0]["role"], "IoT")
+        self.assertEqual(devices[0]["firmware"], "1.2.3")
+        self.assertEqual(devices[0]["interface"], "eth0")
+        self.assertEqual(devices[0]["interfaces"], [{"interface": "eth0", "ip": "192.168.100.219"}])
+        self.assertEqual(devices[0]["first_seen"], "2026-07-02T08:00:00-06:00")
+        self.assertEqual(devices[0]["last_seen"], "2026-07-12T23:21:19-06:00")
+        self.assertEqual(devices[0]["last_seen_epoch"], 1000)
+        self.assertEqual(devices[0]["last_seen_source"], "arp_table")
+        self.assertEqual(devices[0]["sources"], ["arp_table", "integration:retained"])
+
+    def test_current_weak_consumes_retained_weak_and_strong_identities(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        weak_id = stable_device_id({"ip": "192.168.100.219"})
+        strong_id = stable_device_id({"mac": "0e:38:76:1a:e3:ba"})
+        previous = {"devices": [
+            {
+                "id": weak_id,
+                "ip": "192.168.100.219",
+                "mac": "",
+                "first_seen": "2026-07-01T08:00:00-06:00",
+                "source": "previous_weak",
+            },
+            {
+                "id": strong_id,
+                "ip": "192.168.100.219",
+                "mac": "0e:38:76:1a:e3:ba",
+                "first_seen": "2026-07-02T08:00:00-06:00",
+                "source": "previous_strong",
+            },
+        ]}
+        devices = merge_records([{
+            "ip": "192.168.100.219",
+            "source": "arp_table",
+            "last_seen_source": "arp_table",
+        }], previous, "2026-07-12T23:21:19-06:00", 1000, config)
+
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["id"], strong_id)
+        self.assertEqual(devices[0]["first_seen"], "2026-07-01T08:00:00-06:00")
+        self.assertEqual(devices[0]["sources"], ["arp_table", "previous_strong", "previous_weak"])
+
+    def test_failed_neighbor_current_weak_reconciles_to_retained_strong(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        strong_id = stable_device_id({"mac": "0e:38:76:1a:e3:ba"})
+        previous = {"devices": [{
+            "id": strong_id,
+            "ip": "192.168.100.219",
+            "mac": "0e:38:76:1a:e3:ba",
+            "first_seen": "2026-07-02T08:00:00-06:00",
+            "source": "arp_table",
+        }]}
+        with patch("hioc.inventory.run_command", return_value=(0, "192.168.100.219 dev eth0 FAILED", "")):
+            current = list(neighbor_table().values())
+        devices = merge_records(current, previous, "2026-07-12T23:21:19-06:00", 1000, config)
+
+        self.assertEqual(current[0]["mac"], "")
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["id"], strong_id)
+        self.assertEqual(devices[0]["last_seen"], "2026-07-12T23:21:19-06:00")
+        self.assertEqual(devices[0]["last_seen_source"], "arp_table")
+
+    def test_current_weak_does_not_reconcile_with_conflicting_retained_macs(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        previous = {"devices": [
+            {"id": "retained-conflict", "ip": "192.168.100.52", "mac": "aa:bb:cc:dd:ee:01"},
+            {"id": "retained-conflict", "ip": "192.168.100.52", "mac": "aa:bb:cc:dd:ee:02"},
+        ]}
+        with self.assertLogs("hioc-inventory-engine", level="WARNING") as logs:
+            devices = merge_records([
+                {"ip": "192.168.100.52", "source": "arp_table", "last_seen_source": "arp_table"},
+            ], previous, "2026-07-12T23:21:19-06:00", 1000, config)
+
+        self.assertEqual(len(devices), 3)
+        self.assertIn("multiple_retained_mac_identities", " ".join(logs.output))
+
+    def test_multiple_current_weak_identities_do_not_reconcile_to_retained_strong(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        previous = {"devices": [{
+            "id": stable_device_id({"mac": "aa:bb:cc:dd:ee:55"}),
+            "ip": "192.168.100.55",
+            "mac": "aa:bb:cc:dd:ee:55",
+        }]}
+        with self.assertLogs("hioc-inventory-engine", level="WARNING") as logs:
+            devices = merge_records([
+                {"ip": "192.168.100.55", "source": "arp_table", "_merge_key": "weak-a"},
+                {"ip": "192.168.100.55", "source": "integration:weak", "_merge_key": "weak-b"},
+            ], previous, "2026-07-12T23:21:19-06:00", 1000, config)
+
+        self.assertEqual(len(devices), 3)
+        self.assertIn("multiple_current_weak_identities", " ".join(logs.output))
+
+    def test_current_weak_without_retained_strong_remains_ip_identity(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        devices = merge_records([
+            {"ip": "192.168.100.53", "source": "arp_table", "last_seen_source": "arp_table"},
+        ], {"devices": []}, "2026-07-12T23:21:19-06:00", 1000, config)
+
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["id"], stable_device_id({"ip": "192.168.100.53"}))
+        self.assertEqual(devices[0]["mac"], "")
+
+    def test_conflicting_current_and_retained_macs_remain_separate(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        current_mac = "aa:bb:cc:dd:ee:01"
+        retained_mac = "aa:bb:cc:dd:ee:02"
+        previous = {"devices": [{
+            "id": stable_device_id({"mac": retained_mac}),
+            "ip": "192.168.100.54",
+            "mac": retained_mac,
+        }]}
+        with self.assertLogs("hioc-inventory-engine", level="WARNING") as logs:
+            devices = merge_records([
+                {"ip": "192.168.100.54", "source": "arp_table"},
+                {"ip": "192.168.100.54", "mac": current_mac, "source": "integration:current"},
+            ], previous, "2026-07-12T23:21:19-06:00", 1000, config)
+
+        self.assertEqual(len(devices), 2)
+        self.assertEqual({device["mac"] for device in devices}, {current_mac, retained_mac})
+        self.assertIn("conflicting_current_and_retained_macs", " ".join(logs.output))
 
     def test_different_mac_identities_on_same_ip_are_not_merged(self):
         config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
