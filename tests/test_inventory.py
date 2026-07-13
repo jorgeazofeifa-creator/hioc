@@ -18,6 +18,7 @@ from hioc.inventory import (
     health_score,
     inventory_summary_lists,
     inventory_class,
+    observation_freshness,
     append_known_infrastructure,
     discover_inventory,
     integration_inventory,
@@ -30,6 +31,7 @@ from hioc.inventory import (
     scan_subnet,
     stable_device_id,
 )
+from hioc.core.monitoring import is_operationally_monitored
 
 
 class InventoryModelTests(unittest.TestCase):
@@ -288,12 +290,114 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(devices[0]["last_seen"], "2026-07-12T22:36:11-06:00")
         self.assertEqual(devices[0]["last_seen_epoch"], 900)
         self.assertEqual(devices[0]["health_status"], "watch")
+        self.assertEqual(devices[0]["status"], "stale")
+        self.assertEqual(devices[0]["observation_status"], "stale")
 
         aged = merge_records([], {"devices": devices}, "2026-07-12T23:23:19-06:00", 1100, config)
         self.assertEqual(aged[0]["id"], strong_id)
         self.assertEqual(aged[0]["last_seen_epoch"], 900)
-        self.assertEqual(aged[0]["health_status"], "degraded")
-        self.assertIn("not seen within offline threshold", aged[0]["health_reasons"])
+        self.assertEqual(aged[0]["health_status"], "watch")
+        self.assertEqual(aged[0]["status"], "unknown")
+        self.assertEqual(aged[0]["observation_status"], "expired")
+        self.assertFalse(aged[0]["operationally_monitored"])
+        self.assertIn("operational availability unknown", aged[0]["health_reasons"][0])
+
+    def test_operational_monitoring_policy_is_conservative_and_centralized(self):
+        monitored = (
+            {"inventory_class": "infrastructure", "source": "arp_table"},
+            {"inventory_class": "client", "source": "known_infrastructure"},
+            {"inventory_class": "client", "source": "integration:home_assistant"},
+            {"inventory_class": "client", "source": "gateway"},
+            {"inventory_class": "client", "source": "local_host"},
+            {"inventory_class": "client", "source": "future_source"},
+            {"inventory_class": "client", "source": "arp_table", "operationally_monitored": True},
+        )
+        unmonitored = (
+            {"inventory_class": "client", "source": "arp_table"},
+            {"inventory_class": "client", "source": "dhcp_leases"},
+            {"inventory_class": "client", "sources": ["arp_table", "dhcp_leases"]},
+        )
+
+        for record in monitored:
+            with self.subTest(record=record):
+                self.assertTrue(is_operationally_monitored(record))
+        for record in unmonitored:
+            with self.subTest(record=record):
+                self.assertFalse(is_operationally_monitored(record))
+
+    def test_monitoring_policy_does_not_depend_on_device_identity_fields(self):
+        passive = {"inventory_class": "client", "source": "arp_table"}
+        identities = (
+            {},
+            {"ip": "10.0.0.10"},
+            {"mac": "aa:bb:cc:dd:ee:ff"},
+            {"hostname": "arbitrary-client"},
+            {"name": "Arbitrary Client"},
+        )
+        for identity in identities:
+            with self.subTest(identity=identity):
+                self.assertFalse(is_operationally_monitored({**passive, **identity}))
+
+    def test_observation_freshness_allowed_values_and_ages_are_deterministic(self):
+        cases = (
+            ({"last_seen_epoch": 950}, ("recent", 50)),
+            ({"last_seen_epoch": 900}, ("stale", 100)),
+            ({"last_seen_epoch": 800}, ("expired", 200)),
+            ({"_never_observed": True}, ("unobserved", None)),
+            ({}, ("unknown", None)),
+        )
+        for record, expected in cases:
+            with self.subTest(record=record):
+                self.assertEqual(observation_freshness(record, 1000, 60, 120), expected)
+
+    def test_recent_arp_only_client_remains_visible_and_recent(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        devices = merge_records([{
+            "ip": "10.0.0.20",
+            "mac": "11:22:33:44:55:66",
+            "source": "arp_table",
+            "roles": ["endpoint"],
+            "role": "Unknown",
+        }], {"devices": []}, "now", 1000, config)
+
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["observation_status"], "recent")
+        self.assertEqual(devices[0]["observation_age_seconds"], 0)
+        self.assertEqual(devices[0]["health_status"], "healthy")
+        self.assertEqual(devices[0]["status"], "online")
+        self.assertFalse(devices[0]["operationally_monitored"])
+
+    def test_dhcp_only_client_is_assignment_current_but_operationally_unknown(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        devices = merge_records([{
+            "ip": "192.168.100.224",
+            "mac": "64:b5:c6:c1:c5:09",
+            "source": "dhcp_leases",
+            "roles": ["endpoint"],
+            "role": "Unknown",
+        }], {"devices": []}, "now", 1000, config)
+
+        self.assertEqual(devices[0]["observation_status"], "recent")
+        self.assertEqual(devices[0]["health_status"], "watch")
+        self.assertEqual(devices[0]["status"], "unknown")
+        self.assertFalse(devices[0]["operationally_monitored"])
+        self.assertIn("DHCP assignment observed", devices[0]["health_reasons"][0])
+
+    def test_infrastructure_and_known_assets_keep_strict_age_health(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+        records = (
+            {"id": "server", "mac": "aa:bb:cc:dd:ee:01", "role": "Server", "source": "arp_table"},
+            {"id": "known", "mac": "aa:bb:cc:dd:ee:02", "role": "IoT", "source": "known_infrastructure"},
+        )
+        for record in records:
+            previous = {"devices": [{**record, "last_seen": "earlier", "last_seen_epoch": 100}]}
+            with self.subTest(record=record):
+                device = merge_records([], previous, "now", 1000, config)[0]
+                self.assertTrue(device["operationally_monitored"])
+                self.assertEqual(device["observation_status"], "expired")
+                self.assertEqual(device["health_status"], "degraded")
+                self.assertEqual(device["status"], "degraded")
+                self.assertIn("not seen within offline threshold", device["health_reasons"])
 
     def test_legacy_macless_arp_only_record_is_removed(self):
         config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}

@@ -12,6 +12,7 @@ from pathlib import Path
 from .runtime import run_command, now_iso
 from .core.capabilities import CapabilityRegistry
 from .core.drivers import DriverRegistry, DriverResult
+from .core.monitoring import is_dhcp_assignment_only, is_operationally_monitored, record_sources as _record_sources
 
 
 MAC_RE = re.compile(r"^[0-9a-f]{2}(:[0-9a-f]{2}){5}$")
@@ -577,6 +578,31 @@ def inventory_class(role: str) -> str:
     return "client"
 
 
+def observation_freshness(record: dict, now_epoch: int, stale_after: int, offline_after: int) -> tuple[str, int | None]:
+    last_seen = int(record.get("last_seen_epoch") or 0)
+    if record.get("_never_observed"):
+        return "unobserved", None
+    if not last_seen:
+        return "unknown", None
+    age = max(0, now_epoch - last_seen)
+    if age > offline_after:
+        return "expired", age
+    if age > stale_after:
+        return "stale", age
+    return "recent", age
+
+
+def device_status(record: dict, health_status: str) -> str:
+    if is_operationally_monitored(record):
+        return "online" if health_status in ("healthy", "watch") else health_status
+    observation_status = record.get("observation_status")
+    if observation_status == "stale":
+        return "stale"
+    if observation_status in ("expired", "unknown", "unobserved") or is_dhcp_assignment_only(record):
+        return "unknown"
+    return "online" if health_status in ("healthy", "watch") else health_status
+
+
 def health_score(record: dict, now_epoch: int, stale_after: int, offline_after: int) -> tuple[int, str, list[str]]:
     reasons = []
     score = 100
@@ -584,6 +610,14 @@ def health_score(record: dict, now_epoch: int, stale_after: int, offline_after: 
     if record.get("_never_observed"):
         return 0, "offline", ["not yet observed by passive discovery"]
     age = now_epoch - last_seen if last_seen else offline_after + 1
+    if not is_operationally_monitored(record):
+        if age > offline_after:
+            return 75, "watch", ["passive observation expired; operational availability unknown"]
+        if age > stale_after:
+            return 75, "watch", ["last seen is stale; operational availability unknown"]
+        if is_dhcp_assignment_only(record):
+            return 75, "watch", ["DHCP assignment observed; operational availability unknown"]
+        return score, "healthy", reasons
     if age > offline_after:
         score -= 55
         reasons.append("not seen within offline threshold")
@@ -667,12 +701,6 @@ RETAINED_STRONG_METADATA_FIELDS = WEAK_IDENTITY_METADATA_FIELDS | {
     "roles",
     "type",
 }
-
-
-def _record_sources(record: dict) -> set[str]:
-    sources = {str(item).strip() for item in record.get("sources", []) if str(item).strip()}
-    sources.update(item.strip() for item in str(record.get("source", "")).split(",") if item.strip())
-    return sources
 
 
 def _weak_identity_metadata(record: dict) -> dict:
@@ -903,11 +931,15 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
         record.setdefault("role", operator_role(record, record.get("roles", [])))
         record["inventory_class"] = inventory_class(record["role"])
         record["source"] = ", ".join(record.get("sources", [])) if record.get("sources") else record.get("source", "unknown")
+        record["operationally_monitored"] = is_operationally_monitored(record)
+        observation_status, observation_age = observation_freshness(record, now_epoch, stale_after, offline_after)
+        record["observation_status"] = observation_status
+        record["observation_age_seconds"] = observation_age
         score, status, reasons = health_score(record, now_epoch, stale_after, offline_after)
         record["health_score"] = score
         record["health_status"] = status
         record["health"] = status
-        record["status"] = "online" if status in ("healthy", "watch") else status
+        record["status"] = device_status(record, status)
         record["health_reasons"] = reasons
         devices.append(record)
     seen_ids = {d["id"] for d in devices}
@@ -924,13 +956,17 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
             record.setdefault("vendor", "")
             record.setdefault("source", record.get("last_seen_source", "previous_inventory"))
             record.setdefault("last_seen", "unknown")
+            record.setdefault("role", operator_role(record, record.get("roles", [])))
+            record.setdefault("inventory_class", inventory_class(record["role"]))
+            record["operationally_monitored"] = is_operationally_monitored(record)
+            observation_status, observation_age = observation_freshness(record, now_epoch, stale_after, offline_after)
+            record["observation_status"] = observation_status
+            record["observation_age_seconds"] = observation_age
             score, status, reasons = health_score(record, now_epoch, stale_after, offline_after)
             record["health_score"] = score
             record["health_status"] = status
             record["health"] = status
-            record["status"] = "online" if status in ("healthy", "watch") else status
-            record.setdefault("role", operator_role(record, record.get("roles", [])))
-            record.setdefault("inventory_class", inventory_class(record["role"]))
+            record["status"] = device_status(record, status)
             record["health_reasons"] = reasons
             devices.append(record)
     return sorted(devices, key=lambda item: (item.get("type", ""), item.get("display_name", "")))

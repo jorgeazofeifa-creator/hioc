@@ -1,5 +1,7 @@
 import hashlib
 
+from .monitoring import is_operationally_monitored
+
 
 def stable_id(key: str) -> str:
     return hashlib.sha1(key.encode()).hexdigest()
@@ -96,6 +98,8 @@ def build_inventory_signals(inventory: dict) -> list[dict]:
         service_by_device.setdefault(service.get("device_id"), []).append(service)
 
     for device in devices:
+        if not is_operationally_monitored(device):
+            continue
         status = device.get("health_status")
         if status not in ("degraded", "offline"):
             continue

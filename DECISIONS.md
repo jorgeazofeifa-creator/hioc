@@ -156,3 +156,17 @@ Alternatives: Rename incident topics, replace existing sensors, or keep only the
 Reason: Root-cause analysis and lifecycle detail can evolve without forcing dashboard, automation, or user migration work. New fields live inside the existing incident JSON payloads while `status`, `severity`, `system`, and timeline compatibility remain intact.
 
 Consequences: Incident payload additions must remain backward compatible unless a migration is explicitly approved.
+
+## ADR-0011: Passive Observation Is Separate from Operational Monitoring
+
+Decision: HIOC Core owns a single operational-monitoring predicate used by inventory health and incident correlation. Ordinary clients supported only by ARP and/or DHCP evidence remain visible as passive inventory but do not become availability incidents from observation age alone. Infrastructure, known-infrastructure, local-host, gateway, authoritative integration, and explicitly monitored records remain monitored. Unknown future sources default to monitored until their semantics are deliberately reviewed at this boundary.
+
+Status: Accepted.
+
+Context: Neighbor-cache absence proves that recent positive evidence is unavailable; it does not prove that an ordinary client has failed. Treating every retained passive identity as an availability target produced non-actionable incidents.
+
+Alternatives: Continue incident generation for every discovered identity, suppress only correlation while leaving false degraded health, or scatter source exceptions across inventory and incident code.
+
+Reason: Living Inventory documents what exists while incidents must remain operationally actionable. One conservative policy boundary prevents false client incidents without weakening infrastructure monitoring or silently suppressing future discovery sources.
+
+Consequences: New discovery and Active Discovery sources must explicitly review this predicate. Passive-client observation timestamps remain authoritative and visible. Passive-client archival or expiration is not decided here and remains a separate future configurable checkpoint.

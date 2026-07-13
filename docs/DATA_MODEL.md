@@ -37,6 +37,9 @@ Device object:
 - `first_seen`
 - `last_seen`
 - `last_seen_epoch`
+- `observation_status`: `recent`, `stale`, `expired`, `unobserved`, or `unknown`.
+- `observation_age_seconds`: age of the last positive observation, or `null` when no timestamp exists.
+- `operationally_monitored`: derived monitoring-policy decision used by health and incident correlation.
 - `health_score`
 - `health_status`
 - `health_reasons`
@@ -86,6 +89,12 @@ Known definitions enrich observed passive inventory by normalized MAC first, the
 When exactly one MAC-less identity and exactly one MAC-backed identity share an IP, inventory reconciles the weak identity into the canonical MAC-derived device. This applies when either identity is current or retained, including a current IP-only observation matched to one retained MAC-backed identity. The earliest valid `first_seen` and combined discovery provenance are preserved, while current observation timestamps remain current and non-empty stable metadata remains authoritative from the MAC-backed identity. Conflicting or ambiguous MAC identities are never reconciled.
 
 Positive evidence creates or refreshes durable inventory. Unresolved neighbor-cache evidence such as `FAILED`, `INCOMPLETE`, `NONE`, or a MAC-less entry is diagnostic-only: it does not create an identity or refresh `last_seen`. Legacy MAC-less records are removed only when their complete provenance is exactly `arp_table`; records supported by any other source remain retained.
+
+Operational monitoring is separate from passive observation. The authoritative policy is `is_operationally_monitored()` in HIOC Core. Infrastructure-class devices, gateway and collector roles/types, known-infrastructure definitions, local-host and gateway records, authoritative integration records, and explicitly monitored records remain monitored. Unknown and future discovery sources default to monitored until their semantics are deliberately added to that policy boundary.
+
+An ordinary client whose complete provenance is limited to `arp_table` and/or `dhcp_leases` remains inventory-visible but is not availability-monitored. Once its passive evidence ages, it remains `watch`, exposes `status: stale` or `status: unknown`, preserves the last positive observation, and does not generate an availability incident from observation age alone. A DHCP-only record remains `watch` with operational status `unknown` even while its assignment observation is current, because DHCP assignment does not prove current reachability.
+
+Passive-client archival or expiration is not defined by this correction. Retention duration and cleanup remain a separate future configurable policy checkpoint.
 
 Service object:
 

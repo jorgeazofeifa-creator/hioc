@@ -109,7 +109,7 @@ class CorrelationEngineTests(unittest.TestCase):
             {
                 "ip": "192.168.100.219",
                 "mac": "0e:38:76:1a:e3:ba",
-                "source": "dhcp_leases",
+                "source": "integration:device_tracker",
                 "reachable": False,
             },
         ], previous, "2026-07-12T22:26:48-06:00", 1000, config)
@@ -138,6 +138,8 @@ class CorrelationEngineTests(unittest.TestCase):
             "health_status": "degraded",
             "health_score": 40,
             "health_reasons": ["test degraded canonical identity"],
+            "source": "arp_table, known_infrastructure",
+            "sources": ["arp_table", "known_infrastructure"],
         })
 
         signals = build_inventory_signals({"devices": devices, "services": []})
@@ -145,6 +147,89 @@ class CorrelationEngineTests(unittest.TestCase):
         self.assertEqual(len(devices), 1)
         self.assertEqual(len(signals), 1)
         self.assertEqual(signals[0]["device_id"], "dev_4e3690158b11961e")
+
+    def test_expired_arp_only_client_remains_visible_without_incident(self):
+        config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "900", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "3600"}
+        device_id = "dev_passive_client"
+        previous = {"devices": [{
+            "id": device_id,
+            "ip": "192.168.100.137",
+            "mac": "ba:5f:71:8b:06:3f",
+            "role": "Unknown",
+            "inventory_class": "client",
+            "first_seen": "2026-07-13T10:30:02-06:00",
+            "last_seen": "2026-07-13T10:30:02-06:00",
+            "last_seen_epoch": 100,
+            "source": "arp_table",
+        }]}
+
+        devices = merge_records([], previous, "2026-07-13T12:30:02-06:00", 4001, config)
+        signals = build_inventory_signals({"devices": devices, "services": []})
+
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["id"], device_id)
+        self.assertEqual(devices[0]["last_seen_epoch"], 100)
+        self.assertEqual(devices[0]["observation_status"], "expired")
+        self.assertEqual(devices[0]["health_status"], "watch")
+        self.assertEqual(devices[0]["status"], "unknown")
+        self.assertFalse(devices[0]["operationally_monitored"])
+        self.assertEqual(signals, [])
+        self.assertEqual(correlate(signals, {"devices": devices}), {})
+
+    def test_ordinary_passive_client_sources_cannot_create_availability_signals(self):
+        for source in ("arp_table", "dhcp_leases", "arp_table, dhcp_leases"):
+            device = {
+                "id": "ordinary_client",
+                "display_name": "Ordinary Client",
+                "inventory_class": "client",
+                "source": source,
+                "health_status": "degraded",
+                "health_score": 45,
+                "health_reasons": ["passive observation age"],
+            }
+            with self.subTest(source=source):
+                self.assertEqual(build_inventory_signals({"devices": [device], "services": []}), [])
+
+    def test_authoritative_and_infrastructure_records_remain_incident_eligible(self):
+        records = (
+            {"inventory_class": "infrastructure", "source": "arp_table", "roles": ["server"]},
+            {"inventory_class": "client", "source": "known_infrastructure", "roles": ["iot"]},
+            {"inventory_class": "client", "source": "arp_table, integration:device_tracker", "roles": ["endpoint"]},
+            {"inventory_class": "client", "source": "future_discovery_source", "roles": ["endpoint"]},
+            {"inventory_class": "client", "source": "arp_table", "roles": ["endpoint"], "operationally_monitored": True},
+            {"inventory_class": "infrastructure", "source": "gateway", "roles": ["gateway"]},
+            {"inventory_class": "infrastructure", "source": "local_host", "roles": ["collector"]},
+        )
+        for index, record in enumerate(records):
+            device = {
+                "id": f"monitored_{index}",
+                "display_name": f"Monitored {index}",
+                "health_status": "degraded",
+                "health_score": 45,
+                "health_reasons": ["authoritative evidence is stale"],
+                **record,
+            }
+            with self.subTest(record=record):
+                signals = build_inventory_signals({"devices": [device], "services": []})
+                self.assertEqual(len(signals), 1)
+                self.assertEqual(signals[0]["device_id"], device["id"])
+
+    def test_offline_gateway_and_collector_inventory_signals_remain_critical(self):
+        for role, source in (("gateway", "gateway"), ("collector", "local_host")):
+            device = {
+                "id": role,
+                "display_name": role.title(),
+                "inventory_class": "infrastructure",
+                "source": source,
+                "roles": [role],
+                "health_status": "offline",
+                "health_score": 10,
+                "health_reasons": ["authoritative reachability failed"],
+            }
+            with self.subTest(role=role):
+                signals = build_inventory_signals({"devices": [device], "services": []})
+                self.assertEqual(signals[0]["severity"], "critical")
+                self.assertEqual(signals[0]["confidence"], 88)
 
     def test_anonymous_failed_neighbor_produces_no_inventory_signal(self):
         config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}

@@ -66,6 +66,10 @@ Inventory state is stored in `state/inventory` and published under `home/infrast
 
 Living Inventory emits internal events for device discovery, inventory changes, and topology changes. It also writes internal capabilities without changing the public MQTT inventory schema.
 
+Passive observation freshness and operational monitoring are separate concerns. HIOC Core owns one `is_operationally_monitored()` policy boundary used by both inventory health and incident correlation. Ordinary ARP/DHCP-only clients remain visible as stale or unknown when positive evidence ages, while infrastructure, known infrastructure, local/gateway records, authoritative integrations, explicitly monitored assets, and future unclassified sources remain availability-monitored. New discovery sources, including future Active Discovery sources, must make an intentional policy decision at this boundary rather than adding scattered correlation exceptions.
+
+This policy does not define passive-client archival or permanent retention. Configurable archival and expiration remain a separate future checkpoint.
+
 ## Compatibility
 
 HIOC keeps the existing Pi4 toolkit and legacy MQTT topics intact. New subsystems publish under the HIOC base topic and read existing telemetry through `HIOC_LEGACY_BASE_TOPIC`.
