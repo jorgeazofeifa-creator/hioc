@@ -47,9 +47,13 @@ def main() -> int:
             status_payload["status"] = "degraded"
             status_payload["publish_error"] = str(exc)
             store.write_json("status.json", status_payload)
-            log.error("platform status MQTT publish failed", error=str(exc))
+            log.error("platform status MQTT publish failed: %s", exc)
             return 0
-        log.info("platform status updated", hioc_version=version["hioc_version"], build=version["build"])
+        log.info(
+            "platform status updated hioc_version=%s build=%s",
+            version["hioc_version"],
+            version["build"],
+        )
         return 0
     except Exception as exc:
         store.write_json("status.json", {"status": "error", "updated": timestamp, "error": str(exc)})
