@@ -1,3 +1,4 @@
+import re
 import unittest
 from pathlib import Path
 
@@ -24,13 +25,53 @@ class InventoryPresentationTests(unittest.TestCase):
             for sensor in block["sensor"]
         }
 
+        views = cls.dashboard["views"]
+        inventory_view = next(view for view in views if view.get("path") == "hioc-v2-inventory")
+        cls.inventory_cards = [
+            card for section in inventory_view["sections"] for card in section.get("cards", [])
+        ]
+
+    @staticmethod
+    def _render_recommendation(
+        template, watch_count, degraded_count, offline_count, status="online"
+    ):
+        branches = re.fullmatch(
+            r"\s*{% set status = .*? %}\s*"
+            r"{% set offline = .*? %}\s*"
+            r"{% set degraded = .*? %}\s*"
+            r"{% set watch = .*? %}\s*"
+            r"{% if status not in .*? %}\s*(.*?)\s*"
+            r"{% elif offline > 0 %}\s*(.*?)\s*"
+            r"{% elif degraded > 0 %}\s*(.*?)\s*"
+            r"{% elif watch > 0 %}\s*(.*?)\s*"
+            r"{% else %}\s*(.*?)\s*{% endif %}\s*",
+            template,
+            flags=re.DOTALL,
+        )
+        if branches is None:
+            raise AssertionError("Recommendation template no longer has the required count branches")
+        unknown_text, offline_text, degraded_text, watch_text, healthy_text = branches.groups()
+        if status not in {"online", "degraded"} or min(
+            watch_count, degraded_count, offline_count
+        ) < 0:
+            return unknown_text
+        if offline_count > 0:
+            return offline_text
+        if degraded_count > 0:
+            return degraded_text
+        if watch_count > 0:
+            return watch_text
+        return healthy_text
+
     def test_summary_preserves_branch_precedence_and_wording(self):
         template = self.sensors["hioc_inventory_operations_summary"]["state"]
-        offline = template.index("{% if offline > 0 %}")
+        unknown = template.index("{% if status not in")
+        offline = template.index("{% elif offline > 0 %}")
         degraded = template.index("{% elif degraded > 0 %}")
         watch = template.index("{% elif watch > 0 %}")
         healthy = template.index("Inventory healthy")
 
+        self.assertLess(unknown, offline)
         self.assertLess(offline, degraded)
         self.assertLess(degraded, watch)
         self.assertLess(watch, healthy)
@@ -39,6 +80,7 @@ class InventoryPresentationTests(unittest.TestCase):
         self.assertIn("has a stale observation", template)
         self.assertIn("have stale observations", template)
         self.assertNotIn("need attention", template.lower())
+        self.assertIn("Inventory status unavailable", template)
 
         cases = {
             (97, 0, 0, 0): "Inventory healthy",
@@ -65,16 +107,38 @@ class InventoryPresentationTests(unittest.TestCase):
                 self.assertEqual(actual, expected)
                 self.assertGreaterEqual(healthy_count, 0)
 
-    def test_watch_only_recommendation_is_non_actionable(self):
+    def test_recommendation_template_renders_each_count_branch(self):
         template = self.sensors["hioc_inventory_recommended_action"]["state"]
-        self.assertLess(template.index("{% if offline > 0 %}"), template.index("{% elif degraded > 0 %}"))
-        self.assertLess(template.index("{% elif degraded > 0 %}"), template.index("{% elif watch > 0 %}"))
-        self.assertIn(
-            "No operator action required; stale observations remain visible for review.",
-            template,
+        cases = {
+            (0, 0, 1): "Open the inventory dashboard and verify power, Wi-Fi/Ethernet, and gateway reachability for offline devices.",
+            (0, 1, 0): "Review degraded device health reasons and confirm whether the device has changed IP, MAC, or parent path.",
+            (2, 0, 0): "No operator action required; stale observations remain visible for review.",
+            (0, 0, 0): "No inventory action required.",
+            (2, 1, 0): "Review degraded device health reasons and confirm whether the device has changed IP, MAC, or parent path.",
+            (2, 1, 1): "Open the inventory dashboard and verify power, Wi-Fi/Ethernet, and gateway reachability for offline devices.",
+            (-1, 0, 0): "Inventory recommendation unavailable; review Inventory for current state.",
+        }
+        for counts, expected in cases.items():
+            with self.subTest(counts=counts):
+                self.assertEqual(self._render_recommendation(template, *counts), expected)
+        self.assertEqual(
+            self._render_recommendation(template, 0, 0, 0, status="unknown"),
+            "Inventory recommendation unavailable; review Inventory for current state.",
         )
-        self.assertIn("Open the inventory dashboard", template)
-        self.assertIn("Review degraded device health reasons", template)
+
+    def test_inventory_summary_uses_authoritative_recommendation_entity(self):
+        summary = next(card for card in self.inventory_cards if card.get("title") == "Inventory Summary")
+        self.assertIn(
+            "Recommended action: {{ states('sensor.hioc_inventory_recommended_action') }}",
+            summary["content"],
+        )
+        self.assertNotIn(
+            "Recommended action: review Device Health when degraded or offline counts are nonzero.",
+            summary["content"],
+        )
+        style = summary["card_mod"]["style"]
+        self.assertIn("sensor.hioc_inventory_watch_devices", style)
+        self.assertIn("#38bdf8", style)
 
     def test_entities_counts_and_dashboard_layout_are_unchanged(self):
         expected_ids = {
@@ -83,14 +147,11 @@ class InventoryPresentationTests(unittest.TestCase):
         }
         self.assertTrue(expected_ids <= self.sensors.keys())
 
-        views = self.dashboard["views"]
-        inventory_view = next(view for view in views if view.get("path") == "hioc-v2-inventory")
-        cards = [card for section in inventory_view["sections"] for card in section.get("cards", [])]
-        summary = next(card for card in cards if card.get("title") == "Inventory Summary")
-        counts = next(card for card in cards if card.get("title") == "Counts")
+        summary = next(card for card in self.inventory_cards if card.get("title") == "Inventory Summary")
+        counts = next(card for card in self.inventory_cards if card.get("title") == "Counts")
 
-        self.assertEqual(summary["grid_options"]["columns"], 8)
-        self.assertEqual(counts["grid_options"]["columns"], 4)
+        self.assertEqual(summary["grid_options"], {"columns": 12, "rows": "auto"})
+        self.assertEqual(counts["grid_options"], {"columns": 12, "rows": "auto"})
         for entity_id in (
             "sensor.hioc_inventory_healthy_devices",
             "sensor.hioc_inventory_watch_devices",

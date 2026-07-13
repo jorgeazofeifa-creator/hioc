@@ -3,49 +3,49 @@ mqtt:
     - name: HIOC Platform Version
       unique_id: hioc_platform_version
       state_topic: home/infrastructure/hioc/platform/status
-      value_template: "{{ value_json.hioc_version | default('unknown') }}"
+      value_template: "{{ value_json.hioc_version | default('unknown', true) }}"
       json_attributes_topic: home/infrastructure/hioc/platform/version
       icon: mdi:package-variant-closed
 
     - name: HIOC Platform Status
       unique_id: hioc_platform_status
       state_topic: home/infrastructure/hioc/platform/status
-      value_template: "{{ value_json.status | default('unknown') }}"
+      value_template: "{{ value_json.status | default('unknown', true) }}"
       json_attributes_topic: home/infrastructure/hioc/platform/status
       icon: mdi:check-decagram
 
     - name: HIOC Core Version
       unique_id: hioc_core_version
       state_topic: home/infrastructure/hioc/platform/status
-      value_template: "{{ value_json.core | default('unknown') }}"
+      value_template: "{{ value_json.core | default('unknown', true) }}"
       icon: mdi:cube-outline
 
     - name: HIOC Correlation Engine Version
       unique_id: hioc_correlation_engine_version
       state_topic: home/infrastructure/hioc/platform/status
-      value_template: "{{ value_json.correlation_engine | default('unknown') }}"
+      value_template: "{{ value_json.correlation_engine | default('unknown', true) }}"
       icon: mdi:source-branch-sync
 
     - name: HIOC Dashboard Version
       unique_id: hioc_dashboard_version
       state_topic: home/infrastructure/hioc/platform/status
-      value_template: "{{ value_json.dashboard | default('unknown') }}"
+      value_template: "{{ value_json.dashboard | default('unknown', true) }}"
       icon: mdi:view-dashboard
 
     - name: HIOC Schema Version
       unique_id: hioc_schema_version
       state_topic: home/infrastructure/hioc/platform/status
-      value_template: "{{ value_json.schema | default('unknown') }}"
+      value_template: "{{ value_json.schema | default('unknown', true) }}"
       icon: mdi:code-json
 
     - name: HIOC MQTT API Version
       unique_id: hioc_mqtt_api_version
       state_topic: home/infrastructure/hioc/platform/status
-      value_template: "{{ value_json.mqtt_api | default('unknown') }}"
+      value_template: "{{ value_json.mqtt_api | default('unknown', true) }}"
       icon: mdi:api
 
     - name: HIOC Build
       unique_id: hioc_build
       state_topic: home/infrastructure/hioc/platform/status
-      value_template: "{{ value_json.build | default('unknown') }}"
+      value_template: "{{ value_json.build | default('unknown', true) }}"
       icon: mdi:calendar-clock

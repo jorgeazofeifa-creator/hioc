@@ -14,8 +14,14 @@ views:
             content: >-
               {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
               {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
-              {% set offline = states('sensor.hioc_inventory_offline_devices') | int(0) %}
-              {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(0) %}
+              {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+              {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+              {% set inventory_status = states('sensor.hioc_inventory_status') | lower | trim %}
+              {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+              {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+              {% set inventory_watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+              {% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}
+              {% set packet_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}
               {% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}
               {% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
               {% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
@@ -57,6 +63,16 @@ views:
               Recommended action: review Diagnostics for current engine state.
 
               Click path: Diagnostics.
+              {% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}
+              # Unknown
+
+              What is happening: inventory status or counts are unavailable.
+
+              Why it matters: HIOC cannot confirm the inventory portion of mission state.
+
+              Recommended action: review Inventory for current authoritative state.
+
+              Click path: Inventory.
               {% elif offline > 0 or degraded > 0 %}
               # Degraded
 
@@ -65,6 +81,16 @@ views:
               Why it matters: stale or offline devices can hide service dependency failures.
 
               Recommended action: Open Inventory and review unhealthy devices.
+
+              Click path: Inventory.
+              {% elif inventory_watch > 0 %}
+              # Observation
+
+              What is happening: {{ states('sensor.hioc_inventory_operations_summary') }}.
+
+              Why it matters: passive stale observations remain visible without representing monitored-device failure.
+
+              Recommended action: {{ states('sensor.hioc_inventory_recommended_action') }}
 
               Click path: Inventory.
               {% elif watch_count > 0 %}
@@ -77,7 +103,7 @@ views:
               Recommended action: no immediate action required; open the relevant investigation page if the trend persists.
 
               Click path: Domain Health or Top Risks.
-              {% else %}
+              {% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] and packet_trend in ['stable', 'falling'] %}
               # Operational
 
               What is happening: no active incident and no HIOC watch items are currently detected.
@@ -87,12 +113,21 @@ views:
               Recommended action: no action required.
 
               Click path: Diagnostics if you want supporting evidence.
+              {% else %}
+              # Unknown
+
+              What is happening: one or more forecast states are unavailable or unrecognized.
+
+              Why it matters: HIOC cannot confirm the all-clear forecast state.
+
+              Recommended action: review Diagnostics for current forecast state.
               {% endif %}
             tap_action:
               action: navigate
               navigation_path: /lovelace/hioc-v2-diagnostics
             grid_options:
-              columns: 5
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card {
@@ -101,14 +136,23 @@ views:
                   border: 1px solid rgba(90, 140, 185, .28);
                   {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
                   {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
-                  border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %};
+                  {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+                  {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+                  {% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}
+                  {% set packet_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}
+                  {% set inventory_status = states('sensor.hioc_inventory_status') | lower | trim %}
+                  {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                  {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                  {% set inventory_watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                  {% set forecast_known = dns_trend in ['stable', 'falling', 'rising'] and memory_trend in ['stable', 'falling', 'rising'] and temperature_trend in ['stable', 'falling', 'rising'] and packet_trend in ['stable', 'falling', 'rising'] %}
+                  border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}#64748b{% elif offline > 0 or degraded > 0 or dns_trend == 'rising' or memory_trend == 'rising' or temperature_trend == 'rising' or packet_trend == 'rising' %}#f59e0b{% elif inventory_watch > 0 %}#38bdf8{% elif forecast_known %}#22c55e{% else %}#64748b{% endif %};
                   background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98));
                   box-shadow: 0 18px 48px rgba(0,0,0,.36);
                   color: #dcecff;
                 }
                 ha-markdown { line-height: 1.36; }
                 h1 {
-                  color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %};
+                  color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}#cbd5e1{% elif offline > 0 or degraded > 0 or dns_trend == 'rising' or memory_trend == 'rising' or temperature_trend == 'rising' or packet_trend == 'rising' %}#fcd34d{% elif inventory_watch > 0 %}#7dd3fc{% elif forecast_known %}#86efac{% else %}#cbd5e1{% endif %};
                   font-size: 30px;
                   margin: 0 0 12px 0;
                 }
@@ -122,13 +166,14 @@ views:
               {% if incident == 'active' %}
               # {{ states('sensor.hioc_incident_active') }}
 
-              Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}
+              Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('unknown', true) | title }}
 
               Severity: {{ severity_label }}
 
-              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}
+              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Unknown', true) }}
 
-              Confidence: {{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}%
+              {% set confidence = state_attr('sensor.hioc_incident_active','confidence_percent') | default('unknown', true) %}
+              Confidence: {{ confidence }}{{ '%' if confidence is number else '' }}
 
               Affected systems: {{ state_attr('sensor.hioc_incident_active','impact') | default('See affected systems') }}
 
@@ -158,7 +203,8 @@ views:
               action: navigate
               navigation_path: /lovelace/hioc-v2-diagnostics
             grid_options:
-              columns: 4
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card {
@@ -213,7 +259,8 @@ views:
               action: navigate
               navigation_path: /lovelace/hioc-v2-diagnostics
             grid_options:
-              columns: 4
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card {
@@ -233,7 +280,8 @@ views:
           - type: vertical-stack
             title: Domain Health
             grid_options:
-              columns: 8
+              columns: 21
+              rows: auto
             cards:
               - type: grid
                 columns: 2
@@ -293,9 +341,17 @@ views:
                   - type: markdown
                     title: Inventory
                     content: >-
-                      {% set offline = states('sensor.hioc_inventory_offline_devices') | int(0) %}
-                      {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(0) %}
-                      {% if offline > 0 %}
+                      {% set status = states('sensor.hioc_inventory_status') | lower | trim %}
+                      {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                      {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                      {% set watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                      {% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}
+                      # Unknown
+
+                      Meaning: inventory status or counts are unavailable.
+
+                      Action: review Inventory evidence.
+                      {% elif offline > 0 %}
                       # Critical
 
                       Meaning: {{ offline }} device{{ 's are' if offline != 1 else ' is' }} offline.
@@ -307,6 +363,12 @@ views:
                       Meaning: {{ degraded }} device{{ 's are' if degraded != 1 else ' is' }} degraded.
 
                       Action: review inventory health.
+                      {% elif watch > 0 %}
+                      # Observation
+
+                      Meaning: {{ states('sensor.hioc_inventory_operations_summary') }}.
+
+                      Action: {{ states('sensor.hioc_inventory_recommended_action') }}
                       {% else %}
                       # Healthy
 
@@ -321,23 +383,35 @@ views:
                       navigation_path: /lovelace/hioc-v2-inventory
                     card_mod:
                       style: |
-                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
-                        h1 { font-size: 21px; color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; }
+                        {% set status = states('sensor.hioc_inventory_status') | lower | trim %}
+                        {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                        {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                        {% set watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#64748b{% elif offline > 0 %}#ef4444{% elif degraded > 0 %}#f59e0b{% elif watch > 0 %}#38bdf8{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#cbd5e1{% elif offline > 0 %}#fecaca{% elif degraded > 0 %}#fcd34d{% elif watch > 0 %}#7dd3fc{% else %}#86efac{% endif %}; }
                   - type: markdown
                     title: Internet
                     content: >-
-                      {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+                      {% set latency_trend = states('sensor.hioc_forecast_internet_latency_trend') | lower | trim %}
+                      {% set loss_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}
+                      {% if latency_trend == 'rising' or loss_trend == 'rising' %}
                       # Watch
 
                       Meaning: internet latency or packet loss trend is rising.
 
                       Action: open Network if this persists.
-                      {% else %}
+                      {% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}
                       # Healthy
 
                       Meaning: internet latency and packet loss trends are stable.
 
                       Action: no action required.
+                      {% else %}
+                      # Unknown
+
+                      Meaning: internet forecast state is unavailable.
+
+                      Action: review Network evidence.
                       {% endif %}
 
                       Click: Network.
@@ -346,23 +420,30 @@ views:
                       navigation_path: /lovelace/hioc-v2-network
                     card_mod:
                       style: |
-                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
-                        h1 { font-size: 21px; color: {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set latency_trend = states('sensor.hioc_forecast_internet_latency_trend') | lower | trim %}{% set loss_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}{% if latency_trend == 'rising' or loss_trend == 'rising' %}#f59e0b{% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if latency_trend == 'rising' or loss_trend == 'rising' %}#fcd34d{% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
                   - type: markdown
                     title: DNS
                     content: >-
-                      {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+                      {% set trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+                      {% if trend == 'rising' %}
                       # Watch
 
                       Meaning: DNS latency is increasing compared to recent baseline.
 
                       Action: open Network diagnostics if this persists.
-                      {% else %}
+                      {% elif trend in ['stable', 'falling'] %}
                       # Healthy
 
                       Meaning: DNS forecast trend is not rising.
 
                       Action: no action required.
+                      {% else %}
+                      # Unknown
+
+                      Meaning: DNS forecast state is unavailable.
+
+                      Action: review Network evidence.
                       {% endif %}
 
                       Click: Network.
@@ -371,23 +452,30 @@ views:
                       navigation_path: /lovelace/hioc-v2-network
                     card_mod:
                       style: |
-                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
-                        h1 { font-size: 21px; color: {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
                   - type: markdown
                     title: MQTT
                     content: >-
-                      {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
+                      {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}
+                      {% if trend == 'rising' %}
                       # Watch
 
                       Meaning: MQTT publish timing trend is increasing.
 
                       Action: open Diagnostics and check telemetry path.
-                      {% else %}
+                      {% elif trend in ['stable', 'falling'] %}
                       # Healthy
 
                       Meaning: MQTT trend is not rising.
 
                       Action: no action required.
+                      {% else %}
+                      # Unknown
+
+                      Meaning: MQTT forecast state is unavailable.
+
+                      Action: review Diagnostics evidence.
                       {% endif %}
 
                       Click: Diagnostics.
@@ -396,23 +484,31 @@ views:
                       navigation_path: /lovelace/hioc-v2-diagnostics
                     card_mod:
                       style: |
-                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
-                        h1 { font-size: 21px; color: {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
                   - type: markdown
                     title: Pi4
                     content: >-
-                      {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+                      {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+                      {% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}
+                      {% if memory_trend == 'rising' or temperature_trend == 'rising' %}
                       # Watch
 
                       Meaning: Pi4 memory or temperature trend is rising.
 
                       Action: open Servers and review Pi4 health.
-                      {% else %}
+                      {% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}
                       # Healthy
 
                       Meaning: Pi4 forecast trends do not require action.
 
                       Action: no action required.
+                      {% else %}
+                      # Unknown
+
+                      Meaning: Pi4 forecast state is unavailable.
+
+                      Action: review Servers evidence.
                       {% endif %}
 
                       Click: Servers.
@@ -421,8 +517,8 @@ views:
                       navigation_path: /lovelace/hioc-v2-servers
                     card_mod:
                       style: |
-                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
-                        h1 { font-size: 21px; color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}{% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}{% if memory_trend == 'rising' or temperature_trend == 'rising' %}#f59e0b{% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if memory_trend == 'rising' or temperature_trend == 'rising' %}#fcd34d{% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
                   - type: markdown
                     title: Platform
                     content: >-
@@ -452,7 +548,8 @@ views:
           - type: vertical-stack
             title: Top Risks
             grid_options:
-              columns: 6
+              columns: 24
+              rows: auto
             cards:
               - type: conditional
                 conditions:
@@ -555,13 +652,33 @@ views:
                     state_not: rising
                 card:
                   type: markdown
-                  title: No Current Action Required
+                  title: Current Risk Summary
                   content: >-
+                    {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                    {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+                    {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+                    {% set packet_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}
+                    {% set inventory_status = states('sensor.hioc_inventory_status') | lower | trim %}
+                    {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                    {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                    {% set inventory_watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                    {% if incident not in ['none', 'resolved'] or dns_trend not in ['stable', 'falling'] or memory_trend not in ['stable', 'falling'] or packet_trend not in ['stable', 'falling'] or inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}
+                    Severity: Unknown
+
+                    Meaning: incident, forecast, or inventory state is unavailable or unrecognized.
+
+                    Recommended action: review Operations for current authoritative state.
+                    {% elif offline > 0 or degraded > 0 or inventory_watch > 0 %}
+                    Inventory: {{ states('sensor.hioc_inventory_operations_summary') }}
+
+                    Recommended action: {{ states('sensor.hioc_inventory_recommended_action') }}
+                    {% else %}
                     Severity: Healthy
 
                     Meaning: detected watch items are below operational thresholds.
 
                     Recommended action: continue monitoring.
+                    {% endif %}
 
                     Click: Operations for live state.
                   tap_action:
@@ -569,7 +686,15 @@ views:
                     navigation_path: /lovelace/hioc-v2-operations
                   card_mod:
                     style: |
-                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #22c55e; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                      {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                      {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+                      {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+                      {% set packet_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}
+                      {% set inventory_status = states('sensor.hioc_inventory_status') | lower | trim %}
+                      {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                      {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                      {% set inventory_watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if incident not in ['none', 'resolved'] or dns_trend not in ['stable', 'falling'] or memory_trend not in ['stable', 'falling'] or packet_trend not in ['stable', 'falling'] or inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}#64748b{% elif offline > 0 or degraded > 0 %}#f59e0b{% elif inventory_watch > 0 %}#38bdf8{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
 
           - type: markdown
             title: Latest Events
@@ -580,7 +705,11 @@ views:
 
               Meaning: no incident timeline event is currently available.
 
+              {% if states('sensor.hioc_platform_status') == 'online' %}
               Recommended action: no action required if platform status remains online.
+              {% else %}
+              Recommended action: review platform status before drawing an operational conclusion.
+              {% endif %}
               {% else %}
               # {{ states('sensor.hioc_latest_timeline_event') }}
 
@@ -589,19 +718,19 @@ views:
               Incident history:
 
               {% if stats is mapping %}
-              Today: {{ stats.today | default(0) }}
+              Today: {{ stats.today | default('unknown', true) }}
 
-              Last 7 days: {{ stats.last_7_days | default(0) }}
+              Last 7 days: {{ stats.last_7_days | default('unknown', true) }}
 
               Last 30 days: {{ stats.last_30_days | default(states('sensor.hioc_incident_history_count')) }}
 
-              Automatic recoveries: {{ stats.automatic_recoveries | default(0) }}
+              Automatic recoveries: {{ stats.automatic_recoveries | default('unknown', true) }}
 
-              Manual intervention required: {{ stats.manual_intervention_required | default(0) }}
+              Manual intervention required: {{ stats.manual_intervention_required | default('unknown', true) }}
 
-              Average duration: {{ stats.average_duration | default('Not available') }}
+              Average duration: {{ stats.average_duration | default('Not available', true) }}
 
-              Longest incident: {{ stats.longest_incident | default('Not available') }}
+              Longest incident: {{ stats.longest_incident | default('Not available', true) }}
               {% else %}
               Recorded incidents: {{ states('sensor.hioc_incident_history_count') }}
               {% endif %}
@@ -614,7 +743,8 @@ views:
               action: navigate
               navigation_path: /lovelace/hioc-v2-diagnostics
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 265px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
@@ -664,7 +794,8 @@ views:
                   action: navigate
                   navigation_path: /lovelace/hioc-v2-diagnostics
             grid_options:
-              columns: 3
+              columns: 21
+              rows: auto
             card_mod:
               style: |
                 ha-card {
@@ -678,6 +809,8 @@ views:
                   --secondary-text-color: #93a4b8;
                   --paper-item-icon-color: #38bdf8;
                 }
+    theme: HIOC Operations
+    cards: []
 
   - title: Operations
     path: hioc-v2-operations
@@ -693,6 +826,12 @@ views:
             content: >-
               {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
               {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+              {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+              {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+              {% set inventory_status = states('sensor.hioc_inventory_status') | lower | trim %}
+              {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+              {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+              {% set inventory_watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
               {% if incident == 'active' %}
               {% if severity == 'critical' %}
               # Critical
@@ -721,27 +860,58 @@ views:
               What is happening: incident status is unavailable.
 
               Recommended action: review Mission Control for current engine state.
-              {% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              {% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}
+              # Unknown
+
+              What is happening: inventory state is unavailable.
+
+              Recommended action: review Inventory for current authoritative state.
+              {% elif offline > 0 or degraded > 0 %}
+              # Degraded
+
+              What is happening: {{ states('sensor.hioc_inventory_operations_summary') }}.
+
+              Recommended action: {{ states('sensor.hioc_inventory_recommended_action') }}
+              {% elif inventory_watch > 0 %}
+              # Observation
+
+              What is happening: {{ states('sensor.hioc_inventory_operations_summary') }}.
+
+              Recommended action: {{ states('sensor.hioc_inventory_recommended_action') }}
+              {% elif dns_trend == 'rising' or memory_trend == 'rising' %}
               # Watch
 
               What is happening: one or more operational trends are rising.
 
               Recommended action: use the domain cards below to investigate only if the trend persists.
-              {% else %}
+              {% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}
               # Operational
 
               What is happening: no active incident reported by HIOC.
 
               Recommended action: no action required.
+              {% else %}
+              # Unknown
+
+              What is happening: forecast state is unavailable or unrecognized.
+
+              Recommended action: review Diagnostics for current forecast state.
               {% endif %}
             grid_options:
-              columns: 12
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
                 {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
-                ha-card { min-height: 150px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
-                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+                {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+                {% set inventory_status = states('sensor.hioc_inventory_status') | lower | trim %}
+                {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                {% set inventory_watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                ha-card { min-height: 150px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}#64748b{% elif offline > 0 or degraded > 0 or dns_trend == 'rising' or memory_trend == 'rising' %}#f59e0b{% elif inventory_watch > 0 %}#38bdf8{% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}#cbd5e1{% elif offline > 0 or degraded > 0 or dns_trend == 'rising' or memory_trend == 'rising' %}#fcd34d{% elif inventory_watch > 0 %}#7dd3fc{% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
 
           - type: markdown
             title: Incident
@@ -787,7 +957,8 @@ views:
               action: navigate
               navigation_path: /lovelace/hioc-v2-diagnostics
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
@@ -798,141 +969,209 @@ views:
           - type: markdown
             title: Inventory
             content: >-
-              {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}
+              {% set status = states('sensor.hioc_inventory_status') | lower | trim %}
+              {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+              {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+              {% set watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+              {% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}
+              # Unknown
+
+              Inventory state is unavailable.
+
+              Next step: review Inventory evidence.
+              {% elif offline > 0 or degraded > 0 %}
               # Watch
 
               {{ states('sensor.hioc_inventory_operations_summary') }}.
 
               Next step: review unhealthy devices.
-              {% else %}
+              {% elif watch > 0 %}
+              # Observation
+
+              {{ states('sensor.hioc_inventory_operations_summary') }}.
+
+              Next step: no operator action required; observations remain visible in Inventory.
+              {% elif status in ['online', 'degraded'] %}
               # Healthy
 
               {{ states('sensor.hioc_inventory_device_count') }} devices and {{ states('sensor.hioc_inventory_service_count') }} services are known.
 
               Next step: click for inventory.
+              {% else %}
+              # Unknown
+
+              Inventory state is unrecognized: {{ states('sensor.hioc_inventory_status') }}.
+
+              Next step: review Inventory evidence.
               {% endif %}
             tap_action:
               action: navigate
               navigation_path: /lovelace/hioc-v2-inventory
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
+                {% set status = states('sensor.hioc_inventory_status') | lower | trim %}
+                {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                {% set watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#64748b{% elif offline > 0 %}#ef4444{% elif degraded > 0 %}#f59e0b{% elif watch > 0 %}#38bdf8{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#cbd5e1{% elif offline > 0 %}#fecaca{% elif degraded > 0 %}#fcd34d{% elif watch > 0 %}#bae6fd{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Internet
             content: >-
-              {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+              {% set latency_trend = states('sensor.hioc_forecast_internet_latency_trend') | lower | trim %}
+              {% set loss_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}
+              {% if latency_trend == 'rising' or loss_trend == 'rising' %}
               # Watch
 
               Internet latency or packet loss trend is rising.
 
               Next step: open Network.
-              {% else %}
+              {% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}
               # Healthy
 
               Internet latency and packet loss are stable.
 
               Next step: no action required.
+              {% else %}
+              # Unknown
+
+              Forecast state is unavailable or unrecognized.
+
+              Next step: review Network evidence.
               {% endif %}
             tap_action:
               action: navigate
               navigation_path: /lovelace/hioc-v2-network
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set latency_trend = states('sensor.hioc_forecast_internet_latency_trend') | lower | trim %}{% set loss_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}{% if latency_trend == 'rising' or loss_trend == 'rising' %}#f59e0b{% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if latency_trend == 'rising' or loss_trend == 'rising' %}#fcd34d{% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: DNS
             content: >-
-              {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              {% set trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+              {% if trend == 'rising' %}
               # Watch
 
               DNS latency trend is rising.
 
               Next step: open DNS investigation.
-              {% else %}
+              {% elif trend in ['stable', 'falling'] %}
               # Healthy
 
               DNS forecast is not rising.
 
               Next step: no action required.
+              {% else %}
+              # Unknown
+
+              DNS forecast state is unavailable or unrecognized.
+
+              Next step: review Network evidence.
               {% endif %}
             tap_action:
               action: navigate
               navigation_path: /lovelace/hioc-v2-network
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: MQTT
             content: >-
-              {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
+              {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}
+              {% if trend == 'rising' %}
               # Watch
 
               MQTT publish trend is rising.
 
               Next step: open Diagnostics.
-              {% else %}
+              {% elif trend in ['stable', 'falling'] %}
               # Healthy
 
               MQTT trend is not rising.
 
               Next step: no action required.
+              {% else %}
+              # Unknown
+
+              MQTT forecast state is unavailable or unrecognized.
+
+              Next step: review Diagnostics evidence.
               {% endif %}
             tap_action:
               action: navigate
               navigation_path: /lovelace/hioc-v2-diagnostics
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Pi4
             content: >-
-              {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+              {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+              {% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}
+              {% if memory_trend == 'rising' or temperature_trend == 'rising' %}
               # Watch
 
               Pi4 memory or temperature trend is rising.
 
               Next step: open Servers.
-              {% else %}
+              {% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}
               # Healthy
 
               Pi4 forecast trends do not require action.
 
               Next step: no action required.
+              {% else %}
+              # Unknown
+
+              Pi4 forecast state is unavailable or unrecognized.
+
+              Next step: review Servers evidence.
               {% endif %}
             tap_action:
               action: navigate
               navigation_path: /lovelace/hioc-v2-servers
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}{% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}{% if memory_trend == 'rising' or temperature_trend == 'rising' %}#f59e0b{% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if memory_trend == 'rising' or temperature_trend == 'rising' %}#fcd34d{% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Forecast
             content: >-
-              {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
-              {% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}
-              {% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
-              {% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
-              {% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+              {% set latency_trend = states('sensor.hioc_forecast_internet_latency_trend') | lower | trim %}
+              {% set packet_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}
+              {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+              {% set mqtt_trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}
+              {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+              {% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}
+              {% set forecast_known = latency_trend in ['stable', 'falling', 'rising'] and packet_trend in ['stable', 'falling', 'rising'] and dns_trend in ['stable', 'falling', 'rising'] and mqtt_trend in ['stable', 'falling', 'rising'] and memory_trend in ['stable', 'falling', 'rising'] and temperature_trend in ['stable', 'falling', 'rising'] %}
+              {% set internet_rising = latency_trend == 'rising' or packet_trend == 'rising' %}
+              {% set dns_rising = dns_trend == 'rising' %}
+              {% set mqtt_rising = mqtt_trend == 'rising' %}
+              {% set pi4_memory_rising = memory_trend == 'rising' %}
+              {% set pi4_temp_rising = temperature_trend == 'rising' %}
               {% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}
               {% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}
               {% if disk_days <= 1 %}
@@ -994,7 +1233,7 @@ views:
               Risk: Watch
 
               Recommendation: Continue monitoring. Open Forecast Investigation if this persists.
-              {% else %}
+              {% elif forecast_known %}
               # Healthy
 
               Summary: No concerning trends detected.
@@ -1004,16 +1243,26 @@ views:
               Risk: Healthy
 
               Recommendation: No action required.
+              {% else %}
+              # Unknown
+
+              Summary: one or more forecast states are unavailable or unrecognized.
+
+              Risk: Unknown
+
+              Recommendation: Review Diagnostics for current forecast state.
               {% endif %}
             tap_action:
               action: navigate
               navigation_path: hioc-v2-diagnostics
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}{% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}{% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}{% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}{% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}{% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}{% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}{% if disk_days <= 1 %}#ef4444{% elif disk_days <= 7 or trend_count >= 3 %}#f59e0b{% elif trend_count > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% set internet_rising = states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}{% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}{% set mqtt_rising = states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}{% set pi4_memory_rising = states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}{% set pi4_temp_rising = states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}{% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}{% set trend_count = (1 if internet_rising else 0) + (1 if dns_rising else 0) + (1 if mqtt_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) %}{% if disk_days <= 1 %}#fecaca{% elif disk_days <= 7 or trend_count > 0 %}#fcd34d{% else %}#86efac{% endif %}; font-size: 22px; }
+                {% set latency_trend = states('sensor.hioc_forecast_internet_latency_trend') | lower | trim %}{% set packet_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}{% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}{% set mqtt_trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}{% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}{% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}{% set forecast_known = latency_trend in ['stable', 'falling', 'rising'] and packet_trend in ['stable', 'falling', 'rising'] and dns_trend in ['stable', 'falling', 'rising'] and mqtt_trend in ['stable', 'falling', 'rising'] and memory_trend in ['stable', 'falling', 'rising'] and temperature_trend in ['stable', 'falling', 'rising'] %}{% set trend_count = (1 if latency_trend == 'rising' or packet_trend == 'rising' else 0) + (1 if dns_trend == 'rising' else 0) + (1 if mqtt_trend == 'rising' else 0) + (1 if memory_trend == 'rising' else 0) + (1 if temperature_trend == 'rising' else 0) %}{% set disk_days = states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') | float(9999) %}
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if disk_days <= 1 %}#ef4444{% elif disk_days <= 7 or trend_count > 0 %}#f59e0b{% elif forecast_known %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if disk_days <= 1 %}#fecaca{% elif disk_days <= 7 or trend_count > 0 %}#fcd34d{% elif forecast_known %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Platform
@@ -1035,11 +1284,14 @@ views:
               action: navigate
               navigation_path: /lovelace/hioc-v2-servers
             grid_options:
-              columns: 3
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_platform_status') == 'online' %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
                 h1 { color: {% if states('sensor.hioc_platform_status') == 'online' %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
+    theme: HIOC Operations
+    cards: []
 
   - title: Diagnostics
     path: hioc-v2-diagnostics
@@ -1059,33 +1311,38 @@ views:
               {% if incident == 'active' %}
               # {{ states('sensor.hioc_incident_active') }}
 
-              Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}
+              Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('unknown', true) | title }}
 
               Severity: {{ severity_label }}
 
-              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}
+              Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Unknown', true) }}
 
-              Confidence: {{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}%
+              {% set confidence = state_attr('sensor.hioc_incident_active','confidence_percent') | default('unknown', true) %}
+              Confidence: {{ confidence }}{{ '%' if confidence is number else '' }}
 
               Started: {{ states('sensor.hioc_incident_started') }}
 
               Updated: {{ states('sensor.hioc_incident_updated') }}
 
-              Duration: {{ state_attr('sensor.hioc_incident_active','duration_seconds') | default('Not available') }}
+              Duration: {{ state_attr('sensor.hioc_incident_active','duration_seconds') | default('Not available', true) }}
               {% elif incident in ['none', 'resolved'] %}
               # No Active Incident
 
               Diagnostics are ready.
 
+              {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+              {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
               Current watch items:
-              {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              {% if dns_trend == 'rising' %}
               - DNS trend rising
               {% endif %}
-              {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              {% if memory_trend == 'rising' %}
               - Pi4 memory trend rising
               {% endif %}
-              {% if states('sensor.hioc_forecast_dns_trend') != 'rising' and states('sensor.hioc_forecast_pi4_memory_trend') != 'rising' %}
+              {% if dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}
               - No current watch items
+              {% elif dns_trend not in ['stable', 'falling', 'rising'] or memory_trend not in ['stable', 'falling', 'rising'] %}
+              - Forecast state is unavailable or unrecognized
               {% endif %}
               {% else %}
               # Unknown
@@ -1093,19 +1350,28 @@ views:
               Incident status is unavailable. Diagnostics cannot confirm an active or resolved state.
               {% endif %}
             grid_options:
-              columns: 7
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
                 {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
-                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
-                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+                {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif dns_trend == 'rising' or memory_trend == 'rising' %}#f59e0b{% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif dns_trend == 'rising' or memory_trend == 'rising' %}#fcd34d{% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
 
           - type: markdown
             title: Recommended Action
             content: >-
               {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
               {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+              {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+              {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+              {% set inventory_status = states('sensor.hioc_inventory_status') | lower | trim %}
+              {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+              {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+              {% set inventory_watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
               {% if incident == 'active' %}
               {% if severity == 'critical' %}
               # Investigate Now
@@ -1129,40 +1395,65 @@ views:
 
               Operator guidance: {{ operator_guidance }}
 
-              Why: HIOC correlated an active incident with probable root cause {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}.
+              Why: HIOC correlated an active incident with probable root cause {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Unknown', true) }}.
               {% elif incident not in ['none', 'resolved'] %}
               # Status Unknown
 
               Action: review current incident engine state.
 
               Why: incident status is unavailable.
-              {% elif states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              {% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}
+              # Inventory Status Unknown
+
+              Action: {{ states('sensor.hioc_inventory_recommended_action') }}
+
+              Why: inventory status or counts are unavailable.
+              {% elif offline > 0 or degraded > 0 or inventory_watch > 0 %}
+              # Inventory
+
+              Action: {{ states('sensor.hioc_inventory_recommended_action') }}
+
+              Why: {{ states('sensor.hioc_inventory_operations_summary') }}.
+              {% elif dns_trend == 'rising' %}
               # Review DNS If Trend Persists
 
               Action: open Network diagnostics and check DNS trend.
 
               Why: DNS latency is increasing compared to recent baseline.
-              {% elif states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
+              {% elif memory_trend == 'rising' %}
               # Check Pi4 Memory
 
               Action: open Servers and review Pi4 health.
 
               Why: memory usage is trending upward.
-              {% else %}
+              {% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}
               # No Action Required
 
               Action: continue monitoring.
 
               Why: no active incident or significant watch item is detected.
+              {% else %}
+              # Status Unknown
+
+              Action: review current forecast engine state.
+
+              Why: one or more forecast states are unavailable or unrecognized.
               {% endif %}
             grid_options:
-              columns: 5
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
                 {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
-                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                {% set dns_trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+                {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+                {% set inventory_status = states('sensor.hioc_inventory_status') | lower | trim %}
+                {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                {% set inventory_watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}#64748b{% elif offline > 0 or degraded > 0 or dns_trend == 'rising' or memory_trend == 'rising' %}#f59e0b{% elif inventory_watch > 0 %}#38bdf8{% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif inventory_status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or inventory_watch < 0 %}#cbd5e1{% elif offline > 0 or degraded > 0 or dns_trend == 'rising' or memory_trend == 'rising' %}#fcd34d{% elif inventory_watch > 0 %}#7dd3fc{% elif dns_trend in ['stable', 'falling'] and memory_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
 
           - type: markdown
             title: Evidence
@@ -1186,12 +1477,13 @@ views:
               - Pi4 memory trend: {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
               {% endif %}
             grid_options:
-              columns: 6
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
                 {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
-                ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' or states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' or states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: markdown
             title: Dependency Path
@@ -1207,11 +1499,14 @@ views:
               {% else %}
               {{ state_attr('sensor.hioc_incident_active','impact') | default('Dependency path is not available') }}
               {% endif %}
-              {% else %}
+              {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
               No active dependency path.
+              {% else %}
+              Dependency path unavailable because incident status is unknown.
               {% endif %}
             grid_options:
-              columns: 6
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
@@ -1221,7 +1516,7 @@ views:
             content: >-
               {% set recent = state_attr('sensor.hioc_incident_summary','recent_incident_reviews') %}
               {% if states('sensor.hioc_latest_timeline_event') in ['unknown', 'unavailable', 'none', 'None', ''] %}
-              No recent event recorded.
+              Timeline state unavailable.
               {% else %}
               Latest event: {{ states('sensor.hioc_latest_timeline_event') }}
               {% endif %}
@@ -1233,54 +1528,60 @@ views:
 
               {% for incident in recent %}
               <details>
-              <summary>{{ incident.title | default('Incident') }} · {{ incident.recovery_type | default('resolved') | title }} · {{ incident.duration | default('Duration not available') }}</summary>
+              <summary>{{ incident.title | default('Incident', true) }} · {{ incident.recovery_type | default('unknown', true) | title }} · {{ incident.duration | default('Duration not available', true) }}</summary>
 
-              Severity: {{ incident.severity | default('info') | title }}
+              Severity: {{ incident.severity | default('unknown', true) | title }}
 
-              Started: {{ incident.started | default('Not available') }}
+              Started: {{ incident.started | default('Not available', true) }}
 
-              Resolved: {{ incident.resolved | default('Not available') }}
+              Resolved: {{ incident.resolved | default('Not available', true) }}
 
-              Root cause: {{ incident.root_cause | default('Not available') }}
+              Root cause: {{ incident.root_cause | default('Unknown', true) }}
 
-              Confidence: {{ incident.confidence_percent | default(0) }}%
+              {% set confidence = incident.confidence_percent | default('unknown', true) %}
+              Confidence: {{ confidence }}{{ '%' if confidence is number else '' }}
 
-              Impact summary: {{ incident.impact_summary | default('Impact summary is not available.') }}
+              Impact summary: {{ incident.impact_summary | default('Impact summary is not available.', true) }}
 
-              Recovery: {{ incident.recovery | default('Recovery details are not available.') }}
+              Recovery: {{ incident.recovery | default('Recovery details are not available.', true) }}
 
               Evidence:
 
-              {% set evidence = incident.evidence | default([]) %}
+              {% set evidence = incident.evidence | default(none) %}
               {% if evidence is iterable and evidence is not string and evidence | count > 0 %}
               {% for item in evidence %}
               - {{ item }}
               {% endfor %}
-              {% else %}
+              {% elif evidence is iterable and evidence is not string %}
               - Evidence was not recorded for this incident.
+              {% else %}
+              - Evidence state is unavailable.
               {% endif %}
 
               Event log:
 
-              {% set events = incident.timeline | default([]) %}
+              {% set events = incident.timeline | default(none) %}
               {% if events is iterable and events is not string and events | count > 0 %}
               {% for event in events %}
               - {{ event.timestamp | default('Time not available') }}: {{ event.message | default('Incident event') }}
               {% endfor %}
-              {% else %}
+              {% elif events is iterable and events is not string %}
               - Timeline was not recorded for this incident.
+              {% else %}
+              - Timeline state is unavailable.
               {% endif %}
 
-              Recommended action: {{ incident.recommended_action | default('No action required.') }}
+              Recommended action: {{ incident.recommended_action | default('Recommendation unavailable.', true) }}
 
-              Incident ID: {{ incident.incident_id | default('Not available') }}
+              Incident ID: {{ incident.incident_id | default('Not available', true) }}
               </details>
               {% endfor %}
               {% else %}
               No completed incidents are available for review yet.
               {% endif %}
             grid_options:
-              columns: 4
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 210px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #60a5fa; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
@@ -1292,76 +1593,86 @@ views:
               {% if review is mapping and review.title is defined %}
               # {{ review.title | default('Incident') }}
 
-              Severity: {{ review.severity | default('info') | title }}
+              Severity: {{ review.severity | default('unknown', true) | title }}
 
-              Started: {{ review.started | default('Not available') }}
+              Started: {{ review.started | default('Not available', true) }}
 
-              Resolved: {{ review.resolved | default('Not available') }}
+              Resolved: {{ review.resolved | default('Not available', true) }}
 
-              Duration: {{ review.duration | default('Not available') }}
+              Duration: {{ review.duration | default('Not available', true) }}
 
-              Root cause: {{ review.root_cause | default('Not available') }}
+              Root cause: {{ review.root_cause | default('Unknown', true) }}
 
-              Confidence: {{ review.confidence_percent | default(0) }}%
+              {% set confidence = review.confidence_percent | default('unknown', true) %}
+              Confidence: {{ confidence }}{{ '%' if confidence is number else '' }}
 
-              Recovery: {{ review.recovery | default('Recovery details are not available.') }}
+              Recovery: {{ review.recovery | default('Recovery details are not available.', true) }}
 
-              Recovery type: {{ review.recovery_type | default('unknown') | title }}
+              Recovery type: {{ review.recovery_type | default('unknown', true) | title }}
 
-              Impact summary: {{ review.impact_summary | default('Impact summary is not available.') }}
+              Impact summary: {{ review.impact_summary | default('Impact summary is not available.', true) }}
 
               Affected systems:
 
-              {% set affected = review.affected_systems | default([]) %}
+              {% set affected = review.affected_systems | default(none) %}
               {% if affected is iterable and affected is not string and affected | count > 0 %}
               {% for item in affected %}
               - {{ item }}
               {% endfor %}
-              {% else %}
+              {% elif affected is iterable and affected is not string %}
               - No affected systems recorded.
+              {% else %}
+              - Affected systems state is unavailable.
               {% endif %}
 
               Affected services:
 
-              {% set services = review.affected_services | default([]) %}
+              {% set services = review.affected_services | default(none) %}
               {% if services is iterable and services is not string and services | count > 0 %}
               {% for item in services %}
               - {{ item }}
               {% endfor %}
-              {% else %}
+              {% elif services is iterable and services is not string %}
               - No affected services recorded.
+              {% else %}
+              - Affected services state is unavailable.
               {% endif %}
 
               Evidence:
 
-              {% set evidence = review.evidence | default([]) %}
+              {% set evidence = review.evidence | default(none) %}
               {% if evidence is iterable and evidence is not string and evidence | count > 0 %}
               {% for item in evidence %}
               - {{ item }}
               {% endfor %}
-              {% else %}
+              {% elif evidence is iterable and evidence is not string %}
               - Evidence was not recorded for this incident.
+              {% else %}
+              - Evidence state is unavailable.
               {% endif %}
 
               Event log:
 
-              {% set events = review.timeline | default([]) %}
+              {% set events = review.timeline | default(none) %}
               {% if events is iterable and events is not string and events | count > 0 %}
               {% for event in events %}
               - {{ event.timestamp | default('Time not available') }}: {{ event.message | default('Incident event') }}
               {% endfor %}
-              {% else %}
+              {% elif events is iterable and events is not string %}
               - Timeline was not recorded for this incident.
+              {% else %}
+              - Timeline state is unavailable.
               {% endif %}
 
-              Recommended action: {{ review.recommended_action | default('No action required.') }}
+              Recommended action: {{ review.recommended_action | default('Recommendation unavailable.', true) }}
 
-              Incident ID: {{ review.incident_id | default('Not available') }}
+              Incident ID: {{ review.incident_id | default('Not available', true) }}
               {% else %}
               No completed incident review is available yet.
               {% endif %}
             grid_options:
-              columns: 4
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 310px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
@@ -1378,7 +1689,8 @@ views:
               - sensor.hioc_forecast_mqtt_trend
               - sensor.hioc_history_engine_status
             grid_options:
-              columns: 4
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
@@ -1396,10 +1708,13 @@ views:
               - sensor.hioc_statistics_samples_network
               - sensor.hioc_statistics_samples_host
             grid_options:
-              columns: 4
+              columns: 15
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #64748b; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #60a5fa; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+    theme: HIOC Operations
+    cards: []
 
   - title: Inventory
     path: hioc-v2-inventory
@@ -1413,8 +1728,8 @@ views:
           - type: markdown
             title: Inventory Summary
             content: >-
-              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') | default(0, true) %}
-              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'client_count') | default(state_attr('sensor.hioc_inventory_device_count', 'network_client_count'), true) | default(0, true) %}
+              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') | default('unknown', true) %}
+              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'client_count') | default(state_attr('sensor.hioc_inventory_device_count', 'network_client_count'), true) | default('unknown', true) %}
               {% set discovery_sources = state_attr('sensor.hioc_inventory_device_count', 'discovery_sources') %}
               {% set discovery_limited = state_attr('sensor.hioc_inventory_device_count', 'discovery_limited') | default(false, true) %}
               {% set discovery_reason = state_attr('sensor.hioc_inventory_device_count', 'discovery_limit_reason') | default('', true) %}
@@ -1422,9 +1737,9 @@ views:
               {% set services = state_attr('sensor.hioc_inventory_services', 'services') %}
               # {{ states('sensor.hioc_inventory_operations_summary') }}
 
-              Infrastructure devices: {{ summary_infra | default(0) }}
+              Infrastructure devices: {{ summary_infra }}
 
-              Network clients: {{ summary_clients | default(0) }}
+              Network clients: {{ summary_clients }}
 
               Services: {{ states('sensor.hioc_inventory_service_count') }}
 
@@ -1476,25 +1791,30 @@ views:
 
               What is unhealthy: {{ states('sensor.hioc_inventory_degraded_devices') }} degraded and {{ states('sensor.hioc_inventory_offline_devices') }} offline devices.
 
-              Recommended action: review Device Health when degraded or offline counts are nonzero.
+              Recommended action: {{ states('sensor.hioc_inventory_recommended_action') }}
             grid_options:
-              columns: 8
+              columns: 12
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 230px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
-                h1 { color: {% if states('sensor.hioc_inventory_offline_devices') | int(0) > 0 %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 %}#fcd34d{% else %}#86efac{% endif %}; }
+                {% set status = states('sensor.hioc_inventory_status') | lower | trim %}
+                {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
+                {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
+                {% set watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
+                ha-card { min-height: 230px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if offline > 0 %}#ef4444{% elif degraded > 0 %}#f59e0b{% elif status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#64748b{% elif watch > 0 %}#38bdf8{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if offline > 0 %}#fecaca{% elif degraded > 0 %}#fcd34d{% elif status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#cbd5e1{% elif watch > 0 %}#7dd3fc{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Counts
             content: >-
-              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') | default(0, true) %}
-              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'client_count') | default(state_attr('sensor.hioc_inventory_device_count', 'network_client_count'), true) | default(0, true) %}
+              {% set summary_infra = state_attr('sensor.hioc_inventory_device_count', 'infrastructure_count') | default('unknown', true) %}
+              {% set summary_clients = state_attr('sensor.hioc_inventory_device_count', 'client_count') | default(state_attr('sensor.hioc_inventory_device_count', 'network_client_count'), true) | default('unknown', true) %}
               {% set discovery_sources = state_attr('sensor.hioc_inventory_device_count', 'discovery_sources') %}
               **Coverage**
 
-              Infrastructure: {{ summary_infra | default(0) }}
+              Infrastructure: {{ summary_infra }}
 
-              Clients: {{ summary_clients | default(0) }}
+              Clients: {{ summary_clients }}
 
               Services: {{ states('sensor.hioc_inventory_service_count') }}
 
@@ -1522,7 +1842,8 @@ views:
 
               Offline: {{ states('sensor.hioc_inventory_offline_devices') }}
             grid_options:
-              columns: 4
+              columns: 12
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 300px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
@@ -1536,7 +1857,8 @@ views:
               {% for device in devices %}
               **{{ device.get('display_name') or device.get('name') or 'Unknown device' }}**
 
-              {{ device.get('role') or 'Unknown' }} - {{ (device.get('status') or device.get('health_status') or 'unknown') | title }} - {{ device.get('health_score') | default(0, true) }}%
+              {% set health_score = device.get('health_score') | default('unknown', true) %}
+              {{ device.get('role') or 'Unknown' }} - {{ (device.get('status') or device.get('health_status') or 'unknown') | title }} - {{ health_score }}{{ '%' if health_score is number else '' }}
 
               IP: {{ device.get('ip') or 'No IP reported' }}
 
@@ -1553,7 +1875,8 @@ views:
               Inventory device attributes have not arrived.
               {% endif %}
             grid_options:
-              columns: 6
+              columns: 12
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 500px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #60a5fa; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
@@ -1579,12 +1902,15 @@ views:
               Inventory service attributes have not arrived.
               {% endif %}
             grid_options:
-              columns: 6
+              columns: 12
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 500px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
                 ha-markdown { line-height: 1.24; }
                 strong { color: #bfdbfe; }
+    theme: HIOC Operations
+    cards: []
 
   - title: Network
     path: hioc-v2-network
@@ -1598,7 +1924,9 @@ views:
           - type: markdown
             title: Network Health
             content: >-
-              {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
+              {% set latency_trend = states('sensor.hioc_forecast_internet_latency_trend') | lower | trim %}
+              {% set loss_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}
+              {% if latency_trend == 'rising' or loss_trend == 'rising' %}
               # Watch
 
               Internet latency or packet loss is trending upward.
@@ -1606,7 +1934,7 @@ views:
               Current risk: Watch.
 
               Recommended action: continue monitoring and open Diagnostics if the trend persists.
-              {% else %}
+              {% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}
               # Healthy
 
               Internet latency and packet loss are stable.
@@ -1614,18 +1942,26 @@ views:
               Current risk: Healthy.
 
               Recommended action: no action required.
+              {% else %}
+              # Unknown
+
+              Forecast state is unavailable or unrecognized.
+
+              Recommended action: review Diagnostics for current forecast state.
               {% endif %}
             grid_options:
-              columns: 5
+              columns: 12
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 260px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
-                h1 { color: {% if states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                ha-card { min-height: 260px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% set latency_trend = states('sensor.hioc_forecast_internet_latency_trend') | lower | trim %}{% set loss_trend = states('sensor.hioc_forecast_packet_loss_trend') | lower | trim %}{% if latency_trend == 'rising' or loss_trend == 'rising' %}#f59e0b{% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if latency_trend == 'rising' or loss_trend == 'rising' %}#fcd34d{% elif latency_trend in ['stable', 'falling'] and loss_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
 
           - type: markdown
             title: DNS Investigation
             content: >-
-              {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}
+              {% set trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}
+              {% if trend == 'rising' %}
               # Watch
 
               DNS trend is rising.
@@ -1633,24 +1969,32 @@ views:
               Meaning: DNS latency is increasing compared to recent baseline.
 
               Recommended action: review DNS diagnostics if this persists.
-              {% else %}
+              {% elif trend in ['stable', 'falling'] %}
               # Healthy
 
               DNS forecast trend is not rising.
 
               Recommended action: no action required.
+              {% else %}
+              # Unknown
+
+              DNS forecast state is unavailable or unrecognized.
+
+              Recommended action: review Diagnostics for current forecast state.
               {% endif %}
             grid_options:
-              columns: 4
+              columns: 12
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if states('sensor.hioc_forecast_dns_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
 
           - type: markdown
             title: MQTT Path
             content: >-
-              {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}
+              {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}
+              {% if trend == 'rising' %}
               # Watch
 
               MQTT forecast trend is rising.
@@ -1658,19 +2002,26 @@ views:
               Meaning: telemetry publication may be slowing.
 
               Recommended action: open Diagnostics and check engine state.
-              {% else %}
+              {% elif trend in ['stable', 'falling'] %}
               # Healthy
 
               MQTT forecast trend is not rising.
 
               Recommended action: no action required.
+              {% else %}
+              # Unknown
+
+              MQTT forecast state is unavailable or unrecognized.
+
+              Recommended action: review Diagnostics for current forecast state.
               {% endif %}
             grid_options:
-              columns: 3
+              columns: 12
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                ha-card { min-height: 260px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
 
           - type: entities
             title: Network Evidence
@@ -1687,6 +2038,8 @@ views:
             card_mod:
               style: |
                 ha-card { min-height: 210px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #38bdf8; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #38bdf8; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+    theme: HIOC Operations
+    cards: []
 
   - title: Servers
     path: hioc-v2-servers
@@ -1700,7 +2053,9 @@ views:
           - type: markdown
             title: Pi4 Health
             content: >-
-              {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}
+              {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}
+              {% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}
+              {% if memory_trend == 'rising' or temperature_trend == 'rising' %}
               # Watch
 
               Memory trend: {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
@@ -1712,7 +2067,7 @@ views:
               Days to 90% disk: {{ states('sensor.hioc_forecast_pi4_days_to_90_percent_disk') }}
 
               Recommended action: review Pi4 health if rising trends persist.
-              {% else %}
+              {% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}
               # Healthy
 
               Memory trend: {{ states('sensor.hioc_forecast_pi4_memory_trend') | title }}
@@ -1722,13 +2077,20 @@ views:
               Disk growth: {{ states('sensor.hioc_forecast_pi4_disk_growth') }} %/day
 
               Recommended action: no immediate action required.
+              {% else %}
+              # Unknown
+
+              Pi4 forecast state is unavailable or unrecognized.
+
+              Recommended action: review Diagnostics for current forecast state.
               {% endif %}
             grid_options:
-              columns: 6
+              columns: 12
+              rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 330px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
-                h1 { color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                ha-card { min-height: 330px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}{% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}{% if memory_trend == 'rising' or temperature_trend == 'rising' %}#f59e0b{% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if memory_trend == 'rising' or temperature_trend == 'rising' %}#fcd34d{% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
 
           - type: entities
             title: Pi4 Evidence
@@ -1740,10 +2102,11 @@ views:
               - sensor.hioc_forecast_pi4_days_to_90_percent_disk
               - sensor.hioc_statistics_samples_host
             grid_options:
-              columns: 3
+              columns: 15
+              rows: 1
             card_mod:
               style: |
-                ha-card { min-height: 330px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#38bdf8{% endif %}; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: {% if states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' %}#f59e0b{% else %}#38bdf8{% endif %}; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                ha-card { min-height: 330px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set memory_trend = states('sensor.hioc_forecast_pi4_memory_trend') | lower | trim %}{% set temperature_trend = states('sensor.hioc_forecast_pi4_temperature_trend') | lower | trim %}{% if memory_trend == 'rising' or temperature_trend == 'rising' %}#f59e0b{% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}#38bdf8{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: {% if memory_trend == 'rising' or temperature_trend == 'rising' %}#f59e0b{% elif memory_trend in ['stable', 'falling'] and temperature_trend in ['stable', 'falling'] %}#38bdf8{% else %}#64748b{% endif %}; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: entities
             title: HIOC Engines
@@ -1758,7 +2121,10 @@ views:
               - sensor.hioc_history_engine_status
               - sensor.hioc_inventory_status
             grid_options:
-              columns: 3
+              columns: 12
+              rows: auto
             card_mod:
               style: |
                 ha-card { min-height: 330px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #64748b; background: rgba(12,27,43,.96); --primary-text-color: #dcecff; --secondary-text-color: #93a4b8; --paper-item-icon-color: #60a5fa; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+    theme: HIOC Operations
+    cards: []

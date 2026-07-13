@@ -12,16 +12,16 @@ DASHBOARD_PATH = (
 )
 
 AFFECTED_CARDS = {
-    ("Executive", "Mission Status"): 5,
-    ("Executive", "Current Incident"): 4,
-    ("Executive", "Affected Systems"): 4,
+    ("Executive", "Mission Status"): 15,
+    ("Executive", "Current Incident"): 15,
+    ("Executive", "Affected Systems"): 15,
     ("Executive", "Incident"): None,
     ("Executive", "Active Incident"): None,
-    ("Operations", "Live Operational State"): 12,
-    ("Operations", "Incident"): 3,
-    ("Diagnostics", "Incident Mission Control"): 7,
-    ("Diagnostics", "Recommended Action"): 5,
-    ("Diagnostics", "Evidence"): 6,
+    ("Operations", "Live Operational State"): 15,
+    ("Operations", "Incident"): 15,
+    ("Diagnostics", "Incident Mission Control"): 15,
+    ("Diagnostics", "Recommended Action"): 15,
+    ("Diagnostics", "Evidence"): 15,
 }
 
 EXPECTED_VIEWS = {
@@ -78,6 +78,7 @@ EXPECTED_ENTITY_IDS = {
     "sensor.hioc_inventory_healthy_devices",
     "sensor.hioc_inventory_offline_devices",
     "sensor.hioc_inventory_operations_summary",
+    "sensor.hioc_inventory_recommended_action",
     "sensor.hioc_inventory_service_count",
     "sensor.hioc_inventory_services",
     "sensor.hioc_inventory_status",

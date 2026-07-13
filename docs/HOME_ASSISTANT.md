@@ -6,7 +6,7 @@ HIOC integrates with Home Assistant through MQTT sensors, template sensors, and 
 
 This document owns Home Assistant integration: packages, entities, sensors, MQTT discovery behavior, dashboard installation, and dashboard integration points.
 
-It should not duplicate the MQTT contract, data model, or dashboard visual design. For topic details, see [MQTT.md](MQTT.md). For payload fields, see [DATA_MODEL.md](DATA_MODEL.md). For dashboard design and UX rules, see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and [DASHBOARD_V2_PLAN.md](DASHBOARD_V2_PLAN.md).
+It should not duplicate the MQTT contract, data model, dashboard visual design, or dashboard operational-truth policy. For topic details, see [MQTT.md](MQTT.md). For payload fields, see [DATA_MODEL.md](DATA_MODEL.md). For dashboard design and UX rules, see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and [DASHBOARD_V2_PLAN.md](DASHBOARD_V2_PLAN.md). For dashboard truth ownership, layout-baseline protection, and storage-versus-YAML deployment architecture, see [DASHBOARD_ARCHITECTURE.md](DASHBOARD_ARCHITECTURE.md).
 
 ## Packages
 
@@ -22,6 +22,8 @@ The installer copies these files into `/config/packages`.
 ## Dashboards
 
 Dashboards are in `homeassistant/dashboards` and are copied into `/config/dashboards` by `homeassistant/install_ha.sh`.
+
+The current live Dashboard v2 is storage-managed and does not automatically consume the copied YAML file. The current deployment boundary and the separately planned YAML-mode migration are documented in [DASHBOARD_ARCHITECTURE.md](DASHBOARD_ARCHITECTURE.md).
 
 The Dashboard v2 file is:
 

@@ -3,76 +3,76 @@ mqtt:
     - name: HIOC Incident Active
       unique_id: hioc_incident_active
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.title | default('No active incident') }}"
+      value_template: "{{ value_json.title | default('Incident state unavailable', true) }}"
       json_attributes_topic: home/infrastructure/hioc/incidents/active
       icon: mdi:alert-decagram
 
     - name: HIOC Incident Status
       unique_id: hioc_incident_status
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.status | default('none') }}"
+      value_template: "{{ value_json.status | default('unknown', true) }}"
       icon: mdi:list-status
 
     - name: HIOC Incident Severity
       unique_id: hioc_incident_severity
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.severity | default('info') }}"
+      value_template: "{{ value_json.severity | default('unknown', true) }}"
       icon: mdi:alert-circle
 
     - name: HIOC Incident System
       unique_id: hioc_incident_system
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.system | default('HIOC') }}"
+      value_template: "{{ value_json.system | default('Unknown system', true) }}"
       icon: mdi:server-network
 
     - name: HIOC Incident Reason
       unique_id: hioc_incident_reason
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.reason | default('No active incident') }}"
+      value_template: "{{ value_json.reason | default('Incident reason unavailable', true) }}"
       icon: mdi:comment-alert
 
     - name: HIOC Incident Recommendation
       unique_id: hioc_incident_recommendation
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.recommendation | default('No action required') }}"
+      value_template: "{{ value_json.recommendation | default('Recommendation unavailable', true) }}"
       icon: mdi:lightbulb-alert
 
     - name: HIOC Incident Current Value
       unique_id: hioc_incident_current_value
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.current_value | default('normal') }}"
+      value_template: "{{ value_json.current_value | default('unknown', true) }}"
       icon: mdi:chart-timeline-variant
 
     - name: HIOC Incident Started
       unique_id: hioc_incident_started
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.started | default('none') }}"
+      value_template: "{{ value_json.started | default('unknown', true) }}"
       icon: mdi:clock-start
 
     - name: HIOC Incident Updated
       unique_id: hioc_incident_updated
       state_topic: home/infrastructure/hioc/incidents/active
-      value_template: "{{ value_json.updated | default('unknown') }}"
+      value_template: "{{ value_json.updated | default('unknown', true) }}"
       icon: mdi:clock-check
 
     - name: HIOC Incident Summary
       unique_id: hioc_incident_summary_v1
       state_topic: home/infrastructure/hioc/incidents/summary
-      value_template: "{{ value_json.active_title | default('No active incident') }}"
+      value_template: "{{ value_json.active_title | default('Incident summary unavailable', true) }}"
       json_attributes_topic: home/infrastructure/hioc/incidents/summary
       icon: mdi:clipboard-pulse
 
     - name: HIOC Incident History Count
       unique_id: hioc_incident_history_count
       state_topic: home/infrastructure/hioc/incidents/summary
-      value_template: "{{ value_json.history_count | default(0) }}"
+      value_template: "{{ value_json.history_count | default('unknown', true) }}"
       unit_of_measurement: incidents
       icon: mdi:counter
 
     - name: HIOC Latest Timeline Event
       unique_id: hioc_latest_timeline_event_v1
       state_topic: home/infrastructure/hioc/timeline/latest
-      value_template: "{{ value_json.title | default('No recent events') }}"
+      value_template: "{{ value_json.title | default('Timeline unavailable', true) }}"
       json_attributes_topic: home/infrastructure/hioc/timeline/latest
       icon: mdi:timeline-clock
 
@@ -102,8 +102,10 @@ template:
         icon: >-
           {% if is_state('sensor.hioc_incident_status','active') %}
             mdi:alert
-          {% else %}
+          {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
             mdi:check-circle
+          {% else %}
+            mdi:help-circle
           {% endif %}
 
   - sensor:
@@ -112,14 +114,16 @@ template:
         state: >-
           {% if is_state('sensor.hioc_incident_status','active') %}
             {{ states('sensor.hioc_incident_system') }}: {{ states('sensor.hioc_incident_active') }}
-          {% else %}
+          {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
             No active incident
+          {% else %}
+            Incident status unavailable
           {% endif %}
         attributes:
-          phase: "{{ state_attr('sensor.hioc_incident_active','phase') | default('idle') }}"
-          root_cause: "{{ state_attr('sensor.hioc_incident_active','root_cause') | default('none') }}"
-          confidence_percent: "{{ state_attr('sensor.hioc_incident_active','confidence_percent') | default(0) }}"
-          affected: "{{ state_attr('sensor.hioc_incident_active','affected') | default([]) }}"
+          phase: "{{ state_attr('sensor.hioc_incident_active','phase') | default('unknown', true) }}"
+          root_cause: "{{ state_attr('sensor.hioc_incident_active','root_cause') | default('unknown', true) }}"
+          confidence_percent: "{{ state_attr('sensor.hioc_incident_active','confidence_percent') | default('unknown', true) }}"
+          affected: "{{ state_attr('sensor.hioc_incident_active','affected') | default('unknown', true) }}"
           severity: "{{ states('sensor.hioc_incident_severity') }}"
           reason: "{{ states('sensor.hioc_incident_reason') }}"
           recommendation: "{{ states('sensor.hioc_incident_recommendation') }}"

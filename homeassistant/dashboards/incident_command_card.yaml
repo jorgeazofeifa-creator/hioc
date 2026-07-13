@@ -9,20 +9,26 @@
   primary: >-
     {% if is_state('sensor.hioc_incident_status','active') %}
       {{ states('sensor.hioc_incident_system') }} Incident
-    {% else %}
+    {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
       No Active Incident
+    {% else %}
+      Incident Status Unknown
     {% endif %}
   secondary: >-
     {% if is_state('sensor.hioc_incident_status','active') %}
       {{ states('sensor.hioc_incident_active') }} · {{ states('sensor.hioc_incident_current_value') }}
-    {% else %}
+    {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
       {{ states('sensor.hioc_incident_summary') }}
+    {% else %}
+      Current incident state cannot be confirmed.
     {% endif %}
   icon: >-
     {% if is_state('sensor.hioc_incident_status','active') %}
       mdi:alert-decagram
-    {% else %}
+    {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
       mdi:shield-check
+    {% else %}
+      mdi:help-circle
     {% endif %}
   icon_color: >-
     {% set sev = states('sensor.hioc_incident_severity') %}
@@ -32,8 +38,10 @@
       deep-orange
     {% elif is_state('sensor.hioc_incident_status','active') and sev == 'warning' %}
       amber
-    {% else %}
+    {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
       green
+    {% else %}
+      grey
     {% endif %}
   layout: horizontal
   fill_container: true
@@ -65,7 +73,7 @@
     **Recommendation**  
     {{ states('sensor.hioc_incident_recommendation') }}
 
-    {% else %}
+    {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
 
     ## Current Incident
 
@@ -79,6 +87,14 @@
 
     **History**  
     {{ states('sensor.hioc_incident_history_count') }} recorded incidents
+
+    {% else %}
+
+    ## Current Incident
+
+    **Unknown**
+
+    Incident status is unavailable. Review the engine state before drawing an operational conclusion.
 
     {% endif %}
   card_mod:

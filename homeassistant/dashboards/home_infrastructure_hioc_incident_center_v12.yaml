@@ -13,7 +13,7 @@ views:
               ## MISSION STATUS
 
 
-              # 🟢 {{ states('sensor.hioc_mission_status') }}
+              # {{ states('sensor.hioc_mission_status') }}
 
 
               **Active Incidents**  
@@ -40,7 +40,7 @@ views:
               Healthy
 
 
-              **Internet**  
+              **Internet**
 
               {{ state_attr('sensor.hioc_mission_status','internet_health') }}
             card_mod:
@@ -70,27 +70,33 @@ views:
         cards:
           - type: custom:mushroom-title-card
             title: Incident Center
-            subtitle: Pi4 Incident Engine v1.2.0, root cause, evidence, recovery, and recommendations
+            subtitle: Pi4 Incident Engine, root cause, evidence, recovery, and recommendations
           - type: custom:mushroom-template-card
             primary: >-
               {% if is_state('sensor.hioc_incident_status','active') %}
                 {{ states('sensor.hioc_incident_system') }} Incident
               {% elif is_state('sensor.hioc_incident_status','recovering') %}
                 Incident Recovering
-              {% else %}
+              {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
                 No Active Incident
+              {% else %}
+                Incident Status Unknown
               {% endif %}
             secondary: >-
               {% if is_state('sensor.hioc_incident_status','active') %}
                 {{ states('sensor.hioc_incident_active') }} · {{ state_attr('sensor.hioc_incident_active','root_cause') }} · {{ state_attr('sensor.hioc_incident_active','confidence_percent') }}% confidence
               {% else %}
-                Engine {{ state_attr('sensor.hioc_incident_summary','engine_version') | default('1.2.0') }} · Signals {{ state_attr('sensor.hioc_incident_summary','signals_detected') | default(0) }} · History {{ states('sensor.hioc_incident_history_count') }} incidents
+                Engine {{ state_attr('sensor.hioc_incident_summary','engine_version') | default('unknown', true) }} · Signals {{ state_attr('sensor.hioc_incident_summary','signals_detected') | default('unknown', true) }} · History {{ states('sensor.hioc_incident_history_count') }} incidents
               {% endif %}
             icon: >-
               {% if is_state('sensor.hioc_incident_status','active') %}
                 mdi:alert-decagram
-              {% else %}
+              {% elif is_state('sensor.hioc_incident_status','recovering') %}
+                mdi:progress-alert
+              {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
                 mdi:shield-check
+              {% else %}
+                mdi:help-circle
               {% endif %}
             icon_color: >-
               {% set sev = states('sensor.hioc_incident_severity') %}
@@ -100,8 +106,10 @@ views:
                 deep-orange
               {% elif is_state('sensor.hioc_incident_status','active') and sev == 'warning' %}
                 amber
-              {% else %}
+              {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
                 green
+              {% else %}
+                grey
               {% endif %}
             layout: horizontal
             fill_container: true
@@ -114,55 +122,70 @@ views:
 
               ## Current Incident
 
-              **{{ states('sensor.hioc_incident_severity') | title }} · {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}**
+              **{{ states('sensor.hioc_incident_severity') | title }} · {{ state_attr('sensor.hioc_incident_active','phase') | default('unknown', true) | title }}**
 
-              **Title**  
+              **Title**
               {{ states('sensor.hioc_incident_active') }}
 
-              **Root Cause**  
+              **Root Cause**
               {{ state_attr('sensor.hioc_incident_active','root_cause') }}
 
-              **Confidence**  
+              **Confidence**
               {{ state_attr('sensor.hioc_incident_active','confidence_percent') }}%
 
-              **Impact**  
+              **Impact**
               {{ state_attr('sensor.hioc_incident_active','impact') }}
 
-              **Current Value**  
+              **Current Value**
               {{ states('sensor.hioc_incident_current_value') }}
 
-              **Evidence**  
+              **Evidence**
               {% set evidence = state_attr('sensor.hioc_incident_active','evidence') %}
               {% if evidence is iterable and evidence is not string %}
-              {% for item in evidence %}✓ {{ item }}  
+              {% for item in evidence %}- {{ item }}
               {% endfor %}
               {% else %}
               {{ states('sensor.hioc_incident_reason') }}
               {% endif %}
 
-              **Recommendation**  
+              **Recommendation**
               {{ states('sensor.hioc_incident_recommendation') }}
 
-              **Started**  
+              **Started**
               {{ states('sensor.hioc_incident_started') }}
 
-              {% else %}
+              {% elif is_state('sensor.hioc_incident_status','recovering') %}
+
+              ## Incident Recovering
+
+              {{ states('sensor.hioc_incident_active') }}
+
+              **Recommendation**
+              {{ states('sensor.hioc_incident_recommendation') }}
+
+              {% elif states('sensor.hioc_incident_status') in ['none', 'resolved'] %}
 
               ## Incident Center
 
-              🟢 **No active incident**
+              **No active incident**
 
-              **Engine**  
-              v{{ state_attr('sensor.hioc_incident_summary','engine_version') | default('1.2.0') }} · {{ states('sensor.hioc_engine_status') | title }}
+              **Engine**
+              v{{ state_attr('sensor.hioc_incident_summary','engine_version') | default('unknown', true) }} · {{ states('sensor.hioc_engine_status') | title }}
 
-              **Signals Detected**  
-              {{ state_attr('sensor.hioc_incident_summary','signals_detected') | default(0) }}
+              **Signals Detected**
+              {{ state_attr('sensor.hioc_incident_summary','signals_detected') | default('unknown', true) }}
 
-              **Last Timeline Event**  
+              **Last Timeline Event**
               {{ states('sensor.hioc_latest_timeline_event') }}
 
-              **Incident History**  
+              **Incident History**
               {{ states('sensor.hioc_incident_history_count') }} recorded incidents
+
+              {% else %}
+
+              ## Incident Status Unknown
+
+              HIOC cannot confirm the current incident lifecycle state. Review engine status before drawing an operational conclusion.
 
               {% endif %}
             card_mod:
@@ -186,9 +209,9 @@ views:
               states('sensor.hioc_internet_intelligence') }}
             icon: mdi:web-check
             icon_color: >-
-              {% if states('sensor.hioc_internet_score') | int(0) >= 95
-              %}green{% elif states('sensor.hioc_internet_score') | int(0) >= 80
-              %}amber{% else %}red{% endif %}
+              {% set score = states('sensor.hioc_internet_score') %} {% if not
+              is_number(score) %}grey{% elif score | int >= 95 %}green{% elif score
+              | int >= 80 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -201,9 +224,9 @@ views:
               states('sensor.hioc_dns_intelligence') }}
             icon: mdi:dns
             icon_color: >-
-              {% if states('sensor.hioc_dns_score') | int(0) >= 95 %}green{%
-              elif states('sensor.hioc_dns_score') | int(0) >= 80 %}amber{% else
-              %}red{% endif %}
+              {% set score = states('sensor.hioc_dns_score') %} {% if not
+              is_number(score) %}grey{% elif score | int >= 95 %}green{% elif score
+              | int >= 80 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -216,9 +239,9 @@ views:
               states('sensor.hioc_ups_summary') }}
             icon: mdi:power-plug-battery
             icon_color: >-
-              {% if states('sensor.hioc_power_score') | int(0) >= 95 %}green{%
-              elif states('sensor.hioc_power_score') | int(0) >= 80 %}amber{%
-              else %}red{% endif %}
+              {% set score = states('sensor.hioc_power_score') %} {% if not
+              is_number(score) %}grey{% elif score | int >= 95 %}green{% elif score
+              | int >= 80 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -231,9 +254,9 @@ views:
               states('sensor.hioc_mqtt_intelligence') }}
             icon: mdi:server-network
             icon_color: >-
-              {% if states('sensor.hioc_services_score') | int(0) >= 95
-              %}green{% elif states('sensor.hioc_services_score') | int(0) >= 80
-              %}amber{% else %}red{% endif %}
+              {% set score = states('sensor.hioc_services_score') %} {% if not
+              is_number(score) %}grey{% elif score | int >= 95 %}green{% elif score
+              | int >= 80 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -247,7 +270,8 @@ views:
             icon: mdi:monitor-dashboard
             icon_color: >-
               {% if states('sensor.hioc_noc_summary') == 'Operational' %}green{%
-              else %}red{% endif %}
+              elif states('sensor.hioc_noc_summary') in ['Degraded', 'Offline']
+              %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -258,13 +282,13 @@ views:
               ## Score Breakdown
 
 
-              {% set internet = states('sensor.hioc_internet_score') | int(0) %}
+              {% set internet = states('sensor.hioc_internet_score') %}
 
-              {% set dns = states('sensor.hioc_dns_score') | int(0) %}
+              {% set dns = states('sensor.hioc_dns_score') %}
 
-              {% set power = states('sensor.hioc_power_score') | int(0) %}
+              {% set power = states('sensor.hioc_power_score') %}
 
-              {% set services = states('sensor.hioc_services_score') | int(0) %}
+              {% set services = states('sensor.hioc_services_score') %}
 
               {% set internet_quality = states('sensor.hioc_internet_quality')
               %}
@@ -276,27 +300,27 @@ views:
               {% set ups_summary = states('sensor.hioc_ups_summary') %}
 
 
-              🟢 **Internet**  
+              **Internet**
 
               {{ internet }} · {{ internet_quality }}
 
 
-              🟢 **DNS**  
+              **DNS**
 
               {{ dns }} · {{ dns_quality }}
 
 
-              🟢 **UPS**  
+              **UPS**
 
               {{ power }} · {{ ups_summary }}
 
 
-              🟢 **Services**  
+              **Services**
 
-              {{ services }} · Healthy
+              {{ services }} score
 
 
-              🟢 **MQTT**  
+              **MQTT**
 
               {{ mqtt_quality }}
             card_mod:
@@ -573,7 +597,9 @@ views:
             icon: mdi:ip-network
             icon_color: >-
               {% if states('sensor.pi4_network_probe_internet_health') ==
-              'healthy' %}green{% else %}amber{% endif %}
+              'healthy' %}green{% elif
+              states('sensor.pi4_network_probe_internet_health') == 'degraded'
+              %}amber{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -583,13 +609,14 @@ views:
             primary: Pi-hole Live
             secondary: >-
               {{ states('sensor.pi_hole_dns_queries_today') }} queries · {{
-              states('sensor.pi_hole_ads_percentage_blocked_today') | float(0) |
-              round(1) }}% blocked · {{ states('sensor.pi_hole_seen_clients') }}
+              states('sensor.pi_hole_ads_percentage_blocked_today') }}% blocked ·
+              {{ states('sensor.pi_hole_seen_clients') }}
               clients
             icon: mdi:pi-hole
             icon_color: >-
-              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% else
-              %}red{% endif %}
+              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% elif
+              is_state('binary_sensor.pi_hole_status','off') %}red{% else
+              %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -601,7 +628,14 @@ views:
               UPS1 {{ states('sensor.pi4_infrastructure_ups1_battery') }}% ·
               UPS2 {{ states('sensor.pi4_infrastructure_ups2_battery') }}%
             icon: mdi:power-plug-battery
-            icon_color: green
+            icon_color: >-
+              {% set ups1 = states('sensor.pi4_infrastructure_ups1_status') %}
+              {% set ups2 = states('sensor.pi4_infrastructure_ups2_status') %}
+              {% if ups1 in ['unknown', 'unavailable', 'none', ''] or ups2 in
+              ['unknown', 'unavailable', 'none', ''] %}grey{% elif ups1 == 'OL'
+              and ups2 == 'OL' %}green{% elif ups1 == 'OL' or ups2 == 'OL'
+              %}amber{% elif ups1 in ['OB', 'LB', 'FSD', 'OFF'] or ups2 in
+              ['OB', 'LB', 'FSD', 'OFF'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -614,7 +648,7 @@ views:
               states('sensor.pi4_infrastructure_memory_usage') }}% · Disk {{
               states('sensor.pi4_infrastructure_disk_usage') }}%
             icon: mdi:raspberry-pi
-            icon_color: green
+            icon_color: blue
             layout: horizontal
             fill_container: true
             grid_options:
@@ -627,7 +661,8 @@ views:
               states('sensor.system_monitor_memory_usage') }}% · {{
               states('sensor.system_monitor_processor_temperature') }}°C
             icon: mdi:home-assistant
-            icon_color: green
+            icon_color: >-
+              {% if states('sensor.pi4_network_probe_pi5_status') == 'online' %}green{% elif states('sensor.pi4_network_probe_pi5_status') in ['offline', 'unreachable'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -637,18 +672,17 @@ views:
             primary: Network
             secondary: >-
               Latency {{
-              states('sensor.pi4_network_probe_average_internet_latency') |
-              float(0) | round(1) }} ms · Loss {{
-              states('sensor.pi4_network_probe_average_packet_loss') | float(0)
-              | round(1) }}% · Jitter {{
-              states('sensor.pi4_network_probe_internet_jitter') | float(0) |
-              round(1) }} ms
+              states('sensor.pi4_network_probe_average_internet_latency') }} ms ·
+              Loss {{ states('sensor.pi4_network_probe_average_packet_loss') }}%
+              · Jitter {{ states('sensor.pi4_network_probe_internet_jitter') }}
+              ms
             icon: mdi:wan
             icon_color: >-
               {% if states('sensor.pi4_network_probe_internet_health') ==
               'healthy' %}green{% elif
               states('sensor.pi4_network_probe_internet_health') == 'degraded'
-              %}amber{% else %}red{% endif %}
+              %}amber{% elif states('sensor.pi4_network_probe_internet_health')
+              in ['offline', 'down'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -663,16 +697,16 @@ views:
             primary: Internet
             secondary: >-
               {{ states('sensor.pi4_network_probe_internet_health') | title }} ·
-              {{ states('sensor.pi4_network_probe_average_internet_latency') |
-              float(0) | round(1) }} ms · {{
-              states('sensor.pi4_network_probe_average_packet_loss') | float(0)
-              | round(1) }}% loss
+              {{ states('sensor.pi4_network_probe_average_internet_latency') }}
+              ms · {{ states('sensor.pi4_network_probe_average_packet_loss') }}%
+              loss
             icon: mdi:web-check
             icon_color: >-
               {% if states('sensor.pi4_network_probe_internet_health') ==
               'healthy' %}green{% elif
               states('sensor.pi4_network_probe_internet_health') == 'degraded'
-              %}amber{% else %}red{% endif %}
+              %}amber{% elif states('sensor.pi4_network_probe_internet_health')
+              in ['offline', 'down'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -684,10 +718,10 @@ views:
               {{ states('sensor.pi_hole_dns_queries_frequency') }} q/min
             icon: mdi:dns
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_pi_hole_dns_latency') |
-              float(999) < 50 %}green{% elif
-              states('sensor.pi4_network_probe_pi_hole_dns_latency') |
-              float(999) < 150 %}amber{% else %}red{% endif %}
+              {% set latency =
+              states('sensor.pi4_network_probe_pi_hole_dns_latency') %} {% if
+              not is_number(latency) %}grey{% elif latency | float < 50
+              %}green{% elif latency | float < 150 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -696,16 +730,28 @@ views:
               UPS1 {{ states('sensor.pi4_infrastructure_ups1_battery') }}% ·
               UPS2 {{ states('sensor.pi4_infrastructure_ups2_battery') }}%
             icon: mdi:power-plug
-            icon_color: green
+            icon_color: >-
+              {% set ups1 = states('sensor.pi4_infrastructure_ups1_status') %}
+              {% set ups2 = states('sensor.pi4_infrastructure_ups2_status') %}
+              {% if ups1 in ['unknown', 'unavailable', 'none', ''] or ups2 in
+              ['unknown', 'unavailable', 'none', ''] %}grey{% elif ups1 == 'OL'
+              and ups2 == 'OL' %}green{% elif ups1 == 'OL' or ups2 == 'OL'
+              %}amber{% elif ups1 in ['OB', 'LB', 'FSD', 'OFF'] or ups2 in
+              ['OB', 'LB', 'FSD', 'OFF'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
             primary: Cameras
             secondary: >-
-              Frigate stopped · go2rtc {{ 'running' if
-              is_state('binary_sensor.go2rtc_running','on') else 'stopped' }}
+              Frigate {% if is_state('binary_sensor.frigate_running','on')
+              %}running{% elif is_state('binary_sensor.frigate_running','off')
+              %}stopped{% else %}unknown{% endif %} · go2rtc {% if
+              is_state('binary_sensor.go2rtc_running','on') %}running{% elif
+              is_state('binary_sensor.go2rtc_running','off') %}stopped{% else
+              %}unknown{% endif %}
             icon: mdi:cctv
-            icon_color: grey
+            icon_color: >-
+              {% if is_state('binary_sensor.frigate_running','on') and is_state('binary_sensor.go2rtc_running','on') %}green{% elif is_state('binary_sensor.frigate_running','off') or is_state('binary_sensor.go2rtc_running','off') %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -717,8 +763,10 @@ views:
               }} ms
             icon: mdi:radar
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_mqtt_publish_failures') |
-              int(0) == 0 %}green{% else %}red{% endif %}
+              {% set failures =
+              states('sensor.pi4_network_probe_mqtt_publish_failures') %} {% if
+              not is_number(failures) %}grey{% elif failures | int == 0
+              %}green{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
       - type: grid
@@ -732,7 +780,9 @@ views:
             icon: mdi:shield-check
             icon_color: >-
               {% if states('sensor.pi4_infrastructure_pi_hole_ftl_status') in
-              ['on','On'] %}green{% else %}red{% endif %}
+              ['on','On'] %}green{% elif
+              states('sensor.pi4_infrastructure_pi_hole_ftl_status') in
+              ['off','Off'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -741,7 +791,9 @@ views:
             icon: mdi:server
             icon_color: >-
               {% if states('sensor.pi4_infrastructure_nut_server_status') in
-              ['on','On'] %}green{% else %}red{% endif %}
+              ['on','On'] %}green{% elif
+              states('sensor.pi4_infrastructure_nut_server_status') in
+              ['off','Off'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -751,7 +803,8 @@ views:
               set cpu = states('sensor.mosquitto_broker_cpu_percent') %}{% set
               mem = states('sensor.mosquitto_broker_memory_percent') %}{% set
               ver = states('sensor.mosquitto_broker_version') %}{% if s in
-              ['on','On'] %}Running{% else %}Stopped{% endif %} · CPU {{ cpu }}%
+              ['on','On'] %}Running{% elif s in ['off','Off'] %}Stopped{% else
+              %}Unknown{% endif %} · CPU {{ cpu }}%
               · Mem {{ mem }}% · v{{ ver }}
             icon: mdi:message-processing
             icon_color: >-
@@ -770,8 +823,8 @@ views:
               states('sensor.ring_mqtt_with_video_streaming_memory_percent')
               %}{% set ver =
               states('sensor.ring_mqtt_with_video_streaming_version') %}{% if s
-              in ['on','On'] %}Running{% else %}Stopped{% endif %} · CPU {{ cpu
-              }}% · Mem {{ mem }}% · v{{ ver }}
+              in ['on','On'] %}Running{% elif s in ['off','Off'] %}Stopped{% else
+              %}Unknown{% endif %} · CPU {{ cpu }}% · Mem {{ mem }}% · v{{ ver }}
             icon: mdi:doorbell-video
             icon_color: >-
               {% if
@@ -786,8 +839,8 @@ views:
               = states('sensor.z_wave_js_cpu_percent') %}{% set mem =
               states('sensor.z_wave_js_memory_percent') %}{% set ver =
               states('sensor.z_wave_js_version') %}{% if s in ['on','On']
-              %}Running{% else %}Stopped{% endif %} · CPU {{ cpu }}% · Mem {{
-              mem }}% · v{{ ver }}
+              %}Running{% elif s in ['off','Off'] %}Stopped{% else %}Unknown{%
+              endif %} · CPU {{ cpu }}% · Mem {{ mem }}% · v{{ ver }}
             icon: mdi:z-wave
             icon_color: >-
               {% if states('binary_sensor.z_wave_js_running') in ['on','On']
@@ -801,8 +854,8 @@ views:
               cpu = states('sensor.matter_server_cpu_percent') %}{% set mem =
               states('sensor.matter_server_memory_percent') %}{% set ver =
               states('sensor.matter_server_version') %}{% if s in ['on','On']
-              %}Running{% else %}Stopped{% endif %} · CPU {{ cpu }}% · Mem {{
-              mem }}% · v{{ ver }}
+              %}Running{% elif s in ['off','Off'] %}Stopped{% else %}Unknown{%
+              endif %} · CPU {{ cpu }}% · Mem {{ mem }}% · v{{ ver }}
             icon: mdi:chip
             icon_color: >-
               {% if states('binary_sensor.matter_server_running') in ['on','On']
@@ -817,22 +870,22 @@ views:
           - type: custom:mushroom-template-card
             primary: WAN
             secondary: >-
-              {{ '🟢 Connected' if
-              is_state('binary_sensor.huawei_igd_wan_status','on') else '🔴
-              Disconnected' }} · IP {{ states('sensor.huawei_igd_external_ip')
-              }}
+              {% set wan = states('binary_sensor.huawei_igd_wan_status') %} {% if
+              wan == 'on' %}🟢 Connected{% elif wan == 'off' %}🔴
+              Disconnected{% else %}Status unknown{% endif %} · IP {{
+              states('sensor.huawei_igd_external_ip') }}
             icon: mdi:wan
             icon_color: >-
               {% if is_state('binary_sensor.huawei_igd_wan_status','on')
-              %}green{% else %}red{% endif %}
+              %}green{% elif is_state('binary_sensor.huawei_igd_wan_status','off')
+              %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
             primary: Internet Traffic
             secondary: >-
-              🔵 Down {{ states('sensor.huawei_igd_download_speed') | float(0) |
-              round(2) }} KiB/s · Up {{ states('sensor.huawei_igd_upload_speed')
-              | float(0) | round(2) }} KiB/s
+              🔵 Down {{ states('sensor.huawei_igd_download_speed') }} KiB/s · Up
+              {{ states('sensor.huawei_igd_upload_speed') }} KiB/s
             icon: mdi:speedometer
             icon_color: blue
             layout: horizontal
@@ -840,59 +893,67 @@ views:
           - type: custom:mushroom-template-card
             primary: Pi-hole
             secondary: >-
-              {{ '🟢 Healthy' if is_state('binary_sensor.pi_hole_status','on')
-              else '🔴 Offline' }} · {{
+              {% set pihole = states('binary_sensor.pi_hole_status') %} {% if
+              pihole == 'on' %}🟢 Healthy{% elif pihole == 'off' %}🔴
+              Offline{% else %}Status unknown{% endif %} · {{
               states('sensor.pi_hole_dns_queries_today') }} queries · {{
-              states('sensor.pi_hole_ads_percentage_blocked_today') | float(0) |
-              round(1) }}% blocked
+              states('sensor.pi_hole_ads_percentage_blocked_today') }}% blocked
             icon: mdi:shield-half-full
             icon_color: >-
-              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% else
-              %}red{% endif %}
+              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% elif
+              is_state('binary_sensor.pi_hole_status','off') %}red{% else
+              %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
             primary: Clients
             secondary: >-
-              🟢 {{ states('sensor.pi_hole_seen_clients') }} seen · {{
+              {{ states('sensor.pi_hole_seen_clients') }} seen · {{
               states('sensor.pi_hole_dns_unique_clients') }} unique DNS · {{
               states('sensor.pi_hole_dhcp_leases') }} DHCP leases
             icon: mdi:devices
             icon_color: >-
-              {% if states('sensor.pi_hole_seen_clients') | int(0) >= 1
-              %}green{% else %}amber{% endif %}
+              {% set clients = states('sensor.pi_hole_seen_clients') %} {% if not
+              is_number(clients) %}grey{% elif clients | int >= 1 %}green{% else
+              %}amber{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
             primary: UPS
             secondary: >-
-              {% set ups1_ok = states('sensor.pi4_infrastructure_ups1_status')
-              == 'OL' %} {% set ups2_ok =
-              states('sensor.pi4_infrastructure_ups2_status') == 'OL' %} {% if
-              ups1_ok and ups2_ok %}🟢 Utility Power{% elif ups1_ok or ups2_ok
-              %}🟠 Partial Protection{% else %}🔴 On Battery{% endif %} · UPS1
+              {% set ups1 = states('sensor.pi4_infrastructure_ups1_status') %}
+              {% set ups2 = states('sensor.pi4_infrastructure_ups2_status') %}
+              {% if ups1 in ['unknown', 'unavailable', 'none', ''] or ups2 in
+              ['unknown', 'unavailable', 'none', ''] %}Status unknown{% elif ups1
+              == 'OL' and ups2 == 'OL' %}🟢 Utility Power{% elif ups1 == 'OL' or
+              ups2 == 'OL' %}🟠 Partial Protection{% else %}🔴 On Battery{% endif
+              %} · UPS1
               {{ states('sensor.pi4_infrastructure_ups1_battery') }}% · UPS2 {{
               states('sensor.pi4_infrastructure_ups2_battery') }}%
             icon: mdi:power-plug-battery
             icon_color: >-
-              {% if states('sensor.pi4_infrastructure_ups1_status') == 'OL' and
-              states('sensor.pi4_infrastructure_ups2_status') == 'OL' %}green{%
-              elif states('sensor.pi4_infrastructure_ups1_status') == 'OL' or
-              states('sensor.pi4_infrastructure_ups2_status') == 'OL' %}amber{%
-              else %}red{% endif %}
+              {% set ups1 = states('sensor.pi4_infrastructure_ups1_status') %}
+              {% set ups2 = states('sensor.pi4_infrastructure_ups2_status') %}
+              {% if ups1 in ['unknown', 'unavailable', 'none', ''] or ups2 in
+              ['unknown', 'unavailable', 'none', ''] %}grey{% elif ups1 == 'OL'
+              and ups2 == 'OL' %}green{% elif ups1 == 'OL' or ups2 == 'OL'
+              %}amber{% elif ups1 in ['OB', 'LB', 'FSD', 'OFF'] or ups2 in
+              ['OB', 'LB', 'FSD', 'OFF'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
             primary: MQTT
             secondary: >-
-              {{ '🟢 Running' if
-              is_state('binary_sensor.mosquitto_broker_running','on') else '🔴
-              Offline' }} · CPU {{ states('sensor.mosquitto_broker_cpu_percent')
-              }}% · Mem {{ states('sensor.mosquitto_broker_memory_percent') }}%
+              {% set mqtt = states('binary_sensor.mosquitto_broker_running') %}
+              {% if mqtt == 'on' %}🟢 Running{% elif mqtt == 'off' %}🔴
+              Offline{% else %}Status unknown{% endif %} · CPU {{
+              states('sensor.mosquitto_broker_cpu_percent') }}% · Mem {{
+              states('sensor.mosquitto_broker_memory_percent') }}%
             icon: mdi:message-processing
             icon_color: >-
               {% if is_state('binary_sensor.mosquitto_broker_running','on')
-              %}green{% else %}red{% endif %}
+              %}green{% elif is_state('binary_sensor.mosquitto_broker_running','off')
+              %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -916,20 +977,11 @@ views:
 
               ### Network path
 
-              ```
-                      Internet
-                          │
-                    Huawei Gateway      192.168.100.1
-                          │
-                      Orbi Mesh
-                    ┌─────┴─────┐
-                    │           │
-                Pi 4 Infra   Pi 5 HAOS
-                192.168.100.252   192.168.100.152
-                    │           │
-               DNS DHCP NUT   HA MQTT Z-Wave Matter
-               UPS1 UPS2      go2rtc Dashboards
-              ```
+              This view does not embed fixed device addresses or a static topology. Current authoritative path evidence:
+
+              - Gateway: {{ states('sensor.pi4_network_probe_gateway_status') }} · {{ states('sensor.pi4_network_probe_gateway_latency') }} ms
+              - Home Assistant host path: {{ states('sensor.pi4_network_probe_pi5_status') }} · {{ states('sensor.pi4_network_probe_pi5_latency') }} ms
+              - Public address: {{ states('sensor.pi4_network_probe_public_ip') }}
             card_mod:
               style: |
                 ha-card {
@@ -1104,7 +1156,8 @@ views:
             icon_color: >-
               {% if states('sensor.hioc_internet_intelligence') == 'Healthy'
               %}green{% elif states('sensor.hioc_internet_intelligence') ==
-              'Degraded' %}amber{% else %}red{% endif %}
+              'Degraded' %}amber{% elif states('sensor.hioc_internet_intelligence')
+              in ['Offline', 'Critical'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1125,12 +1178,15 @@ views:
           - type: custom:mushroom-template-card
             primary: Gateway Path
             secondary: >-
-              Gateway {{ states('sensor.pi4_network_probe_gateway_latency') |
-              float(0) | round(1) }} ms · Pi5 {{
-              states('sensor.pi4_network_probe_pi5_latency') | float(0) |
-              round(1) }} ms
+              Gateway {{ states('sensor.pi4_network_probe_gateway_latency') }} ms
+              · Pi5 {{ states('sensor.pi4_network_probe_pi5_latency') }} ms
             icon: mdi:router-network
-            icon_color: green
+            icon_color: >-
+              {% set gateway = states('sensor.pi4_network_probe_gateway_status') %}
+              {% set pi5 = states('sensor.pi4_network_probe_pi5_status') %} {% if
+              gateway == 'online' and pi5 == 'online' %}green{% elif gateway in
+              ['offline', 'unreachable'] or pi5 in ['offline', 'unreachable']
+              %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1147,7 +1203,8 @@ views:
             icon: mdi:dns
             icon_color: >-
               {% if states('sensor.hioc_dns_intelligence') == 'Healthy'
-              %}green{% else %}red{% endif %}
+              %}green{% elif states('sensor.hioc_dns_intelligence') in
+              ['Degraded', 'Offline', 'Critical'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1162,8 +1219,10 @@ views:
               states('sensor.pi4_network_probe_mqtt_publish_failures') }}
             icon: mdi:message-fast
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_mqtt_publish_failures') |
-              int(0) == 0 %}green{% else %}red{% endif %}
+              {% set failures =
+              states('sensor.pi4_network_probe_mqtt_publish_failures') %} {% if
+              not is_number(failures) %}grey{% elif failures | int == 0
+              %}green{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1187,7 +1246,8 @@ views:
               {% if states('sensor.pi4_network_probe_internet_health') ==
               'healthy' %}green{% elif
               states('sensor.pi4_network_probe_internet_health') == 'degraded'
-              %}amber{% else %}red{% endif %}
+              %}amber{% elif states('sensor.pi4_network_probe_internet_health')
+              in ['offline', 'down'] %}red{% else %}grey{% endif %}
             layout: vertical
             fill_container: true
             grid_options:
@@ -1215,10 +1275,9 @@ views:
               }}%
             icon: mdi:chart-line
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_average_packet_loss') |
-              float(0) == 0 %}green{% elif
-              states('sensor.pi4_network_probe_average_packet_loss') | float(0)
-              <= 2 %}amber{% else %}red{% endif %}
+              {% set loss = states('sensor.pi4_network_probe_average_packet_loss')
+              %} {% if not is_number(loss) %}grey{% elif loss | float == 0
+              %}green{% elif loss | float <= 2 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1232,10 +1291,9 @@ views:
               states('sensor.pi4_network_probe_mqtt_publish_duration') }} ms
             icon: mdi:pulse
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_internet_jitter') |
-              float(0) < 20 %}green{% elif
-              states('sensor.pi4_network_probe_internet_jitter') | float(0) < 80
-              %}amber{% else %}red{% endif %}
+              {% set jitter = states('sensor.pi4_network_probe_internet_jitter')
+              %} {% if not is_number(jitter) %}grey{% elif jitter | float < 20
+              %}green{% elif jitter | float < 80 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1303,7 +1361,9 @@ views:
             icon: mdi:router-network
             icon_color: >-
               {% if states('sensor.pi4_network_probe_gateway_status') ==
-              'online' %}green{% else %}red{% endif %}
+              'online' %}green{% elif
+              states('sensor.pi4_network_probe_gateway_status') in ['offline',
+              'unreachable'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -1314,7 +1374,8 @@ views:
             icon: mdi:home-assistant
             icon_color: >-
               {% if states('sensor.pi4_network_probe_pi5_status') == 'online'
-              %}green{% else %}red{% endif %}
+              %}green{% elif states('sensor.pi4_network_probe_pi5_status') in
+              ['offline', 'unreachable'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mini-graph-card
@@ -1351,10 +1412,10 @@ views:
               FTL {{ states('sensor.pi4_infrastructure_pi_hole_ftl_status') }}
             icon: mdi:pi-hole
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_pi_hole_dns_latency') |
-              float(999) < 50 %}green{% elif
-              states('sensor.pi4_network_probe_pi_hole_dns_latency') |
-              float(999) < 150 %}amber{% else %}red{% endif %}
+              {% set latency =
+              states('sensor.pi4_network_probe_pi_hole_dns_latency') %} {% if
+              not is_number(latency) %}grey{% elif latency | float < 50
+              %}green{% elif latency | float < 150 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -1362,10 +1423,10 @@ views:
             secondary: "{{ states('sensor.pi4_network_probe_cloudflare_dns_latency') }} ms"
             icon: mdi:dns
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_cloudflare_dns_latency') |
-              float(999) < 100 %}green{% elif
-              states('sensor.pi4_network_probe_cloudflare_dns_latency') |
-              float(999) < 250 %}amber{% else %}red{% endif %}
+              {% set latency =
+              states('sensor.pi4_network_probe_cloudflare_dns_latency') %} {% if
+              not is_number(latency) %}grey{% elif latency | float < 100
+              %}green{% elif latency | float < 250 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mini-graph-card
@@ -1464,8 +1525,9 @@ views:
               columns: 12
               rows: 2
             color: >-
-              {% if states('sensor.hioc_current_incident_detail') == 'No active
-              incident' %}green{% else %}red{% endif %}
+              {% if states('sensor.hioc_incident_status') in ['none', 'resolved']
+              %}green{% elif states('sensor.hioc_incident_status') == 'active'
+              %}red{% else %}grey{% endif %}
             features_position: bottom
             multiline_secondary: true
           - type: custom:mushroom-template-card
@@ -1506,7 +1568,8 @@ views:
               {% if states('sensor.pi4_network_probe_internet_health') ==
               'healthy' %}green{% elif
               states('sensor.pi4_network_probe_internet_health') == 'degraded'
-              %}amber{% else %}red{% endif %}
+              %}amber{% elif states('sensor.pi4_network_probe_internet_health')
+              in ['offline', 'down'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1532,10 +1595,9 @@ views:
               states('sensor.pi4_network_probe_mqtt_publish_duration') }} ms
             icon: mdi:pulse
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_internet_jitter') |
-              float(0) < 20 %}green{% elif
-              states('sensor.pi4_network_probe_internet_jitter') | float(0) < 80
-              %}amber{% else %}red{% endif %}
+              {% set jitter = states('sensor.pi4_network_probe_internet_jitter')
+              %} {% if not is_number(jitter) %}grey{% elif jitter | float < 20
+              %}green{% elif jitter | float < 80 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1608,7 +1670,9 @@ views:
             icon: mdi:router-network
             icon_color: >-
               {% if states('sensor.pi4_network_probe_gateway_status') ==
-              'online' %}green{% else %}red{% endif %}
+              'online' %}green{% elif
+              states('sensor.pi4_network_probe_gateway_status') in ['offline',
+              'unreachable'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -1619,7 +1683,8 @@ views:
             icon: mdi:home-assistant
             icon_color: >-
               {% if states('sensor.pi4_network_probe_pi5_status') == 'online'
-              %}green{% else %}red{% endif %}
+              %}green{% elif states('sensor.pi4_network_probe_pi5_status') in
+              ['offline', 'unreachable'] %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: entities
@@ -1683,13 +1748,14 @@ views:
             primary: Pi-hole Live
             secondary: >-
               {{ states('sensor.pi_hole_dns_queries_frequency') }} q/min · {{
-              states('sensor.pi_hole_ads_percentage_blocked_today') | float(0) |
-              round(1) }}% blocked · {{ states('sensor.pi_hole_seen_clients') }}
+              states('sensor.pi_hole_ads_percentage_blocked_today') }}% blocked ·
+              {{ states('sensor.pi_hole_seen_clients') }}
               clients
             icon: mdi:pi-hole
             icon_color: >-
-              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% else
-              %}red{% endif %}
+              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% elif
+              is_state('binary_sensor.pi_hole_status','off') %}red{% else
+              %}grey{% endif %}
             layout: horizontal
             fill_container: true
             grid_options:
@@ -1782,10 +1848,11 @@ views:
               states('sensor.pi4_infrastructure_disk_usage') }}%
             icon: mdi:raspberry-pi
             icon_color: >-
-              {% if states('sensor.pi4_infrastructure_temperature') | float(0) <
-              65 and states('sensor.pi4_infrastructure_disk_usage') | float(0) <
-              80 %}green{% elif states('sensor.pi4_infrastructure_temperature')
-              | float(0) < 75 %}amber{% else %}red{% endif %}
+              {% set temp = states('sensor.pi4_infrastructure_temperature') %}
+              {% set disk = states('sensor.pi4_infrastructure_disk_usage') %}
+              {% if not is_number(temp) or not is_number(disk) %}grey{% elif temp
+              | float < 65 and disk | float < 80 %}green{% elif temp | float <
+              75 %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -1797,8 +1864,10 @@ views:
               }} ms
             icon: mdi:radar
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_mqtt_publish_failures') |
-              int(0) == 0 %}green{% else %}red{% endif %}
+              {% set failures =
+              states('sensor.pi4_network_probe_mqtt_publish_failures') %} {% if
+              not is_number(failures) %}grey{% elif failures | int == 0
+              %}green{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
           - type: entities
@@ -1876,11 +1945,11 @@ views:
               states('sensor.system_monitor_processor_temperature') }}°C
             icon: mdi:home-assistant
             icon_color: >-
-              {% if states('sensor.system_monitor_processor_temperature') |
-              float(0) < 70 and states('sensor.system_monitor_disk_usage') |
-              float(0) < 80 %}green{% elif
-              states('sensor.system_monitor_processor_temperature') | float(0) <
-              80 %}amber{% else %}red{% endif %}
+              {% set temp = states('sensor.system_monitor_processor_temperature')
+              %} {% set disk = states('sensor.system_monitor_disk_usage') %} {%
+              if not is_number(temp) or not is_number(disk) %}grey{% elif temp |
+              float < 70 and disk | float < 80 %}green{% elif temp | float < 80
+              %}amber{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
           - type: entities
@@ -1972,15 +2041,16 @@ views:
           - type: custom:mushroom-template-card
             primary: MQTT Broker
             secondary: >-
-              {{ 'Running' if
-              is_state('binary_sensor.mosquitto_broker_running','on') else
-              'Stopped' }} · CPU {{
+              {% set mqtt = states('binary_sensor.mosquitto_broker_running') %}
+              {% if mqtt == 'on' %}Running{% elif mqtt == 'off' %}Stopped{% else
+              %}Unknown{% endif %} · CPU {{
               states('sensor.mosquitto_broker_cpu_percent') }}% · Mem {{
               states('sensor.mosquitto_broker_memory_percent') }}%
             icon: mdi:message-processing
             icon_color: >-
               {% if is_state('binary_sensor.mosquitto_broker_running','on')
-              %}green{% else %}red{% endif %}
+              %}green{% elif is_state('binary_sensor.mosquitto_broker_running','off')
+              %}red{% else %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: custom:mushroom-template-card
@@ -1991,8 +2061,10 @@ views:
               states('sensor.pi4_network_probe_mqtt_publish_failures') }}
             icon: mdi:message-fast
             icon_color: >-
-              {% if states('sensor.pi4_network_probe_mqtt_publish_failures') |
-              int(0) == 0 %}green{% else %}red{% endif %}
+              {% set failures =
+              states('sensor.pi4_network_probe_mqtt_publish_failures') %} {% if
+              not is_number(failures) %}grey{% elif failures | int == 0
+              %}green{% else %}red{% endif %}
             layout: horizontal
             fill_container: true
           - type: entities
@@ -2085,9 +2157,13 @@ views:
               states('sensor.ups2_runtime_friendly') }}
             icon: mdi:power-plug-battery
             icon_color: >-
-              {% if states('sensor.pi4_infrastructure_ups1_status') == 'OL' and
-              states('sensor.pi4_infrastructure_ups2_status') == 'OL' %}green{%
-              else %}red{% endif %}
+              {% set ups1 = states('sensor.pi4_infrastructure_ups1_status') %}
+              {% set ups2 = states('sensor.pi4_infrastructure_ups2_status') %}
+              {% if ups1 in ['unknown', 'unavailable', 'none', ''] or ups2 in
+              ['unknown', 'unavailable', 'none', ''] %}grey{% elif ups1 == 'OL'
+              and ups2 == 'OL' %}green{% elif ups1 in ['OB', 'LB', 'FSD',
+              'OFF'] or ups2 in ['OB', 'LB', 'FSD', 'OFF'] %}red{% else
+              %}grey{% endif %}
             layout: horizontal
             fill_container: true
           - type: entities

@@ -75,6 +75,7 @@ The Master Plan governs project direction. It does not replace the technical doc
 | How does the runtime work? | [docs/CORE.md](docs/CORE.md) |
 | How does MQTT work? | [docs/MQTT.md](docs/MQTT.md) |
 | How does Home Assistant integrate? | [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |
+| How does the dashboard consume operational truth and preserve its layout? | [docs/DASHBOARD_ARCHITECTURE.md](docs/DASHBOARD_ARCHITECTURE.md) |
 | What is the data model? | [docs/DATA_MODEL.md](docs/DATA_MODEL.md) |
 | How is the dashboard designed visually? | [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) |
 | How is Dashboard v2 organized? | [docs/DASHBOARD_V2_PLAN.md](docs/DASHBOARD_V2_PLAN.md) |
