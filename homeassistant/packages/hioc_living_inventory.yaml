@@ -114,7 +114,7 @@ template:
           {% elif degraded > 0 %}
             {{ degraded }} degraded device{{ 's' if degraded != 1 else '' }}
           {% elif watch > 0 %}
-            {{ watch }} device{{ 's' if watch != 1 else '' }} need attention
+            {{ watch }} device{{ 's' if watch != 1 else '' }} {{ 'have stale observations' if watch != 1 else 'has a stale observation' }}
           {% else %}
             Inventory healthy
           {% endif %}
@@ -137,7 +137,7 @@ template:
           {% elif degraded > 0 %}
             Review degraded device health reasons and confirm whether the device has changed IP, MAC, or parent path.
           {% elif watch > 0 %}
-            Watch stale devices and confirm whether lease, ARP, or subnet discovery still sees them.
+            No operator action required; stale observations remain visible for review.
           {% else %}
             No inventory action required.
           {% endif %}

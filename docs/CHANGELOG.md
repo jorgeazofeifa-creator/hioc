@@ -17,6 +17,10 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ## Unreleased
 
+### Fixed
+
+- Inventory presentation now describes watch-only passive clients as stale observations without implying operator attention; degraded and offline guidance is unchanged.
+
 ### Added
 
 - Living Inventory engine with local/network discovery, inventory database, topology, service dependency graph, firmware fields, MAC/IP tracking, health scoring, and last-seen timestamps.
