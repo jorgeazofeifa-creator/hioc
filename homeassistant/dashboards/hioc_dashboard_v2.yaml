@@ -12,7 +12,8 @@ views:
           - type: markdown
             title: Mission Status
             content: >-
-              {% set incident = states('sensor.hioc_incident_status') %}
+              {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+              {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
               {% set offline = states('sensor.hioc_inventory_offline_devices') | int(0) %}
               {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(0) %}
               {% set dns_rising = states('sensor.hioc_forecast_dns_trend') == 'rising' %}
@@ -21,13 +22,39 @@ views:
               {% set packet_rising = states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}
               {% set watch_count = (1 if dns_rising else 0) + (1 if pi4_memory_rising else 0) + (1 if pi4_temp_rising else 0) + (1 if packet_rising else 0) %}
               {% if incident == 'active' %}
+              {% if severity == 'critical' %}
               # Critical
+
+              {% set operator_guidance = 'Investigate now; immediate operator attention is required.' %}
+              {% elif severity == 'major' %}
+              # Major
+
+              {% set operator_guidance = 'Investigate promptly and follow the incident recommendation.' %}
+              {% elif severity == 'warning' %}
+              # Warning
+
+              {% set operator_guidance = 'Review the incident and monitor; follow the recommendation if it persists.' %}
+              {% else %}
+              # Unknown
+
+              {% set operator_guidance = 'Severity unavailable; review incident details.' %}
+              {% endif %}
 
               What is happening: {{ states('sensor.hioc_incident_active') }} is active.
 
               Why it matters: {{ states('sensor.hioc_incident_system') }} may affect dependent services.
 
-              Recommended action: Open Mission Control and follow the incident recommendation.
+              Recommended action: {{ operator_guidance }}
+
+              Click path: Diagnostics.
+              {% elif incident not in ['none', 'resolved'] %}
+              # Unknown
+
+              What is happening: incident status is unavailable.
+
+              Why it matters: HIOC cannot confirm whether an incident is active.
+
+              Recommended action: review Diagnostics for current engine state.
 
               Click path: Diagnostics.
               {% elif offline > 0 or degraded > 0 %}
@@ -72,14 +99,16 @@ views:
                   min-height: 315px;
                   border-radius: 18px;
                   border: 1px solid rgba(90, 140, 185, .28);
-                  border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %};
+                  {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                  {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                  border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %};
                   background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98));
                   box-shadow: 0 18px 48px rgba(0,0,0,.36);
                   color: #dcecff;
                 }
                 ha-markdown { line-height: 1.36; }
                 h1 {
-                  color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %};
+                  color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif states('sensor.hioc_inventory_degraded_devices') | int(0) > 0 or states('sensor.hioc_inventory_offline_devices') | int(0) > 0 or states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_pi4_temperature_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %};
                   font-size: 30px;
                   margin: 0 0 12px 0;
                 }
@@ -87,12 +116,15 @@ views:
           - type: markdown
             title: Current Incident
             content: >-
-              {% if is_state('sensor.hioc_incident_status','active') %}
+              {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+              {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+              {% set severity_label = severity | title if severity in ['warning', 'major', 'critical'] else 'Unknown' %}
+              {% if incident == 'active' %}
               # {{ states('sensor.hioc_incident_active') }}
 
               Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}
 
-              Severity: {{ states('sensor.hioc_incident_severity') | title }}
+              Severity: {{ severity_label }}
 
               Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}
 
@@ -103,7 +135,7 @@ views:
               Recommended action: {{ states('sensor.hioc_incident_recommendation') }}
 
               Click path: Diagnostics.
-              {% else %}
+              {% elif incident in ['none', 'resolved'] %}
               # No Active Incident
 
               What is happening: HIOC is not reporting an active incident.
@@ -113,6 +145,14 @@ views:
               Recommended action: no action required.
 
               Click path: Diagnostics.
+              {% else %}
+              # Unknown
+
+              What is happening: incident status is unavailable.
+
+              Why it matters: HIOC cannot confirm whether an incident is active.
+
+              Recommended action: review Diagnostics for current engine state.
               {% endif %}
             tap_action:
               action: navigate
@@ -125,18 +165,21 @@ views:
                   min-height: 315px;
                   border-radius: 18px;
                   border: 1px solid rgba(90, 140, 185, .28);
-                  border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %};
+                  {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                  {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                  border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% else %}#22c55e{% endif %};
                   background: rgba(12, 27, 43, .96);
                   box-shadow: 0 12px 32px rgba(0,0,0,.28);
                   color: #dcecff;
                 }
                 ha-markdown { line-height: 1.34; }
-                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; font-size: 24px; }
+                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% else %}#86efac{% endif %}; font-size: 24px; }
 
           - type: markdown
             title: Affected Systems
             content: >-
-              {% if is_state('sensor.hioc_incident_status','active') %}
+              {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+              {% if incident == 'active' %}
               {% set affected = state_attr('sensor.hioc_incident_active','affected') %}
               What is affected:
 
@@ -151,7 +194,7 @@ views:
               Recommended action: open Diagnostics to inspect dependency path.
 
               Click path: Diagnostics.
-              {% else %}
+              {% elif incident in ['none', 'resolved'] %}
               # No Systems Currently Affected
 
               What is happening: no incident impact is reported.
@@ -159,6 +202,12 @@ views:
               Why it matters: no dependent services require response right now.
 
               Recommended action: no action required.
+              {% else %}
+              # Unknown
+
+              Incident status is unavailable; affected systems cannot be confirmed.
+
+              Recommended action: review Diagnostics for current engine state.
               {% endif %}
             tap_action:
               action: navigate
@@ -171,7 +220,9 @@ views:
                   min-height: 280px;
                   border-radius: 16px;
                   border: 1px solid rgba(90, 140, 185, .24);
-                  border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#38bdf8{% endif %};
+                  {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                  {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                  border-left: 5px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% else %}#38bdf8{% endif %};
                   background: rgba(12, 27, 43, .96);
                   box-shadow: 0 12px 32px rgba(0,0,0,.28);
                   color: #dcecff;
@@ -191,18 +242,42 @@ views:
                   - type: markdown
                     title: Incident
                     content: >-
-                      {% if is_state('sensor.hioc_incident_status','active') %}
+                      {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                      {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                      {% if incident == 'active' %}
+                      {% if severity == 'critical' %}
                       # Critical
+
+                      Investigate now; immediate operator attention is required.
+                      {% elif severity == 'major' %}
+                      # Major
+
+                      Investigate promptly and follow the incident recommendation.
+                      {% elif severity == 'warning' %}
+                      # Warning
+
+                      Review the incident and monitor; follow the recommendation if it persists.
+                      {% else %}
+                      # Unknown
+
+                      Severity unavailable; review incident details.
+                      {% endif %}
 
                       Meaning: active incident requires investigation.
 
                       Action: open Mission Control.
-                      {% else %}
+                      {% elif incident in ['none', 'resolved'] %}
                       # Healthy
 
                       Meaning: no active incident.
 
                       Action: no action required.
+                      {% else %}
+                      # Unknown
+
+                      Meaning: incident status is unavailable.
+
+                      Action: review Mission Control.
                       {% endif %}
 
                       Click: Diagnostics.
@@ -211,8 +286,10 @@ views:
                       navigation_path: /lovelace/hioc-v2-diagnostics
                     card_mod:
                       style: |
-                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
-                        h1 { font-size: 21px; color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; }
+                        {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                        {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% else %}#86efac{% endif %}; }
                   - type: markdown
                     title: Inventory
                     content: >-
@@ -385,7 +462,10 @@ views:
                   type: markdown
                   title: Active Incident
                   content: >-
-                    Severity: {{ states('sensor.hioc_incident_severity') | title }}
+                    {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                    {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                    {% set severity_label = severity | title if incident == 'active' and severity in ['warning', 'major', 'critical'] else 'Unknown' %}
+                    Severity: {{ severity_label }}
 
                     Meaning: {{ states('sensor.hioc_incident_active') }} may affect {{ states('sensor.hioc_incident_system') }}.
 
@@ -397,7 +477,9 @@ views:
                     navigation_path: /lovelace/hioc-v2-diagnostics
                   card_mod:
                     style: |
-                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid #ef4444; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                      {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                      {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                      ha-card { border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
               - type: conditional
                 conditions:
                   - entity: sensor.hioc_forecast_dns_trend
@@ -609,12 +691,36 @@ views:
           - type: markdown
             title: Live Operational State
             content: >-
-              {% if is_state('sensor.hioc_incident_status','active') %}
+              {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+              {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+              {% if incident == 'active' %}
+              {% if severity == 'critical' %}
               # Critical
+
+              {% set operator_guidance = 'Investigate now; immediate operator attention is required.' %}
+              {% elif severity == 'major' %}
+              # Major
+
+              {% set operator_guidance = 'Investigate promptly and follow the incident recommendation.' %}
+              {% elif severity == 'warning' %}
+              # Warning
+
+              {% set operator_guidance = 'Review the incident and monitor; follow the recommendation if it persists.' %}
+              {% else %}
+              # Unknown
+
+              {% set operator_guidance = 'Severity unavailable; review incident details.' %}
+              {% endif %}
 
               What is happening: {{ states('sensor.hioc_incident_system') }} incident is active.
 
-              Recommended action: open Mission Control.
+              Recommended action: {{ operator_guidance }}
+              {% elif incident not in ['none', 'resolved'] %}
+              # Unknown
+
+              What is happening: incident status is unavailable.
+
+              Recommended action: review Mission Control for current engine state.
               {% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}
               # Watch
 
@@ -632,24 +738,50 @@ views:
               columns: 12
             card_mod:
               style: |
-                ha-card { min-height: 150px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
-                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                ha-card { min-height: 150px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(10,24,39,.98), rgba(4,10,18,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Incident
             content: >-
-              {% if is_state('sensor.hioc_incident_status','active') %}
+              {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+              {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+              {% if incident == 'active' %}
+              {% if severity == 'critical' %}
               # Critical
+
+              Investigate now; immediate operator attention is required.
+              {% elif severity == 'major' %}
+              # Major
+
+              Investigate promptly and follow the incident recommendation.
+              {% elif severity == 'warning' %}
+              # Warning
+
+              Review the incident and monitor; follow the recommendation if it persists.
+              {% else %}
+              # Unknown
+
+              Severity unavailable; review incident details.
+              {% endif %}
 
               {{ states('sensor.hioc_incident_active') }}
 
               Next step: open Mission Control.
-              {% else %}
+              {% elif incident in ['none', 'resolved'] %}
               # Healthy
 
               No active incident.
 
               Next step: click for Mission Control.
+              {% else %}
+              # Unknown
+
+              Incident status is unavailable.
+
+              Next step: open Mission Control.
               {% endif %}
             tap_action:
               action: navigate
@@ -658,8 +790,10 @@ views:
               columns: 3
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% else %}#86efac{% endif %}; font-size: 22px; }
+                {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% else %}#86efac{% endif %}; font-size: 22px; }
 
           - type: markdown
             title: Inventory
@@ -919,12 +1053,15 @@ views:
           - type: markdown
             title: Incident Mission Control
             content: >-
-              {% if is_state('sensor.hioc_incident_status','active') %}
+              {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+              {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+              {% set severity_label = severity | title if severity in ['warning', 'major', 'critical'] else 'Unknown' %}
+              {% if incident == 'active' %}
               # {{ states('sensor.hioc_incident_active') }}
 
               Phase: {{ state_attr('sensor.hioc_incident_active','phase') | default('active') | title }}
 
-              Severity: {{ states('sensor.hioc_incident_severity') | title }}
+              Severity: {{ severity_label }}
 
               Root cause: {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}
 
@@ -935,7 +1072,7 @@ views:
               Updated: {{ states('sensor.hioc_incident_updated') }}
 
               Duration: {{ state_attr('sensor.hioc_incident_active','duration_seconds') | default('Not available') }}
-              {% else %}
+              {% elif incident in ['none', 'resolved'] %}
               # No Active Incident
 
               Diagnostics are ready.
@@ -950,23 +1087,55 @@ views:
               {% if states('sensor.hioc_forecast_dns_trend') != 'rising' and states('sensor.hioc_forecast_pi4_memory_trend') != 'rising' %}
               - No current watch items
               {% endif %}
+              {% else %}
+              # Unknown
+
+              Incident status is unavailable. Diagnostics cannot confirm an active or resolved state.
               {% endif %}
             grid_options:
               columns: 7
             card_mod:
               style: |
-                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
-                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Recommended Action
             content: >-
-              {% if is_state('sensor.hioc_incident_status','active') %}
+              {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+              {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+              {% if incident == 'active' %}
+              {% if severity == 'critical' %}
               # Investigate Now
+
+              {% set operator_guidance = 'Investigate now; immediate operator attention is required.' %}
+              {% elif severity == 'major' %}
+              # Investigate Promptly
+
+              {% set operator_guidance = 'Investigate promptly and follow the incident recommendation.' %}
+              {% elif severity == 'warning' %}
+              # Review Incident
+
+              {% set operator_guidance = 'Review the incident and monitor; follow the recommendation if it persists.' %}
+              {% else %}
+              # Severity Unknown
+
+              {% set operator_guidance = 'Severity unavailable; review incident details.' %}
+              {% endif %}
 
               Action: {{ states('sensor.hioc_incident_recommendation') }}
 
+              Operator guidance: {{ operator_guidance }}
+
               Why: HIOC correlated an active incident with probable root cause {{ state_attr('sensor.hioc_incident_active','root_cause') | default('Not available') }}.
+              {% elif incident not in ['none', 'resolved'] %}
+              # Status Unknown
+
+              Action: review current incident engine state.
+
+              Why: incident status is unavailable.
               {% elif states('sensor.hioc_forecast_dns_trend') == 'rising' %}
               # Review DNS If Trend Persists
 
@@ -990,19 +1159,25 @@ views:
               columns: 5
             card_mod:
               style: |
-                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if is_state('sensor.hioc_incident_status','active') %}#ef4444{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if is_state('sensor.hioc_incident_status','active') %}#fecaca{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
+                {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                ha-card { min-height: 310px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: {% if incident == 'active' and severity == 'critical' %}#fecaca{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#fcd34d{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#cbd5e1{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' %}#fcd34d{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Evidence
             content: >-
+              {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+              {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
               {% set evidence = state_attr('sensor.hioc_incident_active','evidence') %}
-              {% if is_state('sensor.hioc_incident_status','active') and evidence is iterable and evidence is not string %}
+              {% if incident == 'active' and evidence is iterable and evidence is not string %}
               {% for item in evidence %}
               - {{ item }}
               {% endfor %}
-              {% elif is_state('sensor.hioc_incident_status','active') %}
+              {% elif incident == 'active' %}
               - {{ states('sensor.hioc_incident_reason') }}
+              {% elif incident not in ['none', 'resolved'] %}
+              - Incident status is unavailable; evidence cannot be scoped safely.
               {% else %}
               - Internet latency trend: {{ states('sensor.hioc_forecast_internet_latency_trend') | title }}
               - Packet loss trend: {{ states('sensor.hioc_forecast_packet_loss_trend') | title }}
@@ -1014,7 +1189,9 @@ views:
               columns: 6
             card_mod:
               style: |
-                ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if is_state('sensor.hioc_incident_status','active') %}#f59e0b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' or states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                {% set incident = states('sensor.hioc_incident_status') | lower | trim %}
+                {% set severity = states('sensor.hioc_incident_severity') | lower | trim %}
+                ha-card { min-height: 250px; border-radius: 16px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% if incident == 'active' and severity == 'critical' %}#ef4444{% elif incident == 'active' and severity == 'major' %}var(--deep-orange-color){% elif incident == 'active' and severity == 'warning' %}#f59e0b{% elif incident == 'active' or incident not in ['none', 'resolved'] %}#64748b{% elif states('sensor.hioc_forecast_dns_trend') == 'rising' or states('sensor.hioc_forecast_pi4_memory_trend') == 'rising' or states('sensor.hioc_forecast_packet_loss_trend') == 'rising' or states('sensor.hioc_forecast_internet_latency_trend') == 'rising' or states('sensor.hioc_forecast_mqtt_trend') == 'rising' %}#f59e0b{% else %}#22c55e{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
 
           - type: markdown
             title: Dependency Path
