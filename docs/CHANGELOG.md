@@ -37,6 +37,10 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 - HIOC Master Plan as the authoritative project charter.
 - Passive known infrastructure definitions from `/home/jazofv1/hioc/config/inventory/known_infrastructure.json` to enrich Living Inventory without active discovery.
 
+### Fixed
+
+- Release upgrades now invoke the Pi4 installer through Bash so clean source-controlled copies do not require the executable bit before installation.
+
 ## v1.0.0-core
 
 Initial real HIOC core foundation.
