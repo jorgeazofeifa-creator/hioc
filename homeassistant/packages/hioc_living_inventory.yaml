@@ -10,7 +10,7 @@ mqtt:
     - name: HIOC Inventory Device Count
       unique_id: hioc_inventory_device_count
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.device_count | default('unknown', true) }}"
+      value_template: "{{ value_json.device_count if value_json.device_count is defined and value_json.device_count is number and value_json.device_count is not boolean else 'unknown' }}"
       unit_of_measurement: devices
       json_attributes_topic: home/infrastructure/hioc/inventory/summary
       icon: mdi:devices
@@ -18,56 +18,56 @@ mqtt:
     - name: HIOC Inventory Healthy Devices
       unique_id: hioc_inventory_healthy_devices
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.healthy_count | default('unknown', true) }}"
+      value_template: "{{ value_json.healthy_count if value_json.healthy_count is defined and value_json.healthy_count is number and value_json.healthy_count is not boolean else 'unknown' }}"
       unit_of_measurement: devices
       icon: mdi:check-network
 
     - name: HIOC Inventory Watch Devices
       unique_id: hioc_inventory_watch_devices
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.watch_count | default('unknown', true) }}"
+      value_template: "{{ value_json.watch_count if value_json.watch_count is defined and value_json.watch_count is number and value_json.watch_count is not boolean else 'unknown' }}"
       unit_of_measurement: devices
       icon: mdi:eye
 
     - name: HIOC Inventory Degraded Devices
       unique_id: hioc_inventory_degraded_devices
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.degraded_count | default('unknown', true) }}"
+      value_template: "{{ value_json.degraded_count if value_json.degraded_count is defined and value_json.degraded_count is number and value_json.degraded_count is not boolean else 'unknown' }}"
       unit_of_measurement: devices
       icon: mdi:alert-network
 
     - name: HIOC Inventory Offline Devices
       unique_id: hioc_inventory_offline_devices
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.offline_count | default('unknown', true) }}"
+      value_template: "{{ value_json.offline_count if value_json.offline_count is defined and value_json.offline_count is number and value_json.offline_count is not boolean else 'unknown' }}"
       unit_of_measurement: devices
       icon: mdi:lan-disconnect
 
     - name: HIOC Inventory Lowest Health
       unique_id: hioc_inventory_lowest_health
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.lowest_health_score | default('unknown', true) }}"
+      value_template: "{{ value_json.lowest_health_score if value_json.lowest_health_score is defined and value_json.lowest_health_score is number and value_json.lowest_health_score is not boolean else 'unknown' }}"
       unit_of_measurement: "%"
       icon: mdi:heart-pulse
 
     - name: HIOC Inventory Service Count
       unique_id: hioc_inventory_service_count
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.service_count | default('unknown', true) }}"
+      value_template: "{{ value_json.service_count if value_json.service_count is defined and value_json.service_count is number and value_json.service_count is not boolean else 'unknown' }}"
       unit_of_measurement: services
       icon: mdi:server-network
 
     - name: HIOC Inventory Topology Edges
       unique_id: hioc_inventory_topology_edges
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.topology_edges | default('unknown', true) }}"
+      value_template: "{{ value_json.topology_edges if value_json.topology_edges is defined and value_json.topology_edges is number and value_json.topology_edges is not boolean else 'unknown' }}"
       unit_of_measurement: links
       icon: mdi:graph
 
     - name: HIOC Inventory Dependency Edges
       unique_id: hioc_inventory_dependency_edges
       state_topic: home/infrastructure/hioc/inventory/summary
-      value_template: "{{ value_json.dependency_edges | default('unknown', true) }}"
+      value_template: "{{ value_json.dependency_edges if value_json.dependency_edges is defined and value_json.dependency_edges is number and value_json.dependency_edges is not boolean else 'unknown' }}"
       unit_of_measurement: dependencies
       icon: mdi:transit-connection-variant
 
