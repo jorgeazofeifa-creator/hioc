@@ -51,6 +51,7 @@ EXPECTED_TOP_LEVEL_CARDS = {
     "Inventory": [
         "Inventory Summary",
         "Counts",
+        "Watch Devices",
         "Inventory Explorer - Devices",
         "Inventory Explorer - Services",
     ],
@@ -58,9 +59,9 @@ EXPECTED_TOP_LEVEL_CARDS = {
     "Servers": ["Pi4 Health", "Pi4 Evidence", "HIOC Engines"],
 }
 
-# Canonical structural snapshot of the operator-supplied layout after the one
-# operational-truth reconciliation: the Top Risks fallback title is neutral.
-EXPECTED_LAYOUT_SHA256 = "e88ccdff19ac76b7d57759ec2aa50069dd67daf1f0e38bdc150b9d3ee92c9701"
+# Canonical structural snapshot of the operator-supplied layout with the
+# approved Watch Devices card inserted in the Inventory view.
+EXPECTED_LAYOUT_SHA256 = "8ec117fb6928c9bd0348d74103f6633771d1d4aa41f675335dd38b9fdcea9622"
 
 
 def _card_outline(card):
@@ -163,7 +164,7 @@ class DashboardLayoutTests(unittest.TestCase):
                 "265px", "265px", "150px",
                 *("180px" for _ in range(8)),
                 "310px", "310px", "250px", "250px", "210px", "310px",
-                "260px", "260px", "230px", "300px", "500px", "500px",
+                "260px", "260px", "230px", "300px", "300px", "500px", "500px",
                 "260px", "260px", "260px", "210px", "330px", "330px", "330px",
             ],
         )

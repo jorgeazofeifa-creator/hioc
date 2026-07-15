@@ -83,6 +83,45 @@ views:
       - type: grid
         cards:
           - type: markdown
+            title: Watch Devices
+            content: >-
+              {% set devices = state_attr('sensor.hioc_inventory_devices', 'devices') %}
+              {% if devices is iterable and devices is not string %}
+              {% set watch_devices = devices | selectattr('health_status', 'equalto', 'watch') | sort(attribute='display_name') | list %}
+              {% set aged_watch_devices = watch_devices | selectattr('observation_age_seconds', 'number') | sort(attribute='observation_age_seconds', reverse=true) | list %}
+              {% set unknown_age_watch_devices = watch_devices | rejectattr('observation_age_seconds', 'number') | list %}
+              {% if watch_devices | count == 0 %}
+              No watch devices
+              {% else %}
+              {% for device in aged_watch_devices + unknown_age_watch_devices %}
+              **{% if device.get('display_name') is string and device.get('display_name') %}{{ device.get('display_name') }}{% elif device.get('name') is string and device.get('name') %}{{ device.get('name') }}{% else %}Unknown device{% endif %}**
+              {% if device.get('hostname') is string and device.get('hostname') %}Hostname: {{ device.get('hostname') }}{% endif %}
+
+              IP: {{ device.get('ip') if device.get('ip') is string and device.get('ip') else 'Unknown' }}
+
+              MAC: {{ device.get('mac') if device.get('mac') is string and device.get('mac') else 'Unknown' }}
+
+              Observation: {{ device.get('observation_status') if device.get('observation_status') is string and device.get('observation_status') else 'Unknown' }}
+              {% set age = device.get('observation_age_seconds') %}
+              {% if age is number and age is not boolean %}
+              Age: {% if age >= 86400 %}{{ age // 86400 }}d {{ (age % 86400) // 3600 }}h{% elif age >= 3600 %}{{ age // 3600 }}h {{ (age % 3600) // 60 }}m{% elif age >= 60 %}{{ age // 60 }}m{% else %}<1m{% endif %}
+              {% else %}
+              Age: unknown
+              {% endif %}
+
+              {% set sources = device.get('sources') %}
+              Sources: {% if sources is iterable and sources is not string and sources is not mapping and sources | count > 0 %}{{ sources | join(', ') }}{% elif device.get('source') is string and device.get('source') %}{{ device.get('source') }}{% else %}Unknown{% endif %}
+
+              {% set reasons = device.get('health_reasons') %}
+              Health reason: {% if reasons is iterable and reasons is not string and reasons is not mapping and reasons | count > 0 %}{{ reasons | join('; ') }}{% elif reasons is string and reasons %}{{ reasons }}{% else %}Unknown{% endif %}
+
+              {% endfor %}
+              {% endif %}
+              {% else %}
+              Inventory device attributes have not arrived yet.
+              {% endif %}
+
+          - type: markdown
             content: >-
               ## Device Health
 
