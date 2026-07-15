@@ -39,10 +39,22 @@ HIOC_INVENTORY_STALE_AFTER_SEC="900"
 HIOC_INVENTORY_OFFLINE_AFTER_SEC="3600"
 HIOC_INVENTORY_SNMP_COMMUNITY=""
 HIOC_INVENTORY_INTEGRATION_DIR=""
+HIOC_INVENTORY_DHCP_LEASE_FILES="/etc/pihole/dhcp.leases,/var/lib/misc/dnsmasq.leases,/var/lib/dhcp/dhcpd.leases"
 HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE="/home/jazofv1/hioc/config/inventory/known_infrastructure.json"
 ```
 
 Leave `HIOC_INVENTORY_ACTIVE_DISCOVERY` set to `off` for the currently approved passive discovery mode from host facts, default route, neighbor table, DHCP leases, integration hint files, and optional known infrastructure definitions.
+
+`HIOC_INVENTORY_DHCP_LEASE_FILES` is an ordered, comma-separated list of local lease files. HIOC reads these files passively and reports whether records were found or the sources were empty, missing, unreadable, malformed, affected by an I/O error, or only partially usable. A lease is assignment metadata and does not prove reachability or refresh a device's positive-observation timestamp.
+
+If Pi-hole's lease file exists but the HIOC service account cannot read it, grant only that account read access and verify it explicitly. For example, run the following manually with the actual service account substituted for `hioc-user`:
+
+```bash
+sudo setfacl -m u:hioc-user:r-- /etc/pihole/dhcp.leases
+sudo -u hioc-user test -r /etc/pihole/dhcp.leases
+```
+
+HIOC does not change lease-file ownership or permissions during installation. Package upgrades or file replacement can remove a file ACL, so re-run validation after Pi-hole upgrades. If ACL persistence is required, manage it through the host's approved system policy rather than broadening the file's permissions.
 
 Active-discovery configuration may exist, but operational use is governed by [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md) and should not be enabled until the planned Phase 7B Safe Active Discovery work is explicitly approved.
 

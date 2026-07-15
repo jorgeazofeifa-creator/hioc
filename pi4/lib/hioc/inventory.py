@@ -6,6 +6,7 @@ import os
 import re
 import socket
 import time
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -71,6 +72,18 @@ OPERATOR_ROLES = {
 LOG = logging.getLogger("hioc-inventory-engine")
 NEIGHBOR_STATES = {"DELAY", "FAILED", "INCOMPLETE", "NOARP", "NONE", "PERMANENT", "PROBE", "REACHABLE", "STALE"}
 DURABLE_NEIGHBOR_STATES = {"DELAY", "PERMANENT", "PROBE", "REACHABLE", "STALE"}
+DHCP_ASSIGNMENT_FIELDS = {"dhcp_client_id", "dhcp_lease_source", "lease_expires_epoch"}
+DHCP_IDENTITY_FIELDS = {"hostname", "ip", "mac"}
+
+
+@dataclass
+class DhcpLeaseSourceResult:
+    path: Path
+    status: str
+    devices: dict
+    valid_lines: int = 0
+    malformed_lines: int = 0
+    error: str = ""
 
 
 def normalize_mac(value: str) -> str:
@@ -174,39 +187,105 @@ def dhcp_lease_paths(config: dict | None = None) -> list[Path]:
     ]
 
 
-def dhcp_leases(paths: list[Path] | None = None) -> dict:
-    paths = paths or dhcp_lease_paths()
+def _parse_dhcp_lease_line(raw: str, path: Path, line_number: int) -> tuple[dict | None, str]:
+    parts = raw.split()
+    if len(parts) < 3 or len(parts) > 5:
+        return None, "expected 3 to 5 fields"
+    try:
+        expires = int(parts[0])
+    except ValueError:
+        return None, "invalid expiry"
+    if expires < 0:
+        return None, "negative expiry"
+    mac = normalize_mac(parts[1])
+    if not mac:
+        return None, "invalid MAC"
+    try:
+        ipaddress.ip_address(parts[2])
+    except ValueError:
+        return None, "invalid IP"
+    hostname = parts[3] if len(parts) >= 4 and parts[3] != "*" else ""
+    client_id = parts[4] if len(parts) >= 5 and parts[4] != "*" else ""
+    return {
+        "ip": parts[2],
+        "mac": mac,
+        "hostname": hostname,
+        "lease_expires_epoch": expires,
+        "dhcp_client_id": client_id,
+        "dhcp_lease_source": str(path),
+        "source": "dhcp_leases",
+        "last_seen_source": str(path),
+        "_positive_observation": False,
+    }, ""
+
+
+def _read_dhcp_lease_source(path: Path) -> DhcpLeaseSourceResult:
+    if not path.exists():
+        return DhcpLeaseSourceResult(path, "missing", {})
+    try:
+        lines = path.read_text(errors="ignore").splitlines()
+    except PermissionError as exc:
+        return DhcpLeaseSourceResult(path, "unreadable", {}, error=str(exc))
+    except OSError as exc:
+        return DhcpLeaseSourceResult(path, "io_error", {}, error=str(exc))
     devices = {}
-    for path in paths:
-        if not path.exists():
+    malformed = 0
+    nonempty = 0
+    for line_number, raw in enumerate(lines, 1):
+        if not raw.strip():
             continue
-        try:
-            lines = path.read_text(errors="ignore").splitlines()
-        except OSError:
+        nonempty += 1
+        record, reason = _parse_dhcp_lease_line(raw, path, line_number)
+        if record is None:
+            malformed += 1
+            LOG.warning("DHCP lease ignored path=%s line=%s reason=%s", path, line_number, reason)
             continue
-        for raw in lines:
-            parts = raw.split()
-            if len(parts) < 3:
-                continue
-            if normalize_mac(parts[1]):
-                hostname = parts[3] if len(parts) >= 4 and parts[3] != "*" else ""
-                devices[parts[2]] = {
-                    "ip": parts[2],
-                    "mac": normalize_mac(parts[1]),
-                    "hostname": hostname,
-                    "source": "dhcp_leases",
-                    "last_seen_source": str(path),
-                }
+        devices[record["mac"]] = record
+    valid = len(devices)
+    if valid and malformed:
+        status = "partial"
+    elif valid:
+        status = "found"
+    elif malformed or nonempty:
+        status = "malformed"
+    else:
+        status = "empty"
+    return DhcpLeaseSourceResult(path, status, devices, valid, malformed)
+
+
+def dhcp_lease_source_results(paths: list[Path] | None = None) -> list[DhcpLeaseSourceResult]:
+    return [_read_dhcp_lease_source(path) for path in (paths or dhcp_lease_paths())]
+
+
+def _aggregate_dhcp_lease_results(results: list[DhcpLeaseSourceResult]) -> tuple[dict, str]:
+    devices = {}
+    for result in results:
+        devices.update(result.devices)
+    statuses = {result.status for result in results}
+    if devices:
+        degraded = {"partial", "malformed", "unreadable", "io_error"}
+        status = "dhcp_leases_partial" if statuses & degraded else "dhcp_leases_found"
+    elif "io_error" in statuses:
+        status = "dhcp_leases_io_error"
+    elif "unreadable" in statuses:
+        status = "dhcp_leases_unreadable"
+    elif "malformed" in statuses or "partial" in statuses:
+        status = "dhcp_leases_malformed"
+    elif "empty" in statuses:
+        status = "dhcp_leases_empty"
+    else:
+        status = "dhcp_leases_missing"
+    return devices, status
+
+
+def dhcp_leases(paths: list[Path] | None = None) -> dict:
+    devices, _ = _aggregate_dhcp_lease_results(dhcp_lease_source_results(paths))
     return devices
 
 
 def dhcp_lease_discovery(config: dict) -> tuple[dict, str]:
     paths = dhcp_lease_paths(config)
-    existing = [path for path in paths if path.exists()]
-    if not existing:
-        return {}, "dhcp_leases_unavailable"
-    devices = dhcp_leases(existing)
-    return devices, "dhcp_leases" if devices else "dhcp_leases_empty"
+    return _aggregate_dhcp_lease_results(dhcp_lease_source_results(paths))
 
 
 def integration_inventory(config: dict, state_dir: Path) -> dict:
@@ -660,8 +739,13 @@ def _merge_record_values(records: list[dict]) -> dict:
             sources.add(record["source"])
         sources.update(record.get("sources", []))
     for record in observed_records:
+        dhcp_record = _record_sources(record) == {"dhcp_leases"}
         for key, value in record.items():
             if key.startswith("_") or value in ("", None, []):
+                continue
+            if dhcp_record and key not in DHCP_ASSIGNMENT_FIELDS | DHCP_IDENTITY_FIELDS:
+                continue
+            if dhcp_record and key not in DHCP_ASSIGNMENT_FIELDS and merged.get(key) not in ("", None, []):
                 continue
             merged[key] = value
     for record in known_records:
@@ -679,6 +763,10 @@ def _merge_record_values(records: list[dict]) -> dict:
     if sources:
         merged["sources"] = sorted(sources)
     merged["_observed"] = bool(observed_records)
+    merged["_positive_observation"] = any(
+        record.get("_positive_observation", _record_sources(record) != {"dhcp_leases"})
+        for record in observed_records
+    )
     return merged
 
 
@@ -720,6 +808,9 @@ def _weak_identity_metadata(record: dict) -> dict:
     if sources:
         metadata["sources"] = sorted(sources)
     metadata["_observed"] = record.get("_observed", True)
+    metadata["_positive_observation"] = record.get(
+        "_positive_observation", _record_sources(record) != {"dhcp_leases"}
+    )
     return metadata
 
 
@@ -910,6 +1001,7 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
     for key, grouped_records in by_key.items():
         record = _merge_record_values(grouped_records)
         observed = record.pop("_observed", True)
+        positive_observation = record.pop("_positive_observation", observed)
         record["mac"] = normalize_mac(record.get("mac", ""))
         record["id"] = stable_device_id(record)
         prev = prev_by_id.get(record["id"], {})
@@ -918,8 +1010,14 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
             _merge_retained_weak_identity(record, retained_weak)
         if observed:
             record["first_seen"] = _earliest_first_seen(now, prev, retained_weak)
-            record["last_seen"] = now
-            record["last_seen_epoch"] = now_epoch
+            if positive_observation:
+                record["last_seen"] = now
+                record["last_seen_epoch"] = now_epoch
+            else:
+                if prev.get("last_seen"):
+                    record["last_seen"] = prev["last_seen"]
+                if prev.get("last_seen_epoch"):
+                    record["last_seen_epoch"] = prev["last_seen_epoch"]
         else:
             if prev.get("first_seen"):
                 record["first_seen"] = prev["first_seen"]
@@ -1134,8 +1232,14 @@ def discovery_source_status(config: dict, local_addresses: list[dict], gateway: 
     integration_root = Path(config.get("HIOC_INVENTORY_INTEGRATION_DIR", "")) if config.get("HIOC_INVENTORY_INTEGRATION_DIR", "") else state_root / "inventory" / "integrations"
     if integration_root.exists():
         sources.append("integration_inventory")
-    limited = "dhcp_leases_unavailable" in sources and not any(source == "integration_inventory" for source in sources)
-    reason = "Pi-hole/dnsmasq DHCP lease files were not found; inventory is limited to local host, gateway, ARP/neigh, integrations, and prior retained devices." if limited else ""
+    lease_unavailable = any(source in {
+        "dhcp_leases_io_error",
+        "dhcp_leases_malformed",
+        "dhcp_leases_missing",
+        "dhcp_leases_unreadable",
+    } for source in sources)
+    limited = lease_unavailable and not any(source == "integration_inventory" for source in sources)
+    reason = "DHCP lease input is unavailable, unreadable, malformed, or failed; inventory is limited to local host, gateway, ARP/neigh, integrations, and prior retained devices." if limited else ""
     return sources, limited, reason
 
 

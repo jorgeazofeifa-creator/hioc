@@ -44,6 +44,30 @@ check "History engine cron installed" bash -c "crontab -l 2>/dev/null | grep -Fq
 check "Inventory engine cron installed" bash -c "crontab -l 2>/dev/null | grep -Fq '$INSTALL_DIR/pi4/bin/hioc-inventory-engine.py'"
 check "Platform status cron installed" bash -c "crontab -l 2>/dev/null | grep -Fq '$INSTALL_DIR/pi4/bin/hioc-platform-status.py'"
 
+dhcp_lease_files="${HIOC_INVENTORY_DHCP_LEASE_FILES:-/etc/pihole/dhcp.leases,/var/lib/misc/dnsmasq.leases,/var/lib/dhcp/dhcpd.leases}"
+dhcp_source_exists=0
+dhcp_source_readable=0
+IFS=',' read -r -a dhcp_paths <<< "$dhcp_lease_files"
+for dhcp_path in "${dhcp_paths[@]}"; do
+  dhcp_path="${dhcp_path#"${dhcp_path%%[![:space:]]*}"}"
+  dhcp_path="${dhcp_path%"${dhcp_path##*[![:space:]]}"}"
+  [ -n "$dhcp_path" ] || continue
+  if [ -e "$dhcp_path" ]; then
+    dhcp_source_exists=1
+    if [ -r "$dhcp_path" ]; then
+      dhcp_source_readable=1
+    fi
+  fi
+done
+if [ "$dhcp_source_readable" -eq 1 ]; then
+  echo "OK   At least one configured DHCP lease file is readable"
+elif [ "$dhcp_source_exists" -eq 1 ]; then
+  echo "FAIL Configured DHCP lease files exist but none are readable"
+  failures=$((failures + 1))
+else
+  echo "INFO No configured DHCP lease file exists on this host"
+fi
+
 if [ -f "$INSTALL_DIR/state/incidents/active.json" ]; then
   check "Active incident JSON valid" jq empty "$INSTALL_DIR/state/incidents/active.json"
 fi
