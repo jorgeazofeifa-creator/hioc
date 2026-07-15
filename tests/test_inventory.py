@@ -1,3 +1,4 @@
+import json
 import sys
 import tempfile
 import unittest
@@ -811,6 +812,147 @@ class InventoryModelTests(unittest.TestCase):
         switch_id = devices["Switch"]["id"]
         self.assertIn({"parent_id": gateway_id, "child_id": switch_id, "relationship": "network_parent"}, inventory["topology"]["edges"])
         self.assertFalse(any(any(key.startswith("_") for key in device) for device in inventory["devices"]))
+
+    def test_local_services_keep_pre_enrichment_collector_ownership(self):
+        collector_mac = "b8:27:eb:70:ab:df"
+        client_mac = "bc:dd:c2:0d:f7:77"
+        collector_id = stable_device_id({"mac": collector_mac})
+        client_id = stable_device_id({"mac": client_mac})
+        local_addresses = [
+            {"interface": "eth0", "cidr": "192.168.100.252/24", "ip": "192.168.100.252", "mac": collector_mac},
+            {"interface": "docker0", "cidr": "172.17.0.1/16", "ip": "172.17.0.1", "mac": "02:42:63:a7:ca:d9"},
+        ]
+        neighbor = {"192.168.100.105": {"ip": "192.168.100.105", "mac": client_mac, "source": "arp_table", "last_seen_source": "arp_table"}}
+        systemd = {
+            "pihole-FTL": {"status": "active"},
+            "cron": {"status": "active"},
+            "ssh": {"status": "active"},
+            "nut-monitor": {"status": "active"},
+            "nut-server": {"status": "active"},
+        }
+        sockets = [
+            {"port": 53, "status": "listening"},
+            {"port": 67, "status": "listening"},
+        ]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            known_path = Path(tmp) / "known_infrastructure.json"
+            known_path.write_text(json.dumps({"devices": [{
+                "name": "Pi3 - NUT and Pi-hole",
+                "hostname": "nutandpihole",
+                "ip": "192.168.100.252",
+                "mac": collector_mac,
+                "role": "Core Infrastructure",
+                "type": "server",
+                "vendor": "Raspberry Pi",
+                "model": "Raspberry Pi 3",
+                "notes": "Collector metadata",
+            }]}))
+            config = {
+                "HIOC_HOME": tmp,
+                "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": str(known_path),
+                "HIOC_INVENTORY_STALE_AFTER_SEC": "60",
+                "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120",
+                "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+            }
+            with patch("hioc.inventory.local_ipv4_addresses", return_value=local_addresses), \
+                 patch("hioc.inventory.socket.gethostname", return_value="nutandpihole"), \
+                 patch("hioc.inventory.default_gateway", return_value={}), \
+                 patch("hioc.inventory.neighbor_table", return_value=neighbor), \
+                 patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
+                 patch("hioc.inventory.integration_inventory", return_value={}), \
+                 patch("hioc.inventory.systemd_services", return_value=systemd), \
+                 patch("hioc.inventory.listening_services", return_value=sockets), \
+                 patch("hioc.inventory.package_version", return_value=""):
+                inventory = discover_inventory(config, {"devices": []})
+
+        devices = {device["id"]: device for device in inventory["devices"]}
+        collector = devices[collector_id]
+        client = devices[client_id]
+        self.assertNotEqual(collector_id, client_id)
+        self.assertEqual(collector["type"], "local_host")
+        self.assertEqual(collector["ip"], "192.168.100.252")
+        self.assertEqual(collector["mac"], collector_mac)
+        self.assertEqual(collector["interfaces"], local_addresses)
+        self.assertEqual(collector["hostname"], "nutandpihole")
+        self.assertTrue(collector["reachable"])
+        self.assertIn("local_host", collector["sources"])
+        self.assertEqual(collector["display_name"], "Pi3 - NUT and Pi-hole")
+        self.assertEqual(collector["role"], "Core Infrastructure")
+        self.assertEqual(collector["vendor"], "Raspberry Pi")
+        self.assertEqual(collector["model"], "Raspberry Pi 3")
+        self.assertEqual(collector["notes"], "Collector metadata")
+        self.assertEqual(client["ip"], "192.168.100.105")
+        self.assertTrue(inventory["services"])
+        self.assertEqual({service["device_id"] for service in inventory["services"]}, {collector_id})
+        self.assertEqual({service["host"] for service in inventory["services"]}, {"Pi3 - NUT and Pi-hole"})
+        service_ids = {service["id"] for service in inventory["services"]}
+        self.assertTrue(any(edge["to_id"] in service_ids for edge in inventory["dependencies"]["edges"]))
+
+    def test_missing_canonical_local_device_omits_local_services_without_fallback(self):
+        local_address = {"interface": "eth0", "cidr": "192.168.1.2/24", "ip": "192.168.1.2", "mac": "aa:bb:cc:dd:ee:01"}
+        unrelated = {
+            "id": stable_device_id({"mac": "aa:bb:cc:dd:ee:02"}),
+            "ip": "192.168.1.50",
+            "mac": "aa:bb:cc:dd:ee:02",
+            "type": "endpoint",
+            "display_name": "Unrelated endpoint",
+            "health_status": "healthy",
+            "roles": ["endpoint"],
+        }
+        config = {
+            "HIOC_HOME": "/nonexistent",
+            "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_STALE_AFTER_SEC": "60",
+            "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120",
+            "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+        with patch("hioc.inventory.local_ipv4_addresses", return_value=[local_address]), \
+             patch("hioc.inventory.default_gateway", return_value={}), \
+             patch("hioc.inventory.neighbor_table", return_value={}), \
+             patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
+             patch("hioc.inventory.integration_inventory", return_value={}), \
+             patch("hioc.inventory.merge_records", return_value=[unrelated]), \
+             patch("hioc.inventory.systemd_services") as systemd, \
+             patch("hioc.inventory.listening_services") as sockets, \
+             patch("hioc.inventory.package_version", return_value=""), \
+             self.assertLogs("hioc-inventory-engine", level="ERROR") as logs:
+            inventory = discover_inventory(config, {"devices": []})
+
+        self.assertEqual(inventory["services"], [])
+        systemd.assert_not_called()
+        sockets.assert_not_called()
+        self.assertIn("canonical local device id", " ".join(logs.output))
+        self.assertIn(stable_device_id(local_address), " ".join(logs.output))
+
+    def test_interface_order_changes_identity_selection_but_not_local_service_ownership(self):
+        physical = {"interface": "eth0", "cidr": "192.168.1.2/24", "ip": "192.168.1.2", "mac": "aa:bb:cc:dd:ee:01"}
+        bridge = {"interface": "docker0", "cidr": "172.17.0.1/16", "ip": "172.17.0.1", "mac": "02:42:ac:11:00:01"}
+        endpoint_mac = "aa:bb:cc:dd:ee:99"
+        endpoint_id = stable_device_id({"mac": endpoint_mac})
+        config = {
+            "HIOC_HOME": "/nonexistent",
+            "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_STALE_AFTER_SEC": "60",
+            "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120",
+            "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+
+        for addresses in ([physical, bridge], [bridge, physical]):
+            with self.subTest(first_interface=addresses[0]["interface"]), \
+                 patch("hioc.inventory.local_ipv4_addresses", return_value=addresses), \
+                 patch("hioc.inventory.default_gateway", return_value={}), \
+                 patch("hioc.inventory.neighbor_table", return_value={"192.168.1.99": {"ip": "192.168.1.99", "mac": endpoint_mac, "source": "arp_table"}}), \
+                 patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
+                 patch("hioc.inventory.integration_inventory", return_value={}), \
+                 patch("hioc.inventory.systemd_services", return_value={"cron": {"status": "active"}}), \
+                 patch("hioc.inventory.listening_services", return_value=[]), \
+                 patch("hioc.inventory.package_version", return_value=""):
+                inventory = discover_inventory(config, {"devices": []})
+
+            canonical_id = stable_device_id(addresses[0])
+            self.assertEqual({service["device_id"] for service in inventory["services"]}, {canonical_id})
+            self.assertNotIn(endpoint_id, {service["device_id"] for service in inventory["services"]})
 
     def test_existing_integration_hint_behavior_remains_compatible(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -55,6 +55,7 @@ KNOWN_METADATA_FIELDS = {
     "uplink_ip",
     "notes",
 }
+LOCAL_HOST_PROTECTED_KNOWN_FIELDS = {"hostname", "type"}
 OPERATOR_ROLES = {
     "Core Infrastructure",
     "Network Equipment",
@@ -651,6 +652,7 @@ def _record_key(record: dict) -> str:
 def _merge_record_values(records: list[dict]) -> dict:
     observed_records = [record for record in records if record.get("_observed", True)]
     known_records = [record for record in records if not record.get("_observed", True)]
+    local_host_observed = any("local_host" in _record_sources(record) for record in observed_records)
     merged = {}
     sources = set()
     for record in observed_records + known_records:
@@ -668,6 +670,8 @@ def _merge_record_values(records: list[dict]) -> dict:
                 merged[key] = record[key]
         for key in record.get("_known_metadata_fields", []):
             value = record.get(key)
+            if local_host_observed and key in LOCAL_HOST_PROTECTED_KNOWN_FIELDS and merged.get(key):
+                continue
             if value not in ("", None, []):
                 merged[key] = value
         if record.get("_configured_id") and not merged.get("_configured_id"):
@@ -1185,7 +1189,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     kernel = os.uname().release if hasattr(os, "uname") else ""
     local_mac = next((item["mac"] for item in local_addresses if item.get("mac")), "")
     local_ip = next((item["ip"] for item in local_addresses), "")
-    records.append({
+    local_host_record = {
         "type": "local_host",
         "name": hostname,
         "hostname": hostname,
@@ -1201,7 +1205,9 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         "reachable": True,
         "source": "local_host",
         "last_seen_source": "local_host",
-    })
+    }
+    local_device_id = stable_device_id(local_host_record)
+    records.append(local_host_record)
     if gateway_ip:
         records.append({"type": "network_device", "name": "Default Gateway", "ip": gateway_ip, "interface": gateway.get("interface", ""), "source": "gateway", "last_seen_source": "gateway"})
     state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
@@ -1245,9 +1251,12 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         enriched.append(record)
     devices = merge_records(enriched, previous, now, now_epoch, config)
     resolve_configured_parent_ids(devices)
-    local_device_id = next((d["id"] for d in devices if d.get("type") == "local_host"), devices[0]["id"] if devices else "")
     service_registry = DriverRegistry()
-    service_registry.register(LocalServiceDriver(local_device_id))
+    local_device = next((device for device in devices if device.get("id") == local_device_id), None)
+    if local_device:
+        service_registry.register(LocalServiceDriver(local_device_id))
+    else:
+        LOG.error("local service discovery skipped: canonical local device id %s was not found after inventory merge", local_device_id)
     services = []
     for result in service_registry.run(config):
         services.extend(result.services)
