@@ -14,6 +14,7 @@ Related technical documents:
 - Data model: [DATA_MODEL.md](DATA_MODEL.md)
 - MQTT contract: [MQTT.md](MQTT.md)
 - Home Assistant integration: [HOME_ASSISTANT.md](HOME_ASSISTANT.md)
+- Asset model and operator concepts: [ASSET_MODEL.md](ASSET_MODEL.md)
 
 ## Runtime Flow
 
@@ -69,6 +70,30 @@ Living Inventory emits internal events for device discovery, inventory changes, 
 Passive observation freshness and operational monitoring are separate concerns. HIOC Core owns one `is_operationally_monitored()` policy boundary used by both inventory health and incident correlation. Ordinary ARP/DHCP-only clients remain visible as stale or unknown when positive evidence ages, while infrastructure, known infrastructure, local/gateway records, authoritative integrations, explicitly monitored assets, and future unclassified sources remain availability-monitored. New discovery sources, including future Active Discovery sources, must make an intentional policy decision at this boundary rather than adding scattered correlation exceptions.
 
 This policy does not define passive-client archival or permanent retention. Configurable archival and expiration remain a separate future checkpoint.
+
+## Observation Is Not Availability
+
+Observation answers whether HIOC has usable positive evidence that a device was seen. Availability asks whether an asset that is expected to operate is actually available. These are deliberately separate architectural concerns.
+
+Evidence authority determines what conclusions are safe. ARP can provide recent network association; DHCP provides identity and address assignment but not liveness; known infrastructure provides operator knowledge but not current reachability; the local collector has authority over its own identity and services; integrations have authority only within their documented scope; and future active probes can show a point-in-time response without establishing purpose or expected availability.
+
+A weaker source must not overwrite stronger identity or observation evidence. Likewise, stale or expired evidence cannot by itself prove that a mobile or transient device failed. Future incident interpretation can consider asset expectations only after those expectations are explicitly modeled.
+
+## Future Asset-Centric Flow
+
+The planned architectural direction is:
+
+```text
+Discovery evidence
+  -> stable device identity
+  -> operator asset enrichment
+  -> expected-availability policy
+  -> health and incident interpretation
+  -> dependency and failure analysis
+  -> historical and predictive intelligence
+```
+
+Stable discovery identity is the anchor: operator knowledge must survive address changes and rediscovery. Asset enrichment remains separable from discovered truth, and expected availability must precede any policy that interprets disappearance as failure. This flow is planned evolution rather than current completed behavior.
 
 ## Compatibility
 

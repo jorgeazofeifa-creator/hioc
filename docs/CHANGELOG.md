@@ -17,6 +17,10 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ## Unreleased
 
+### Documentation
+
+- Documented the planned asset-centric Living Inventory vision, including evidence authority, observation versus availability, operator-managed asset knowledge, lifecycle-safe retention principles, and roadmap dependencies; no runtime behavior changed.
+
 ### Fixed
 
 - Living Inventory now includes a dedicated Watch Devices presentation, ordered by oldest known observation first and showing authoritative identity, observation, provenance, and health-reason details without changing inventory semantics.

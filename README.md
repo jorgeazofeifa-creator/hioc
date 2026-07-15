@@ -72,6 +72,7 @@ The Master Plan governs project direction. It does not replace the technical doc
 | Where is the project going? | [docs/HIOC_MASTER_PLAN.md](docs/HIOC_MASTER_PLAN.md) |
 | What is the project context? | [docs/PROJECT.md](docs/PROJECT.md) |
 | How is it built? | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| How will devices evolve into operator-managed assets? | [docs/ASSET_MODEL.md](docs/ASSET_MODEL.md) |
 | How does the runtime work? | [docs/CORE.md](docs/CORE.md) |
 | How does MQTT work? | [docs/MQTT.md](docs/MQTT.md) |
 | How does Home Assistant integrate? | [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |

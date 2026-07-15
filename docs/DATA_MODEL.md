@@ -46,6 +46,48 @@ Device object:
 - `parent_id`
 - optional integration hints such as `parent_mac`, `parent_ip`, `uplink_mac`, `uplink_ip`, or `parent_device_id`
 
+### Discovered Device and Operator-Managed Asset Metadata
+
+A discovered device record is technical evidence: stable identity, addresses, hostname, interfaces, discovery sources, services, observations, and derived current health. Its provenance must remain visible so consumers can understand what each fact proves.
+
+Operator-managed asset metadata is the human meaning linked to that identity: what the equipment is called, where it is, what it does, who is responsible for it, how important it is, and when it is expected to be available. Some current known-infrastructure fields already provide limited operator enrichment, but HIOC does not yet implement the complete asset model described in [ASSET_MODEL.md](ASSET_MODEL.md).
+
+Technical identity and operator knowledge should remain separable. Rediscovery, DHCP reassignment, or an IP change must not erase confirmed asset knowledge, and operator metadata must not fabricate a technical observation.
+
+### Current Observation Semantics
+
+`first_seen` records the earliest retained discovery time. `last_seen` and `last_seen_epoch` record the last usable positive observation. `observation_age_seconds` is derived from that timestamp and is `null` when no usable timestamp exists.
+
+Current `observation_status` meanings are:
+
+- `recent`: positive evidence is inside the freshness window.
+- `stale`: positive evidence is older than the stale threshold; failure is not automatically proven.
+- `expired`: positive evidence is older than the offline threshold; failure is not automatically proven.
+- `unobserved`: a configured record has not received positive discovery evidence.
+- `unknown`: usable positive-observation history is unavailable.
+
+DHCP assignment is identity/address evidence, not liveness, and does not update the positive-observation fields. `operationally_monitored`, health, and incident interpretation are separate policy and derived-state concerns.
+
+### Planned Asset Metadata
+
+The following names illustrate possible future information. They are planning concepts, not a current runtime schema or finalized field contract:
+
+- an `asset_id` or other stable linkage to the discovered device identity;
+- `friendly_name`;
+- physical `location`;
+- `purpose`;
+- `owner` or responsible person;
+- asset `category`;
+- operational `criticality`;
+- `expected_availability`;
+- an explicit `monitoring_policy` or monitoring expectation;
+- `lifecycle_state`, such as active, retired, or archived;
+- `notes` and an optional photo reference;
+- purchase or installation date;
+- maintenance expectations and maintenance history.
+
+Future schema work must preserve operator asset knowledge across IP changes and rediscovery while keeping discovered truth authoritative for observations. Asset classification and expected availability must be designed before they influence archival or incident decisions.
+
 Known infrastructure definitions are optional operator-supplied passive inventory input. The default file is:
 
 ```text

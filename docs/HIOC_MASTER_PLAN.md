@@ -324,6 +324,43 @@ Potential future work includes:
 
 These items remain intentionally out of scope until the current roadmap reaches them.
 
+### Phase 7A Continuity and Deferred Hardening
+
+Phase 7A remains focused on trustworthy passive discovery and enrichment. Completed corrective checkpoints, including Watch-device discoverability, remain part of that foundation. Deferred Phase 7A work remains preserved:
+
+- Configurable passive-client retention and archival, after asset policy is designed.
+- Canonical local-address hardening without production-specific identity exceptions.
+- Continued Phase 7A enrichment from passive sources.
+
+Active Discovery remains postponed. Future YAML dashboard deployment modernization also remains planned and must not be folded into unrelated inventory checkpoints.
+
+### Asset-Centric Evolution
+
+After reliable passive identity is established, Living Inventory should gradually evolve from unknown technical devices into identified, operator-managed assets. Planned capabilities include:
+
+- Operator asset identity and friendly naming.
+- Physical location and purpose.
+- Owner or responsible person.
+- Asset classification and operational criticality.
+- Expected availability and explicit monitoring expectations.
+- Asset lifecycle state, including active, retired, and archived concepts.
+- Maintenance expectations, purchase or installation context, maintenance history, notes, and optional photo references.
+- An operator workflow for physically matching discovered MAC addresses and other stable evidence to real assets.
+- Gradual enrichment from an unknown device to an identified, managed asset without losing discovery provenance.
+- Safe configurable retention and archival governed by asset policy rather than stale age alone.
+
+These are future concepts. They do not add runtime fields or change current health, monitoring, incident, retention, or discovery behavior.
+
+### Roadmap Dependencies
+
+- Stable identity and passive discovery are foundational to operator asset enrichment.
+- Asset classification must exist before aggressive archival can be safe.
+- Expected availability must be defined before disappearance can be treated as failure.
+- The improved dependency graph, automatic service relationships, failure propagation visualization, and infrastructure topology become more meaningful after assets and services are identified.
+- Historical infrastructure trends and predictive recommendations depend on reliable identity, asset classification, relationships, and retained history.
+
+The asset-centric vision expands the meaning of future work; it does not replace or reorder any existing phase or capability.
+
 ---
 
 # Repository Rules
@@ -334,6 +371,14 @@ Every completed phase must:
 - Pass unit tests
 - Validate Home Assistant YAML
 - Preserve backward compatibility unless explicitly approved
+
+Every checkpoint Evidence Report must state:
+
+- Deployment result.
+- Intended behavior.
+- Invariant checks.
+- Warnings and deferred risks.
+- Final PASS or FAIL.
 
 Unless specifically requested:
 

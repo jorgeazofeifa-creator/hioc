@@ -170,3 +170,17 @@ Alternatives: Continue incident generation for every discovered identity, suppre
 Reason: Living Inventory documents what exists while incidents must remain operationally actionable. One conservative policy boundary prevents false client incidents without weakening infrastructure monitoring or silently suppressing future discovery sources.
 
 Consequences: New discovery and Active Discovery sources must explicitly review this predicate. Passive-client observation timestamps remain authoritative and visible. Passive-client archival or expiration is not decided here and remains a separate future configurable checkpoint.
+
+## ADR-0012: Evolve Living Inventory Toward an Asset-Centric Digital Twin
+
+Decision: HIOC will evolve from device-centric discovery toward an asset-centric living digital twin. Discovered technical truth remains separate from operator-provided asset knowledge, and stable identity links the two across address changes and rediscovery. Availability and future incident interpretation will use explicit asset expectations rather than one universal rule for every device. Important assets will not be archived solely because their observation age is stale.
+
+Status: Accepted.
+
+Context: A discovered MAC address, IP address, hostname, or service is useful technical evidence but does not explain what the equipment means to the household. Mobile devices, core servers, safety sensors, guest clients, and retired equipment have different purposes, availability expectations, and retention needs.
+
+Alternatives: Treat every discovered device as an equivalent availability target; store operator meaning directly as replaceable discovery facts; archive all identities after a single age threshold; or keep Living Inventory permanently limited to technical device records.
+
+Reason: Operators need stable knowledge that survives DHCP changes and temporary absence. Separating discovered truth from operator knowledge preserves evidence integrity while allowing future criticality, expected availability, lifecycle, maintenance, retention, and incident policies to reflect the meaning of each asset.
+
+Consequences: Stable identity and passive discovery remain foundational. Future asset metadata must not fabricate observations or be erased by rediscovery. Asset classification is required before aggressive archival, and important or explicitly monitored assets cannot be silently archived from stale age alone. Future incidents may consider asset criticality and expected availability only after those concepts are explicitly modeled and approved. The detailed roadmap remains owned by [docs/HIOC_MASTER_PLAN.md](docs/HIOC_MASTER_PLAN.md), and the conceptual model is described in [docs/ASSET_MODEL.md](docs/ASSET_MODEL.md).
