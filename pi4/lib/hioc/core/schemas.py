@@ -72,3 +72,37 @@ INVENTORY_SUMMARY_SCHEMA = Schema(
     ],
 )
 
+LIFECYCLE_CATALOG_SCHEMA = Schema(
+    "lifecycle_catalog",
+    [
+        Field("schema_version", (str,)),
+        Field("migration_version", (int,)),
+        Field("generation_id", (str,)),
+        Field("devices", (list,)),
+        Field("services", (list,)),
+        Field("topology", (dict,)),
+        Field("dependencies", (dict,)),
+    ],
+)
+
+LIFECYCLE_REGISTRY_SCHEMA = Schema(
+    "lifecycle_registry",
+    [
+        Field("schema_version", (str,)),
+        Field("migration_version", (int,)),
+        Field("generation_id", (str,)),
+        Field("records", (dict,)),
+    ],
+)
+
+LIFECYCLE_MANIFEST_SCHEMA = Schema(
+    "lifecycle_manifest",
+    [
+        Field("schema_version", (str,)),
+        Field("migration_version", (int,)),
+        Field("generation_id", (str,)),
+        Field("transaction_id", (str,)),
+        Field("operation_receipt", (dict,)),
+        Field("transition_receipts", (list,)),
+    ],
+)

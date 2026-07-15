@@ -2,6 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 import sys
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "pi4" / "lib"))
@@ -10,7 +11,7 @@ from hioc.core.capabilities import CapabilityRegistry
 from hioc.core.drivers import DriverRegistry, DriverResult
 from hioc.core.events import EventBus
 from hioc.core.schemas import EVENT_SCHEMA, SchemaError
-from hioc.core.state import StateStore
+from hioc.core.state import StateIOError, StateMalformedError, StateMissingError, StateStore
 
 
 class FailingDriver:
@@ -37,6 +38,20 @@ class CoreTests(unittest.TestCase):
             store = StateStore(Path(tmp))
             store.write_json("state.json", {"status": "online"})
             self.assertEqual(store.read_json("state.json", {}), {"status": "online"})
+
+    def test_strict_state_read_distinguishes_missing_malformed_io_and_valid_empty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = StateStore(Path(tmp))
+            with self.assertRaises(StateMissingError):
+                store.read_json_strict("missing.json")
+            (Path(tmp) / "state.json").write_text("{broken", encoding="utf-8")
+            with self.assertRaises(StateMalformedError):
+                store.read_json_strict("state.json")
+            with patch.object(Path, "read_text", side_effect=OSError("disk failure")):
+                with self.assertRaises(StateIOError):
+                    store.read_json_strict("state.json")
+            (Path(tmp) / "state.json").write_text("{}", encoding="utf-8")
+            self.assertEqual(store.read_json_strict("state.json"), {})
 
     def test_event_bus_retains_latest_bounded_events(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -68,4 +83,3 @@ class CoreTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

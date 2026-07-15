@@ -88,6 +88,20 @@ The following names illustrate possible future information. They are planning co
 
 Future schema work must preserve operator asset knowledge across IP changes and rediscovery while keeping discovered truth authoritative for observations. Asset classification and expected availability must be designed before they influence archival or incident decisions.
 
+## Lifecycle Foundation
+
+Phase 7A.8 stores authoritative technical catalog and lifecycle registry documents in committed generations under `state/inventory/generations`. `CURRENT` is the atomic commit point. Both authoritative documents use `schema_version: "1.0"`, `migration_version: 1`, and an exact `generation_id`. Unsupported or malformed authoritative versions fail closed.
+
+The current lifecycle states are only `active` and `archived`. Existing records migrate to active; archival is manual, reversible, and prohibited for operationally monitored or protected infrastructure. No age-based automatic archival or permanent deletion exists.
+
+Each committed manifest contains the operation receipt and an exact receipt for every lifecycle change. Immutable receipt segments under `state/inventory/events/receipts` preserve and expose the searchable audit history. `lifecycle_events.json` is a constant-size, regenerable index describing that segmented representation and its receipt count; it never embeds or rewrites the full history during an ordinary commit. Lifecycle state always comes from `lifecycle.json`, never event replay.
+
+A generation is created when authoritative catalog or lifecycle content changes: device identity or metadata (including positive observation timestamps and DHCP assignment metadata), services, topology, dependencies, inventory schema version, or lifecycle records. Top-level run time and derived summary-only changes do not create a generation, and exactly equivalent discovery is a no-op.
+
+The public `inventory.json` remains an active-only compatibility projection. `archived.json` is a local searchable projection. Services, topology, and dependency information in an archived record are last-known references when available, not a complete historical relationship model.
+
+Lifecycle is keyed by stable device ID today. A future Asset Registry may add an independent `asset_id -> implemented_by -> device_id` mapping without changing historical device identities; that mapping is not implemented in Phase 7A.8.
+
 Known infrastructure definitions are optional operator-supplied passive inventory input. The default file is:
 
 ```text

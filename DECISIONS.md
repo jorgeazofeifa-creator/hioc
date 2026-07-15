@@ -184,3 +184,17 @@ Alternatives: Treat every discovered device as an equivalent availability target
 Reason: Operators need stable knowledge that survives DHCP changes and temporary absence. Separating discovered truth from operator knowledge preserves evidence integrity while allowing future criticality, expected availability, lifecycle, maintenance, retention, and incident policies to reflect the meaning of each asset.
 
 Consequences: Stable identity and passive discovery remain foundational. Future asset metadata must not fabricate observations or be erased by rediscovery. Asset classification is required before aggressive archival, and important or explicitly monitored assets cannot be silently archived from stale age alone. Future incidents may consider asset criticality and expected availability only after those concepts are explicitly modeled and approved. The detailed roadmap remains owned by [docs/HIOC_MASTER_PLAN.md](docs/HIOC_MASTER_PLAN.md), and the conceptual model is described in [docs/ASSET_MODEL.md](docs/ASSET_MODEL.md).
+
+## ADR-0013: Lifecycle State Uses Generation Commits and Manifest Receipts
+
+Decision: Phase 7A.8 keeps the technical catalog and lifecycle registry authoritative inside generation directories, commits them through one atomic `CURRENT` pointer, and treats active/archived inventory files as regenerable projections. Each generation manifest carries transactional lifecycle receipts; immutable external receipt segments preserve audit history, while lifecycle state is never reconstructed from events.
+
+Status: Accepted.
+
+Context: Independent atomic file replacements cannot guarantee that catalog, lifecycle, projections, and audit evidence describe one logical transition after a crash.
+
+Alternatives: Treat five root JSON files as co-authoritative, replay an event stream for current state, use a database immediately, or coordinate a separate audit file across the state commit point.
+
+Reason: A generation pointer provides one clear commit point and recoverable projections. Manifest-bound receipts prove the lifecycle changes committed with the generation, while separate immutable segments allow audit history to survive future generation pruning.
+
+Consequences: All writers require one internal lock. Malformed authoritative state fails closed. Audit indexes and operational projections can be repaired without changing current lifecycle state. Phase 7A.8 remains keyed by stable device ID but permits a future independent asset registry and hardware-replacement mapping.

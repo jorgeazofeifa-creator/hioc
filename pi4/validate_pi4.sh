@@ -26,6 +26,7 @@ check "HIOC config exists" test -f "$INSTALL_DIR/config/hioc.conf"
 check "Incident engine v2 executable" test -x "$INSTALL_DIR/pi4/bin/hioc-incident-engine-v2.py"
 check "History engine executable" test -x "$INSTALL_DIR/pi4/bin/hioc-history-engine.py"
 check "Inventory engine executable" test -x "$INSTALL_DIR/pi4/bin/hioc-inventory-engine.py"
+check "Inventory lifecycle CLI executable" test -x "$INSTALL_DIR/pi4/bin/hioc-inventory-lifecycle.py"
 check "Platform status executable" test -x "$INSTALL_DIR/pi4/bin/hioc-platform-status.py"
 check "Version manifest exists" test -f "$INSTALL_DIR/VERSION.yaml"
 check "Correlation engine version declared" grep -q '^correlation_engine:' "$INSTALL_DIR/VERSION.yaml"
@@ -43,6 +44,11 @@ check "Incident engine cron installed" bash -c "crontab -l 2>/dev/null | grep -F
 check "History engine cron installed" bash -c "crontab -l 2>/dev/null | grep -Fq '$INSTALL_DIR/pi4/bin/hioc-history-engine.py'"
 check "Inventory engine cron installed" bash -c "crontab -l 2>/dev/null | grep -Fq '$INSTALL_DIR/pi4/bin/hioc-inventory-engine.py'"
 check "Platform status cron installed" bash -c "crontab -l 2>/dev/null | grep -Fq '$INSTALL_DIR/pi4/bin/hioc-platform-status.py'"
+
+if [ -f "$INSTALL_DIR/state/inventory/CURRENT" ]; then
+  check "Inventory lifecycle authority valid" "$INSTALL_DIR/pi4/bin/hioc-inventory-lifecycle.py" validate
+  check "Inventory lifecycle audit valid" "$INSTALL_DIR/pi4/bin/hioc-inventory-lifecycle.py" audit-status
+fi
 
 dhcp_lease_files="${HIOC_INVENTORY_DHCP_LEASE_FILES:-/etc/pihole/dhcp.leases,/var/lib/misc/dnsmasq.leases,/var/lib/dhcp/dhcpd.leases}"
 dhcp_source_exists=0

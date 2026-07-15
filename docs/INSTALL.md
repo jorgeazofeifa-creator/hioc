@@ -56,6 +56,42 @@ sudo -u hioc-user test -r /etc/pihole/dhcp.leases
 
 HIOC does not change lease-file ownership or permissions during installation. Package upgrades or file replacement can remove a file ACL, so re-run validation after Pi-hole upgrades. If ACL persistence is required, manage it through the host's approved system policy rather than broadening the file's permissions.
 
+### Inventory lifecycle administration
+
+The inventory engine performs an idempotent Phase 7A.8 migration on its first run. It backs up the existing inventory, validates every stable ID, and initializes all existing devices as active. Automatic archival is disabled.
+
+Validate or inspect lifecycle state:
+
+```bash
+pi4/bin/hioc-inventory-lifecycle.py validate
+pi4/bin/hioc-inventory-lifecycle.py audit-status
+pi4/bin/hioc-inventory-lifecycle.py list-generations
+```
+
+These three inspection commands are strictly read-only: they do not initialize, migrate, repair, quarantine, create backups, update audit health, or rewrite projections. If lifecycle state is absent or inconsistent, they report the required operator action and leave the filesystem unchanged.
+
+Manual archive and restore require an exact stable device ID and an operator reason. Collector, gateway, known-infrastructure, infrastructure-class, and monitored records cannot be archived.
+
+```bash
+pi4/bin/hioc-inventory-lifecycle.py archive DEVICE_ID --reason "operator-approved archival"
+pi4/bin/hioc-inventory-lifecycle.py restore DEVICE_ID --reason "operator-approved restoration"
+```
+
+Repair only derived state from validated committed generations:
+
+```bash
+pi4/bin/hioc-inventory-lifecycle.py repair-audit
+pi4/bin/hioc-inventory-lifecycle.py repair-projections
+```
+
+Rollback creates a new audited generation:
+
+```bash
+pi4/bin/hioc-inventory-lifecycle.py rollback GENERATION_ID
+```
+
+`prune-generation` supports `--dry-run` validation only. Phase 7A.8 never deletes a generation or asset. Before production migration, back up `state/inventory`; rollback can restore that directory or create a new generation from a validated prior generation.
+
 Active-discovery configuration may exist, but operational use is governed by [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md) and should not be enabled until the planned Phase 7B Safe Active Discovery work is explicitly approved.
 
 To enrich inventory with operator-owned infrastructure metadata, create `/home/jazofv1/hioc/config/inventory/known_infrastructure.json`:

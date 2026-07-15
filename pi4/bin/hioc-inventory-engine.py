@@ -7,11 +7,11 @@ sys.path.insert(0, str(HIOC_HOME / "pi4" / "lib"))
 
 from hioc.config import load_config
 from hioc.core.events import EventBus
-from hioc.core.schemas import INVENTORY_SCHEMA, INVENTORY_SUMMARY_SCHEMA
 from hioc.core.state import StateStore
 from hioc.inventory import discover_inventory
+from hioc.lifecycle import LifecycleStore
 from hioc.mqtt import MqttClient
-from hioc.runtime import load_json, save_json, setup_logger, now_iso
+from hioc.runtime import save_json, setup_logger, now_iso
 
 
 def main() -> int:
@@ -28,18 +28,20 @@ def main() -> int:
     status_file = state_dir / "status.json"
     event_store = StateStore(home / "state" / "events")
     event_bus = EventBus(event_store, "inventory", int(config.get("HIOC_EVENT_RETENTION", "500")))
-    previous = load_json(inventory_file, {"devices": []})
     try:
-        inventory = discover_inventory(config, previous)
+        lifecycle_store = LifecycleStore(state_dir)
+        with lifecycle_store.lock():
+            generation = lifecycle_store.initialize_or_migrate()
+            previous = generation["inventory"]
+            discovered = discover_inventory(config, previous)
+            capabilities = discovered.pop("_capabilities", [])
+            positive_ids = set(discovered.pop("_positive_device_ids", []))
+            generation = lifecycle_store.apply_discovery(discovered, positive_ids)
+            inventory = generation["inventory"]
+            publication = {"previous": previous, "inventory": inventory, "capabilities": capabilities}
+        # The generation is immutable and committed. External publication must not hold the lifecycle lock.
         store = StateStore(state_dir)
-        capabilities = inventory.pop("_capabilities", [])
-        store.write_json("inventory.json", inventory, INVENTORY_SCHEMA)
-        store.write_json("devices.json", inventory["devices"])
-        store.write_json("services.json", inventory["services"])
-        store.write_json("capabilities.json", capabilities)
-        store.write_json("topology.json", inventory["topology"])
-        store.write_json("dependencies.json", inventory["dependencies"])
-        store.write_json("summary.json", inventory["summary"], INVENTORY_SUMMARY_SCHEMA)
+        store.write_json("capabilities.json", publication["capabilities"])
         status = {"status": "online", "updated": now_iso(), "device_count": inventory["summary"]["device_count"], "schema_version": inventory["schema_version"]}
         save_json(status_file, status)
         previous_ids = {device.get("id") for device in previous.get("devices", [])}

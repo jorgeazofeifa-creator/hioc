@@ -23,6 +23,8 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Fixed
 
+- Phase 7A.8 adds generation-backed catalog and lifecycle authority, strict corruption handling, active/archive projections, protected manual archive/restore, strong-MAC rediscovery restoration, manifest receipts, repairable lifecycle audit history, and recovery tooling without enabling automatic archival or changing public MQTT contracts.
+- Phase 7A.8 lifecycle hardening makes inspection commands write-free, records rollback actors and timestamps, validates receipt ancestry across generations, suppresses authoritative no-op generations, uses a constant-size receipt-segment audit index, avoids unchanged projection rewrites, and moves MQTT/event publication outside the lifecycle lock.
 - Living Inventory now includes a dedicated Watch Devices presentation, ordered by oldest known observation first and showing authoritative identity, observation, provenance, and health-reason details without changing inventory semantics.
 - Pi-hole DHCP lease ingestion now distinguishes missing, unreadable, malformed, I/O-error, empty, partial, and usable sources; validates lease fields; preserves assignment metadata without treating a lease as liveness; and prevents DHCP data from overriding stronger current identity evidence.
 - Local services now retain ownership by the canonical pre-enrichment collector identity; known-infrastructure classification can no longer erase local-host ownership, and a missing collector no longer falls back to an arbitrary inventory device. Canonical-address selection is unchanged and remains a separate future hardening checkpoint.

@@ -1353,6 +1353,13 @@ def discover_inventory(config: dict, previous: dict) -> dict:
             record["role"] = operator_role(record, roles)
         record["inventory_class"] = inventory_class(record["role"])
         enriched.append(record)
+    positive_device_ids = {
+        stable_device_id(record)
+        for record in enriched
+        if normalize_mac(record.get("mac", ""))
+        and record.get("_observed", True)
+        and record.get("_positive_observation", _record_sources(record) != {"dhcp_leases"})
+    }
     devices = merge_records(enriched, previous, now, now_epoch, config)
     resolve_configured_parent_ids(devices)
     service_registry = DriverRegistry()
@@ -1381,6 +1388,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         "devices": devices,
         "services": services,
         "_capabilities": capability_list,
+        "_positive_device_ids": sorted(positive_device_ids),
         "topology": topology,
         "dependencies": dependencies,
         "summary": summary,

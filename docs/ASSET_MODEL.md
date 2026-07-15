@@ -70,6 +70,8 @@ Examples show why the distinction matters:
 
 Asset knowledge should survive address changes and rediscovery because it is linked to stable identity rather than a temporary IP address.
 
+Phase 7A.8 lifecycle records are keyed by stable device ID because the current inventory remains device-centric. This does not make hardware identity the permanent asset identity. A future Asset Registry may introduce a persistent `asset_id` linked through an `implemented_by` relationship to one or more historical `device_id` values. Replacing the hardware for a garage controller, for example, should not require losing the asset's location, purpose, ownership, maintenance history, dependencies, or expectations. Phase 7A.8 deliberately does not implement asset UUIDs or hardware-replacement workflows.
+
 ## Planned Criticality and Availability Concepts
 
 The following are planning examples, not finalized schema names or implemented policies.
