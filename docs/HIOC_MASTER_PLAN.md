@@ -363,6 +363,33 @@ The asset-centric vision expands the meaning of future work; it does not replace
 
 ---
 
+# Repository and Deployment Governance
+
+HIOC formally separates the authoritative source checkout from the deployed production runtime:
+
+```text
+GitHub
+  |
+  v
+/home/jazofv1/hioc-release-source
+  authoritative source checkout for release execution on PI3
+  |
+  | release validation and the supported release process
+  v
+/home/jazofv1/hioc
+  deployed production runtime
+```
+
+Deliberate source changes are developed and validated in an authorized development checkout, then committed and pushed to GitHub as the shared project history. After the approved changes are pulled on PI3, `/home/jazofv1/hioc-release-source` is the authoritative source checkout for release preparation and the supported release workflow. It should remain clean except for deliberate release work in progress.
+
+`/home/jazofv1/hioc` is the deployed production runtime. It is expected to contain persistent operator configuration, runtime state, incident and inventory history, logs, backups, generated files, installer-managed permissions, and other operational artifacts. Production updates must use the supported release process from the authoritative source checkout or a validated release package, not direct Git updates inside the runtime.
+
+The current repository workflow was not introduced through a single planned migration. It evolved organically as operational experience demonstrated the need to separate a clean development and release checkout from the production runtime. This document formalizes that proven workflow rather than introducing a new architectural model.
+
+The existence or future removal of the production runtime's `.git` directory is a separate governance question and is not decided here. Repository and deployment cleanup must preserve persistent runtime state unless an artifact is proven obsolete and its removal is separately validated. Repository architecture changes must consider the full historical workflow and must not rely only on evidence from the most recent deployment or recovery event.
+
+---
+
 # Repository Rules
 
 Every completed phase must:
@@ -380,6 +407,17 @@ Every checkpoint Evidence Report must state:
 - Warnings and deferred risks.
 - Final PASS or FAIL.
 
+Repository and deployment rules:
+
+- Begin all deliberate source changes in an authorized development checkout.
+- Keep documentation and code synchronized when behavior and operating procedures change together.
+- Never copy generated runtime state back into source control.
+- Do not allow the production runtime to become an alternate development branch.
+- Investigate and classify unexplained source/runtime divergence before cleanup.
+- Do not remove obsolete-looking files without evidence that they are unused.
+- Ensure deployments are reproducible from the authoritative source checkout on the target host or a validated release package.
+- Classify runtime and generated artifacts explicitly, then preserve or exclude them intentionally.
+
 Unless specifically requested:
 
 - Do not redesign unrelated code
@@ -393,10 +431,15 @@ Unless specifically requested:
 
 Every completed phase ends with:
 
-1. Validation
-2. Commit
-3. Push to main
-4. Clean working tree
+1. Validate the intended behavior.
+2. Validate applicable invariants and backward compatibility.
+3. Update the Implementation Status and any relevant roadmap, governance, or decision sections in this document.
+4. Commit code and documentation together when both changed.
+5. Push to main.
+6. Verify the development checkout has a clean working tree and the shared history contains the approved commit.
+7. Record an Evidence Report containing the deployment result when applicable, intended behavior, invariant checks, warnings, and final PASS or FAIL.
+
+`docs/HIOC_MASTER_PLAN.md` remains the authoritative project source of truth.
 
 ---
 
@@ -417,6 +460,8 @@ While implementing HIOC:
 This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
+
+Repository governance reconstruction has been completed using Git history, filesystem evidence, existing documentation, and recovered operational history. Development checkouts, GitHub shared history, the authoritative source checkout for PI3 release execution, and the deployed production runtime now have formally documented roles. The broader Repository and Deployment Hygiene checkpoint is not complete: cleanup, divergence classification, deployment reproducibility review, and the future disposition of the production runtime's `.git` directory remain separate evidence-driven work. No runtime or application-code changes were made in this governance documentation checkpoint.
 
 ## Current Branch
 
