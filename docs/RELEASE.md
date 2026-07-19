@@ -8,6 +8,18 @@ This document owns release procedure, branch strategy, tagging expectations, pac
 
 It should not contain roadmap or implementation status. For install and upgrade commands from an operator perspective, see [INSTALL.md](INSTALL.md). For the current development phase, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
 
+## Release Execution Context
+
+On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
+
+```text
+/home/jazofv1/hioc-release-source
+```
+
+This is the authoritative clean source checkout for release execution on PI3. Release validation, build, package, install, upgrade, and rollback operations use this development and release checkout. `/home/jazofv1/hioc` is the deployed production runtime and may contain persistent runtime state and installer-managed differences. Direct `git pull` inside the deployed runtime is not the supported standard upgrade path.
+
+Validated versioned release packages remain supported and do not require deployment directly from a Git checkout. See [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md) for governance, [../DECISIONS.md](../DECISIONS.md#adr-0013-development-checkout-and-production-runtime-have-separate-roles) for ADR-0013, and [INSTALL.md](INSTALL.md) for operator commands.
+
 ## Version Manifest
 
 The authoritative version file is:
@@ -77,6 +89,8 @@ bash release/install.sh ha
 ## Upgrade
 
 ```bash
+cd /home/jazofv1/hioc-release-source
+bash release/validate.sh
 bash release/upgrade.sh
 ```
 
@@ -86,19 +100,25 @@ The upgrade script writes the latest backup path to:
 $HIOC_INSTALL_DIR/backups/last-upgrade-backup
 ```
 
+`HIOC_INSTALL_DIR` defaults to `/home/jazofv1/hioc`. The upgrade requires `rsync`, backs up replaceable installation content including configuration, preserves `state`, `history`, `logs`, and `backups`, copies the validated release without `.git` or `dist`, and reruns the Pi4 installer.
+
 ## Rollback
 
 Use the latest upgrade backup:
 
 ```bash
+cd /home/jazofv1/hioc-release-source
 bash release/rollback.sh
 ```
 
 Use a specific backup:
 
 ```bash
+cd /home/jazofv1/hioc-release-source
 bash release/rollback.sh /home/jazofv1/hioc/backups/release-upgrade-YYYYMMDD-HHMMSS
 ```
+
+With no argument, rollback reads `$HIOC_INSTALL_DIR/backups/last-upgrade-backup`. A specific backup path is also supported. Run rollback from the authoritative source checkout or a validated release package so the supported script is used; restoration targets `HIOC_INSTALL_DIR`, which defaults to `/home/jazofv1/hioc`.
 
 ## Runtime Version Reporting
 

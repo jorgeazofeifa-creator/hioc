@@ -6,14 +6,36 @@ This document owns installation, configuration, dependencies, deployment, upgrad
 
 It should not contain roadmap, architecture rationale, release history, or dashboard design. For release packaging workflow, see [RELEASE.md](RELEASE.md). For project direction, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
 
+## Repository and Runtime Layout
+
+The authoritative source checkout is:
+
+```text
+/home/jazofv1/hioc-release-source
+```
+
+The deployed production runtime is:
+
+```text
+/home/jazofv1/hioc
+```
+
+Git operations, development, validation, release preparation, and release execution originate from the authoritative source checkout. The production runtime contains persistent runtime state and installer-managed changes and must not be treated as a clean development checkout.
+
+The deployed runtime is not the normal location for Git development or upgrade operations. Do not use direct `git pull` operations inside `/home/jazofv1/hioc` as the standard production upgrade method. Use the supported release workflow from the authoritative source checkout or a validated release package.
+
+For governance, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md). For release packaging and workflow, see [RELEASE.md](RELEASE.md). The accepted architecture decision is recorded in [../DECISIONS.md](../DECISIONS.md#adr-0013-development-checkout-and-production-runtime-have-separate-roles).
+
 ## Pi4
 
 ```bash
-git clone https://github.com/jorgeazofeifa-creator/hioc.git ~/hioc
-cd ~/hioc
-bash pi4/install_pi4.sh
-bash pi4/validate_pi4.sh
+git clone https://github.com/jorgeazofeifa-creator/hioc.git /home/jazofv1/hioc-release-source
+cd /home/jazofv1/hioc-release-source
+bash release/validate.sh
+bash release/install.sh pi4
 ```
+
+The Pi4 release installer invokes `pi4/install_pi4.sh` and installs to `/home/jazofv1/hioc` by default. It requires `rsync`, `crontab`, `flock`, `python3`, and the existing Pi4 toolkit configuration. Set `HIOC_INSTALL_DIR` or `PI4_TOOLS_DIR` only when intentionally using nondefault paths.
 
 The installer uses the existing Pi4 toolkit configuration at:
 
@@ -83,7 +105,7 @@ The file is optional. A missing default file does not fail inventory. Set `HIOC_
 
 ## Home Assistant
 
-From the Home Assistant terminal after cloning or copying the repository:
+From the Home Assistant terminal after deploying or copying the validated Home Assistant files:
 
 ```bash
 cd /config/hioc
@@ -95,19 +117,39 @@ ha core restart
 
 ## Release Install
 
-From a release package or repository checkout:
+From the authoritative source checkout:
 
 ```bash
-bash release/install.sh
+cd /home/jazofv1/hioc-release-source
 bash release/validate.sh
+bash release/install.sh
 ```
 
-Upgrade and rollback:
+For an upgrade:
 
 ```bash
+cd /home/jazofv1/hioc-release-source
+bash release/validate.sh
 bash release/upgrade.sh
+```
+
+The upgrade preserves the existing `state`, `history`, `logs`, and `backups` directories. Before copying the validated release, it records the replaceable installation content, including configuration, under a timestamped directory in `/home/jazofv1/hioc/backups`.
+
+Use the latest recorded upgrade backup for rollback:
+
+```bash
+cd /home/jazofv1/hioc-release-source
 bash release/rollback.sh
 ```
+
+To select a specific validated backup, pass its path:
+
+```bash
+cd /home/jazofv1/hioc-release-source
+bash release/rollback.sh /home/jazofv1/hioc/backups/release-upgrade-YYYYMMDD-HHMMSS
+```
+
+The same release commands may be run from a validated versioned release package. Do not use direct Git updates inside `/home/jazofv1/hioc` as the standard production upgrade path.
 
 Then enable notifications:
 
