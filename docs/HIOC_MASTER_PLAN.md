@@ -305,6 +305,19 @@ The recovery sequence is complete, and the approved migrated baseline is the aut
 
 This checkpoint preserves phased work, no scope creep, production validation, Evidence Reports, and return to the Master Plan after each completed sub-step.
 
+#### Remaining Phase 7A Corrective Sequence
+
+1. Phase 7A.9 Passive Inventory Correctness Validation.
+2. Repository and Deployment Hygiene.
+3. Remaining inventory correctness work: validate duplicate collapse and correct any remaining defects; resolve FAILED/INCOMPLETE ARP semantics; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
+4. Resume passive enrichment.
+5. Continue toward asset-centric inventory.
+6. Design and approve retention and archival policy.
+7. Complete Phase 7A.
+8. Begin Phase 7B Safe Active Discovery.
+
+Phase 7A.9 must complete before the hygiene checkpoint begins. Remaining inventory correctness work follows repository hygiene, and passive enrichment resumes only after that corrective work.
+
 ---
 
 ## Planned Phase
@@ -338,6 +351,7 @@ Potential future work includes:
 - Historical infrastructure trends
 - Predictive recommendations
 - Expanded operational analytics
+- Backup and disaster recovery
 
 These items remain intentionally out of scope until the current roadmap reaches them.
 
@@ -479,7 +493,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-Repository governance reconstruction has been completed using Git history, filesystem evidence, existing documentation, and recovered operational history. Development checkouts, GitHub shared history, the authoritative source checkout for PI3 release execution, and the deployed production runtime now have formally documented roles. The broader Repository and Deployment Hygiene checkpoint is not complete: cleanup, divergence classification, deployment reproducibility review, and the future disposition of the production runtime's `.git` directory remain separate evidence-driven work. No runtime or application-code changes were made in this governance documentation checkpoint.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, and reconciliation of the historical recovery documentation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active. Phase 7A.9 and the broader Repository and Deployment Hygiene checkpoint have not been executed.
 
 ## Current Branch
 
@@ -511,11 +525,15 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Enrich the Living Inventory using passive information sources only.
+Validate passive inventory correctness against the approved Phase 7A.8 recovery baseline through evidence-driven, read-only production checks focused on duplicate collapse, canonical identity stability, and incident resolution.
 
 ## Next Planned Task
 
-Continue improving inventory richness using passive infrastructure data.
+Phase 7A.9 - Passive Inventory Correctness Validation.
+
+This is a read-only production-validation checkpoint with no behavioral changes. It establishes a trusted passive-inventory baseline and produces an Evidence Report.
+
+Only after Phase 7A.9 completes successfully should the Repository and Deployment Hygiene checkpoint begin. Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 
