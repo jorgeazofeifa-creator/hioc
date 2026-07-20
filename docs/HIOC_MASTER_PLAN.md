@@ -307,8 +307,8 @@ This checkpoint preserves phased work, no scope creep, production validation, Ev
 
 #### Remaining Phase 7A Corrective Sequence
 
-1. Phase 7A.9 Passive Inventory Correctness Validation.
-2. Repository and Deployment Hygiene.
+1. Repository and Deployment Hygiene.
+2. Resume Phase 7A.9 Passive Inventory Correctness Validation.
 3. Remaining inventory correctness work: validate duplicate collapse and correct any remaining defects; resolve FAILED/INCOMPLETE ARP semantics; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
@@ -316,7 +316,7 @@ This checkpoint preserves phased work, no scope creep, production validation, Ev
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-Phase 7A.9 must complete before the hygiene checkpoint begins. Remaining inventory correctness work follows repository hygiene, and passive enrichment resumes only after that corrective work.
+Phase 7A.9 is paused while the required hygiene checkpoint is completed. Remaining inventory correctness work follows Phase 7A.9, and passive enrichment resumes only after that corrective work.
 
 ---
 
@@ -419,6 +419,37 @@ The current repository workflow was not introduced through a single planned migr
 
 The existence or future removal of the production runtime's `.git` directory is a separate governance question and is not decided here. Repository and deployment cleanup must preserve persistent runtime state unless an artifact is proven obsolete and its removal is separately validated. Repository architecture changes must consider the full historical workflow and must not rely only on evidence from the most recent deployment or recovery event.
 
+## Repository and Deployment Hygiene Checkpoint
+
+The source/runtime architecture is settled and is not being reopened. The current checkpoint is the cleanup and reconciliation phase that follows governance reconstruction. It classifies production content before any controlled cleanup; it does not claim that cleanup is complete.
+
+Repository and runtime artifacts use these disposition categories:
+
+| Category | First-pass classification |
+|---|---|
+| AUTHORITATIVE SOURCE | GitHub `main` and the clean source checkout at `/home/jazofv1/hioc-release-source`. |
+| DEPLOYED APPLICATION | `pi4/bin/`, `pi4/lib/`, required runtime configuration examples and support files, and `homeassistant/`. Preserve. |
+| PERSISTENT RUNTIME DATA | `config/`, `state/`, `history/`, and `logs/`. Preserve. |
+| DEPLOYMENT TOOLING | `release/`, `pi4/install_pi4.sh`, `pi4/uninstall_pi4.sh`, `pi4/validate_pi4.sh`, `homeassistant/install_ha.sh`, `homeassistant/validate_ha.sh`, and `VERSION.yaml`. Preserve pending dependency review. |
+| BACKUP / ARCHIVE | `backups/`. Preserve pending backup and retention review. |
+| GENERATED / TRANSIENT | `__pycache__/`, `*.pyc`, `.pytest_cache/`, and similar generated caches. Cleanup candidates only after validation. |
+| SOURCE-ONLY CANDIDATE | `README.md`, `ROADMAP.md`, `DECISIONS.md`, `CHANGELOG.md`, `docs/`, and `tests/` inside the production runtime are provisional source-only candidates. Their presence reflects historical deployments rather than competing development history. They must remain until dependency validation confirms they are not required by deployment, validation, recovery, or operational workflows. |
+| UNRESOLVED | The production runtime's `.git/` directory and any artifact whose ownership or dependency remains uncertain. Nothing classified as UNRESOLVED may be deleted. |
+
+Production cleanup requires, in order:
+
+1. Dependency validation.
+2. A pre-change backup.
+3. Controlled, explicitly scoped changes.
+4. Production validation.
+5. An Evidence Report.
+6. A documentation update.
+7. A code and documentation commit when both changed.
+8. A push to `main`.
+9. A clean authoritative working tree.
+
+Phase 7A.9 remains paused until this required hygiene checkpoint is completed. No cleanup, deletion, or `.git` disposition is approved merely by this classification.
+
 ---
 
 # Repository Rules
@@ -493,7 +524,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, and reconciliation of the historical recovery documentation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active. Phase 7A.9 and the broader Repository and Deployment Hygiene checkpoint have not been executed.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, and reconciliation of the historical recovery documentation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active. Repository and Deployment Hygiene is the current checkpoint and is not complete. Phase 7A.9 has not been executed and remains paused until the hygiene checkpoint completes.
 
 ## Current Branch
 
@@ -525,15 +556,15 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Validate passive inventory correctness against the approved Phase 7A.8 recovery baseline through evidence-driven, read-only production checks focused on duplicate collapse, canonical identity stability, and incident resolution.
+Complete the Repository and Deployment Hygiene checkpoint by validating dependencies and classifying production-runtime content before any separately approved cleanup. Preserve deployed application files, persistent runtime data, deployment tooling, backups, and every unresolved artifact.
 
 ## Next Planned Task
 
-Phase 7A.9 - Passive Inventory Correctness Validation.
+Complete the evidence-driven Repository and Deployment Hygiene review without deleting or changing production content.
 
-This is a read-only production-validation checkpoint with no behavioral changes. It establishes a trusted passive-inventory baseline and produces an Evidence Report.
+After the hygiene checkpoint completes, resume Phase 7A.9 - Passive Inventory Correctness Validation as a read-only production-validation checkpoint with no behavioral changes. It will establish a trusted passive-inventory baseline and produce an Evidence Report.
 
-Only after Phase 7A.9 completes successfully should the Repository and Deployment Hygiene checkpoint begin. Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
+Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 
