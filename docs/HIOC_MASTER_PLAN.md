@@ -290,6 +290,23 @@ The Inventory becomes the authoritative documentation of the infrastructure with
 
 ---
 
+#### Phase 7A.8 Recovery Validation Chain
+
+Status: **COMPLETE**
+
+Scope: Recovery and re-validation of the approved lifecycle migration baseline after temporary validation state loss.
+
+Completed validation sequence: R1, Post-R1, R2, Post-R2, R3, Post-R3, R4, and Post-R4. R4 received the formal decision **A. R4 APPROVED**.
+
+- Approved generation: `gen_1784229948679_0a45eaf2f2f7`
+- Approved recovery epoch: `/home/jazofv1/hioc-validation/phase7a8/epoch-20260716T173541Z`
+
+The recovery sequence is complete, and the approved migrated baseline is the authoritative lifecycle recovery reference. The original HIOC Master Plan remains authoritative; Phase 7A Passive Living Inventory remains active; Active Discovery remains postponed. R5 is a future checkpoint and was not prepared or executed by this finalization.
+
+This checkpoint preserves phased work, no scope creep, production validation, Evidence Reports, and return to the Master Plan after each completed sub-step.
+
+---
+
 ## Planned Phase
 
 ### Phase 7B - Safe Active Discovery
@@ -417,6 +434,7 @@ Repository and deployment rules:
 - Do not remove obsolete-looking files without evidence that they are unused.
 - Ensure deployments are reproducible from the authoritative source checkout on the target host or a validated release package.
 - Classify runtime and generated artifacts explicitly, then preserve or exclude them intentionally.
+- Commit accepted recovery manifests and similar historical evidence documents to the authoritative repository history. Keep approved historical records immutable; new recovery work must create new evidence instead of modifying them or leaving them only in temporary branches or local repositories.
 
 Unless specifically requested:
 
