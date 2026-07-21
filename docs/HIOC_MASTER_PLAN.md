@@ -305,10 +305,30 @@ The recovery sequence is complete, and the approved migrated baseline is the aut
 
 This checkpoint preserves phased work, no scope creep, production validation, Evidence Reports, and return to the Master Plan after each completed sub-step.
 
+#### Phase 7A.9 Passive Inventory Correctness Validation
+
+Status: **COMPLETE**
+
+Scope: Read-only production validation of the existing passive-inventory baseline, with no behavioral changes or corrective implementation.
+
+##### Evidence Report
+
+**Deployment result:** No deployment or runtime change was part of this checkpoint. Production validation covered `inventory.json`, `devices.json`, `services.json`, `capabilities.json`, `topology.json`, `dependencies.json`, `summary.json`, and `status.json`; every file was present and valid. The official HIOC production validator, `bash /home/jazofv1/hioc/pi4/validate_pi4.sh`, completed successfully with all checks passing.
+
+**Intended behavior:** Passive Inventory must preserve stable identity and internally consistent projections while keeping DHCP assignment evidence, observation freshness, operational monitoring, and source authority semantically distinct.
+
+**Validation performed:** Stable snapshots confirmed that `inventory.devices` matched `devices.json`, `inventory.services` matched `services.json`, summary counts matched the projections, and counts remained internally consistent. Health categories, Watch-device records, health reasons, projection counts, and summary counts were mutually consistent.
+
+**Invariant checks:** The baseline contained 140 devices, 140 unique IDs, 140 unique MAC addresses, and 140 unique IP addresses, with no duplicate identities or malformed MAC addresses. Runtime behavior agreed with the documented observation model: DHCP remained identity evidence rather than liveness evidence; freshness remained separate from operational monitoring; monitoring remained policy-driven; and weak evidence did not overwrite stronger identity. Result: **PASS**.
+
+**Warnings and deferred risks:** This checkpoint establishes the production baseline but does not complete or reorder the remaining corrective sequence. Duplicate-collapse validation and any remaining identity-reconciliation work remain next, followed by the other already-listed inventory correctness tasks. The separate unresolved `mosquitto_pub` issue remained outside scope and was not investigated or modified.
+
+**Final result:** **PASS**
+
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
-2. Resume Phase 7A.9 Passive Inventory Correctness Validation.
+2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
 3. Remaining inventory correctness work: validate duplicate collapse and correct any remaining defects; resolve FAILED/INCOMPLETE ARP semantics; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
@@ -316,7 +336,7 @@ This checkpoint preserves phased work, no scope creep, production validation, Ev
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-The required hygiene checkpoint is complete. Phase 7A.9 is the next incomplete checkpoint. Remaining inventory correctness work follows Phase 7A.9, and passive enrichment resumes only after that corrective work.
+The required hygiene checkpoint and Phase 7A.9 are complete. Duplicate-collapse validation and any remaining identity-reconciliation work are the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
 
 ---
 
@@ -539,7 +559,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, and reconciliation of the historical recovery documentation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The Repository and Deployment Hygiene checkpoint is also complete. Phase 7A remains active, and Phase 7A.9 has not been executed and is the next incomplete checkpoint. The unresolved `mosquitto_pub` argument-list failure remains tracked for a separate, scoped investigation and is not marked resolved by the hygiene closeout.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, and Phase 7A.9 Passive Inventory Correctness Validation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active. Duplicate-collapse validation and any remaining identity-reconciliation work are next. The unresolved `mosquitto_pub` argument-list failure remains tracked for a separate, scoped investigation and is not marked resolved by this checkpoint.
 
 ## Current Branch
 
@@ -571,11 +591,11 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Execute Phase 7A.9 - Passive Inventory Correctness Validation as a read-only production-validation checkpoint with no behavioral changes, establishing a trusted passive-inventory baseline and producing an Evidence Report.
+Validate duplicate collapse and any remaining identity-reconciliation behavior as the first remaining inventory correctness task already defined by the Phase 7A corrective sequence.
 
 ## Next Planned Task
 
-Resume Phase 7A.9 - Passive Inventory Correctness Validation, the next incomplete checkpoint already defined by this Master Plan, after this documentation closeout is committed and pushed.
+Begin duplicate-collapse validation and assess any remaining identity-reconciliation defects without reordering the subsequent Phase 7A corrective work.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
