@@ -443,6 +443,8 @@ The initial dependency review is complete for the current provisional source-onl
 
 `tests/` has a different role: `release/validate.sh` compiles the repository's test tree during source or release validation. This establishes a source/release-validation dependency but does not establish that `tests/` is required in the production runtime.
 
+PI3-only recovery commit `5d0473dfd20efe7b07cf9167803d02aead10d61e` was reviewed against the authoritative `origin/main` history. Its `docs/RECOVERY_BASELINE.md` content is byte-for-byte identical to the authoritative version, and every substantive Master Plan addition is already present. The commit is therefore formally superseded and requires no merge or cherry-pick. It remains temporarily preserved on the PI3 local branch `recovery/phase-7a8-documentation-pi3` until this supersession record is committed and pushed, after which the branch may be removed as a separately validated governance action.
+
 The current deployment process broadly copies the source tree into production. `release/upgrade.sh` excludes only `.git`, `dist`, `state`, `history`, `logs`, and `backups`; `pi4/install_pi4.sh` excludes only `.git` when source and installation paths differ. This broad synchronization explains why source-oriented documentation and tests are present in production. Nothing has been removed, and no deployment manifest or exclusion policy has been implemented.
 
 ### Next Hygiene Sub-Checkpoint
