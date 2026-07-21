@@ -60,6 +60,8 @@ A **Device** is a discovered technical identity. It may contain a stable device 
 
 An **Asset** is a Device linked to operator-provided meaning and expectations. An asset may eventually include a friendly name, physical location, purpose, owner, category, criticality, expected availability, monitoring and maintenance expectations, notes, an optional photo, purchase or installation dates, maintenance history, and retirement or archival state.
 
+Future operator-approved asset linking may associate multiple discovered identities with one physical asset when authoritative evidence supports that relationship, including identities created by randomized or rotated MAC addresses. Passive discovery must keep those identities separate and must not infer that relationship heuristically.
+
 Examples show why the distinction matters:
 
 - A family phone may legitimately leave the network every day. Its disappearance is useful history, not necessarily a failure.

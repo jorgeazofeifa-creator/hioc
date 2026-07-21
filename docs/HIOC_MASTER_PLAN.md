@@ -352,6 +352,11 @@ Required hardening work:
 
 Completion criterion: Evidence demonstrates that the supported passive-discovery architecture cannot produce persistent duplicate identities under the documented canonical identity model.
 
+Deferred identity architecture decisions remain outside this checkpoint:
+
+- **Historical identity continuity:** A weak IP-based identity may be replaced in current inventory and projections by an unambiguous MAC-backed canonical identity, while historical events or external references may retain the earlier weak ID. HIOC has no formal alias table, promotion record, or historical identity resolution contract. A future explicit architecture checkpoint must decide whether historical identities remain immutable evidence identifiers, resolve through an alias or promotion mapping, or are migrated to canonical identities; this checkpoint must not invent a schema or migration mechanism.
+- **Randomized-MAC asset continuity:** Passive reconciliation must not guess that unrelated MAC addresses represent one physical device. Randomized or rotated MAC addresses remain separate discovered identities unless authoritative linking evidence exists. The one-physical-device/one-canonical-identity invariant applies within supported, unambiguous identity evidence. Future operator-approved linking of multiple discovered identities to one asset belongs to the asset-centric Living Digital Twin roadmap, not heuristic passive merging.
+
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
@@ -408,6 +413,7 @@ Phase 7A remains focused on trustworthy passive discovery and enrichment. Comple
 
 - Configurable passive-client retention and archival, after asset policy is designed.
 - Canonical local-address hardening without production-specific identity exceptions.
+- An explicit historical identity continuity decision covering immutable evidence IDs, alias or promotion resolution, and migration policy without presupposing a schema.
 - Continued Phase 7A enrichment from passive sources.
 
 Active Discovery remains postponed. Future YAML dashboard deployment modernization also remains planned and must not be folded into unrelated inventory checkpoints.
@@ -424,6 +430,7 @@ After reliable passive identity is established, Living Inventory should graduall
 - Asset lifecycle state, including active, retired, and archived concepts.
 - Maintenance expectations, purchase or installation context, maintenance history, notes, and optional photo references.
 - An operator workflow for physically matching discovered MAC addresses and other stable evidence to real assets.
+- Operator-approved asset linkage that may associate multiple discovered identities, including identities created by randomized or rotated MAC addresses, with one physical asset without heuristic passive merging.
 - Gradual enrichment from an unknown device to an identified, managed asset without losing discovery provenance.
 - Safe configurable retention and archival governed by asset policy rather than stale age alone.
 
