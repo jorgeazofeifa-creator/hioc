@@ -316,7 +316,7 @@ This checkpoint preserves phased work, no scope creep, production validation, Ev
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-Phase 7A.9 is paused while the required hygiene checkpoint is completed. Remaining inventory correctness work follows Phase 7A.9, and passive enrichment resumes only after that corrective work.
+The required hygiene checkpoint is complete. Phase 7A.9 is the next incomplete checkpoint. Remaining inventory correctness work follows Phase 7A.9, and passive enrichment resumes only after that corrective work.
 
 ---
 
@@ -421,7 +421,7 @@ The existence or future removal of the production runtime's `.git` directory is 
 
 ## Repository and Deployment Hygiene Checkpoint
 
-The source/runtime architecture is settled and is not being reopened. The current checkpoint is the cleanup and reconciliation phase that follows governance reconstruction. It classifies production content before any controlled cleanup; it does not claim that cleanup is complete.
+The source/runtime architecture is settled and is not being reopened. The Repository and Deployment Hygiene checkpoint is complete: production content was classified, the approved source-only deployment exclusions were implemented, the controlled one-time cleanup was performed, and production validation passed.
 
 Repository and runtime artifacts use these disposition categories:
 
@@ -433,8 +433,8 @@ Repository and runtime artifacts use these disposition categories:
 | DEPLOYMENT TOOLING | `release/`, `pi4/install_pi4.sh`, `pi4/uninstall_pi4.sh`, `pi4/validate_pi4.sh`, `homeassistant/install_ha.sh`, `homeassistant/validate_ha.sh`, and `VERSION.yaml`. Preserve pending dependency review. |
 | BACKUP / ARCHIVE | `backups/`. Preserve pending backup and retention review. |
 | GENERATED / TRANSIENT | `__pycache__/`, `*.pyc`, `.pytest_cache/`, and similar generated caches. Cleanup candidates only after validation. |
-| SOURCE-ONLY CANDIDATE | `README.md`, `ROADMAP.md`, `DECISIONS.md`, `CHANGELOG.md`, and `docs/` inside the production runtime are provisional source-only candidates. Their presence reflects historical deployments rather than competing development history. They remain provisional until deployment behavior is changed and validated. |
-| SOURCE / RELEASE VALIDATION | `tests/` is used by `release/validate.sh` in the source or release-validation context. Current evidence does not establish that it is required in the production runtime. |
+| SOURCE-ONLY | `README.md`, `ROADMAP.md`, `DECISIONS.md`, `CHANGELOG.md`, and `docs/` remain in authoritative source and are excluded from production deployment. |
+| SOURCE / RELEASE VALIDATION | `tests/` is used by `release/validate.sh` in the source or release-validation context and is excluded from production deployment. |
 | UNRESOLVED | The production runtime's `.git/` directory and any artifact whose ownership or dependency remains uncertain. Nothing classified as UNRESOLVED may be deleted. |
 
 ### Dependency Review Findings
@@ -443,44 +443,27 @@ The initial dependency review is complete for the current provisional source-onl
 
 `tests/` has a different role: `release/validate.sh` compiles the repository's test tree during source or release validation. This establishes a source/release-validation dependency but does not establish that `tests/` is required in the production runtime.
 
-PI3-only recovery commit `5d0473dfd20efe7b07cf9167803d02aead10d61e` was reviewed against the authoritative `origin/main` history. Its `docs/RECOVERY_BASELINE.md` content is byte-for-byte identical to the authoritative version, and every substantive Master Plan addition is already present. The commit is therefore formally superseded and requires no merge or cherry-pick. It remains temporarily preserved on the PI3 local branch `recovery/phase-7a8-documentation-pi3` until this supersession record is committed and pushed, after which the branch may be removed as a separately validated governance action.
+PI3-only recovery commit `5d0473dfd20efe7b07cf9167803d02aead10d61e` was reviewed against the authoritative `origin/main` history. Its `docs/RECOVERY_BASELINE.md` content is byte-for-byte identical to the authoritative version, and every substantive Master Plan addition is already present. The commit is therefore formally superseded and requires no merge or cherry-pick. It was temporarily preserved on the PI3 local branch `recovery/phase-7a8-documentation-pi3` until this supersession record was committed and pushed; that condition was satisfied, and branch removal was then separately validated.
 
-The current deployment process broadly copies the source tree into production. `release/upgrade.sh` excludes only `.git`, `dist`, `state`, `history`, `logs`, and `backups`; `pi4/install_pi4.sh` excludes only `.git` when source and installation paths differ. This broad synchronization explains why source-oriented documentation and tests are present in production. Nothing has been removed, and no deployment manifest or exclusion policy has been implemented.
+The deployment exclusions were implemented in `release/upgrade.sh` and `pi4/install_pi4.sh`. Future production copies exclude the six approved source-only root paths without adding `--delete`; runtime-generated, persistent, and operational content remains preserved.
 
-### Next Hygiene Sub-Checkpoint
+### Production Evidence Report
 
-Define and validate an explicit production deployment manifest or exclusion policy. It must determine exactly which paths are:
+**Deployment result:** PI3 authoritative source was fast-forwarded to `9f0653075bbe67cc880904e6a4970dcab004d401`; source `main` matched `origin/main`, and the working tree was clean. Updated `release/upgrade.sh` and `pi4/install_pi4.sh` were copied into the production runtime, where their SHA-256 hashes exactly matched the authoritative source copies.
 
-- Deployed application.
-- Deployment tooling required in production.
-- Source/release validation only.
-- Persistent runtime data.
-- Excluded from production deployment.
+**Intended behavior:** Production deployments exclude the source-only root paths `README.md`, `ROADMAP.md`, `DECISIONS.md`, `CHANGELOG.md`, `docs/`, and `tests/`. Runtime deployment continues without `--delete`, preserving runtime-generated and operational directories.
 
-Any deployment change must preserve:
+**One-time cleanup:** The six approved source-only paths were removed from `/home/jazofv1/hioc`. Copies remain in authoritative source and in `/home/jazofv1/hioc/backups/release-upgrade-20260720-185835/current`.
 
-- `config/`, `state/`, `history/`, `logs/`, and `backups/`.
-- Rollback capability.
-- Pi4 runtime executables and libraries.
-- Required Pi4 validation tooling.
-- Required Home Assistant deployment artifacts.
-- `VERSION.yaml` and required release metadata.
+**Invariant validation:** Runtime `config/`, `state/`, `history/`, `logs/`, `backups/`, and `pi4/bin/` remained present. An `rsync` dry run confirmed that the six excluded source-only paths would not be copied back. Final production hygiene validation result: **PASS**.
 
-Cleanup of existing production copies may occur only after the manifest or exclusion policy is implemented, release validation passes, a pre-change production backup exists, a dry-run or equivalent deployment preview is reviewed, production deployment is validated, and an Evidence Report is produced.
+**Repository governance:** The temporary local PI3 branch `recovery/phase-7a8-documentation-pi3` was deleted only after its superseded commit was documented and preserved in authoritative history. The PI3 source repository remained on clean `main`, synchronized with `origin/main`.
 
-Production cleanup requires, in order:
+### Unresolved Operational Issue
 
-1. Dependency validation.
-2. A pre-change backup.
-3. Controlled, explicitly scoped changes.
-4. Production validation.
-5. An Evidence Report.
-6. A documentation update.
-7. A code and documentation commit when both changed.
-8. A push to `main`.
-9. A clean authoritative working tree.
+During `release/upgrade.sh`, `pi4/install_pi4.sh` reached its existing invocation of `hioc-incident-engine-v2.py`, which failed with `OSError: [Errno 7] Argument list too long: 'mosquitto_pub'`.
 
-Phase 7A.9 remains paused until this required hygiene checkpoint is completed. No cleanup, deletion, or `.git` disposition is approved merely by this classification.
+The incident-engine invocation was neither introduced nor changed by the Repository and Deployment Hygiene work; the only `pi4/install_pi4.sh` change in this checkpoint was the addition of the six `rsync` exclusions. The MQTT publishing failure is therefore not attributed to the hygiene implementation. It remains unresolved and explicitly tracked for a separate, scoped investigation; this closeout does not diagnose, redesign, or propose a correction for it.
 
 ---
 
@@ -556,7 +539,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, and reconciliation of the historical recovery documentation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active. Repository and Deployment Hygiene is the current checkpoint and is not complete. Phase 7A.9 has not been executed and remains paused until the hygiene checkpoint completes.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, and reconciliation of the historical recovery documentation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The Repository and Deployment Hygiene checkpoint is also complete. Phase 7A remains active, and Phase 7A.9 has not been executed and is the next incomplete checkpoint. The unresolved `mosquitto_pub` argument-list failure remains tracked for a separate, scoped investigation and is not marked resolved by the hygiene closeout.
 
 ## Current Branch
 
@@ -588,13 +571,11 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Complete the Repository and Deployment Hygiene checkpoint by validating dependencies and classifying production-runtime content before any separately approved cleanup. Preserve deployed application files, persistent runtime data, deployment tooling, backups, and every unresolved artifact.
+Execute Phase 7A.9 - Passive Inventory Correctness Validation as a read-only production-validation checkpoint with no behavioral changes, establishing a trusted passive-inventory baseline and producing an Evidence Report.
 
 ## Next Planned Task
 
-Complete the evidence-driven Repository and Deployment Hygiene review without deleting or changing production content.
-
-After the hygiene checkpoint completes, resume Phase 7A.9 - Passive Inventory Correctness Validation as a read-only production-validation checkpoint with no behavioral changes. It will establish a trusted passive-inventory baseline and produce an Evidence Report.
+Resume Phase 7A.9 - Passive Inventory Correctness Validation, the next incomplete checkpoint already defined by this Master Plan, after this documentation closeout is committed and pushed.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
