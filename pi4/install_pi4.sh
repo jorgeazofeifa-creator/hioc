@@ -29,7 +29,15 @@ fi
 mkdir -p "$INSTALL_DIR" "$BACKUP_DIR"
 
 if [ "$SRC_DIR" != "$INSTALL_DIR" ]; then
-  rsync -a --exclude .git "$SRC_DIR/" "$INSTALL_DIR/"
+  rsync -a \
+    --exclude .git \
+    --exclude '/README.md' \
+    --exclude '/ROADMAP.md' \
+    --exclude '/DECISIONS.md' \
+    --exclude '/CHANGELOG.md' \
+    --exclude '/docs/' \
+    --exclude '/tests/' \
+    "$SRC_DIR/" "$INSTALL_DIR/"
 fi
 
 mkdir -p "$INSTALL_DIR/config" "$INSTALL_DIR/state/incidents" "$INSTALL_DIR/history" "$INSTALL_DIR/logs"

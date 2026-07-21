@@ -30,6 +30,12 @@ rsync -a \
   --exclude history \
   --exclude logs \
   --exclude backups \
+  --exclude '/README.md' \
+  --exclude '/ROADMAP.md' \
+  --exclude '/DECISIONS.md' \
+  --exclude '/CHANGELOG.md' \
+  --exclude '/docs/' \
+  --exclude '/tests/' \
   "$ROOT/" "$INSTALL_DIR/"
 
 bash "$INSTALL_DIR/pi4/install_pi4.sh"
@@ -37,4 +43,3 @@ bash "$INSTALL_DIR/pi4/install_pi4.sh"
 echo "$BACKUP_DIR" > "$INSTALL_DIR/backups/last-upgrade-backup"
 echo "HIOC upgrade completed."
 echo "Backup directory: $BACKUP_DIR"
-
