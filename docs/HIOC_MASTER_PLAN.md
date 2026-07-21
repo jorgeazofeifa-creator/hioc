@@ -321,22 +321,49 @@ Scope: Read-only production validation of the existing passive-inventory baselin
 
 **Invariant checks:** The baseline contained 140 devices, 140 unique IDs, 140 unique MAC addresses, and 140 unique IP addresses, with no duplicate identities or malformed MAC addresses. Runtime behavior agreed with the documented observation model: DHCP remained identity evidence rather than liveness evidence; freshness remained separate from operational monitoring; monitoring remained policy-driven; and weak evidence did not overwrite stronger identity. Result: **PASS**.
 
-**Warnings and deferred risks:** This checkpoint establishes the production baseline but does not complete or reorder the remaining corrective sequence. Duplicate-collapse validation and any remaining identity-reconciliation work remain next, followed by the other already-listed inventory correctness tasks. The separate unresolved `mosquitto_pub` issue remained outside scope and was not investigated or modified.
+**Warnings and deferred risks:** This checkpoint establishes the production baseline but does not complete or reorder the remaining corrective sequence. Identity Reconciliation Hardening remains next, followed by the other already-listed inventory correctness tasks. The separate unresolved `mosquitto_pub` issue remained outside scope and was not investigated or modified.
 
 **Final result:** **PASS**
+
+#### Identity Reconciliation Hardening
+
+Status: **NEXT ACTIVE CHECKPOINT**
+
+Objective: Validate and strengthen the canonical identity model itself before additional passive enrichment resumes. Phase 7A.9 confirmed that the current production snapshot has no IP-only identities, duplicate MAC identities, duplicate IDs, or duplicate IPs, and that ARP/DHCP multi-source reconciliation is operating correctly. This checkpoint must establish that supported passive discovery cannot produce persistent duplicate identities under the documented identity model; it is not merely another search for duplicates in one snapshot.
+
+Identity invariants:
+
+- Every physical device has exactly one canonical identity.
+- MAC-backed identities supersede weak IP-only identities whenever reconciliation is unambiguous.
+- Weak identities cannot persist after successful reconciliation.
+- Multiple passive collectors cannot create parallel identities for the same device.
+- Collector execution order does not change the final inventory.
+- Identity reconciliation is idempotent across repeated collection cycles.
+- Ambiguous evidence never causes an incorrect merge.
+- Identity provenance remains preserved after reconciliation.
+- Future passive collectors participate in the documented canonical identity model.
+
+Required hardening work:
+
+- Review the reconciliation implementation against [DATA_MODEL.md](DATA_MODEL.md).
+- Correct any remaining implementation defects found within this checkpoint's scope.
+- Add focused regression tests for identity invariants where appropriate.
+- Produce production validation evidence after completion.
+
+Completion criterion: Evidence demonstrates that the supported passive-discovery architecture cannot produce persistent duplicate identities under the documented canonical identity model.
 
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: validate duplicate collapse and correct any remaining defects; resolve FAILED/INCOMPLETE ARP semantics; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
+3. Remaining inventory correctness work: complete Identity Reconciliation Hardening; resolve FAILED/INCOMPLETE ARP semantics; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-The required hygiene checkpoint and Phase 7A.9 are complete. Duplicate-collapse validation and any remaining identity-reconciliation work are the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
+The required hygiene checkpoint and Phase 7A.9 are complete. Identity Reconciliation Hardening is the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
 
 ---
 
@@ -559,7 +586,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, and Phase 7A.9 Passive Inventory Correctness Validation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active. Duplicate-collapse validation and any remaining identity-reconciliation work are next. The unresolved `mosquitto_pub` argument-list failure remains tracked for a separate, scoped investigation and is not marked resolved by this checkpoint.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, and Phase 7A.9 Passive Inventory Correctness Validation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active. Identity Reconciliation Hardening is the next active checkpoint. The unresolved `mosquitto_pub` argument-list failure remains tracked for a separate, scoped investigation and is not marked resolved by this checkpoint.
 
 ## Current Branch
 
@@ -591,11 +618,11 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Validate duplicate collapse and any remaining identity-reconciliation behavior as the first remaining inventory correctness task already defined by the Phase 7A corrective sequence.
+Validate and strengthen the canonical identity model so supported passive discovery cannot produce persistent duplicate identities, while preserving correct ambiguity handling and provenance.
 
 ## Next Planned Task
 
-Begin duplicate-collapse validation and assess any remaining identity-reconciliation defects without reordering the subsequent Phase 7A corrective work.
+Review identity reconciliation against the documented Data Model, correct any in-scope defects, add focused invariant regression coverage, and produce production validation evidence.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
