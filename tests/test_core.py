@@ -54,7 +54,50 @@ class CoreTests(unittest.TestCase):
         registry.register(WorkingDriver())
         results = registry.run({})
         self.assertEqual(results[0].errors, ["driver failed"])
-        self.assertEqual(results[1].devices, [{"id": "dev_1"}])
+        self.assertEqual(results[1].devices, [{"id": "dev_1", "source": "driver:working"}])
+
+    def test_driver_registry_validates_result_shape_and_independent_records(self):
+        class ContractDriver:
+            name = "future_passive"
+
+            def discover(self, config):
+                return DriverResult(
+                    name=self.name,
+                    devices=({"ip": "192.168.1.10"}, "invalid", {"ip": "192.168.1.11", "source": "integration:test"}),
+                )
+
+        registry = DriverRegistry()
+        registry.register(ContractDriver())
+        result = registry.run({})[0]
+
+        self.assertEqual(result.devices, [
+            {"ip": "192.168.1.10", "source": "driver:future_passive"},
+            {"ip": "192.168.1.11", "source": "integration:test"},
+        ])
+        self.assertEqual(result.errors, ["driver device record 1 is not a mapping"])
+
+    def test_driver_registry_rejects_invalid_result_and_record_collection(self):
+        class InvalidResultDriver:
+            name = "invalid_result"
+
+            def discover(self, config):
+                return {"devices": []}
+
+        class InvalidCollectionDriver:
+            name = "invalid_collection"
+
+            def discover(self, config):
+                return DriverResult(name=self.name, devices={"ip": "192.168.1.10"})
+
+        registry = DriverRegistry()
+        registry.register(InvalidResultDriver())
+        registry.register(InvalidCollectionDriver())
+        invalid_result, invalid_collection = registry.run({})
+
+        self.assertEqual(invalid_result.devices, [])
+        self.assertEqual(invalid_result.errors, ["driver returned invalid result"])
+        self.assertEqual(invalid_collection.devices, [])
+        self.assertEqual(invalid_collection.errors, ["driver device must be a list or tuple"])
 
     def test_capability_registry_infers_roles_and_services(self):
         registry = CapabilityRegistry()

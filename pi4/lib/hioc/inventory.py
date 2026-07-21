@@ -74,6 +74,14 @@ NEIGHBOR_STATES = {"DELAY", "FAILED", "INCOMPLETE", "NOARP", "NONE", "PERMANENT"
 DURABLE_NEIGHBOR_STATES = {"DELAY", "PERMANENT", "PROBE", "REACHABLE", "STALE"}
 DHCP_ASSIGNMENT_FIELDS = {"dhcp_client_id", "dhcp_lease_source", "lease_expires_epoch"}
 DHCP_IDENTITY_FIELDS = {"hostname", "ip", "mac"}
+OBSERVED_SOURCE_AUTHORITY = {
+    "local_host": 600,
+    "gateway": 550,
+    "integration": 500,
+    "arp_table": 400,
+    "dhcp_leases": 300,
+    "driver": 200,
+}
 
 
 @dataclass
@@ -81,6 +89,7 @@ class DhcpLeaseSourceResult:
     path: Path
     status: str
     devices: dict
+    observations: list[dict] | None = None
     valid_lines: int = 0
     malformed_lines: int = 0
     error: str = ""
@@ -221,14 +230,15 @@ def _parse_dhcp_lease_line(raw: str, path: Path, line_number: int) -> tuple[dict
 
 def _read_dhcp_lease_source(path: Path) -> DhcpLeaseSourceResult:
     if not path.exists():
-        return DhcpLeaseSourceResult(path, "missing", {})
+        return DhcpLeaseSourceResult(path, "missing", {}, [])
     try:
         lines = path.read_text(errors="ignore").splitlines()
     except PermissionError as exc:
-        return DhcpLeaseSourceResult(path, "unreadable", {}, error=str(exc))
+        return DhcpLeaseSourceResult(path, "unreadable", {}, [], error=str(exc))
     except OSError as exc:
-        return DhcpLeaseSourceResult(path, "io_error", {}, error=str(exc))
+        return DhcpLeaseSourceResult(path, "io_error", {}, [], error=str(exc))
     devices = {}
+    observations = []
     malformed = 0
     nonempty = 0
     for line_number, raw in enumerate(lines, 1):
@@ -240,8 +250,11 @@ def _read_dhcp_lease_source(path: Path) -> DhcpLeaseSourceResult:
             malformed += 1
             LOG.warning("DHCP lease ignored path=%s line=%s reason=%s", path, line_number, reason)
             continue
-        devices[record["mac"]] = record
-    valid = len(devices)
+        observations.append(record)
+        current = devices.get(record["mac"])
+        if current is None or _dhcp_record_order(record) > _dhcp_record_order(current):
+            devices[record["mac"]] = record
+    valid = len(observations)
     if valid and malformed:
         status = "partial"
     elif valid:
@@ -250,17 +263,31 @@ def _read_dhcp_lease_source(path: Path) -> DhcpLeaseSourceResult:
         status = "malformed"
     else:
         status = "empty"
-    return DhcpLeaseSourceResult(path, status, devices, valid, malformed)
+    return DhcpLeaseSourceResult(path, status, devices, observations, valid, malformed)
 
 
 def dhcp_lease_source_results(paths: list[Path] | None = None) -> list[DhcpLeaseSourceResult]:
     return [_read_dhcp_lease_source(path) for path in (paths or dhcp_lease_paths())]
 
 
+def _dhcp_record_order(record: dict) -> tuple:
+    expiry = int(record.get("lease_expires_epoch", 0) or 0)
+    return (
+        (1, 0) if expiry == 0 else (0, expiry),
+        str(record.get("dhcp_lease_source", "")),
+        str(record.get("ip", "")),
+        normalize_hostname(record.get("hostname", "")),
+        str(record.get("dhcp_client_id", "")),
+    )
+
+
 def _aggregate_dhcp_lease_results(results: list[DhcpLeaseSourceResult]) -> tuple[dict, str]:
     devices = {}
     for result in results:
-        devices.update(result.devices)
+        for mac, record in result.devices.items():
+            current = devices.get(mac)
+            if current is None or _dhcp_record_order(record) > _dhcp_record_order(current):
+                devices[mac] = record
     statuses = {result.status for result in results}
     if devices:
         degraded = {"partial", "malformed", "unreadable", "io_error"}
@@ -288,6 +315,13 @@ def dhcp_lease_discovery(config: dict) -> tuple[dict, str]:
     return _aggregate_dhcp_lease_results(dhcp_lease_source_results(paths))
 
 
+def dhcp_lease_observations(config: dict) -> tuple[list[dict], str]:
+    results = dhcp_lease_source_results(dhcp_lease_paths(config))
+    _, status = _aggregate_dhcp_lease_results(results)
+    observations = [record for result in results for record in (result.observations or [])]
+    return observations, status
+
+
 def integration_inventory(config: dict, state_dir: Path) -> dict:
     configured = config.get("HIOC_INVENTORY_INTEGRATION_DIR", "")
     root = Path(configured) if configured else state_dir / "inventory" / "integrations"
@@ -305,7 +339,7 @@ def integration_inventory(config: dict, state_dir: Path) -> dict:
             records = payload
         else:
             records = []
-        for item in records:
+        for item_index, item in enumerate(records):
             if not isinstance(item, dict):
                 continue
             record = dict(item)
@@ -316,7 +350,10 @@ def integration_inventory(config: dict, state_dir: Path) -> dict:
             if key:
                 record.setdefault("source", f"integration:{path.stem}")
                 record.setdefault("last_seen_source", f"integration:{path.stem}")
-                devices[str(key)] = record
+                output_key = str(key)
+                if output_key in devices:
+                    output_key = f"{output_key}#{path.name}:{item_index}"
+                devices[output_key] = record
     return devices
 
 
@@ -567,8 +604,8 @@ class PassiveNetworkDriver:
         neighbors = neighbor_table()
         if neighbors:
             devices.extend(neighbors.values())
-        leases, _ = dhcp_lease_discovery(config)
-        devices.extend(leases.values())
+        leases, _ = dhcp_lease_observations(config)
+        devices.extend(leases)
         state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
         devices.extend(integration_inventory(config, state_root).values())
         return DriverResult(name=self.name, devices=devices)
@@ -728,38 +765,107 @@ def _record_key(record: dict) -> str:
     return normalize_mac(record.get("mac", "")) or record.get("ip") or normalize_hostname(record.get("hostname")) or record.get("_configured_id") or record.get("name", "")
 
 
+def _stable_value_key(value) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def _source_authority(source: str) -> int:
+    if source.startswith("integration:"):
+        return OBSERVED_SOURCE_AUTHORITY["integration"]
+    if source.startswith("driver:"):
+        return OBSERVED_SOURCE_AUTHORITY["driver"]
+    return OBSERVED_SOURCE_AUTHORITY.get(source, 100)
+
+
+def _record_authority(record: dict, field: str, value) -> tuple:
+    sources = sorted(_record_sources(record))
+    source_rank = max((_source_authority(source) for source in sources), default=100)
+    observation_epoch = record.get("last_seen_epoch", 0)
+    try:
+        observation_epoch = int(observation_epoch or 0)
+    except (TypeError, ValueError):
+        observation_epoch = 0
+    observation_order = (0, observation_epoch)
+    if sources == ["dhcp_leases"]:
+        try:
+            expiry = int(record.get("lease_expires_epoch", 0) or 0)
+        except (TypeError, ValueError):
+            expiry = 0
+        observation_order = (1, 0) if expiry == 0 else (0, expiry)
+    return source_rank, observation_order, tuple(sources), _stable_value_key(value)
+
+
+def _select_observed_value(records: list[dict], field: str):
+    candidates = []
+    for record in records:
+        value = record.get(field)
+        if value in ("", None, []):
+            continue
+        dhcp_record = _record_sources(record) == {"dhcp_leases"}
+        if dhcp_record and field not in DHCP_ASSIGNMENT_FIELDS | DHCP_IDENTITY_FIELDS:
+            continue
+        candidates.append((record, value))
+    if not candidates:
+        return None
+    if field == "first_seen":
+        valid = [(_valid_first_seen(record), value) for record, value in candidates]
+        valid = [(parsed, value) for parsed, value in valid if parsed]
+        if valid:
+            return min(valid, key=lambda item: item[0][0])[1]
+        return min((value for _, value in candidates), key=_stable_value_key)
+    if field == "last_seen_epoch":
+        def epoch_key(item) -> tuple:
+            try:
+                epoch = int(item[1] or 0)
+            except (TypeError, ValueError):
+                epoch = 0
+            return epoch, _record_authority(item[0], field, item[1])
+
+        return max(candidates, key=epoch_key)[1]
+    if field == "last_seen":
+        parsed = [(_valid_first_seen({"first_seen": value}), record, value) for record, value in candidates]
+        valid = [(timestamp, record, value) for timestamp, record, value in parsed if timestamp]
+        if valid:
+            return max(valid, key=lambda item: (item[0][0], _record_authority(item[1], field, item[2])))[2]
+    return max(candidates, key=lambda item: _record_authority(item[0], field, item[1]))[1]
+
+
 def _merge_record_values(records: list[dict]) -> dict:
     observed_records = [record for record in records if record.get("_observed", True)]
     known_records = [record for record in records if not record.get("_observed", True)]
     local_host_observed = any("local_host" in _record_sources(record) for record in observed_records)
     merged = {}
-    sources = set()
-    for record in observed_records + known_records:
-        if record.get("source"):
-            sources.add(record["source"])
-        sources.update(record.get("sources", []))
-    for record in observed_records:
-        dhcp_record = _record_sources(record) == {"dhcp_leases"}
-        for key, value in record.items():
-            if key.startswith("_") or value in ("", None, []):
-                continue
-            if dhcp_record and key not in DHCP_ASSIGNMENT_FIELDS | DHCP_IDENTITY_FIELDS:
-                continue
-            if dhcp_record and key not in DHCP_ASSIGNMENT_FIELDS and merged.get(key) not in ("", None, []):
-                continue
-            merged[key] = value
-    for record in known_records:
-        for key in ("mac", "ip", "hostname"):
-            if record.get(key) and not merged.get(key):
-                merged[key] = record[key]
-        for key in record.get("_known_metadata_fields", []):
-            value = record.get(key)
-            if local_host_observed and key in LOCAL_HOST_PROTECTED_KNOWN_FIELDS and merged.get(key):
-                continue
-            if value not in ("", None, []):
-                merged[key] = value
-        if record.get("_configured_id") and not merged.get("_configured_id"):
-            merged["_configured_id"] = record["_configured_id"]
+    sources = set().union(*(_record_sources(record) for record in observed_records + known_records)) if records else set()
+    observed_fields = sorted({
+        key
+        for record in observed_records
+        for key, value in record.items()
+        if not key.startswith("_") and key not in {"source", "sources"} and value not in ("", None, [])
+    })
+    for field in observed_fields:
+        value = _select_observed_value(observed_records, field)
+        if value not in ("", None, []):
+            merged[field] = value
+
+    known_identity_fields = ("mac", "ip", "hostname")
+    for field in known_identity_fields:
+        if merged.get(field):
+            continue
+        values = [record[field] for record in known_records if record.get(field)]
+        if values:
+            merged[field] = min(values, key=_stable_value_key)
+    known_metadata_fields = sorted({
+        field for record in known_records for field in record.get("_known_metadata_fields", [])
+    })
+    for field in known_metadata_fields:
+        if local_host_observed and field in LOCAL_HOST_PROTECTED_KNOWN_FIELDS and merged.get(field):
+            continue
+        values = [record[field] for record in known_records if record.get(field) not in ("", None, [])]
+        if values:
+            merged[field] = min(values, key=_stable_value_key)
+    configured_ids = [record["_configured_id"] for record in known_records if record.get("_configured_id")]
+    if configured_ids and not merged.get("_configured_id"):
+        merged["_configured_id"] = min(configured_ids, key=_stable_value_key)
     if sources:
         merged["sources"] = sorted(sources)
     merged["_observed"] = bool(observed_records)
@@ -1009,7 +1115,7 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
         if retained_weak:
             _merge_retained_weak_identity(record, retained_weak)
         if observed:
-            record["first_seen"] = _earliest_first_seen(now, prev, retained_weak)
+            record["first_seen"] = _earliest_first_seen(now, record, prev, retained_weak)
             if positive_observation:
                 record["last_seen"] = now
                 record["last_seen_epoch"] = now_epoch

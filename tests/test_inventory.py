@@ -1,4 +1,5 @@
 import json
+import itertools
 import sys
 import tempfile
 import unittest
@@ -14,6 +15,7 @@ from hioc.inventory import (
     build_topology,
     classify_device,
     dhcp_lease_discovery,
+    dhcp_lease_observations,
     dhcp_lease_paths,
     dhcp_lease_source_results,
     dhcp_leases,
@@ -35,9 +37,16 @@ from hioc.inventory import (
     stable_device_id,
 )
 from hioc.core.monitoring import is_operationally_monitored
+from hioc.core.drivers import DriverRegistry, DriverResult
 
 
 class InventoryModelTests(unittest.TestCase):
+    def _identity_config(self):
+        return {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
+
+    def _merge_for_identity_comparison(self, records, previous=None):
+        return merge_records(records, previous or {"devices": []}, "2026-07-21T10:00:00-06:00", 1000, self._identity_config())
+
     def test_mac_normalization_accepts_colon_and_dash_formats(self):
         self.assertEqual(normalize_mac("AA-BB-CC-DD-EE-FF"), "aa:bb:cc:dd:ee:ff")
         self.assertEqual(normalize_mac("aa:bb:cc:dd:ee:ff"), "aa:bb:cc:dd:ee:ff")
@@ -49,6 +58,174 @@ class InventoryModelTests(unittest.TestCase):
         by_ip = stable_device_id({"ip": "192.168.1.20"})
         self.assertEqual(with_mac, same_mac_new_ip)
         self.assertNotEqual(with_mac, by_ip)
+
+    def test_collector_order_does_not_change_arp_and_dhcp_record(self):
+        arp = {
+            "ip": "192.168.1.20", "mac": "aa:bb:cc:dd:ee:20", "hostname": "arp-host",
+            "vendor": "ARP Vendor", "source": "arp_table", "last_seen_source": "arp_table",
+        }
+        dhcp = {
+            "ip": "192.168.1.20", "mac": "aa:bb:cc:dd:ee:20", "hostname": "dhcp-host",
+            "lease_expires_epoch": 2000, "dhcp_lease_source": "/leases/a", "source": "dhcp_leases",
+            "_positive_observation": False,
+        }
+
+        forward = self._merge_for_identity_comparison([arp, dhcp])
+        reverse = self._merge_for_identity_comparison([dhcp, arp])
+
+        self.assertEqual(forward, reverse)
+        self.assertEqual(forward[0]["hostname"], "arp-host")
+        self.assertEqual(forward[0]["sources"], ["arp_table", "dhcp_leases"])
+
+    def test_collector_order_does_not_change_conflicting_integration_metadata(self):
+        arp = {
+            "ip": "192.168.1.20", "mac": "aa:bb:cc:dd:ee:20", "hostname": "arp-host",
+            "name": "ARP Device", "vendor": "ARP Vendor", "source": "arp_table",
+        }
+        integration = {
+            "ip": "192.168.1.21", "mac": "aa:bb:cc:dd:ee:20", "hostname": "integration-host",
+            "name": "Integration Device", "vendor": "Integration Vendor", "source": "integration:controller",
+        }
+
+        forward = self._merge_for_identity_comparison([arp, integration])
+        reverse = self._merge_for_identity_comparison([integration, arp])
+
+        self.assertEqual(forward, reverse)
+        self.assertEqual(forward[0]["ip"], "192.168.1.21")
+        self.assertEqual(forward[0]["display_name"], "Integration Device")
+        self.assertEqual(forward[0]["vendor"], "Integration Vendor")
+
+    def test_three_source_permutations_converge(self):
+        records = [
+            {"ip": "192.168.1.30", "mac": "aa:bb:cc:dd:ee:30", "hostname": "arp-host", "vendor": "ARP Vendor", "source": "arp_table"},
+            {"ip": "192.168.1.30", "mac": "aa:bb:cc:dd:ee:30", "hostname": "dhcp-host", "lease_expires_epoch": 2000, "source": "dhcp_leases", "_positive_observation": False},
+            {"ip": "192.168.1.31", "mac": "aa:bb:cc:dd:ee:30", "hostname": "integration-host", "vendor": "Integration Vendor", "source": "integration:controller"},
+        ]
+
+        results = [self._merge_for_identity_comparison(list(order)) for order in itertools.permutations(records)]
+
+        self.assertTrue(all(result == results[0] for result in results[1:]))
+        self.assertEqual(results[0][0]["sources"], ["arp_table", "dhcp_leases", "integration:controller"])
+
+    def test_known_metadata_authority_is_order_independent(self):
+        observed = [{
+            "ip": "192.168.1.40", "mac": "aa:bb:cc:dd:ee:40", "hostname": "passive-host",
+            "name": "Passive name", "vendor": "Passive vendor", "source": "arp_table",
+        }]
+        known = [{
+            "ip": "192.168.1.40", "mac": "aa:bb:cc:dd:ee:40", "hostname": "passive-host",
+            "name": "Operator name", "vendor": "Operator vendor", "source": "known_infrastructure",
+            "_observed": False, "_known_metadata_fields": ["name", "hostname", "vendor"],
+        }]
+        records = append_known_infrastructure(observed, known)
+
+        forward = self._merge_for_identity_comparison(records)
+        reverse = self._merge_for_identity_comparison(list(reversed(records)))
+
+        self.assertEqual(forward, reverse)
+        self.assertEqual(forward[0]["display_name"], "Operator name")
+        self.assertEqual(forward[0]["hostname"], "passive-host")
+        self.assertEqual(forward[0]["vendor"], "Operator vendor")
+
+    def test_repeated_complete_discovery_is_idempotent(self):
+        records = [
+            {"ip": "192.168.1.50", "mac": "aa:bb:cc:dd:ee:50", "hostname": "device", "source": "arp_table"},
+            {"ip": "192.168.1.50", "mac": "aa:bb:cc:dd:ee:50", "source": "dhcp_leases", "lease_expires_epoch": 2000, "_positive_observation": False},
+        ]
+        first = self._merge_for_identity_comparison(records)
+        reloaded = json.loads(json.dumps({"devices": first}))
+        second = self._merge_for_identity_comparison(records, reloaded)
+
+        self.assertEqual(first, second)
+        self.assertEqual(second[0]["sources"], ["arp_table", "dhcp_leases"])
+
+    def test_repeated_ip_only_observation_keeps_one_weak_identity(self):
+        record = {"ip": "192.168.1.51", "source": "integration:weak", "first_seen": "2026-07-01T09:00:00-06:00"}
+        first = self._merge_for_identity_comparison([record])
+        second = self._merge_for_identity_comparison([record], json.loads(json.dumps({"devices": first})))
+
+        self.assertEqual(len(second), 1)
+        self.assertEqual(second[0]["id"], stable_device_id({"ip": "192.168.1.51"}))
+        self.assertEqual(second[0]["first_seen"], "2026-07-01T09:00:00-06:00")
+        self.assertEqual(second[0]["sources"], ["integration:weak"])
+
+    def test_same_mac_address_movement_preserves_identity(self):
+        first = self._merge_for_identity_comparison([{"ip": "192.168.1.60", "mac": "aa:bb:cc:dd:ee:60", "source": "arp_table"}])
+        moved = self._merge_for_identity_comparison(
+            [{"ip": "192.168.1.61", "mac": "aa:bb:cc:dd:ee:60", "source": "arp_table"}],
+            {"devices": first},
+        )
+
+        self.assertEqual(len(moved), 1)
+        self.assertEqual(moved[0]["id"], first[0]["id"])
+        self.assertEqual(moved[0]["ip"], "192.168.1.61")
+
+    def test_repeated_weak_to_strong_promotion_remains_stable(self):
+        weak = {"ip": "192.168.1.62", "source": "integration:weak", "first_seen": "2026-07-01T10:00:00-06:00"}
+        strong = {"ip": "192.168.1.62", "mac": "aa:bb:cc:dd:ee:62", "source": "dhcp_leases", "_positive_observation": False}
+        initial = self._merge_for_identity_comparison([weak])
+        promoted = self._merge_for_identity_comparison([weak, strong], {"devices": initial})
+        repeated = self._merge_for_identity_comparison([weak, strong], {"devices": promoted})
+
+        self.assertEqual(len(promoted), 1)
+        self.assertEqual(len(repeated), 1)
+        self.assertEqual(promoted[0]["id"], stable_device_id(strong))
+        self.assertEqual(repeated[0]["id"], promoted[0]["id"])
+        self.assertEqual(repeated[0]["first_seen"], "2026-07-01T10:00:00-06:00")
+        self.assertEqual(repeated[0]["sources"], ["dhcp_leases", "integration:weak"])
+
+    def test_current_projections_exclude_eliminated_weak_identity(self):
+        local = {"interface": "eth0", "cidr": "192.168.1.2/24", "ip": "192.168.1.2", "mac": "aa:bb:cc:dd:ee:02"}
+        weak_ip = "192.168.1.63"
+        strong_mac = "aa:bb:cc:dd:ee:63"
+        weak_id = stable_device_id({"ip": weak_ip})
+        strong_id = stable_device_id({"mac": strong_mac})
+        config = {
+            "HIOC_HOME": "/nonexistent",
+            "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_STALE_AFTER_SEC": "60",
+            "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120",
+            "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+        with patch("hioc.inventory.local_ipv4_addresses", return_value=[local]), \
+             patch("hioc.inventory.default_gateway", return_value={}), \
+             patch("hioc.inventory.neighbor_table", return_value={}), \
+             patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_found")), \
+             patch("hioc.inventory.dhcp_lease_observations", return_value=([{
+                 "ip": weak_ip, "mac": strong_mac, "source": "dhcp_leases", "_positive_observation": False,
+             }], "dhcp_leases_found")), \
+             patch("hioc.inventory.integration_inventory", return_value={weak_ip: {
+                 "ip": weak_ip, "source": "integration:weak",
+             }}), \
+             patch("hioc.inventory.systemd_services", return_value={}), \
+             patch("hioc.inventory.listening_services", return_value=[]), \
+             patch("hioc.inventory.package_version", return_value=""):
+            inventory = discover_inventory(config, {"devices": []})
+
+        self.assertIn(strong_id, {device["id"] for device in inventory["devices"]})
+        self.assertNotIn(weak_id, {device["id"] for device in inventory["devices"]})
+        current_payload = json.dumps(inventory, sort_keys=True)
+        self.assertNotIn(weak_id, current_payload)
+
+    def test_future_driver_records_are_routed_through_central_reconciliation(self):
+        class FuturePassiveDriver:
+            name = "future_passive"
+
+            def discover(self, config):
+                return DriverResult(name=self.name, devices=[
+                    {"ip": "192.168.1.64", "mac": "aa:bb:cc:dd:ee:64", "name": "First"},
+                    {"ip": "192.168.1.64", "mac": "aa:bb:cc:dd:ee:64", "name": "Second"},
+                ])
+
+        registry = DriverRegistry()
+        registry.register(FuturePassiveDriver())
+        result = registry.run({})[0]
+        devices = self._merge_for_identity_comparison(result.devices)
+
+        self.assertEqual(result.errors, [])
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["id"], stable_device_id({"mac": "aa:bb:cc:dd:ee:64"}))
+        self.assertEqual(devices[0]["sources"], ["driver:future_passive"])
 
     def test_health_score_marks_stale_and_offline_devices(self):
         healthy = health_score({"last_seen_epoch": 1000, "reachable": True, "mac": "aa:bb:cc:dd:ee:ff"}, 1010, 60, 120)
@@ -970,6 +1147,29 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(devices["aa:bb:cc:dd:ee:ff"]["source"], "integration:orbi")
         self.assertEqual(devices["aa:bb:cc:dd:ee:ff"]["parent_ip"], "192.168.1.1")
 
+    def test_integration_observations_are_preserved_until_central_reconciliation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "integrations"
+            root.mkdir()
+            (root / "alpha.json").write_text(
+                '{"devices":['
+                '{"name":"Alpha","ip":"192.168.1.70","mac":"aa:bb:cc:dd:ee:70","vendor":"Alpha Vendor"},'
+                '{"name":"Alpha","ip":"192.168.1.70","mac":"aa:bb:cc:dd:ee:70","vendor":"Alpha Vendor"}'
+                ']}'
+            )
+            (root / "beta.json").write_text(
+                '{"devices":[{"name":"Beta","ip":"192.168.1.71","mac":"aa:bb:cc:dd:ee:70","vendor":"Beta Vendor"}]}'
+            )
+            observations = integration_inventory({"HIOC_INVENTORY_INTEGRATION_DIR": str(root)}, Path(tmp))
+
+        self.assertEqual(len(observations), 3)
+        self.assertEqual({record["source"] for record in observations.values()}, {"integration:alpha", "integration:beta"})
+        forward = self._merge_for_identity_comparison(list(observations.values()))
+        reverse = self._merge_for_identity_comparison(list(reversed(list(observations.values()))))
+        self.assertEqual(forward, reverse)
+        self.assertEqual(forward[0]["sources"], ["integration:alpha", "integration:beta"])
+        self.assertEqual(forward[0]["display_name"], "Beta")
+
     def test_subnet_scan_is_disabled_for_safe_inventory(self):
         self.assertEqual(scan_subnet("192.168.1.0/24", 1, 1), {})
 
@@ -1062,6 +1262,46 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(discovered["aa:bb:cc:dd:ee:01"]["hostname"], "latest")
         devices = merge_records(list(discovered.values()), {"devices": []}, "now", 1000, {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"})
         self.assertEqual({device["mac"] for device in devices}, {"aa:bb:cc:dd:ee:01", "aa:bb:cc:dd:ee:02"})
+
+    def test_dhcp_observations_are_preserved_until_central_reconciliation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            first = Path(tmp) / "first.leases"
+            second = Path(tmp) / "second.leases"
+            first.write_text("100 aa:bb:cc:dd:ee:80 192.168.1.80 first *\n")
+            second.write_text("200 aa:bb:cc:dd:ee:80 192.168.1.81 second *\n")
+            observations, status = dhcp_lease_observations({
+                "HIOC_INVENTORY_DHCP_LEASE_FILES": f"{first},{second}",
+            })
+
+        self.assertEqual(status, "dhcp_leases_found")
+        self.assertEqual(len(observations), 2)
+        self.assertEqual({record["dhcp_lease_source"] for record in observations}, {str(first), str(second)})
+        forward = self._merge_for_identity_comparison(observations)
+        reverse = self._merge_for_identity_comparison(list(reversed(observations)))
+        self.assertEqual(forward, reverse)
+        self.assertEqual(forward[0]["ip"], "192.168.1.81")
+        self.assertEqual(forward[0]["hostname"], "second")
+        self.assertEqual(forward[0]["lease_expires_epoch"], 200)
+
+    def test_infinite_dhcp_lease_has_deterministic_assignment_authority(self):
+        finite = {
+            "ip": "192.168.1.90", "mac": "aa:bb:cc:dd:ee:90", "hostname": "finite",
+            "lease_expires_epoch": 200, "dhcp_lease_source": "/leases/finite", "source": "dhcp_leases",
+            "_positive_observation": False,
+        }
+        infinite = {
+            "ip": "192.168.1.91", "mac": "aa:bb:cc:dd:ee:90", "hostname": "infinite",
+            "lease_expires_epoch": 0, "dhcp_lease_source": "/leases/infinite", "source": "dhcp_leases",
+            "_positive_observation": False,
+        }
+
+        forward = self._merge_for_identity_comparison([finite, infinite])
+        reverse = self._merge_for_identity_comparison([infinite, finite])
+
+        self.assertEqual(forward, reverse)
+        self.assertEqual(forward[0]["ip"], "192.168.1.91")
+        self.assertEqual(forward[0]["hostname"], "infinite")
+        self.assertEqual(forward[0]["lease_expires_epoch"], 0)
 
     def test_multiple_dhcp_lease_paths_merge_valid_sources_and_report_partial_failures(self):
         with tempfile.TemporaryDirectory() as tmp:
