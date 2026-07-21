@@ -433,8 +433,38 @@ Repository and runtime artifacts use these disposition categories:
 | DEPLOYMENT TOOLING | `release/`, `pi4/install_pi4.sh`, `pi4/uninstall_pi4.sh`, `pi4/validate_pi4.sh`, `homeassistant/install_ha.sh`, `homeassistant/validate_ha.sh`, and `VERSION.yaml`. Preserve pending dependency review. |
 | BACKUP / ARCHIVE | `backups/`. Preserve pending backup and retention review. |
 | GENERATED / TRANSIENT | `__pycache__/`, `*.pyc`, `.pytest_cache/`, and similar generated caches. Cleanup candidates only after validation. |
-| SOURCE-ONLY CANDIDATE | `README.md`, `ROADMAP.md`, `DECISIONS.md`, `CHANGELOG.md`, `docs/`, and `tests/` inside the production runtime are provisional source-only candidates. Their presence reflects historical deployments rather than competing development history. They must remain until dependency validation confirms they are not required by deployment, validation, recovery, or operational workflows. |
+| SOURCE-ONLY CANDIDATE | `README.md`, `ROADMAP.md`, `DECISIONS.md`, `CHANGELOG.md`, and `docs/` inside the production runtime are provisional source-only candidates. Their presence reflects historical deployments rather than competing development history. They remain provisional until deployment behavior is changed and validated. |
+| SOURCE / RELEASE VALIDATION | `tests/` is used by `release/validate.sh` in the source or release-validation context. Current evidence does not establish that it is required in the production runtime. |
 | UNRESOLVED | The production runtime's `.git/` directory and any artifact whose ownership or dependency remains uncertain. Nothing classified as UNRESOLVED may be deleted. |
+
+### Dependency Review Findings
+
+The initial dependency review is complete for the current provisional source-only candidates. It reflects the evidence gathered against the current deployment architecture and establishes the baseline for subsequent deployment-manifest validation. No runtime, cron, systemd, installer, rollback, Home Assistant, or other operational dependency was discovered for `README.md`, `ROADMAP.md`, `DECISIONS.md`, `CHANGELOG.md`, or `docs/`. References among those files are documentation-to-documentation links rather than runtime dependencies.
+
+`tests/` has a different role: `release/validate.sh` compiles the repository's test tree during source or release validation. This establishes a source/release-validation dependency but does not establish that `tests/` is required in the production runtime.
+
+The current deployment process broadly copies the source tree into production. `release/upgrade.sh` excludes only `.git`, `dist`, `state`, `history`, `logs`, and `backups`; `pi4/install_pi4.sh` excludes only `.git` when source and installation paths differ. This broad synchronization explains why source-oriented documentation and tests are present in production. Nothing has been removed, and no deployment manifest or exclusion policy has been implemented.
+
+### Next Hygiene Sub-Checkpoint
+
+Define and validate an explicit production deployment manifest or exclusion policy. It must determine exactly which paths are:
+
+- Deployed application.
+- Deployment tooling required in production.
+- Source/release validation only.
+- Persistent runtime data.
+- Excluded from production deployment.
+
+Any deployment change must preserve:
+
+- `config/`, `state/`, `history/`, `logs/`, and `backups/`.
+- Rollback capability.
+- Pi4 runtime executables and libraries.
+- Required Pi4 validation tooling.
+- Required Home Assistant deployment artifacts.
+- `VERSION.yaml` and required release metadata.
+
+Cleanup of existing production copies may occur only after the manifest or exclusion policy is implemented, release validation passes, a pre-change production backup exists, a dry-run or equivalent deployment preview is reviewed, production deployment is validated, and an Evidence Report is produced.
 
 Production cleanup requires, in order:
 
