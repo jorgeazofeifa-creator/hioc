@@ -6,7 +6,7 @@ This memorandum prepares, but does not approve, an architecture decision concern
 
 It is governed by the [HIOC Master Plan](HIOC_MASTER_PLAN.md), [architecture](ARCHITECTURE.md), [data model](DATA_MODEL.md), [MQTT contract](MQTT.md), [Core runtime](CORE.md), and [decision log](../DECISIONS.md).
 
-**Decision outcome — 2026-07-22:** Accepted [ADR-0014](../DECISIONS.md#adr-0014-use-core-mqtt-for-incident-publication) selected Candidate C. The binding plan is the [Incident History MQTT Transport Implementation Specification](INCIDENT_HISTORY_MQTT_TRANSPORT_IMPLEMENTATION_SPEC.md). This memorandum remains the neutral preparation evidence; it does not claim implementation or production correction.
+**Decision outcome — 2026-07-22:** Accepted [ADR-0014](../DECISIONS.md#adr-0014-use-core-mqtt-for-incident-publication) selected Candidate C. The binding plan is the [Incident History MQTT Transport Implementation Specification](INCIDENT_HISTORY_MQTT_TRANSPORT_IMPLEMENTATION_SPEC.md). Repository implementation is complete and validated; this memorandum remains the neutral preparation evidence, and production correction is not yet validated.
 
 ## 2. Current operational problem
 
@@ -216,7 +216,7 @@ An implementation specification may begin only after:
 8. the Master Plan identifies the bounded implementation checkpoint; and
 9. the final decision is recorded in `DECISIONS.md` or a dedicated accepted ADR.
 
-Accepted ADR-0014 and the binding implementation specification now satisfy these preparation conditions and authorize Candidate C as the next bounded implementation checkpoint. Implementation has not occurred, and production remains unresolved pending deployment validation.
+Accepted ADR-0014 and the binding implementation specification satisfied these preparation conditions. Candidate C is now implemented and repository-validated, while production remains unresolved pending deployment validation.
 
 ## 10. Relationship to roadmap and dashboard progress
 

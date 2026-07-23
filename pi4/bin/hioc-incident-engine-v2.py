@@ -15,6 +15,7 @@ from hioc.core.correlation import build_event_signals, build_inventory_signals, 
 from hioc.core.events import EventBus
 from hioc.core.incident_review import build_history_stats, compact_recent_incidents, enrich_history, recent_incident_reviews
 from hioc.core.state import StateStore
+from hioc.mqtt import MqttClient
 
 CONFIG_FILE = HIOC_HOME / "config" / "hioc.conf"
 TOOLKIT_CONFIG = PI4_TOOLS_HOME / "config" / "toolkit.conf"
@@ -32,6 +33,8 @@ STATUS_FILE = HIOC_HOME / "state" / "incident_engine_status.json"
 DEFAULTS = {
     "HIOC_BASE_TOPIC": "home/infrastructure/hioc",
     "HIOC_LEGACY_BASE_TOPIC": "home/infrastructure/pi4",
+    "MQTT_HOST": "localhost",
+    "MQTT_PORT": "1883",
     "HIOC_HISTORY_LIMIT": "100",
     "HIOC_RECOVERY_CONFIRM_CYCLES": "2",
     "HIOC_INCIDENT_CONFIRM_CYCLES": "3",
@@ -90,16 +93,6 @@ def mqtt_read(topic, fallback="unknown"):
         cmd += ["-P", c.get("MQTT_PASSWORD", "")]
     value = run(cmd, timeout=5)
     return value if value != "" else fallback
-
-
-def mqtt_pub(topic, payload):
-    c = cfg()
-    cmd = ["mosquitto_pub", "-h", c.get("MQTT_HOST", "localhost"), "-p", c.get("MQTT_PORT", "1883"), "-t", topic, "-m", payload, "-r"]
-    if c.get("MQTT_USER"):
-        cmd += ["-u", c.get("MQTT_USER", "")]
-    if c.get("MQTT_PASSWORD"):
-        cmd += ["-P", c.get("MQTT_PASSWORD", "")]
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
 
 
 def num(value, default=0.0):
@@ -164,18 +157,56 @@ def publish_event(event_bus, event_type, timestamp, payload):
         pass
 
 
-def publish_all(base):
-    for topic, path in {
-        f"{base}/incidents/active": ACTIVE_FILE,
-        f"{base}/incidents/history": HISTORY_FILE,
-        f"{base}/incidents/summary": SUMMARY_FILE,
-        f"{base}/timeline/history": TIMELINE_FILE,
-        f"{base}/timeline/latest": LATEST_EVENT_FILE,
-        f"{base}/status/detail": STATUS_FILE,
-    }.items():
-        if path.exists():
-            mqtt_pub(topic, path.read_text())
-    mqtt_pub(f"{base}/status", "online")
+def _publication_error(phase, topic, completed, exc, context=""):
+    detail = f"{context}: " if context else ""
+    return RuntimeError(
+        f"phase={phase} topic={topic or 'none'} completed={completed}: "
+        f"{type(exc).__name__}: {detail}{exc}"
+    )
+
+
+def publish_all(base, config):
+    publication_files = (
+        (f"{base}/incidents/active", ACTIVE_FILE),
+        (f"{base}/incidents/history", HISTORY_FILE),
+        (f"{base}/incidents/summary", SUMMARY_FILE),
+        (f"{base}/timeline/history", TIMELINE_FILE),
+        (f"{base}/timeline/latest", LATEST_EVENT_FILE),
+        (f"{base}/status/detail", STATUS_FILE),
+    )
+    payloads = []
+    for topic, path in publication_files:
+        if not path.exists():
+            continue
+        try:
+            payload = path.read_text(encoding="utf-8")
+            json.loads(payload)
+        except Exception as exc:
+            raise _publication_error("preflight", topic, 0, exc, f"path={path}") from exc
+        payloads.append((topic, payload))
+    payloads.append((f"{base}/status", "online"))
+
+    completed = []
+    current_topic = None
+    entered = False
+    try:
+        with MqttClient(config, client_id="hioc-incident-engine") as mqtt:
+            entered = True
+            for current_topic, payload in payloads:
+                try:
+                    mqtt.publish(current_topic, payload, retain=True)
+                except Exception as exc:
+                    raise _publication_error("publish", current_topic, len(completed), exc) from exc
+                completed.append(current_topic)
+    except RuntimeError as exc:
+        if str(exc).startswith("phase=publish "):
+            raise
+        phase = "cleanup" if entered else "connect"
+        raise _publication_error(phase, current_topic, len(completed), exc) from exc
+    except Exception as exc:
+        phase = "cleanup" if entered else "connect"
+        raise _publication_error(phase, current_topic, len(completed), exc) from exc
+    return completed
 
 
 def main():
@@ -275,8 +306,13 @@ def main():
     }
     save_json(SUMMARY_FILE, summary)
     save_json(STATUS_FILE, {"status": "online", "version": "1.2.0", "updated": timestamp})
-    publish_all(base)
+    try:
+        publish_all(base, c)
+    except Exception as exc:
+        print(f"incident MQTT publication failed {exc}", file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

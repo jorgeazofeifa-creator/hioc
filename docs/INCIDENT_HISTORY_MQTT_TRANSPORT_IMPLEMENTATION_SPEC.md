@@ -2,7 +2,9 @@
 
 ## 1. Purpose
 
-This specification implements accepted [ADR-0014](../DECISIONS.md#adr-0014-use-core-mqtt-for-incident-publication) by replacing Incident Engine subprocess MQTT publication with the existing Core MQTT publisher while preserving documented storage and external contracts. It is a bounded correction for the proven process-argument failure. It does not claim that implementation or production validation has occurred.
+This specification implements accepted [ADR-0014](../DECISIONS.md#adr-0014-use-core-mqtt-for-incident-publication) by replacing Incident Engine subprocess MQTT publication with the existing Core MQTT publisher while preserving documented storage and external contracts. It is a bounded correction for the proven process-argument failure. Repository implementation is complete; production validation has not occurred.
+
+**Repository implementation status:** Implemented and repository-validated. Production deployment and validation remain pending; the defect is not complete until the production Evidence Report passes.
 
 The architectural evidence and neutral candidate comparison remain in the [preparation memorandum](INCIDENT_HISTORY_MQTT_ARCHITECTURE_DECISION_PREPARATION.md). The [HIOC Master Plan](HIOC_MASTER_PLAN.md) authorizes this specification as the next implementation checkpoint.
 
@@ -37,7 +39,7 @@ The architectural evidence and neutral candidate comparison remain in the [prepa
 
 | File and function/section | Current responsibility | Planned change | Required compatibility |
 |---|---|---|---|
-| `pi4/bin/hioc-incident-engine-v2.py`: imports and `cfg()` | Loads toolkit and HIOC shell configuration; uses Core correlation, events, review, and state modules. | Import `MqttClient` from `hioc.mqtt`. Continue passing the existing `cfg()` result so MQTT host, port, user, and password retain their current precedence. | Configuration values and non-publication behavior remain identical. |
+| `pi4/bin/hioc-incident-engine-v2.py`: imports and `cfg()` | Loads toolkit and HIOC shell configuration; uses Core correlation, events, review, and state modules. | Import `MqttClient` from `hioc.mqtt`. Continue passing the existing `cfg()` result so MQTT host, port, user, and password retain their current precedence; preserve the legacy publisher's `localhost:1883` defaults when those values are absent. | Configuration values and non-publication behavior remain identical. |
 | `pi4/bin/hioc-incident-engine-v2.py`: `mqtt_pub()` | Constructs and executes `mosquitto_pub -m <payload>` once per topic. | Delete this local function. Do not replace it with another subprocess or duplicate MQTT wrapper. | No consumer-visible contract is attached to this private helper. |
 | `pi4/bin/hioc-incident-engine-v2.py`: `publish_all()` | Reads existing payload files in insertion order, skips missing files, publishes six file topics and then `status=online`. | Preflight all present file payloads, validate file-backed JSON without reserializing it, open one `MqttClient` connection, publish the same ordered topics with `retain=True`, then close it. | Preserve topic set, ordering, skipped-missing-file behavior, payload text, status text, and retained flag. |
 | `pi4/bin/hioc-incident-engine-v2.py`: `main()` and entry point | Writes authoritative local incident state, then calls `publish_all()`; an uncaught Python exception currently yields nonzero status. | Return an explicit integer. On publication failure, emit one redacted diagnostic to stderr and return 1; on success return 0. Invoke with `raise SystemExit(main())`. | State generation remains before publication. Required publication failure must make installer/upgrade fail. |
@@ -355,4 +357,4 @@ Implementation is ready because:
 - the Master Plan authorizes the bounded implementation checkpoint; and
 - this decision checkpoint must be clean, committed, and pushed before code work begins.
 
-Implementation has not occurred, and production remains unresolved until the approved code is deployed and the Evidence Report passes.
+Repository implementation has occurred and passed the specified automated validation. Production remains unresolved until the approved code is deployed and the Evidence Report passes.

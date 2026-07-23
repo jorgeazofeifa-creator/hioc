@@ -28,6 +28,8 @@ Correlation Engine v2 publishes through the same incident topics. The public top
 
 Completed incident history entries include a derived `review` object so operators can understand what happened after recovery. The `incidents/summary` payload also includes `history_stats`, `recent_incidents`, `recent_incident_reviews`, and `latest_incident_review` attributes for Dashboard v2. These are additive fields on existing retained topics.
 
+The Incident Engine publishes the same ordered topic and payload set over one Core MQTT connection per run. This transport implementation does not change topic names, retained semantics, JSON structures, embedded reviews, history ordering, or status content. Authoritative local files are written before publication. A required connection or publication failure produces a nonzero Incident Engine status; earlier topics may already have been retained when a later topic fails, and the final online status is not published after such a failure.
+
 ## Forecast Topics
 
 ```text
@@ -56,4 +58,4 @@ home/infrastructure/hioc/platform/status
 ```
 
 All HIOC publications are retained so Home Assistant recovers state after restart.
-The Living Inventory engine publishes all inventory topics over one persistent MQTT connection per run. The public topic names and JSON schema remain unchanged.
+The Living Inventory and Incident engines publish their topic sets over one persistent MQTT connection per run. The public topic names and JSON schemas remain unchanged.

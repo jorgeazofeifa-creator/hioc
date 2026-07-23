@@ -12,7 +12,7 @@ It should not duplicate architecture diagrams or project roadmap content. For sy
 
 - `ConfigService`: loads defaults, Pi4 toolkit config, HIOC config, and environment overrides.
 - `StateStore`: reads and writes JSON state with atomic temp-file replacement.
-- `MqttClient`: publishes retained MQTT payloads over a persistent MQTT connection.
+- `MqttClient`: publishes retained MQTT payloads over a persistent MQTT connection. Living Inventory and the Incident Engine reuse one client connection for each engine publication cycle; platform status uses the same client for its status publication.
 - `EngineLogger`: writes structured engine log lines.
 - `Schema`: validates required payload fields and basic field types.
 - `EventBus`: records internal semantic events in local JSON.
