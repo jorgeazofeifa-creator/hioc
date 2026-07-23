@@ -17,6 +17,13 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ## Unreleased
 
+### Added
+
+- Added a deployed, read-only MQTT runtime validator that uses existing HIOC
+  configuration to perform bounded retained-topic checks and emit concise
+  post-install or post-upgrade Evidence Report output without publishing state
+  or exposing credentials.
+
 ### Documentation
 
 - Documented the planned asset-centric Living Inventory vision, including evidence authority, observation versus availability, operator-managed asset knowledge, lifecycle-safe retention principles, and roadmap dependencies; no runtime behavior changed.

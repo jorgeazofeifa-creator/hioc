@@ -53,6 +53,7 @@ chmod +x "$INSTALL_DIR/pi4/bin/hioc-incident-engine-v2.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-history-engine.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-inventory-engine.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-platform-status.py"
+chmod +x "$INSTALL_DIR/pi4/bin/hioc-validate-mqtt.py"
 chmod +x "$INSTALL_DIR/pi4/validate_pi4.sh"
 chmod +x "$INSTALL_DIR/pi4/uninstall_pi4.sh"
 

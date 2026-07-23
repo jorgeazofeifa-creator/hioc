@@ -27,6 +27,7 @@ check "Incident engine v2 executable" test -x "$INSTALL_DIR/pi4/bin/hioc-inciden
 check "History engine executable" test -x "$INSTALL_DIR/pi4/bin/hioc-history-engine.py"
 check "Inventory engine executable" test -x "$INSTALL_DIR/pi4/bin/hioc-inventory-engine.py"
 check "Platform status executable" test -x "$INSTALL_DIR/pi4/bin/hioc-platform-status.py"
+check "MQTT runtime validator executable" test -x "$INSTALL_DIR/pi4/bin/hioc-validate-mqtt.py"
 check "Version manifest exists" test -f "$INSTALL_DIR/VERSION.yaml"
 check "Correlation engine version declared" grep -q '^correlation_engine:' "$INSTALL_DIR/VERSION.yaml"
 check "Active incident JSON exists" test -f "$INSTALL_DIR/state/incidents/active.json"

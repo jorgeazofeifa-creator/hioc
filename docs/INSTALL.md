@@ -33,6 +33,7 @@ git clone https://github.com/jorgeazofeifa-creator/hioc.git /home/jazofv1/hioc-r
 cd /home/jazofv1/hioc-release-source
 bash release/validate.sh
 bash release/install.sh pi4
+/home/jazofv1/hioc/pi4/bin/hioc-validate-mqtt.py
 ```
 
 The Pi4 release installer invokes `pi4/install_pi4.sh` and installs to `/home/jazofv1/hioc` by default. It requires `rsync`, `crontab`, `flock`, `python3`, and the existing Pi4 toolkit configuration. Set `HIOC_INSTALL_DIR` or `PI4_TOOLS_DIR` only when intentionally using nondefault paths.
@@ -131,7 +132,14 @@ For an upgrade:
 cd /home/jazofv1/hioc-release-source
 bash release/validate.sh
 bash release/upgrade.sh
+/home/jazofv1/hioc/pi4/bin/hioc-validate-mqtt.py
 ```
+
+The final command performs bounded, read-only validation of the deployed
+retained Incident Engine MQTT contract using the existing toolkit and HIOC
+configuration. Preserve its output and exit status as post-install or
+post-upgrade evidence. See [MQTT.md](MQTT.md#operational-validation) for
+preconditions, checked topics, and PASS, FAIL, and INCOMPLETE semantics.
 
 The upgrade preserves the existing `state`, `history`, `logs`, and `backups` directories. Before copying the validated release, it records the replaceable installation content, including configuration, under a timestamped directory in `/home/jazofv1/hioc/backups`.
 

@@ -533,6 +533,26 @@ The binding [Incident History MQTT Transport Implementation Specification](INCID
 
 This bounded MQTT checkpoint is related to Phase 7A only because it currently blocks truthful supported deployment and reliable incident publication. It remains separate from incident-history schema-validator hardening, stale-client retention and archival, repository and deployment hygiene, new inventory enrichment, unrelated dashboard redesign, and broader MQTT protocol redesign. It must not become a general MQTT redesign or an open-ended investigative detour. After correction and validation, work returns to the authoritative roadmap so operator-facing and dashboard progress can resume.
 
+#### MQTT Runtime Validation Checkpoint
+
+Status: **REPOSITORY IMPLEMENTATION COMPLETE — PRODUCTION EXECUTION PENDING**
+
+The repository now owns a bounded, read-only post-install and post-upgrade
+validator for the retained Incident Engine MQTT contract. The deployed command
+loads the existing toolkit and HIOC configuration, respects the configured HIOC
+base topic, reads all seven retained incident and status topics with predictable
+timeouts, validates payload presence and JSON or scalar status semantics, and
+reports concise PASS, FAIL, INCOMPLETE, warning, byte-size, record-count, and
+embedded-review evidence without printing credentials or publishing test state.
+Focused and full repository validation pass. Production execution remains an
+operator validation step and must be recorded in an Evidence Report before the
+checkpoint is marked complete.
+
+This checkpoint does not change ADR-0014 transport, MQTT topics, retained flags,
+payload schemas, broker configuration, Incident Engine behavior, Home Assistant,
+or dashboards. After operator evidence is reviewed, work returns to the next
+incomplete checkpoint already defined by this Master Plan.
+
 ---
 
 # Repository Rules

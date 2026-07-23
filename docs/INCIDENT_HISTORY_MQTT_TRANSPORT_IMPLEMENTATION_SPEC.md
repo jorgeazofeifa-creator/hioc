@@ -267,6 +267,8 @@ Collect and preserve:
 
 - approved source commit and clean `/home/jazofv1/hioc-release-source` status;
 - release/upgrade command and exit status;
+- output and exit status from the deployed read-only
+  `pi4/bin/hioc-validate-mqtt.py` command;
 - Incident Engine direct/scheduled exit status;
 - cron and relevant process status; no systemd service is expected by current source;
 - relevant redacted logs and stderr;
@@ -282,6 +284,13 @@ Collect and preserve:
 - before/after history hashes and semantic comparison proving no data loss;
 - proof that other incident topics have no regression;
 - observed connection/publication behavior without a repeated loop.
+
+The repository-owned validator supplies bounded retained reads, configured
+broker and authentication handling, payload byte counts, JSON checks, history
+record counts, and embedded-review detection without publishing or modifying
+retained state. It supports this Evidence Report but does not replace Home
+Assistant, dashboard, source-to-runtime, data-loss, or connection-lifecycle
+checks.
 
 Evidence Report format:
 

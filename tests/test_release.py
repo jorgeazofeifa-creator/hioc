@@ -70,6 +70,15 @@ class ReleaseScriptTests(unittest.TestCase):
         self.assertIn('"$ROOT/tests"', release_validator)
         self.assertNotIn("tests/", runtime_validator)
         self.assertNotIn("/tests", runtime_validator)
+        self.assertIn("hioc-validate-mqtt.py", runtime_validator)
+
+    def test_mqtt_runtime_validator_is_installed_executable(self):
+        install_script = (ROOT / "pi4" / "install_pi4.sh").read_text(encoding="utf-8")
+
+        self.assertIn(
+            'chmod +x "$INSTALL_DIR/pi4/bin/hioc-validate-mqtt.py"',
+            install_script,
+        )
 
     def test_upgrade_invokes_non_executable_installer_through_bash(self):
         upgrade_script = (ROOT / "release" / "upgrade.sh").read_text(encoding="utf-8")

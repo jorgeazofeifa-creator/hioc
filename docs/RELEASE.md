@@ -104,6 +104,17 @@ $HIOC_INSTALL_DIR/backups/last-upgrade-backup
 
 The installer synchronously runs required HIOC engines under fail-fast shell behavior. A required Incident Engine MQTT connection or publication failure returns a nonzero engine status and therefore fails installation or upgrade truthfully. Incident state is written locally before MQTT publication and remains available for diagnosis; a failed upgrade must be investigated or rolled back rather than reported as successful.
 
+After a successful install or upgrade, run the deployed read-only MQTT validator
+and retain its output and exit status with the release evidence:
+
+```bash
+/home/jazofv1/hioc/pi4/bin/hioc-validate-mqtt.py
+```
+
+The command validates the retained Incident Engine contract against the
+configured broker; [MQTT.md](MQTT.md#operational-validation) owns its detailed
+semantics and prerequisites.
+
 ## Rollback
 
 Use the latest upgrade backup:
