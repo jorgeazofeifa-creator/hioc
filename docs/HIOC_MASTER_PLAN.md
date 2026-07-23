@@ -327,7 +327,7 @@ Scope: Read-only production validation of the existing passive-inventory baselin
 
 #### Identity Reconciliation Hardening
 
-Status: **NEXT ACTIVE CHECKPOINT**
+Status: **COMPLETE**
 
 Objective: Validate and strengthen the canonical identity model itself before additional passive enrichment resumes. Phase 7A.9 confirmed that the current production snapshot has no IP-only identities, duplicate MAC identities, duplicate IDs, or duplicate IPs, and that ARP/DHCP multi-source reconciliation is operating correctly. This checkpoint must establish that supported passive discovery cannot produce persistent duplicate identities under the documented identity model; it is not merely another search for duplicates in one snapshot.
 
@@ -357,18 +357,32 @@ Deferred identity architecture decisions remain outside this checkpoint:
 - **Historical identity continuity:** A weak IP-based identity may be replaced in current inventory and projections by an unambiguous MAC-backed canonical identity, while historical events or external references may retain the earlier weak ID. HIOC has no formal alias table, promotion record, or historical identity resolution contract. A future explicit architecture checkpoint must decide whether historical identities remain immutable evidence identifiers, resolve through an alias or promotion mapping, or are migrated to canonical identities; this checkpoint must not invent a schema or migration mechanism.
 - **Randomized-MAC asset continuity:** Passive reconciliation must not guess that unrelated MAC addresses represent one physical device. Randomized or rotated MAC addresses remain separate discovered identities unless authoritative linking evidence exists. The one-physical-device/one-canonical-identity invariant applies within supported, unambiguous identity evidence. Future operator-approved linking of multiple discovered identities to one asset belongs to the asset-centric Living Digital Twin roadmap, not heuristic passive merging.
 
+##### Identity Reconciliation Production Evidence Report
+
+**Deployment result:** **PASS**. Repository review found that the existing identity-reconciliation implementation already satisfied the documented architecture and required no modification. The authoritative source was synchronized, supported release validation passed, the supported release deployment completed successfully, and production validation completed successfully. Repeated production inventory reconciliation also completed successfully.
+
+**Intended behavior:** Identity reconciliation preserves the documented canonical identity model. Weak identities reconcile into canonical MAC-backed identities only when the evidence is unambiguous; ambiguous evidence never causes an incorrect merge. Repeated reconciliation remains stable, and collector ordering does not change the resulting inventory.
+
+**Validation performed:** Repository validation confirmed that the implementation matches [DATA_MODEL.md](DATA_MODEL.md), focused invariant regression coverage already exists, Python compilation passed, focused tests passed, and the full regression suite passed. Production validation confirmed successful deployment and runtime validation, successful repeated inventory reconciliation, and a stable inventory containing 140 devices and 8 services.
+
+**Invariant checks:** No reconciliation failures or duplicate-identity behavior were observed. Repository regression coverage confirms canonical promotion, collector-order independence, idempotence, ambiguity protection, provenance preservation, duplicate prevention, and centralized reconciliation for future passive collectors. Repository validation and production evidence together demonstrate that supported passive discovery cannot produce persistent duplicate identities under the documented canonical identity model.
+
+**Warnings and deferred risks:** Historical identity continuity, alias mapping, randomized-MAC continuity, and future operator-approved asset association remain intentionally deferred exactly as documented above.
+
+**Final result:** **PASS**
+
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: complete Identity Reconciliation Hardening; resolve FAILED/INCOMPLETE ARP semantics; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
+3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; resolve FAILED/INCOMPLETE ARP semantics; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-The required hygiene checkpoint and Phase 7A.9 are complete. Identity Reconciliation Hardening is the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
+The required hygiene checkpoint, Phase 7A.9, and Identity Reconciliation Hardening are complete. FAILED/INCOMPLETE ARP semantics are the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
 
 ---
 
@@ -669,7 +683,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, and Phase 7A.9 Passive Inventory Correctness Validation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active, and Identity Reconciliation Hardening remains its next active inventory checkpoint. The ADR-0014 Core MQTT correction is implemented and repository-validated but awaits production deployment and Evidence Report; after that bounded blocker is validated, work returns to the Phase 7A roadmap and operator-facing/dashboard progress.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, and Identity Reconciliation Hardening are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, with FAILED/INCOMPLETE ARP semantics as its next active inventory checkpoint.
 
 ## Current Branch
 
@@ -701,11 +715,11 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Validate and strengthen the canonical identity model so supported passive discovery cannot produce persistent duplicate identities, while preserving correct ambiguity handling and provenance.
+Resolve FAILED/INCOMPLETE ARP semantics while preserving the observation model and documented inventory architecture.
 
 ## Next Planned Task
 
-Review identity reconciliation against the documented Data Model, correct any in-scope defects, add focused invariant regression coverage, and produce production validation evidence.
+Resolve FAILED/INCOMPLETE ARP semantics while preserving the observation model and documented inventory architecture.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
