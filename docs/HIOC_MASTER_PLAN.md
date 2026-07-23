@@ -519,6 +519,18 @@ During `release/upgrade.sh`, `pi4/install_pi4.sh` reached its existing invocatio
 
 The incident-engine invocation was neither introduced nor changed by the Repository and Deployment Hygiene work; the only `pi4/install_pi4.sh` change in this checkpoint was the addition of the six `rsync` exclusions. The MQTT publishing failure is therefore not attributed to the hygiene implementation. It remains unresolved and explicitly tracked for a separate, scoped investigation; this closeout does not diagnose, redesign, or propose a correction for it.
 
+### Incident History MQTT Architecture Decision Preparation
+
+Status: **DECISION PENDING — IMPLEMENTATION NOT AUTHORIZED**
+
+The repository archaeology and architecture investigation are complete. Established production evidence shows that `state/incidents/history.json` was approximately 193,053 bytes with 24 records and that complete publication through one `mosquitto_pub -m` process argument reproduced `E2BIG`; the supported upgrade therefore returned failure. This immediate transport failure does not by itself decide whether transport, storage representation, retention, or the external payload contract should change.
+
+The architecture is recorded as separate layers: authoritative local history is written before MQTT; completed records intentionally contain embedded operator-facing reviews; review data and review-derived summary fields are externally observable; established retained topics and incident fields are compatibility contracts; and the `mosquitto_pub -m` invocation is an internal legacy mechanism. Correlation Engine v2 partially adopted Core while retaining a publisher already identified by the archived architecture review as technical debt. No evidence shows that retaining that subprocess implementation was an affirmative decision.
+
+The bounded evidence, confirmed invariants, unresolved decisions, neutral candidate comparison, implementation constraints, and readiness conditions are owned by [Incident History Storage and MQTT Publication Architecture Decision Preparation](INCIDENT_HISTORY_MQTT_ARCHITECTURE_DECISION_PREPARATION.md). Proposed ADR-0014 in [DECISIONS.md](../DECISIONS.md#adr-0014-incident-history-mqtt-architecture-is-pending-selection) records that no candidate has been selected. Architecture candidate selection is the next checkpoint for this defect; implementation remains unauthorized until the compatibility boundary, consumer impact, payload-size contract, failure semantics, migration behavior, and validation strategy are documented and approved.
+
+This bounded MQTT checkpoint is related to Phase 7A only because it currently blocks truthful supported deployment and reliable incident publication. It remains separate from incident-history schema-validator hardening, stale-client retention and archival, repository and deployment hygiene, new inventory enrichment, unrelated dashboard redesign, and broader MQTT protocol redesign. It must not become a general MQTT redesign or an open-ended investigative detour. After correction and validation, work returns to the authoritative roadmap so operator-facing and dashboard progress can resume.
+
 ---
 
 # Repository Rules
@@ -540,6 +552,9 @@ Every checkpoint Evidence Report must state:
 
 Repository and deployment rules:
 
+- Investigate documentation first: review this Master Plan, applicable ADRs, architecture and data-model documents, Git history, implementation, and existing validation evidence before proposing production experimentation. Use production investigation only for a specific evidence gap that repository evidence cannot answer.
+- Record every material architecture or implementation decision, compatibility boundary, assumption, validation result, deviation, deferral, and unresolved question in the appropriate repository document; do not leave authoritative conclusions only in chat, commits, code, test output, production state, or human memory.
+- Keep investigations bounded to questions that materially block the current decision. Record unrelated improvements for later and return to roadmap and operator-facing progress after each corrective checkpoint.
 - Begin all deliberate source changes in an authorized development checkout.
 - Keep documentation and code synchronized when behavior and operating procedures change together.
 - Never copy generated runtime state back into source control.
@@ -593,7 +608,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, and Phase 7A.9 Passive Inventory Correctness Validation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active. Identity Reconciliation Hardening is the next active checkpoint. The unresolved `mosquitto_pub` argument-list failure remains tracked for a separate, scoped investigation and is not marked resolved by this checkpoint.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, and Phase 7A.9 Passive Inventory Correctness Validation are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. Phase 7A remains active, and Identity Reconciliation Hardening remains its next active inventory checkpoint. Repository archaeology and architecture preparation for the separate `mosquitto_pub` argument-size defect are complete; proposed ADR-0014 records that architecture candidate selection is next for that bounded defect and that implementation is not authorized.
 
 ## Current Branch
 

@@ -198,3 +198,19 @@ Alternatives: Continue using the production runtime as both the development chec
 Reason: A clean authoritative source checkout provides predictable Git state, reproducible releases, safer upgrades, clearer rollback boundaries, protection of persistent runtime data, and a clear separation between authored source and operational state.
 
 Consequences: GitHub carries the approved shared history between development and PI3. `/home/jazofv1/hioc-release-source` is the authoritative source checkout for release execution on PI3, while `/home/jazofv1/hioc` is the deployed runtime. Runtime state must not be treated automatically as unexplained source drift, and source/runtime differences must be classified before cleanup. Direct `git pull` inside the production runtime is not the standard upgrade path. `release/upgrade.sh` or a validated release package is the supported deployment path. This ADR does not require removal of the production runtime's existing `.git` directory; its future disposition remains a separate evidence-driven governance decision. Repository and deployment hygiene work must preserve proven runtime state.
+
+## ADR-0014: Incident History MQTT Architecture Is Pending Selection
+
+Date: 2026-07-22
+
+Status: Proposed — Decision Pending.
+
+Context: Incident Review intentionally embeds operator-facing post-recovery analysis in bounded local incident history and exposes review data through the established retained MQTT contract. The incident engine still publishes each complete document by passing it as one `mosquitto_pub -m` process argument. Established production evidence shows that the current history payload exceeds the per-argument capacity and causes the supported upgrade to fail with `E2BIG`. Core already provides persistent socket-based MQTT publication, and the archived architecture review identifies the incident engine's separate subprocess publisher as technical debt, but repository evidence does not establish which architectural layer should change.
+
+Established facts: Authoritative local incident state is written before MQTT publication; completed history contains embedded reviews; review-derived fields are externally visible; established retained topics and incident fields are compatibility contracts; the subprocess invocation is an internal mechanism; and no byte-size rationale exists for the 50-record configuration default or the Python engine's 100-record fallback.
+
+Preserved contracts: Any decision must protect authoritative local state, retained-topic semantics, established incident fields, operator-facing review meaning, bounded history, Home Assistant visibility, truthful failure reporting, and historical-data preservation unless an explicit compatible migration is approved.
+
+Unresolved decision: HIOC must select whether to change only publication transport, normalize internal review storage while reconstructing the payload, migrate publication specifically to Core MQTT, use retention count as the primary bound, publish a smaller derived history representation, or introduce segmentation/pagination. Compatibility scope, consumer dependence, payload-size expectations, failure semantics, and migration requirements must be settled before implementation.
+
+No implementation candidate has been selected. The evidence, candidate comparison, bounded open questions, and readiness criteria are recorded in [docs/INCIDENT_HISTORY_MQTT_ARCHITECTURE_DECISION_PREPARATION.md](docs/INCIDENT_HISTORY_MQTT_ARCHITECTURE_DECISION_PREPARATION.md). The authoritative roadmap and current checkpoint status remain in [docs/HIOC_MASTER_PLAN.md](docs/HIOC_MASTER_PLAN.md).
