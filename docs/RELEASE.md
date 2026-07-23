@@ -112,7 +112,7 @@ and retain its output and exit status with the release evidence:
 ```
 
 The command validates the retained Incident Engine contract against the
-configured broker; [MQTT.md](MQTT.md#operational-validation) owns its detailed
+configured broker; [MQTT.md](MQTT.md#operational-runtime-validation) owns its detailed
 semantics and prerequisites.
 
 ## Rollback

@@ -521,7 +521,7 @@ The incident-engine invocation was neither introduced nor changed by the Reposit
 
 ### Incident History MQTT Transport Correction
 
-Status: **IMPLEMENTED — PRODUCTION VALIDATION PENDING**
+Status: **COMPLETE**
 
 The repository archaeology and architecture investigation are complete. Established production evidence shows that `state/incidents/history.json` was approximately 193,053 bytes with 24 records and that complete publication through one `mosquitto_pub -m` process argument reproduced `E2BIG`; the supported upgrade therefore returned failure. This immediate transport failure does not by itself decide whether transport, storage representation, retention, or the external payload contract should change.
 
@@ -529,13 +529,19 @@ The architecture is recorded as separate layers: authoritative local history is 
 
 The bounded evidence, confirmed invariants, unresolved decisions, and neutral candidate comparison remain in [Incident History Storage and MQTT Publication Architecture Decision Preparation](INCIDENT_HISTORY_MQTT_ARCHITECTURE_DECISION_PREPARATION.md). Accepted [ADR-0014](../DECISIONS.md#adr-0014-use-core-mqtt-for-incident-publication) selects Candidate C: preserve local history, embedded Incident Review, retained topics, and external payloads while replacing only the Incident Engine's local subprocess publisher with the existing Core MQTT client. This removes the payload from the failing process-argument boundary, aligns the engine with shared Core architecture, minimizes consumer and migration risk, and introduces no new protocol.
 
-The binding [Incident History MQTT Transport Implementation Specification](INCIDENT_HISTORY_MQTT_TRANSPORT_IMPLEMENTATION_SPEC.md) defines the exact connection lifecycle, publication order, compatibility boundary, failure and exit-status behavior, tests, deployment validation, rollback, documentation plan, and deferred work. Candidate C is implemented in the repository: Incident Engine publication uses one Core MQTT connection per run, retains the existing ordered topics and payload strings, stops on the first required failure, reports partial progress, and returns nonzero without discarding local state. Focused and full repository validation pass. Production is not yet fixed or validated; the production Evidence Report remains required before this defect can be marked complete.
+The binding [Incident History MQTT Transport Implementation Specification](INCIDENT_HISTORY_MQTT_TRANSPORT_IMPLEMENTATION_SPEC.md) defines the exact connection lifecycle, publication order, compatibility boundary, failure and exit-status behavior, tests, deployment validation, rollback, documentation plan, and deferred work. Candidate C is implemented in the repository: Incident Engine publication uses one Core MQTT connection per run, retains the existing ordered topics and payload strings, stops on the first required failure, reports partial progress, and returns nonzero without discarding local state. Focused and full repository validation passed, and the supported production deployment and runtime validation completed successfully.
 
-This bounded MQTT checkpoint is related to Phase 7A only because it currently blocks truthful supported deployment and reliable incident publication. It remains separate from incident-history schema-validator hardening, stale-client retention and archival, repository and deployment hygiene, new inventory enrichment, unrelated dashboard redesign, and broader MQTT protocol redesign. It must not become a general MQTT redesign or an open-ended investigative detour. After correction and validation, work returns to the authoritative roadmap so operator-facing and dashboard progress can resume.
+This bounded MQTT checkpoint was related to Phase 7A only because it blocked
+truthful supported deployment and reliable incident publication. It remains
+separate from incident-history schema-validator hardening, stale-client retention
+and archival, repository and deployment hygiene, new inventory enrichment,
+unrelated dashboard redesign, and broader MQTT protocol redesign. The completed
+correction and validation return work to the authoritative roadmap so
+operator-facing and dashboard progress can resume.
 
 #### MQTT Runtime Validation Checkpoint
 
-Status: **REPOSITORY IMPLEMENTATION COMPLETE — PRODUCTION EXECUTION PENDING**
+Status: **COMPLETE**
 
 The repository now owns a bounded, read-only post-install and post-upgrade
 validator for the retained Incident Engine MQTT contract. The deployed command
@@ -544,14 +550,47 @@ base topic, reads all seven retained incident and status topics with predictable
 timeouts, validates payload presence and JSON or scalar status semantics, and
 reports concise PASS, FAIL, INCOMPLETE, warning, byte-size, record-count, and
 embedded-review evidence without printing credentials or publishing test state.
-Focused and full repository validation pass. Production execution remains an
-operator validation step and must be recorded in an Evidence Report before the
-checkpoint is marked complete.
+Focused and full repository validation passed. Operator production execution and
+the required Evidence Report also passed.
 
 This checkpoint does not change ADR-0014 transport, MQTT topics, retained flags,
 payload schemas, broker configuration, Incident Engine behavior, Home Assistant,
-or dashboards. After operator evidence is reviewed, work returns to the next
-incomplete checkpoint already defined by this Master Plan.
+or dashboards. Work now returns to the next incomplete checkpoint already
+defined by this Master Plan.
+
+##### Production Evidence Report
+
+**Deployment result:** Implementation commit
+`2b0b2ab6b9007a5a61025c847ceabb5030d8638a` was deployed through the supported
+release workflow. Release validation, release upgrade, the standalone MQTT
+validator, and general Pi4 validation all returned PASS. The production Evidence
+Report is
+`/tmp/hioc-mqtt-runtime-validation-20260723T040611Z/MQTT_RUNTIME_VALIDATION_PRODUCTION_EVIDENCE_REPORT.md`
+with SHA-256
+`01a7cac95e426b348b97222cc7b1f6deeee1147fbd1ae011efd6acee73f627f4`.
+
+**Intended behavior:** The deployed validator resolves the broker through the
+supported configuration hierarchy, performs subscription-only reads of the
+seven required retained topics, validates payload presence and structure, and
+reports PASS, FAIL, or INCOMPLETE without publishing or mutating retained state.
+
+**Invariant checks:** All 7 required topics passed. Incident history was exactly
+230660 bytes with 27 records and embedded review data present. Retained and local
+history byte size, record count, and embedded-review evidence matched. No
+hardcoded localhost assumption, credential disclosure, public-topic change,
+payload-schema change, Home Assistant change, or retained-state mutation was
+observed. The deployed validator SHA-256 was
+`d4be8debbd9c926fbc3526bd0ae7f5f3473c68ef9853d7f0d995762170b12d53`.
+The release-upgrade backup is
+`/home/jazofv1/hioc/backups/release-upgrade-20260722-220732`, and the installer
+backup is `/home/jazofv1/hioc/backups/install-20260722-220732`.
+
+**Warnings and deferred risks:** None were reported by this production
+checkpoint. TLS, explicit MQTT byte-size policy, broader broker resilience,
+other legacy publishers, retention policy, and future MQTT architecture remain
+outside ADR-0014 and are not marked complete.
+
+**Final result:** **PASS**
 
 ---
 

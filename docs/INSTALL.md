@@ -138,7 +138,7 @@ bash release/upgrade.sh
 The final command performs bounded, read-only validation of the deployed
 retained Incident Engine MQTT contract using the existing toolkit and HIOC
 configuration. Preserve its output and exit status as post-install or
-post-upgrade evidence. See [MQTT.md](MQTT.md#operational-validation) for
+post-upgrade evidence. See [MQTT.md](MQTT.md#operational-runtime-validation) for
 preconditions, checked topics, and PASS, FAIL, and INCOMPLETE semantics.
 
 The upgrade preserves the existing `state`, `history`, `logs`, and `backups` directories. Before copying the validated release, it records the replaceable installation content, including configuration, under a timestamped directory in `/home/jazofv1/hioc/backups`.

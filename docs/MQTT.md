@@ -60,7 +60,7 @@ home/infrastructure/hioc/platform/status
 All HIOC publications are retained so Home Assistant recovers state after restart.
 The Living Inventory and Incident engines publish their topic sets over one persistent MQTT connection per run. The public topic names and JSON schemas remain unchanged.
 
-## Operational Validation
+## Operational Runtime Validation
 
 Runtime MQTT validation proves that the deployed HIOC configuration can reach the
 broker and retrieve the retained Incident Engine contract. Run the deployed
@@ -74,7 +74,8 @@ The command loads `MQTT_HOST`, `MQTT_PORT`, optional `MQTT_USER` and
 `MQTT_PASSWORD`, and `HIOC_BASE_TOPIC` through HIOC's existing configuration
 service. Configuration precedence remains the Pi4 toolkit configuration,
 deployed HIOC configuration, and then matching process-environment overrides.
-The broker is not assumed to be local. Current HIOC MQTT clients do not define a
+The broker is not assumed to be local, and operators do not need to discover or
+reconstruct broker settings manually. Current HIOC MQTT clients do not define a
 TLS configuration contract, and this validator does not introduce one.
 
 `python3` and `mosquitto_sub` must be installed, and the configured account must
@@ -107,7 +108,9 @@ review.
   retained payload, while no stronger failure was observed.
 
 The command is read-only: it never publishes a test payload or changes retained
-state. Preserve its concise console output, exit status, deployed commit, and
-relevant redacted broker or consumer evidence in the checkpoint Evidence Report.
-Source comparison and unit tests remain necessary, but they do not prove
-end-to-end retained MQTT behavior in the deployed environment.
+state. Preserve its concise console output, exit status, topic validation
+summary, history payload size, history record count, embedded-review result,
+deployed commit, and overall PASS, FAIL, or INCOMPLETE result in the checkpoint
+Evidence Report. Successful source deployment, source comparison, and unit tests
+remain necessary, but they do not prove end-to-end retained MQTT behavior in the
+deployed environment. Runtime validation is required.

@@ -2,11 +2,14 @@
 
 ## 1. Purpose
 
-This specification implements accepted [ADR-0014](../DECISIONS.md#adr-0014-use-core-mqtt-for-incident-publication) by replacing Incident Engine subprocess MQTT publication with the existing Core MQTT publisher while preserving documented storage and external contracts. It is a bounded correction for the proven process-argument failure. Repository implementation is complete; production validation has not occurred.
+This specification implements accepted [ADR-0014](../DECISIONS.md#adr-0014-use-core-mqtt-for-incident-publication) by replacing Incident Engine subprocess MQTT publication with the existing Core MQTT publisher while preserving documented storage and external contracts. It is a bounded correction for the proven process-argument failure. Repository implementation and production validation are complete.
 
-**Repository implementation status:** Implemented and repository-validated. Production deployment and validation remain pending; the defect is not complete until the production Evidence Report passes.
+**Implementation status:** Complete. Repository validation and the production Evidence Report passed.
 
-The architectural evidence and neutral candidate comparison remain in the [preparation memorandum](INCIDENT_HISTORY_MQTT_ARCHITECTURE_DECISION_PREPARATION.md). The [HIOC Master Plan](HIOC_MASTER_PLAN.md) authorizes this specification as the next implementation checkpoint.
+The architectural evidence and neutral candidate comparison remain in the
+[preparation memorandum](INCIDENT_HISTORY_MQTT_ARCHITECTURE_DECISION_PREPARATION.md).
+The [HIOC Master Plan](HIOC_MASTER_PLAN.md) authorized this specification as the
+bounded implementation checkpoint.
 
 ## 2. Scope
 
@@ -366,4 +369,9 @@ Implementation is ready because:
 - the Master Plan authorizes the bounded implementation checkpoint; and
 - this decision checkpoint must be clean, committed, and pushed before code work begins.
 
-Repository implementation has occurred and passed the specified automated validation. Production remains unresolved until the approved code is deployed and the Evidence Report passes.
+Repository implementation passed the specified automated validation. The
+approved code was deployed through the supported release workflow, and the
+production Evidence Report passed with all seven required retained topics valid,
+a 230660-byte history payload containing 27 records, and embedded review data
+present. This closes the bounded ADR-0014 correction without resolving any item
+listed as deferred work.

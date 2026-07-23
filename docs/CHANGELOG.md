@@ -26,6 +26,9 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Documentation
 
+- Recorded successful ADR-0014 production validation and made the repository the
+  authoritative operational reference for configured, read-only MQTT runtime
+  validation after installation or upgrade.
 - Documented the planned asset-centric Living Inventory vision, including evidence authority, observation versus availability, operator-managed asset knowledge, lifecycle-safe retention principles, and roadmap dependencies; no runtime behavior changed.
 
 ### Fixed
