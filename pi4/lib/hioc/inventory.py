@@ -95,6 +95,17 @@ class DhcpLeaseSourceResult:
     error: str = ""
 
 
+@dataclass(frozen=True)
+class NeighborTableResult:
+    records: dict[str, dict]
+    collection_succeeded: bool
+    diagnostic: str | None = None
+
+    @property
+    def accepted_records_present(self) -> bool:
+        return bool(self.records)
+
+
 def normalize_mac(value: str) -> str:
     mac = str(value or "").strip().lower().replace("-", ":")
     return mac if MAC_RE.match(mac) else ""
@@ -153,14 +164,25 @@ def default_gateway() -> dict:
     return data
 
 
-def neighbor_table() -> dict:
-    code, out, _ = run_command(["ip", "neigh", "show"], timeout=4)
+def _collect_neighbor_table() -> NeighborTableResult:
+    primary_code, out, _ = run_command(["ip", "neigh", "show"], timeout=4)
     neighbors = {}
-    fallback = code != 0
-    if code != 0:
-        code, out, _ = run_command(["arp", "-an"], timeout=4)
-        if code != 0:
-            return neighbors
+    fallback = primary_code != 0
+    diagnostic = None
+    if fallback:
+        fallback_code, out, _ = run_command(["arp", "-an"], timeout=4)
+        if fallback_code != 0:
+            diagnostic = f"ip_neigh_exit={primary_code}; arp_exit={fallback_code}"
+            LOG.warning(
+                "neighbor table collection unavailable primary_exit=%s fallback_exit=%s",
+                primary_code,
+                fallback_code,
+            )
+            return NeighborTableResult(
+                records=neighbors,
+                collection_succeeded=False,
+                diagnostic=diagnostic,
+            )
     for line in out.splitlines():
         ip_match = re.search(r"(\d+\.\d+\.\d+\.\d+)", line)
         mac_match = re.search(r"([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}", line)
@@ -182,7 +204,15 @@ def neighbor_table() -> dict:
                 LOG.debug("neighbor entry ignored ip=%s interface=%s state=%s reason=%s", ip, interface, state, reason)
                 continue
         neighbors[ip] = {"ip": ip, "mac": mac, "source": "arp_table", "last_seen_source": "arp_table"}
-    return neighbors
+    return NeighborTableResult(
+        records=neighbors,
+        collection_succeeded=True,
+        diagnostic=diagnostic,
+    )
+
+
+def neighbor_table() -> dict:
+    return _collect_neighbor_table().records
 
 
 def dhcp_lease_paths(config: dict | None = None) -> list[Path]:
@@ -599,11 +629,16 @@ def snmp_firmware(ip: str, community: str) -> dict:
 class PassiveNetworkDriver:
     name = "passive_network"
 
+    def __init__(self, neighbor_result: NeighborTableResult | None = None):
+        self._neighbor_result = neighbor_result
+
     def discover(self, config: dict) -> DriverResult:
         devices = []
-        neighbors = neighbor_table()
-        if neighbors:
-            devices.extend(neighbors.values())
+        neighbor_result = self._neighbor_result
+        if neighbor_result is None:
+            neighbor_result = _collect_neighbor_table()
+        if neighbor_result.records:
+            devices.extend(neighbor_result.records.values())
         leases, _ = dhcp_lease_observations(config)
         devices.extend(leases)
         state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
@@ -1324,14 +1359,23 @@ def inventory_summary_lists(devices: list[dict], services: list[dict]) -> tuple[
     return infrastructure, service_rows
 
 
-def discovery_source_status(config: dict, local_addresses: list[dict], gateway: dict) -> tuple[list[str], bool, str]:
+def discovery_source_status(
+    config: dict,
+    local_addresses: list[dict],
+    gateway: dict,
+    neighbor_result: NeighborTableResult,
+) -> tuple[list[str], bool, str]:
     sources = []
     if local_addresses:
         sources.append("local_host")
     if gateway.get("ip"):
         sources.append("gateway")
-    neighbors = neighbor_table()
-    sources.append("arp_table" if neighbors else "arp_table_empty")
+    if not neighbor_result.collection_succeeded:
+        sources.append("arp_table_unavailable")
+    elif neighbor_result.accepted_records_present:
+        sources.append("arp_table")
+    else:
+        sources.append("arp_table_empty")
     _, lease_status = dhcp_lease_discovery(config)
     sources.append(lease_status)
     state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
@@ -1344,8 +1388,15 @@ def discovery_source_status(config: dict, local_addresses: list[dict], gateway: 
         "dhcp_leases_missing",
         "dhcp_leases_unreadable",
     } for source in sources)
-    limited = lease_unavailable and not any(source == "integration_inventory" for source in sources)
-    reason = "DHCP lease input is unavailable, unreadable, malformed, or failed; inventory is limited to local host, gateway, ARP/neigh, integrations, and prior retained devices." if limited else ""
+    arp_unavailable = not neighbor_result.collection_succeeded
+    lease_limited = lease_unavailable and not any(source == "integration_inventory" for source in sources)
+    limited = arp_unavailable or lease_limited
+    reasons = []
+    if arp_unavailable:
+        reasons.append("ARP/neigh collection is unavailable; inventory is limited to other discovery sources and prior retained devices.")
+    if lease_limited:
+        reasons.append("DHCP lease input is unavailable, unreadable, malformed, or failed; inventory is limited to local host, gateway, ARP/neigh, integrations, and prior retained devices.")
+    reason = " ".join(reasons)
     return sources, limited, reason
 
 
@@ -1391,7 +1442,13 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     local_ips = {item["ip"] for item in local_addresses}
     gateway = default_gateway()
     gateway_ip = gateway.get("ip", "")
-    discovery_sources, discovery_limited, discovery_limit_reason = discovery_source_status(config, local_addresses, gateway)
+    neighbor_result = _collect_neighbor_table()
+    discovery_sources, discovery_limited, discovery_limit_reason = discovery_source_status(
+        config,
+        local_addresses,
+        gateway,
+        neighbor_result,
+    )
     active_discovery = str(config.get("HIOC_INVENTORY_ACTIVE_DISCOVERY", "off")).lower() in ("1", "true", "yes", "on", "enabled")
     records = []
     hostname = socket.gethostname()
@@ -1422,7 +1479,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         records.append({"type": "network_device", "name": "Default Gateway", "ip": gateway_ip, "interface": gateway.get("interface", ""), "source": "gateway", "last_seen_source": "gateway"})
     state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
     registry = DriverRegistry()
-    registry.register(PassiveNetworkDriver())
+    registry.register(PassiveNetworkDriver(neighbor_result))
     if active_discovery:
         registry.register(ActiveNetworkDriver())
     for result in registry.run(config):

@@ -10,6 +10,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "pi4" / "lib"))
 
 from hioc.inventory import (
+    DURABLE_NEIGHBOR_STATES,
+    NEIGHBOR_STATES,
+    NeighborTableResult,
+    PassiveNetworkDriver,
+    _collect_neighbor_table,
     build_dependencies,
     build_inventory_summary,
     build_topology,
@@ -19,6 +24,7 @@ from hioc.inventory import (
     dhcp_lease_paths,
     dhcp_lease_source_results,
     dhcp_leases,
+    discovery_source_status,
     enrich_services,
     health_score,
     inventory_summary_lists,
@@ -189,7 +195,7 @@ class InventoryModelTests(unittest.TestCase):
         }
         with patch("hioc.inventory.local_ipv4_addresses", return_value=[local]), \
              patch("hioc.inventory.default_gateway", return_value={}), \
-             patch("hioc.inventory.neighbor_table", return_value={}), \
+             patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
              patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_found")), \
              patch("hioc.inventory.dhcp_lease_observations", return_value=([{
                  "ip": weak_ip, "mac": strong_mac, "source": "dhcp_leases", "_positive_observation": False,
@@ -421,6 +427,16 @@ class InventoryModelTests(unittest.TestCase):
             with self.subTest(state=state), patch("hioc.inventory.run_command", return_value=(0, line, "")):
                 self.assertEqual(neighbor_table()["192.168.100.219"]["mac"], mac)
 
+    def test_neighbor_state_matrix_remains_unchanged(self):
+        self.assertEqual(
+            DURABLE_NEIGHBOR_STATES,
+            {"DELAY", "PERMANENT", "PROBE", "REACHABLE", "STALE"},
+        )
+        self.assertEqual(
+            NEIGHBOR_STATES - DURABLE_NEIGHBOR_STATES,
+            {"FAILED", "INCOMPLETE", "NOARP", "NONE"},
+        )
+
     def test_complete_arp_fallback_entry_remains_accepted(self):
         commands = [
             (1, "", "ip unavailable"),
@@ -428,6 +444,265 @@ class InventoryModelTests(unittest.TestCase):
         ]
         with patch("hioc.inventory.run_command", side_effect=commands):
             self.assertEqual(neighbor_table()["192.168.100.219"]["mac"], "0e:38:76:1a:e3:ba")
+
+    def test_neighbor_collection_primary_success_with_records_skips_fallback(self):
+        line = "192.168.100.219 dev eth0 lladdr 0e:38:76:1a:e3:ba REACHABLE"
+        with patch("hioc.inventory.run_command", return_value=(0, line, "")) as command:
+            result = _collect_neighbor_table()
+
+        self.assertTrue(result.collection_succeeded)
+        self.assertTrue(result.accepted_records_present)
+        self.assertEqual(result.records["192.168.100.219"]["mac"], "0e:38:76:1a:e3:ba")
+        command.assert_called_once_with(["ip", "neigh", "show"], timeout=4)
+
+    def test_neighbor_collection_primary_success_empty_is_not_unavailable(self):
+        with patch("hioc.inventory.run_command", return_value=(0, "", "")) as command, \
+             patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases")):
+            result = _collect_neighbor_table()
+            sources, limited, reason = discovery_source_status({}, [], {}, result)
+
+        self.assertTrue(result.collection_succeeded)
+        self.assertEqual(result.records, {})
+        self.assertIn("arp_table_empty", sources)
+        self.assertNotIn("arp_table_unavailable", sources)
+        self.assertFalse(limited)
+        self.assertEqual(reason, "")
+        command.assert_called_once()
+
+    def test_neighbor_collection_rejected_rows_are_successful_empty(self):
+        lines = "\n".join([
+            "192.168.100.10 dev eth0 FAILED",
+            "192.168.100.11 dev eth0 INCOMPLETE",
+            "192.168.100.12 dev eth0 NONE",
+            "192.168.100.13 dev eth0 lladdr 0e:38:76:1a:e3:ba NOARP",
+            "192.168.100.14 dev eth0 lladdr 0e:38:76:1a:e3:bb UNKNOWN",
+            "192.168.100.15 dev eth0 STALE",
+            "192.168.100.16 dev eth0 lladdr invalid-mac STALE",
+        ])
+        with patch("hioc.inventory.run_command", return_value=(0, lines, "")), \
+             patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases")):
+            result = _collect_neighbor_table()
+            sources, limited, _ = discovery_source_status({}, [], {}, result)
+
+        self.assertTrue(result.collection_succeeded)
+        self.assertEqual(result.records, {})
+        self.assertIn("arp_table_empty", sources)
+        self.assertFalse(limited)
+
+    def test_neighbor_collection_fallback_success_with_records(self):
+        commands = [
+            (1, "", "primary secret"),
+            (0, "? (192.168.100.219) at 0e:38:76:1a:e3:ba [ether] on eth0", ""),
+        ]
+        with patch("hioc.inventory.run_command", side_effect=commands) as command, \
+             patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases")):
+            result = _collect_neighbor_table()
+            sources, _, _ = discovery_source_status({}, [], {}, result)
+
+        self.assertTrue(result.collection_succeeded)
+        self.assertIn("192.168.100.219", result.records)
+        self.assertIn("arp_table", sources)
+        self.assertEqual(command.call_count, 2)
+
+    def test_neighbor_collection_fallback_success_empty(self):
+        with patch("hioc.inventory.run_command", side_effect=[
+            (1, "", "primary secret"),
+            (0, "", ""),
+        ]) as command, patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases")):
+            result = _collect_neighbor_table()
+            sources, limited, _ = discovery_source_status({}, [], {}, result)
+
+        self.assertTrue(result.collection_succeeded)
+        self.assertEqual(result.records, {})
+        self.assertIn("arp_table_empty", sources)
+        self.assertFalse(limited)
+        self.assertEqual(command.call_count, 2)
+
+    def test_neighbor_collection_both_commands_fail_is_unavailable_without_raw_errors(self):
+        with self.assertLogs("hioc-inventory-engine", level="WARNING") as logs, \
+             patch("hioc.inventory.run_command", side_effect=[
+                 (1, "", "primary sensitive detail"),
+                 (127, "", "fallback sensitive detail"),
+             ]), patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases")):
+            result = _collect_neighbor_table()
+            sources, limited, reason = discovery_source_status({}, [], {}, result)
+
+        serialized = json.dumps({
+            "sources": sources,
+            "limited": limited,
+            "reason": reason,
+            "diagnostic": result.diagnostic,
+        })
+        self.assertFalse(result.collection_succeeded)
+        self.assertEqual(result.records, {})
+        self.assertEqual(result.diagnostic, "ip_neigh_exit=1; arp_exit=127")
+        self.assertIn("arp_table_unavailable", sources)
+        self.assertTrue(limited)
+        self.assertTrue(reason)
+        self.assertNotIn("sensitive detail", serialized)
+        self.assertNotIn("sensitive detail", " ".join(logs.output))
+
+    def test_passive_driver_explicit_empty_and_unavailable_results_do_not_recollect(self):
+        supplied_results = (
+            NeighborTableResult({}, True),
+            NeighborTableResult({}, False, "ip_neigh_exit=1; arp_exit=127"),
+        )
+        for supplied in supplied_results:
+            with self.subTest(collection_succeeded=supplied.collection_succeeded), \
+                 patch("hioc.inventory._collect_neighbor_table") as collect, \
+                 patch("hioc.inventory.dhcp_lease_observations", return_value=([], "dhcp_leases_empty")), \
+                 patch("hioc.inventory.integration_inventory", return_value={}):
+                result = PassiveNetworkDriver(supplied).discover({"HIOC_HOME": "/nonexistent"})
+
+            collect.assert_not_called()
+            self.assertEqual(result.devices, [])
+
+    def test_discover_inventory_uses_one_coherent_neighbor_snapshot(self):
+        device_a = {
+            "192.168.1.20": {
+                "ip": "192.168.1.20",
+                "mac": "aa:bb:cc:dd:ee:20",
+                "source": "arp_table",
+                "last_seen_source": "arp_table",
+            }
+        }
+        device_b = {
+            "192.168.1.21": {
+                "ip": "192.168.1.21",
+                "mac": "aa:bb:cc:dd:ee:21",
+                "source": "arp_table",
+                "last_seen_source": "arp_table",
+            }
+        }
+        config = {
+            "HIOC_HOME": "/nonexistent",
+            "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_STALE_AFTER_SEC": "60",
+            "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120",
+            "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+        with patch("hioc.inventory._collect_neighbor_table", side_effect=[
+            NeighborTableResult(device_a, True),
+            NeighborTableResult(device_b, True),
+        ]) as collect, patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
+             patch("hioc.inventory.default_gateway", return_value={}), \
+             patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases")), \
+             patch("hioc.inventory.dhcp_lease_observations", return_value=([], "dhcp_leases")), \
+             patch("hioc.inventory.integration_inventory", return_value={}), \
+             patch("hioc.inventory.package_version", return_value=""):
+            inventory = discover_inventory(config, {"devices": []})
+
+        collect.assert_called_once_with()
+        ids = {device["id"] for device in inventory["devices"]}
+        self.assertIn(stable_device_id({"mac": "aa:bb:cc:dd:ee:20"}), ids)
+        self.assertNotIn(stable_device_id({"mac": "aa:bb:cc:dd:ee:21"}), ids)
+        self.assertIn("arp_table", inventory["summary"]["discovery_sources"])
+        self.assertEqual(
+            set(inventory),
+            {
+                "schema_version",
+                "updated",
+                "devices",
+                "services",
+                "_capabilities",
+                "topology",
+                "dependencies",
+                "summary",
+            },
+        )
+        self.assertEqual(
+            set(inventory["summary"]),
+            {
+                "updated",
+                "device_count",
+                "infrastructure_count",
+                "client_count",
+                "network_client_count",
+                "healthy_count",
+                "watch_count",
+                "degraded_count",
+                "offline_count",
+                "service_count",
+                "topology_edges",
+                "dependency_edges",
+                "lowest_health_score",
+                "discovery_sources",
+                "discovery_limited",
+                "discovery_limit_reason",
+                "infrastructure_devices",
+                "services",
+            },
+        )
+        self.assertFalse(any(key.startswith("_") for device in inventory["devices"] for key in device))
+
+    def test_unresolved_arp_and_dhcp_do_not_refresh_retained_observation(self):
+        mac = "0e:38:76:1a:e3:ba"
+        previous = {"devices": [{
+            "id": stable_device_id({"mac": mac}),
+            "ip": "192.168.100.219",
+            "mac": mac,
+            "last_seen": "earlier",
+            "last_seen_epoch": 800,
+            "source": "arp_table",
+        }]}
+        with patch(
+            "hioc.inventory.run_command",
+            return_value=(0, "192.168.100.219 dev eth0 FAILED", ""),
+        ):
+            unresolved = _collect_neighbor_table()
+        dhcp = {
+            "ip": "192.168.100.219",
+            "mac": mac,
+            "hostname": "leased-name",
+            "source": "dhcp_leases",
+            "_positive_observation": False,
+        }
+
+        devices = merge_records(
+            list(unresolved.records.values()) + [dhcp],
+            previous,
+            "now",
+            1000,
+            self._identity_config(),
+        )
+
+        self.assertEqual(devices[0]["last_seen"], "earlier")
+        self.assertEqual(devices[0]["last_seen_epoch"], 800)
+        self.assertEqual(devices[0]["hostname"], "leased-name")
+
+    def test_unresolved_arp_does_not_block_other_positive_source(self):
+        mac = "0e:38:76:1a:e3:ba"
+        previous = {"devices": [{
+            "id": stable_device_id({"mac": mac}),
+            "ip": "192.168.100.219",
+            "mac": mac,
+            "last_seen": "earlier",
+            "last_seen_epoch": 800,
+            "source": "arp_table",
+        }]}
+        with patch(
+            "hioc.inventory.run_command",
+            return_value=(0, "192.168.100.219 dev eth0 INCOMPLETE", ""),
+        ):
+            unresolved = _collect_neighbor_table()
+        integration = {
+            "ip": "192.168.100.219",
+            "mac": mac,
+            "source": "integration:controller",
+            "last_seen_source": "integration:controller",
+        }
+
+        devices = merge_records(
+            list(unresolved.records.values()) + [integration],
+            previous,
+            "now",
+            1000,
+            self._identity_config(),
+        )
+
+        self.assertEqual(devices[0]["last_seen"], "now")
+        self.assertEqual(devices[0]["last_seen_epoch"], 1000)
+        self.assertEqual(devices[0]["last_seen_source"], "integration:controller")
 
     def test_incomplete_arp_fallback_entry_is_rejected(self):
         commands = [
@@ -958,7 +1233,7 @@ class InventoryModelTests(unittest.TestCase):
             }
             with patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
                  patch("hioc.inventory.default_gateway", return_value={}), \
-                 patch("hioc.inventory.neighbor_table", return_value={}), \
+                 patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
                  patch("hioc.inventory.systemd_services", return_value={}), \
                  patch("hioc.inventory.listening_services", return_value=[]), \
                  patch("hioc.inventory.package_version", return_value=""):
@@ -984,7 +1259,7 @@ class InventoryModelTests(unittest.TestCase):
             }
             with patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
                  patch("hioc.inventory.default_gateway", return_value={}), \
-                 patch("hioc.inventory.neighbor_table", return_value={}), \
+                 patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
                  patch("hioc.inventory.systemd_services", return_value={}), \
                  patch("hioc.inventory.listening_services", return_value=[]), \
                  patch("hioc.inventory.package_version", return_value=""):
@@ -1041,7 +1316,7 @@ class InventoryModelTests(unittest.TestCase):
             with patch("hioc.inventory.local_ipv4_addresses", return_value=local_addresses), \
                  patch("hioc.inventory.socket.gethostname", return_value="nutandpihole"), \
                  patch("hioc.inventory.default_gateway", return_value={}), \
-                 patch("hioc.inventory.neighbor_table", return_value=neighbor), \
+                 patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult(neighbor, True)), \
                  patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
                  patch("hioc.inventory.integration_inventory", return_value={}), \
                  patch("hioc.inventory.systemd_services", return_value=systemd), \
@@ -1092,7 +1367,7 @@ class InventoryModelTests(unittest.TestCase):
         }
         with patch("hioc.inventory.local_ipv4_addresses", return_value=[local_address]), \
              patch("hioc.inventory.default_gateway", return_value={}), \
-             patch("hioc.inventory.neighbor_table", return_value={}), \
+             patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
              patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
              patch("hioc.inventory.integration_inventory", return_value={}), \
              patch("hioc.inventory.merge_records", return_value=[unrelated]), \
@@ -1125,7 +1400,7 @@ class InventoryModelTests(unittest.TestCase):
             with self.subTest(first_interface=addresses[0]["interface"]), \
                  patch("hioc.inventory.local_ipv4_addresses", return_value=addresses), \
                  patch("hioc.inventory.default_gateway", return_value={}), \
-                 patch("hioc.inventory.neighbor_table", return_value={"192.168.1.99": {"ip": "192.168.1.99", "mac": endpoint_mac, "source": "arp_table"}}), \
+                 patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({"192.168.1.99": {"ip": "192.168.1.99", "mac": endpoint_mac, "source": "arp_table"}}, True)), \
                  patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
                  patch("hioc.inventory.integration_inventory", return_value={}), \
                  patch("hioc.inventory.systemd_services", return_value={"cron": {"status": "active"}}), \

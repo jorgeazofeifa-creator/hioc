@@ -371,6 +371,14 @@ Deferred identity architecture decisions remain outside this checkpoint:
 
 **Final result:** **PASS**
 
+#### FAILED/INCOMPLETE ARP Semantics
+
+Status: **IN PROGRESS — implementation complete; production validation pending**
+
+The original unresolved-neighbor semantics were confirmed correct: `FAILED`, `INCOMPLETE`, `NONE`, `NOARP`, MAC-less, and other non-durable entries do not create device evidence or refresh positive-observation timestamps. The bounded correction removes duplicate neighbor-table acquisition within one inventory cycle and distinguishes successful empty accepted evidence from total ARP collector unavailability. Discovery-source status and passive device evidence now derive from the same authoritative snapshot.
+
+Repository validation confirms that the focused inventory tests and full regression suite pass, Python sources compile, and the public inventory shape, accepted NUD-state behavior, identity, retention, health, monitoring, correlation, dashboard, and MQTT contracts remain unchanged. Production validation and its Evidence Report remain required before this checkpoint can be marked complete or the roadmap can advance.
+
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
