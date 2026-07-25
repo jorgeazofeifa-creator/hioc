@@ -373,24 +373,36 @@ Deferred identity architecture decisions remain outside this checkpoint:
 
 #### FAILED/INCOMPLETE ARP Semantics
 
-Status: **IN PROGRESS — implementation complete; production validation pending**
+Status: **COMPLETE**
 
 The original unresolved-neighbor semantics were confirmed correct: `FAILED`, `INCOMPLETE`, `NONE`, `NOARP`, MAC-less, and other non-durable entries do not create device evidence or refresh positive-observation timestamps. The bounded correction removes duplicate neighbor-table acquisition within one inventory cycle and distinguishes successful empty accepted evidence from total ARP collector unavailability. Discovery-source status and passive device evidence now derive from the same authoritative snapshot.
 
-Repository validation confirms that the focused inventory tests and full regression suite pass, Python sources compile, and the public inventory shape, accepted NUD-state behavior, identity, retention, health, monitoring, correlation, dashboard, and MQTT contracts remain unchanged. Production validation and its Evidence Report remain required before this checkpoint can be marked complete or the roadmap can advance.
+Implementation commit `8278e54bacb68f25821e6a4981bb01273c32e469` (`Phase 7A: unify ARP snapshot and collector semantics`) preserves `neighbor_table()` as a dictionary-returning compatibility wrapper and keeps `NeighborTableResult`, sanitized exit-code diagnostics, and command-failure details internal. No public schema, topic, entity, dashboard field, event payload, or general driver-framework contract changed.
+
+##### Production Evidence Report
+
+**Deployment result:** **PASS**. The authoritative Windows repository and `origin/main` matched at the implementation commit before PI3 source was fast-forwarded to it. On PI3 NUT&PIHOLE, `bash /home/jazofv1/hioc-release-source/release/validate.sh`, the supported `bash /home/jazofv1/hioc-release-source/release/upgrade.sh`, and `bash /home/jazofv1/hioc/pi4/validate_pi4.sh` all passed. The upgrade created install backup `/home/jazofv1/hioc/backups/install-20260724-194147` and release backup `/home/jazofv1/hioc/backups/release-upgrade-20260724-194146`.
+
+**Intended behavior:** One logical neighbor-table acquisition supplies both discovery-source reporting and `PassiveNetworkDriver`. A successful acquisition with no accepted records reports `arp_table_empty`; failure of both supported commands reports `arp_table_unavailable`. Raw stderr is discarded, diagnostics remain internal, and accepted NUD-state and unresolved-neighbor filtering behavior remain unchanged.
+
+**Invariant checks:** Pre-commit Python compilation passed; inventory/correlation tests passed 111 tests; the complete suite passed 161 tests with 6 skips; release validation and `git diff --check` passed. Production state under `/home/jazofv1/hioc/state/inventory` was online with schema `1.0`, 140 devices, 138 clients, 2 infrastructure devices, 8 services, 280 dependency edges, 139 topology edges, 98 healthy devices, 42 Watch devices, no degraded or offline devices, and lowest health score 75. During the `2026-07-24T19:42:05-06:00` through `2026-07-24T19:42:06-06:00` evidence window, discovery sources were exactly `local_host`, `gateway`, `arp_table`, `dhcp_leases_found`, and `known_infrastructure`; `discovery_limited` was false and `discovery_limit_reason` was empty. Inventory and capability projections remained populated, and no internal result or diagnostic fields appeared in public output.
+
+**Warnings and deferred risks:** Automated regression tests validate the `arp_table_unavailable` path and diagnostic isolation. Production validated the normal successful `arp_table` path and showed no false unavailable or limited state; neighbor collection was not deliberately disrupted to exercise command failure. Dashboard severity mapping, collector canonical ownership, Pi-hole DHCP validation, and passive enrichment remain separate later work.
+
+**Final result:** **PASS**
 
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; resolve FAILED/INCOMPLETE ARP semantics; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
+3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-The required hygiene checkpoint, Phase 7A.9, and Identity Reconciliation Hardening are complete. FAILED/INCOMPLETE ARP semantics are the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
+The required hygiene checkpoint, Phase 7A.9, Identity Reconciliation Hardening, and FAILED/INCOMPLETE ARP semantics are complete. Dashboard severity mapping is the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
 
 ---
 
@@ -691,7 +703,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, and Identity Reconciliation Hardening are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, with FAILED/INCOMPLETE ARP semantics as its next active inventory checkpoint.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, and FAILED/INCOMPLETE ARP semantics are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, with dashboard severity mapping as its next active inventory checkpoint.
 
 ## Current Branch
 
@@ -723,11 +735,11 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Resolve FAILED/INCOMPLETE ARP semantics while preserving the observation model and documented inventory architecture.
+Verify dashboard severity mapping while preserving the documented inventory and operational-truth contracts.
 
 ## Next Planned Task
 
-Resolve FAILED/INCOMPLETE ARP semantics while preserving the observation model and documented inventory architecture.
+Verify dashboard severity mapping while preserving the documented inventory and operational-truth contracts.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

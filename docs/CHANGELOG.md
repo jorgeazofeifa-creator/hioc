@@ -26,6 +26,7 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Documentation
 
+- Recorded successful production deployment and validation of the single-snapshot ARP semantics correction: normal discovery reported `arp_table`, discovery remained unlimited, and the checkpoint closed after PASS evidence.
 - Recorded successful ADR-0014 production validation and made the repository the
   authoritative operational reference for configured, read-only MQTT runtime
   validation after installation or upgrade.
