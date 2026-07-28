@@ -119,7 +119,7 @@ template:
           {% elif degraded > 0 %}
             {{ degraded }} degraded device{{ 's' if degraded != 1 else '' }}
           {% elif watch > 0 %}
-            {{ watch }} device{{ 's' if watch != 1 else '' }} {{ 'have stale observations' if watch != 1 else 'has a stale observation' }}
+            {{ watch }} device{{ 's require' if watch != 1 else ' requires' }} observation or availability review
           {% else %}
             Inventory healthy
           {% endif %}
@@ -145,7 +145,7 @@ template:
           {% elif degraded > 0 %}
             Review degraded device health reasons and confirm whether the device has changed IP, MAC, or parent path.
           {% elif watch > 0 %}
-            No operator action required; stale observations remain visible for review.
+            No operator action required; Watch observations remain visible for review.
           {% else %}
             No inventory action required.
           {% endif %}

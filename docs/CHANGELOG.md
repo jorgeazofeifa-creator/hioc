@@ -34,6 +34,7 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Fixed
 
+- Living Inventory aggregate Watch wording now covers observation or availability review without incorrectly describing every Watch condition as stale, and Dashboard v2 gives unavailable inventory status precedence over retained device counts when styling Inventory Summary. Health, schemas, MQTT, entities, incidents, layout, and the existing blue Watch palette are unchanged pending production validation and a separate UX/design decision.
 - ARP discovery-source status and passive device evidence now share one authoritative neighbor-table acquisition per inventory cycle, and total primary-plus-fallback command failure is reported as unavailable rather than successful empty evidence. Unresolved-neighbor filtering, identity, retention, health, monitoring, and accepted NUD-state behavior remain unchanged.
 - Incident Engine retained publication now uses one shared Core MQTT connection per run instead of placing complete payload documents in `mosquitto_pub -m` process arguments, preserving local history, embedded reviews, topics, retained semantics, and payload schemas while returning a truthful nonzero status for required publication failures.
 - Living Inventory now includes a dedicated Watch Devices presentation, ordered by oldest known observation first and showing authoritative identity, observation, provenance, and health-reason details without changing inventory semantics.

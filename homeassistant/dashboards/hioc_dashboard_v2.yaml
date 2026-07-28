@@ -88,7 +88,7 @@ views:
 
               What is happening: {{ states('sensor.hioc_inventory_operations_summary') }}.
 
-              Why it matters: passive stale observations remain visible without representing monitored-device failure.
+              Why it matters: passive observation or availability uncertainty remains visible without representing monitored-device failure.
 
               Recommended action: {{ states('sensor.hioc_inventory_recommended_action') }}
 
@@ -1801,8 +1801,8 @@ views:
                 {% set offline = states('sensor.hioc_inventory_offline_devices') | int(-1) %}
                 {% set degraded = states('sensor.hioc_inventory_degraded_devices') | int(-1) %}
                 {% set watch = states('sensor.hioc_inventory_watch_devices') | int(-1) %}
-                ha-card { min-height: 230px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if offline > 0 %}#ef4444{% elif degraded > 0 %}#f59e0b{% elif status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#64748b{% elif watch > 0 %}#38bdf8{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
-                h1 { color: {% if offline > 0 %}#fecaca{% elif degraded > 0 %}#fcd34d{% elif status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#cbd5e1{% elif watch > 0 %}#7dd3fc{% else %}#86efac{% endif %}; }
+                ha-card { min-height: 230px; border-radius: 18px; border: 1px solid rgba(90,140,185,.28); border-left: 6px solid {% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#64748b{% elif offline > 0 %}#ef4444{% elif degraded > 0 %}#f59e0b{% elif watch > 0 %}#38bdf8{% else %}#22c55e{% endif %}; background: linear-gradient(135deg, rgba(13,29,46,.98), rgba(5,11,20,.98)); color: #dcecff; box-shadow: 0 18px 48px rgba(0,0,0,.36); }
+                h1 { color: {% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}#cbd5e1{% elif offline > 0 %}#fecaca{% elif degraded > 0 %}#fcd34d{% elif watch > 0 %}#7dd3fc{% else %}#86efac{% endif %}; }
 
           - type: markdown
             title: Counts

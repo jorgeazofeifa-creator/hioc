@@ -391,6 +391,12 @@ Implementation commit `8278e54bacb68f25821e6a4981bb01273c32e469` (`Phase 7A: uni
 
 **Final result:** **PASS**
 
+#### Dashboard Severity Mapping — IN PROGRESS
+
+Repository review identified two bounded presentation defects. Aggregate Watch wording treated every Watch record as a stale observation even though Watch can also represent expired passive evidence or DHCP-only operational availability that remains unknown. Dashboard v2's Inventory Summary accent also evaluated retained offline or degraded counts before an unavailable inventory status, allowing confident severity styling when current inventory truth was unavailable.
+
+The repository correction uses policy-neutral aggregate Watch wording and makes unknown inventory status take precedence in the affected Inventory Summary style. Detailed per-device `health_reasons`, health computation, summary membership, schemas, MQTT contracts, Home Assistant entities, incident severity, and dashboard layout remain unchanged. The existing blue Watch palette is intentionally preserved; its relationship to the Design System is deferred to a separate UX/design decision. This checkpoint remains **IN PROGRESS** pending production validation.
+
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.

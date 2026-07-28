@@ -115,9 +115,9 @@ class InventoryPresentationTests(unittest.TestCase):
             )
         if watch_count > 0:
             return (
-                f"{watch_count} devices have stale observations"
+                f"{watch_count} devices require observation or availability review"
                 if watch_count != 1
-                else "1 device has a stale observation"
+                else "1 device requires observation or availability review"
             )
         return "Inventory healthy"
 
@@ -135,14 +135,20 @@ class InventoryPresentationTests(unittest.TestCase):
         self.assertLess(watch, healthy)
         self.assertIn("offline device", template)
         self.assertIn("degraded device", template)
-        self.assertIn("has a stale observation", template)
-        self.assertIn("have stale observations", template)
+        self.assertIn("observation or availability review", template)
+        self.assertNotIn("stale observation", template)
         self.assertNotIn("need attention", template.lower())
         self.assertIn("Inventory status unavailable", template)
+        dashboard_text = DASHBOARD_PATH.read_text(encoding="utf-8")
+        self.assertIn(
+            "passive observation or availability uncertainty remains visible",
+            dashboard_text,
+        )
+        self.assertNotIn("passive stale observations remain visible", dashboard_text)
 
         cases = {
             (97, 0, 0, 0): "Inventory healthy",
-            (97, 2, 0, 0): "2 devices have stale observations",
+            (97, 2, 0, 0): "2 devices require observation or availability review",
             (97, 0, 1, 0): "1 degraded device",
             (97, 0, 0, 1): "1 offline device",
             (96, 2, 1, 0): "1 degraded device",
@@ -156,9 +162,9 @@ class InventoryPresentationTests(unittest.TestCase):
                     actual = f"{degraded_count} degraded device" + ("s" if degraded_count != 1 else "")
                 elif watch_count > 0:
                     actual = (
-                        f"{watch_count} devices have stale observations"
+                        f"{watch_count} devices require observation or availability review"
                         if watch_count != 1
-                        else "1 device has a stale observation"
+                        else "1 device requires observation or availability review"
                     )
                 else:
                     actual = "Inventory healthy"
@@ -170,7 +176,7 @@ class InventoryPresentationTests(unittest.TestCase):
         cases = {
             (0, 0, 1): "Open the inventory dashboard and verify power, Wi-Fi/Ethernet, and gateway reachability for offline devices.",
             (0, 1, 0): "Review degraded device health reasons and confirm whether the device has changed IP, MAC, or parent path.",
-            (2, 0, 0): "No operator action required; stale observations remain visible for review.",
+            (2, 0, 0): "No operator action required; Watch observations remain visible for review.",
             (0, 0, 0): "No inventory action required.",
             (2, 1, 0): "Review degraded device health reasons and confirm whether the device has changed IP, MAC, or parent path.",
             (2, 1, 1): "Open the inventory dashboard and verify power, Wi-Fi/Ethernet, and gateway reachability for offline devices.",
@@ -232,12 +238,12 @@ class InventoryPresentationTests(unittest.TestCase):
             self._render_operations_summary(
                 operations_summary, watch, degraded, offline
             ),
-            "2 devices have stale observations",
+            "2 devices require observation or availability review",
         )
         recommendation = self.sensors["hioc_inventory_recommended_action"]["state"]
         self.assertEqual(
             self._render_recommendation(recommendation, watch, degraded, offline),
-            "No operator action required; stale observations remain visible for review.",
+            "No operator action required; Watch observations remain visible for review.",
         )
         inventory_healthy = (
             "online" in {"online", "degraded"} and degraded == 0 and offline == 0
@@ -293,6 +299,44 @@ class InventoryPresentationTests(unittest.TestCase):
         style = summary["card_mod"]["style"]
         self.assertIn("sensor.hioc_inventory_watch_devices", style)
         self.assertIn("#38bdf8", style)
+
+    def test_inventory_summary_style_uses_unknown_first_without_changing_colors(self):
+        summary = next(card for card in self.inventory_cards if card.get("title") == "Inventory Summary")
+        style = summary["card_mod"]["style"]
+        unknown = "{% if status not in ['online', 'degraded'] or offline < 0 or degraded < 0 or watch < 0 %}"
+        offline = "{% elif offline > 0 %}"
+        degraded = "{% elif degraded > 0 %}"
+        watch = "{% elif watch > 0 %}"
+
+        for expression in (line for line in style.splitlines() if "color:" in line):
+            self.assertLess(expression.index(unknown), expression.index(offline))
+            self.assertLess(expression.index(offline), expression.index(degraded))
+            self.assertLess(expression.index(degraded), expression.index(watch))
+
+        def accent(status, offline_count, degraded_count, watch_count):
+            if status not in {"online", "degraded"} or min(
+                offline_count, degraded_count, watch_count
+            ) < 0:
+                return "unknown"
+            if offline_count > 0:
+                return "offline"
+            if degraded_count > 0:
+                return "degraded"
+            if watch_count > 0:
+                return "watch"
+            return "healthy"
+
+        self.assertEqual(accent("unknown", 1, 0, 0), "unknown")
+        self.assertEqual(accent("unavailable", 0, 1, 0), "unknown")
+        self.assertEqual(accent("online", 1, 1, 1), "offline")
+        self.assertEqual(accent("online", 0, 1, 1), "degraded")
+        self.assertEqual(accent("online", 0, 0, 1), "watch")
+        self.assertEqual(accent("online", 0, 0, 0), "healthy")
+        self.assertIn("#64748b", style)
+        self.assertIn("#ef4444", style)
+        self.assertIn("#f59e0b", style)
+        self.assertIn("#38bdf8", style)
+        self.assertIn("#22c55e", style)
 
     def test_entities_counts_and_dashboard_layout_are_unchanged(self):
         expected_ids = {
