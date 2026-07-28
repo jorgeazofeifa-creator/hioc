@@ -476,7 +476,7 @@ These items remain deferred future bounded sub-checkpoints and were not changed 
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-The required hygiene checkpoint, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. Pi-hole DHCP lease ingestion validation is the next active work. Passive enrichment resumes only after that corrective checkpoint.
+Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The overall Repository and Deployment Hygiene checkpoint remains in progress through its explicitly listed follow-up checkpoints. Pi-hole DHCP lease ingestion validation also remains active. Passive enrichment resumes only after the required corrective work.
 
 ---
 
@@ -583,7 +583,28 @@ The existence or future removal of the production runtime's `.git` directory is 
 
 ## Repository and Deployment Hygiene Checkpoint
 
-The source/runtime architecture is settled and is not being reopened. The Repository and Deployment Hygiene checkpoint is complete: production content was classified, the approved source-only deployment exclusions were implemented, the controlled one-time cleanup was performed, and production validation passed.
+Status: **IN PROGRESS**
+
+The source/runtime architecture is settled and is not being reopened. The earlier production-content classification, approved source-only deployment exclusions, controlled one-time cleanup, and production validation remain complete. A later Windows repository audit opened additional bounded hygiene work. The overall Repository and Deployment Hygiene checkpoint remains open until those local findings are resolved and separate manual PI3 release-source and runtime evidence is collected.
+
+### Release Boundary Hardening
+
+Status: **COMPLETE**
+
+**Engineering problem:** `release/build.sh` previously traversed the working directory and attempted to protect the release through exclusion patterns. Git ignore rules did not participate in that traversal, so an ignored or untracked workspace artifact could enter a release unless it happened to match a build-specific exclusion. Release contents could therefore depend on workspace residue rather than solely on intentional repository source.
+
+**Implemented solution:** Release construction now obtains its complete source set from the repository index through Git's NUL-delimited tracked-file listing. Each copied file is included because it is explicitly tracked; ignored, untracked, cache, recovery, and temporary files are outside the source set without relying on filename exclusions. This preserves the existing build directory, version lookup, project-file layout, and downstream package and deployment flow. `RELEASE_MANIFEST.txt` remains the one intentionally generated build file and now records stable version, build, and source-commit values without checkout-path or wall-clock fields.
+
+**Validation:** Focused release tests prove that the build is Git-aware, uses a NUL-safe tracked-file stream, does not fall back to workspace traversal or a special `*.tmp` exclusion, and produces a checkout-independent manifest. The existing ignored `hioc_known_hosts.tmp` file was retained as validation evidence and is excluded because it is not tracked, as are arbitrary future ignored or untracked artifacts. Tracked project files remain the build input. Focused release and version tests, the full regression suite, Python compilation, shell syntax validation, release validation, and direct build-content comparison passed. No runtime, inventory, Home Assistant, deployment, upgrade, validation, or public-contract behavior changed.
+
+**Remaining Repository and Deployment Hygiene checkpoints:**
+
+1. Changelog governance.
+2. Lifecycle branch governance.
+3. Branch cleanup.
+4. PI3 release-source audit, performed manually by the user.
+5. PI3 runtime audit, performed manually by the user.
+6. Repository and Deployment Hygiene closeout.
 
 Repository and runtime artifacts use these disposition categories:
 
@@ -777,7 +798,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, with Pi-hole DHCP lease ingestion validation as its next active inventory checkpoint.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening sub-checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The overall Repository and Deployment Hygiene checkpoint remains in progress pending changelog governance, lifecycle branch governance, branch cleanup, manual PI3 release-source and runtime audits, and final closeout. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, including the remaining Pi-hole DHCP lease ingestion work.
 
 ## Current Branch
 

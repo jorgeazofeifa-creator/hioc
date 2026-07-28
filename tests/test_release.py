@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 import unittest
 
 
@@ -31,6 +32,31 @@ def rsync_commands(script: str) -> list[str]:
 
 
 class ReleaseScriptTests(unittest.TestCase):
+    def test_build_uses_only_git_tracked_source_files(self):
+        build_script = (ROOT / "release" / "build.sh").read_text(encoding="utf-8")
+
+        self.assertIn('git -C "$ROOT" ls-files --cached -z --', build_script)
+        self.assertIn("while IFS= read -r -d '' rel", build_script)
+        self.assertNotIn('find "$ROOT"', build_script)
+        self.assertNotIn("*.tmp", build_script)
+
+    def test_build_manifest_is_checkout_independent(self):
+        build_script = (ROOT / "release" / "build.sh").read_text(encoding="utf-8")
+
+        self.assertIn('source_commit=$(git -C "$ROOT" rev-parse HEAD)', build_script)
+        self.assertNotIn("created=$(date", build_script)
+        self.assertNotIn("source_root=$ROOT", build_script)
+
+    def test_known_hosts_validation_artifact_is_not_tracked(self):
+        result = subprocess.run(
+            ["git", "-C", str(ROOT), "ls-files", "-z", "--"],
+            check=True,
+            capture_output=True,
+        )
+        tracked_files = set(result.stdout.decode("utf-8").split("\0"))
+
+        self.assertNotIn("hioc_known_hosts.tmp", tracked_files)
+
     def test_upgrade_copy_contract(self):
         upgrade_script = (ROOT / "release" / "upgrade.sh").read_text(encoding="utf-8")
         commands = rsync_commands(upgrade_script)
