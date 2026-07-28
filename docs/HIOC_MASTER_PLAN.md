@@ -437,11 +437,33 @@ Implementation commit `054fb55a2e70901f3230145b76983c31d2b5ce61` (`Phase 7A: har
 
 Status: **IN PROGRESS**
 
-The first bounded implementation establishes one authoritative DHCP lease snapshot per inventory cycle. `discover_inventory()` now acquires the existing structured lease-source results once and supplies that same cycle-local tuple to discovery-source status reporting and `PassiveNetworkDriver` device evidence. Status, sanitized warnings, parsed observations, and central reconciliation therefore describe one captured filesystem state rather than two potentially different reads. Standalone compatibility helpers continue acquiring current source results when no snapshot is supplied; no global cache or cross-cycle state was introduced.
+##### Single Snapshot Acquisition
 
-Repository validation passed with 115 focused inventory tests, 177 full-suite tests and 6 skips, Python compilation, release validation, and `git diff --check`. Regression coverage confirms single acquisition for one and multiple configured files, shared valid/missing/partial snapshot behavior, no duplicate malformed-row warnings, and independent compatibility-helper acquisition. Existing parsing, assignment-only observation, source-state vocabulary, source authority, deterministic duplicate handling, identity, health, topology, dependency, schema, MQTT, Home Assistant, dashboard, and event contracts remain unchanged.
+Status: **COMPLETE**
 
-This is only the single-snapshot sub-checkpoint. Production deployment and validation remain pending, and the overall Pi-hole DHCP Lease Ingestion checkpoint remains open. Separate bounded decisions remain unresolved for finite expired-lease policy, advertised ISC `dhcpd.leases` compatibility, the IPv4-versus-IPv6 contract, explicit-empty-list fallback behavior, and discovery-limitation semantics. None of those behaviors changed in this implementation.
+Implementation commit `a01b6b77350ee22a40e8aacca72e256b826c8a3f` (`Phase 7A: unify DHCP lease snapshot acquisition`) establishes one authoritative DHCP lease snapshot per inventory cycle. `discover_inventory()` acquires configured lease sources exactly once into a cycle-local immutable tuple and shares that captured input across discovery-source status, `PassiveNetworkDriver` observations, and central reconciliation. This removes duplicate lease-file acquisition during one inventory cycle while preserving all existing DHCP parsing, assignment-only observation, source-state, deterministic ordering, source-authority, identity, health, topology, dependency, schema, MQTT, Home Assistant, dashboard, and event semantics.
+
+###### Evidence Report
+
+**Implementation validation:** **PASS**. Automated regression tests establish one source acquisition per inventory cycle for one and multiple configured files, immutable snapshot reuse by both consumers, absence of a secondary acquisition, consistent discovery-status and observation inputs for valid, missing, and partial snapshots, and a single sanitized malformed-row warning. Standalone compatibility helpers continue acquiring current results when no snapshot is supplied. The focused inventory suite passed 115 tests; the full regression suite passed 177 tests with 6 skips. Python compilation, release validation, and `git diff --check` also passed.
+
+**Production validation:** **PASS** for externally observable behavior. The release source synchronized successfully, the supported upgrade completed successfully, and production validation completed successfully. Inventory generation succeeded with `dhcp_leases_found` among its discovery sources. The production inventory contained 145 DHCP-backed devices; sampled DHCP-backed records originated from `/etc/pihole/dhcp.leases`, and their lease metadata remained present. No observable inventory regression was reported.
+
+**Important engineering note:** The single-acquisition invariant is an internal implementation property established by automated regression testing, not by production runtime artifacts. Production validation confirms the observable inventory behavior resulting from the implementation but does not expose or prove lease-file acquisition counts. HIOC evidence reports must preserve this distinction between implementation invariants and production observables.
+
+**Intentionally unchanged:** This sub-checkpoint does not alter lease-expiration policy, IPv6 handling, ISC lease compatibility, or discovery-limitation semantics.
+
+**Final result:** **PASS** for Single Snapshot Acquisition only. The overall Pi-hole DHCP Lease Ingestion checkpoint remains **IN PROGRESS**.
+
+##### Remaining Open DHCP Sub-checkpoints
+
+- **Expired finite-lease policy:** Define how finite leases whose expiry is in the past participate in current assignment evidence.
+- **ISC `dhcpd.leases` compatibility:** Resolve the advertised ISC lease path versus the current dnsmasq/Pi-hole row parser.
+- **IPv4 / IPv6 contract clarification:** Define whether this ingestion path is IPv4-only or intentionally accepts both address families.
+- **Explicit empty-list behavior:** Define whether an explicitly empty path list disables acquisition or falls back to defaults.
+- **Discovery-limitation semantics:** Define how DHCP source availability and integration evidence determine `discovery_limited`.
+
+These items remain deferred future bounded sub-checkpoints and were not changed by Single Snapshot Acquisition.
 
 #### Remaining Phase 7A Corrective Sequence
 
