@@ -597,11 +597,21 @@ Status: **COMPLETE**
 
 **Validation:** Focused release tests prove that the build is Git-aware, uses a NUL-safe tracked-file stream, does not fall back to workspace traversal or a special `*.tmp` exclusion, and produces a checkout-independent manifest. The existing ignored `hioc_known_hosts.tmp` file was retained as validation evidence and is excluded because it is not tracked, as are arbitrary future ignored or untracked artifacts. Tracked project files remain the build input. Focused release and version tests, the full regression suite, Python compilation, shell syntax validation, release validation, and direct build-content comparison passed. No runtime, inventory, Home Assistant, deployment, upgrade, validation, or public-contract behavior changed.
 
+### Changelog Governance Reconciliation
+
+Status: **COMPLETE**
+
+Git history establishes the intended single-authority model. Documentation-governance commit `5b2fe6ed2a4f7916032198c4ecaf645aa3937b72` migrated released-work history into `docs/CHANGELOG.md`, declared that file's ownership, converted root `CHANGELOG.md` into a discoverability pointer, and directed README readers to the authoritative docs path. Implementation commit `054fb55a2e70901f3230145b76983c31d2b5ce61` later replaced the root pointer with a bounded Collector Canonical Ownership implementation entry. Subsequent production-validation and closeout work correctly updated `docs/CHANGELOG.md`, leaving the duplicate root entry stale.
+
+The original governance model is restored: `docs/CHANGELOG.md` is the single authoritative record of released and delivered work, and root `CHANGELOG.md` is a pointer retained for conventional repository discoverability. Future release and completed-checkpoint entries must be written only to `docs/CHANGELOG.md`. A second overlapping full changelog is prohibited unless a separately approved governance decision establishes a distinct, non-overlapping purpose. Git history preserves all earlier root content, so the pointer loses no historical traceability. README already targets the authoritative file; release and installer tooling merely exclude the root source-only path and require no change.
+
+The stale Collector Canonical Ownership statement is removed from the active root pointer. The authoritative changelog and Master Plan record the complete evidence chain: implementation, regression validation, production validation, and documentation closeout all completed. Documentation links, release-contract tests, the full regression suite, and `git diff --check` passed. No application, release, deployment, test, inventory, or Home Assistant behavior changed.
+
 **Remaining Repository and Deployment Hygiene checkpoints:**
 
-1. Changelog governance.
+1. Temporary workspace artifact disposition.
 2. Lifecycle branch governance.
-3. Branch cleanup.
+3. Merged branch cleanup.
 4. PI3 release-source audit, performed manually by the user.
 5. PI3 runtime audit, performed manually by the user.
 6. Repository and Deployment Hygiene closeout.
@@ -798,7 +808,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening sub-checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The overall Repository and Deployment Hygiene checkpoint remains in progress pending changelog governance, lifecycle branch governance, branch cleanup, manual PI3 release-source and runtime audits, and final closeout. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, including the remaining Pi-hole DHCP lease ingestion work.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening and Changelog Governance Reconciliation sub-checkpoints, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The overall Repository and Deployment Hygiene checkpoint remains in progress pending temporary workspace artifact disposition, lifecycle branch governance, merged branch cleanup, manual PI3 release-source and runtime audits, and final closeout. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, including the remaining Pi-hole DHCP lease ingestion work.
 
 ## Current Branch
 

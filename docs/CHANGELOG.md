@@ -4,6 +4,8 @@
 
 This document owns released and delivered work.
 
+This is the repository's single authoritative changelog. The root [CHANGELOG.md](../CHANGELOG.md) is a discoverability pointer only. All future release and completed-checkpoint entries must be written here. Maintaining a second overlapping full changelog is prohibited unless a separately approved governance decision establishes a distinct, non-overlapping purpose.
+
 Use these categories when applicable:
 
 - Added
@@ -26,6 +28,7 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Documentation
 
+- Reconciled changelog governance by restoring the root `CHANGELOG.md` as a pointer to this authoritative record. Repository history confirms that the documentation-governance migration established this single-authority model; a later bounded implementation entry accidentally replaced the pointer and became stale after Collector Canonical Ownership regression, production, and documentation validation completed. No historical evidence was removed from Git history.
 - Closed the Phase 7A Collector Canonical Ownership checkpoint after implementation commit `054fb55a2e70901f3230145b76983c31d2b5ce61` passed release validation, supported production upgrade, Pi4 validation, and production evidence review. The canonical collector remained MAC-backed at `192.168.100.252`, all eight services were owned by `Pi3 - NUT and Pi-hole`, and the historical `.105` ownership defect was not observed; this documentation-only closeout does not change runtime or public contracts.
 - Recorded successful production deployment and validation of the single-snapshot ARP semantics correction: normal discovery reported `arp_table`, discovery remained unlimited, and the checkpoint closed after PASS evidence.
 - Recorded successful ADR-0014 production validation and made the repository the
