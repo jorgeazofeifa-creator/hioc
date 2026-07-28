@@ -409,11 +409,23 @@ The repository correction uses policy-neutral aggregate Watch wording and makes 
 
 **Final result:** **PASS**
 
+#### Collector Canonical Ownership
+
+Status: **IN PROGRESS**
+
+The bounded repository implementation corrects two confirmed ownership defects. Collector identity previously depended on local-interface enumeration order and could compose an IP from one interface with a MAC from another. Known-infrastructure enrichment also discarded operator metadata after a legitimate observed IP or hostname change despite an exact normalized MAC match.
+
+Canonical collector IP and MAC now come atomically from one complete interface record. A complete record requires an interface identifier, a valid IPv4 address, and a valid normalized MAC address. The default-route interface, obtained from the existing route discovery source, is preferred. If it has no complete record, selection uses stable ordering by interface identifier, numeric IPv4 address, normalized MAC, and CIDR. Incomplete records are never combined; when no complete record exists, there is no canonical collector selection and local services are omitted rather than assigned to an unrelated device. The full interfaces list remains observational evidence.
+
+Exact normalized MAC matches now establish canonical discovered identity for known-infrastructure enrichment even when configured IP or hostname values are stale. Current observed IP, MAC, hostname, positive-observation timestamps, reachability, and discovery provenance remain authoritative, while supported operator metadata continues to enrich the device and preserve its configured classification. Weaker IP- or hostname-only matches continue rejecting conflicting MAC evidence and ambiguous identities are not guessed together. A MAC change does not imply continuity.
+
+This implementation does not change inventory schemas, MQTT topics or payloads, Home Assistant entity IDs, dashboard layout, health computation or thresholds, incident behavior, discovery policy, or MAC-change continuity policy. Production deployment and validation remain pending, so this checkpoint is not complete. Pi-hole DHCP lease validation remains the next corrective checkpoint only after collector canonical ownership receives production evidence.
+
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
+3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **IN PROGRESS**; and validate Pi-hole DHCP lease ingestion after collector ownership production validation.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.

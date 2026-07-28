@@ -164,6 +164,44 @@ def default_gateway() -> dict:
     return data
 
 
+def select_canonical_local_interface(addresses: list[dict], gateway: dict | None = None) -> dict | None:
+    """Select one complete local interface atomically, preferring the default-route interface.
+
+    A complete record has a non-empty interface identifier, a valid IPv4 address, and a
+    normalized MAC address.  If the default-route interface has no complete record, the
+    lexicographically smallest (interface, numeric IP, MAC, CIDR) record is selected.
+    Incomplete records are never combined; when none is complete, no record is selected.
+    """
+    complete = []
+    for address in addresses:
+        interface = str(address.get("interface", "") or "").strip()
+        ip = str(address.get("ip", "") or "").strip()
+        mac = normalize_mac(address.get("mac", ""))
+        try:
+            parsed_ip = ipaddress.ip_address(ip)
+        except ValueError:
+            continue
+        if not interface or parsed_ip.version != 4 or not mac:
+            continue
+        normalized = dict(address)
+        normalized.update({"interface": interface, "ip": ip, "mac": mac})
+        complete.append(normalized)
+    if not complete:
+        return None
+    default_interface = str((gateway or {}).get("interface", "") or "").strip()
+    preferred = [record for record in complete if record["interface"] == default_interface]
+    candidates = preferred or complete
+    return min(
+        candidates,
+        key=lambda record: (
+            record["interface"],
+            int(ipaddress.ip_address(record["ip"])),
+            record["mac"],
+            str(record.get("cidr", "")),
+        ),
+    )
+
+
 def _collect_neighbor_table() -> NeighborTableResult:
     primary_code, out, _ = run_command(["ip", "neigh", "show"], timeout=4)
     neighbors = {}
@@ -507,7 +545,11 @@ def known_infrastructure(config: dict) -> list[dict]:
     return accepted
 
 
-def _identifier_conflicts(left: dict, right: dict) -> list[str]:
+def _identifier_conflicts(left: dict, right: dict, match_type: str = "") -> list[str]:
+    left_mac = normalize_mac(left.get("mac", ""))
+    right_mac = normalize_mac(right.get("mac", ""))
+    if match_type == "mac" and left_mac and left_mac == right_mac:
+        return []
     conflicts = []
     for field in ("mac", "ip"):
         if left.get(field) and right.get(field) and left.get(field) != right.get(field):
@@ -535,19 +577,27 @@ def append_known_infrastructure(records: list[dict], known_records: list[dict]) 
     observed = [record for record in records if record.get("_observed", True)]
     for index, record in enumerate(known_records):
         matches = []
+        match_type = ""
         if record.get("mac"):
-            matches = [item for item in observed if item.get("mac") == record["mac"]]
+            known_mac = normalize_mac(record["mac"])
+            matches = [item for item in observed if known_mac and normalize_mac(item.get("mac", "")) == known_mac]
+            if matches:
+                match_type = "mac"
         if not matches and record.get("ip"):
             matches = [item for item in observed if item.get("ip") == record["ip"]]
+            if matches:
+                match_type = "ip"
         if not matches and record.get("hostname"):
             host = normalize_hostname(record["hostname"])
             matches = [item for item in observed if normalize_hostname(item.get("hostname")) == host]
+            if matches:
+                match_type = "hostname"
         if matches:
-            conflict = next((item for item in matches if _identifier_conflicts(record, item)), None)
+            conflict = next((item for item in matches if _identifier_conflicts(record, item, match_type)), None)
             if conflict:
                 configured_id = record.get("_configured_id", f"record {index}")
                 matching = _matching_identifier(record, conflict) or "identifier"
-                conflicting = ", ".join(_identifier_conflicts(record, conflict))
+                conflicting = ", ".join(_identifier_conflicts(record, conflict, match_type))
                 _known_warning(f"{configured_id} skipped: matched by {matching} but conflicts on {conflicting}")
                 continue
             record["_merge_key"] = _record_key(matches[0])
@@ -893,6 +943,8 @@ def _merge_record_values(records: list[dict]) -> dict:
         field for record in known_records for field in record.get("_known_metadata_fields", [])
     })
     for field in known_metadata_fields:
+        if field in known_identity_fields and merged.get(field):
+            continue
         if local_host_observed and field in LOCAL_HOST_PROTECTED_KNOWN_FIELDS and merged.get(field):
             continue
         values = [record[field] for record in known_records if record.get(field) not in ("", None, [])]
@@ -1441,6 +1493,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     local_addresses = local_ipv4_addresses()
     local_ips = {item["ip"] for item in local_addresses}
     gateway = default_gateway()
+    canonical_local_interface = select_canonical_local_interface(local_addresses, gateway)
     gateway_ip = gateway.get("ip", "")
     neighbor_result = _collect_neighbor_table()
     discovery_sources, discovery_limited, discovery_limit_reason = discovery_source_status(
@@ -1454,8 +1507,8 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     hostname = socket.gethostname()
     os_release = read_os_release()
     kernel = os.uname().release if hasattr(os, "uname") else ""
-    local_mac = next((item["mac"] for item in local_addresses if item.get("mac")), "")
-    local_ip = next((item["ip"] for item in local_addresses), "")
+    local_mac = canonical_local_interface["mac"] if canonical_local_interface else ""
+    local_ip = canonical_local_interface["ip"] if canonical_local_interface else ""
     local_host_record = {
         "type": "local_host",
         "name": hostname,
@@ -1473,7 +1526,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         "source": "local_host",
         "last_seen_source": "local_host",
     }
-    local_device_id = stable_device_id(local_host_record)
+    local_device_id = stable_device_id(local_host_record) if canonical_local_interface else ""
     records.append(local_host_record)
     if gateway_ip:
         records.append({"type": "network_device", "name": "Default Gateway", "ip": gateway_ip, "interface": gateway.get("interface", ""), "source": "gateway", "last_seen_source": "gateway"})
@@ -1519,11 +1572,11 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     devices = merge_records(enriched, previous, now, now_epoch, config)
     resolve_configured_parent_ids(devices)
     service_registry = DriverRegistry()
-    local_device = next((device for device in devices if device.get("id") == local_device_id), None)
+    local_device = next((device for device in devices if local_device_id and device.get("id") == local_device_id), None)
     if local_device:
         service_registry.register(LocalServiceDriver(local_device_id))
     else:
-        LOG.error("local service discovery skipped: canonical local device id %s was not found after inventory merge", local_device_id)
+        LOG.error("local service discovery skipped: canonical local device id %s was not found after inventory merge", local_device_id or "unavailable")
     services = []
     for result in service_registry.run(config):
         services.extend(result.services)

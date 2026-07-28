@@ -40,6 +40,7 @@ from hioc.inventory import (
     operator_role,
     resolve_configured_parent_ids,
     scan_subnet,
+    select_canonical_local_interface,
     stable_device_id,
 )
 from hioc.core.monitoring import is_operationally_monitored
@@ -64,6 +65,49 @@ class InventoryModelTests(unittest.TestCase):
         by_ip = stable_device_id({"ip": "192.168.1.20"})
         self.assertEqual(with_mac, same_mac_new_ip)
         self.assertNotEqual(with_mac, by_ip)
+
+    def test_canonical_local_interface_prefers_default_route_atomically(self):
+        eth0 = {"interface": "eth0", "cidr": "192.168.1.2/24", "ip": "192.168.1.2", "mac": "AA-BB-CC-DD-EE-01"}
+        bridge = {"interface": "docker0", "cidr": "172.17.0.1/16", "ip": "172.17.0.1", "mac": "02:42:ac:11:00:01"}
+
+        selected = select_canonical_local_interface([bridge, eth0], {"interface": "eth0"})
+
+        self.assertEqual(selected["ip"], eth0["ip"])
+        self.assertEqual(selected["mac"], "aa:bb:cc:dd:ee:01")
+
+    def test_canonical_local_interface_is_order_independent_and_atomic(self):
+        records = [
+            {"interface": "eth1", "cidr": "10.0.0.2/24", "ip": "10.0.0.2", "mac": "aa:bb:cc:dd:ee:02"},
+            {"interface": "eth0", "cidr": "192.168.1.2/24", "ip": "192.168.1.2", "mac": "aa:bb:cc:dd:ee:01"},
+        ]
+
+        forward = select_canonical_local_interface(records, {})
+        reverse = select_canonical_local_interface(list(reversed(records)), {})
+
+        self.assertEqual(forward, reverse)
+        self.assertEqual((forward["ip"], forward["mac"]), ("192.168.1.2", "aa:bb:cc:dd:ee:01"))
+        self.assertEqual(stable_device_id(forward), stable_device_id(reverse))
+
+    def test_canonical_local_interface_fallback_is_deterministic(self):
+        records = [
+            {"interface": "wlan0", "cidr": "192.168.2.3/24", "ip": "192.168.2.3", "mac": "aa:bb:cc:dd:ee:03"},
+            {"interface": "eth0", "cidr": "192.168.1.2/24", "ip": "192.168.1.2", "mac": "aa:bb:cc:dd:ee:02"},
+            {"interface": "route0", "ip": "192.168.3.4", "mac": ""},
+        ]
+
+        first = select_canonical_local_interface(records, {"interface": "route0"})
+        second = select_canonical_local_interface(list(reversed(records)), {"interface": "route0"})
+
+        self.assertEqual(first, second)
+        self.assertEqual(first["interface"], "eth0")
+
+    def test_canonical_local_interface_does_not_combine_incomplete_records(self):
+        records = [
+            {"interface": "eth0", "ip": "192.168.1.2", "mac": ""},
+            {"interface": "eth1", "ip": "", "mac": "aa:bb:cc:dd:ee:01"},
+        ]
+
+        self.assertIsNone(select_canonical_local_interface(records, {"interface": "eth0"}))
 
     def test_collector_order_does_not_change_arp_and_dhcp_record(self):
         arp = {
@@ -1178,6 +1222,74 @@ class InventoryModelTests(unittest.TestCase):
         self.assertNotIn("last_seen", devices[0])
         self.assertEqual(devices[0]["observation_status"], "unknown")
 
+    def test_exact_mac_preserves_metadata_across_changed_ip_and_hostname(self):
+        observed = [{
+            "ip": "192.168.1.22", "mac": "aa:bb:cc:dd:ee:ff", "hostname": "current-host",
+            "reachable": True, "first_seen": "2026-07-01T10:00:00-06:00",
+            "last_seen": "2026-07-28T10:00:00-06:00", "last_seen_epoch": 100,
+            "source": "arp_table", "last_seen_source": "arp_table",
+        }]
+        metadata = {
+            "name": "Office Switch", "role": "Network Equipment", "vendor": "Acme",
+            "model": "Switch 8", "location": "Office", "notes": "Managed",
+        }
+        known = [{
+            "ip": "192.168.1.20", "mac": "AA-BB-CC-DD-EE-FF", "hostname": "old-host",
+            **metadata, "source": "known_infrastructure", "_observed": False,
+            "_known_metadata_fields": ["name", "hostname", "role", "vendor", "model", "location", "notes"],
+        }]
+
+        devices = self._merge_for_identity_comparison(append_known_infrastructure(observed, known))
+
+        self.assertEqual(len(devices), 1)
+        device = devices[0]
+        self.assertEqual(device["id"], stable_device_id({"mac": "aa:bb:cc:dd:ee:ff"}))
+        self.assertEqual((device["ip"], device["mac"], device["hostname"]),
+                         ("192.168.1.22", "aa:bb:cc:dd:ee:ff", "current-host"))
+        self.assertTrue(device["reachable"])
+        self.assertEqual(device["last_seen_source"], "arp_table")
+        self.assertIn("arp_table", device["sources"])
+        self.assertIn("known_infrastructure", device["sources"])
+        self.assertEqual(device["display_name"], metadata["name"])
+        for field in ("role", "vendor", "model", "location", "notes"):
+            self.assertEqual(device[field], metadata[field])
+
+    def test_weaker_ip_or_hostname_match_rejects_conflicting_mac(self):
+        observed = [{
+            "ip": "192.168.1.20", "mac": "aa:bb:cc:dd:ee:01", "hostname": "current-host",
+            "source": "arp_table",
+        }]
+        known_by_ip = [{
+            "ip": "192.168.1.20", "mac": "aa:bb:cc:dd:ee:02", "name": "Wrong by IP",
+            "source": "known_infrastructure", "_observed": False, "_known_metadata_fields": ["name"],
+        }]
+        known_by_hostname = [{
+            "hostname": "current-host", "mac": "aa:bb:cc:dd:ee:03", "name": "Wrong by hostname",
+            "source": "known_infrastructure", "_observed": False, "_known_metadata_fields": ["name"],
+        }]
+
+        self.assertEqual(append_known_infrastructure(observed, known_by_ip), observed)
+        self.assertEqual(append_known_infrastructure(observed, known_by_hostname), observed)
+
+    def test_exact_mac_enrichment_is_order_independent(self):
+        observed = [
+            {"ip": "192.168.1.31", "mac": "aa:bb:cc:dd:ee:31", "hostname": "second", "source": "integration:z"},
+            {"ip": "192.168.1.30", "mac": "aa:bb:cc:dd:ee:31", "hostname": "first", "source": "arp_table"},
+        ]
+        known = [{
+            "ip": "192.168.1.29", "mac": "aa:bb:cc:dd:ee:31", "hostname": "old", "name": "Known",
+            "role": "Network Equipment", "source": "known_infrastructure", "_observed": False,
+            "_known_metadata_fields": ["name", "hostname", "role"],
+        }]
+
+        forward = self._merge_for_identity_comparison(append_known_infrastructure(observed, known))
+        reverse = self._merge_for_identity_comparison(append_known_infrastructure(list(reversed(observed)), list(reversed(known))))
+
+        self.assertEqual(forward, reverse)
+        self.assertEqual(forward[0]["ip"], "192.168.1.31")
+        self.assertEqual(forward[0]["hostname"], "second")
+        self.assertEqual(forward[0]["inventory_class"], "infrastructure")
+
     def test_invalid_known_infrastructure_records_are_rejected_partially(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "known_infrastructure.json"
@@ -1315,7 +1427,7 @@ class InventoryModelTests(unittest.TestCase):
             }
             with patch("hioc.inventory.local_ipv4_addresses", return_value=local_addresses), \
                  patch("hioc.inventory.socket.gethostname", return_value="nutandpihole"), \
-                 patch("hioc.inventory.default_gateway", return_value={}), \
+                 patch("hioc.inventory.default_gateway", return_value={"ip": "192.168.100.1", "interface": "eth0"}), \
                  patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult(neighbor, True)), \
                  patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
                  patch("hioc.inventory.integration_inventory", return_value={}), \
@@ -1383,7 +1495,7 @@ class InventoryModelTests(unittest.TestCase):
         self.assertIn("canonical local device id", " ".join(logs.output))
         self.assertIn(stable_device_id(local_address), " ".join(logs.output))
 
-    def test_interface_order_changes_identity_selection_but_not_local_service_ownership(self):
+    def test_interface_order_does_not_change_collector_or_local_service_ownership(self):
         physical = {"interface": "eth0", "cidr": "192.168.1.2/24", "ip": "192.168.1.2", "mac": "aa:bb:cc:dd:ee:01"}
         bridge = {"interface": "docker0", "cidr": "172.17.0.1/16", "ip": "172.17.0.1", "mac": "02:42:ac:11:00:01"}
         endpoint_mac = "aa:bb:cc:dd:ee:99"
@@ -1396,10 +1508,11 @@ class InventoryModelTests(unittest.TestCase):
             "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
         }
 
+        inventories = []
         for addresses in ([physical, bridge], [bridge, physical]):
             with self.subTest(first_interface=addresses[0]["interface"]), \
                  patch("hioc.inventory.local_ipv4_addresses", return_value=addresses), \
-                 patch("hioc.inventory.default_gateway", return_value={}), \
+                 patch("hioc.inventory.default_gateway", return_value={"ip": "192.168.1.1", "interface": "eth0"}), \
                  patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({"192.168.1.99": {"ip": "192.168.1.99", "mac": endpoint_mac, "source": "arp_table"}}, True)), \
                  patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
                  patch("hioc.inventory.integration_inventory", return_value={}), \
@@ -1408,9 +1521,44 @@ class InventoryModelTests(unittest.TestCase):
                  patch("hioc.inventory.package_version", return_value=""):
                 inventory = discover_inventory(config, {"devices": []})
 
-            canonical_id = stable_device_id(addresses[0])
+            inventories.append(inventory)
+            canonical_id = stable_device_id(physical)
+            collector = next(device for device in inventory["devices"] if device["id"] == canonical_id)
+            self.assertEqual((collector["ip"], collector["mac"]), (physical["ip"], physical["mac"]))
             self.assertEqual({service["device_id"] for service in inventory["services"]}, {canonical_id})
             self.assertNotIn(endpoint_id, {service["device_id"] for service in inventory["services"]})
+
+        self.assertEqual(
+            {service["device_id"] for service in inventories[0]["services"]},
+            {service["device_id"] for service in inventories[1]["services"]},
+        )
+
+    def test_incomplete_local_interfaces_omit_services_without_unrelated_fallback(self):
+        addresses = [
+            {"interface": "eth0", "ip": "192.168.1.2", "mac": ""},
+            {"interface": "eth1", "ip": "", "mac": "aa:bb:cc:dd:ee:01"},
+        ]
+        config = {
+            "HIOC_HOME": "/nonexistent", "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120",
+            "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+        with patch("hioc.inventory.local_ipv4_addresses", return_value=addresses), \
+             patch("hioc.inventory.default_gateway", return_value={"interface": "eth0"}), \
+             patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({
+                 "192.168.1.50": {"ip": "192.168.1.50", "mac": "aa:bb:cc:dd:ee:50", "source": "arp_table"},
+             }, True)), \
+             patch("hioc.inventory.dhcp_lease_discovery", return_value=({}, "dhcp_leases_unavailable")), \
+             patch("hioc.inventory.integration_inventory", return_value={}), \
+             patch("hioc.inventory.systemd_services") as systemd, \
+             patch("hioc.inventory.listening_services") as sockets, \
+             patch("hioc.inventory.package_version", return_value=""), \
+             self.assertLogs("hioc-inventory-engine", level="ERROR"):
+            inventory = discover_inventory(config, {"devices": []})
+
+        self.assertEqual(inventory["services"], [])
+        systemd.assert_not_called()
+        sockets.assert_not_called()
 
     def test_existing_integration_hint_behavior_remains_compatible(self):
         with tempfile.TemporaryDirectory() as tmp:
