@@ -595,7 +595,7 @@ Status: **COMPLETE**
 
 **Implemented solution:** Release construction now obtains its complete source set from the repository index through Git's NUL-delimited tracked-file listing. Each copied file is included because it is explicitly tracked; ignored, untracked, cache, recovery, and temporary files are outside the source set without relying on filename exclusions. This preserves the existing build directory, version lookup, project-file layout, and downstream package and deployment flow. `RELEASE_MANIFEST.txt` remains the one intentionally generated build file and now records stable version, build, and source-commit values without checkout-path or wall-clock fields.
 
-**Validation:** Focused release tests prove that the build is Git-aware, uses a NUL-safe tracked-file stream, does not fall back to workspace traversal or a special `*.tmp` exclusion, and produces a checkout-independent manifest. The existing ignored `hioc_known_hosts.tmp` file was retained as validation evidence and is excluded because it is not tracked, as are arbitrary future ignored or untracked artifacts. Tracked project files remain the build input. Focused release and version tests, the full regression suite, Python compilation, shell syntax validation, release validation, and direct build-content comparison passed. No runtime, inventory, Home Assistant, deployment, upgrade, validation, or public-contract behavior changed.
+**Validation:** Focused release tests prove that the build is Git-aware, uses a NUL-safe tracked-file stream, does not fall back to workspace traversal or a special `*.tmp` exclusion, and produces a checkout-independent manifest. The then-existing ignored `hioc_known_hosts.tmp` file was retained during this sub-checkpoint as validation evidence and was excluded because it was not tracked, as are arbitrary future ignored or untracked artifacts; its later workspace disposition is recorded under Repository Governance Reconciliation. Tracked project files remain the build input. Focused release and version tests, the full regression suite, Python compilation, shell syntax validation, release validation, and direct build-content comparison passed. No runtime, inventory, Home Assistant, deployment, upgrade, validation, or public-contract behavior changed.
 
 ### Changelog Governance Reconciliation
 
@@ -607,14 +607,31 @@ The original governance model is restored: `docs/CHANGELOG.md` is the single aut
 
 The stale Collector Canonical Ownership statement is removed from the active root pointer. The authoritative changelog and Master Plan record the complete evidence chain: implementation, regression validation, production validation, and documentation closeout all completed. Documentation links, release-contract tests, the full regression suite, and `git diff --check` passed. No application, release, deployment, test, inventory, or Home Assistant behavior changed.
 
+### Repository Governance Reconciliation
+
+Status: **COMPLETE**
+
+Decision date: **2026-07-28**
+
+Every remaining Windows repository governance artifact has an explicit disposition:
+
+| Artifact | Evidence | Disposition |
+|---|---|---|
+| `validation/phase-7a8-lifecycle` | Its sole branch-only commit, `be7b69d1da1a3b5c3c7a9e7ca27d1280b8f41cd1`, adds the asset-lifecycle foundation and is not an ancestor of `main`. `docs/RECOVERY_BASELINE.md` identifies that exact commit and tree as the approved Phase 7A.8 recovery candidate. No tag or other branch preserves it. | **Retained intentionally**, locally and on `origin`, as the named reachability reference for the immutable approved recovery candidate. It is not approved for merge into `main`; future disposition requires a separate evidence-based decision that preserves the recovery reference. |
+| `correlation-engine-v2` | Tip `42ea8d2d1ebeecc6e18aff6bb35dccea00e86426` is an ancestor of `main` through merge commit `80411124e584da17c8f532dbae0cd54a638ef181`; no unique commit remains. Its remote branch was already absent. | **Resolved:** deleted locally. Commit history remains reachable from `main`. |
+| `docs/reconcile-phase-7a8-recovery-baseline` | Tip `0463a648b93626ca8a0570654cb4074ed21a01aa` is an ancestor of `main` through merge commit `f20b161b1a0f7cb59d994f25f1bf84d1d0e8db96`; its recovery documentation remains on `main`. | **Resolved:** deleted locally and remotely. Commit history remains reachable from `main`. |
+| `docs/repository-deployment-governance` | Tip `8174187c04591319374e2f72c37dac9e731c5a5c` is an ancestor of `main` through merge commit `8a35d6d3746cf001a88b558f63d673797262ec43`; its governance documentation remains on `main`. | **Resolved:** deleted locally and remotely. Commit history remains reachable from `main`. |
+| `hioc_known_hosts.tmp` | The ignored root file contained one SSH host-key line and had no Git history. No runtime, release, deployment, or automation code consumed it; a focused regression assertion mentions its name only to prove that it is absent from Git-tracked release inputs and does not require the file to exist. SSH host trust is user-workspace state, not project source. | **Resolved:** removed from the repository workspace. Future SSH known-host artifacts must be stored in the user's SSH configuration area or another external temporary location, never in the repository. |
+
+The retained lifecycle branch is not stale or ambiguous: it has a documented recovery-evidence purpose and must remain until a separately approved archival or integration decision provides an equally durable reference. Fully merged topic branches should be removed after their merge and evidence are verified. Temporary access artifacts must remain outside the repository. These rules preserve historical reachability without treating completed topic branches or user-specific access state as active project source.
+
+Validation confirmed the retained branch at its documented commit, all removed branch tips reachable from `main`, no dangling or broken Git references, valid Markdown links, a passing full regression suite, and a clean documentation diff. No application, release, deployment, inventory, Home Assistant, or runtime behavior changed.
+
 **Remaining Repository and Deployment Hygiene checkpoints:**
 
-1. Temporary workspace artifact disposition.
-2. Lifecycle branch governance.
-3. Merged branch cleanup.
-4. PI3 release-source audit, performed manually by the user.
-5. PI3 runtime audit, performed manually by the user.
-6. Repository and Deployment Hygiene closeout.
+1. PI3 release-source audit, performed manually by the user.
+2. PI3 runtime audit, performed manually by the user.
+3. Repository and Deployment Hygiene closeout.
 
 Repository and runtime artifacts use these disposition categories:
 
@@ -808,7 +825,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening and Changelog Governance Reconciliation sub-checkpoints, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The overall Repository and Deployment Hygiene checkpoint remains in progress pending temporary workspace artifact disposition, lifecycle branch governance, merged branch cleanup, manual PI3 release-source and runtime audits, and final closeout. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, including the remaining Pi-hole DHCP lease ingestion work.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, and Repository Governance Reconciliation sub-checkpoints, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The overall Repository and Deployment Hygiene checkpoint remains in progress pending the manual PI3 release-source audit, manual PI3 runtime audit, and final closeout. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, including the remaining Pi-hole DHCP lease ingestion work.
 
 ## Current Branch
 
