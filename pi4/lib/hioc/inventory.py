@@ -338,6 +338,11 @@ def dhcp_lease_source_results(paths: list[Path] | None = None) -> list[DhcpLease
     return [_read_dhcp_lease_source(path) for path in (paths or dhcp_lease_paths())]
 
 
+def capture_dhcp_lease_snapshot(config: dict) -> tuple[DhcpLeaseSourceResult, ...]:
+    """Acquire one immutable set of parsed DHCP source results for an inventory cycle."""
+    return tuple(dhcp_lease_source_results(dhcp_lease_paths(config)))
+
+
 def _dhcp_record_order(record: dict) -> tuple:
     expiry = int(record.get("lease_expires_epoch", 0) or 0)
     return (
@@ -378,14 +383,20 @@ def dhcp_leases(paths: list[Path] | None = None) -> dict:
     return devices
 
 
-def dhcp_lease_discovery(config: dict) -> tuple[dict, str]:
-    paths = dhcp_lease_paths(config)
-    return _aggregate_dhcp_lease_results(dhcp_lease_source_results(paths))
+def dhcp_lease_discovery(
+    config: dict,
+    source_results: tuple[DhcpLeaseSourceResult, ...] | None = None,
+) -> tuple[dict, str]:
+    results = source_results if source_results is not None else capture_dhcp_lease_snapshot(config)
+    return _aggregate_dhcp_lease_results(list(results))
 
 
-def dhcp_lease_observations(config: dict) -> tuple[list[dict], str]:
-    results = dhcp_lease_source_results(dhcp_lease_paths(config))
-    _, status = _aggregate_dhcp_lease_results(results)
+def dhcp_lease_observations(
+    config: dict,
+    source_results: tuple[DhcpLeaseSourceResult, ...] | None = None,
+) -> tuple[list[dict], str]:
+    results = source_results if source_results is not None else capture_dhcp_lease_snapshot(config)
+    _, status = _aggregate_dhcp_lease_results(list(results))
     observations = [record for result in results for record in (result.observations or [])]
     return observations, status
 
@@ -679,8 +690,13 @@ def snmp_firmware(ip: str, community: str) -> dict:
 class PassiveNetworkDriver:
     name = "passive_network"
 
-    def __init__(self, neighbor_result: NeighborTableResult | None = None):
+    def __init__(
+        self,
+        neighbor_result: NeighborTableResult | None = None,
+        dhcp_snapshot: tuple[DhcpLeaseSourceResult, ...] | None = None,
+    ):
         self._neighbor_result = neighbor_result
+        self._dhcp_snapshot = dhcp_snapshot
 
     def discover(self, config: dict) -> DriverResult:
         devices = []
@@ -689,7 +705,7 @@ class PassiveNetworkDriver:
             neighbor_result = _collect_neighbor_table()
         if neighbor_result.records:
             devices.extend(neighbor_result.records.values())
-        leases, _ = dhcp_lease_observations(config)
+        leases, _ = dhcp_lease_observations(config, self._dhcp_snapshot)
         devices.extend(leases)
         state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
         devices.extend(integration_inventory(config, state_root).values())
@@ -1416,6 +1432,7 @@ def discovery_source_status(
     local_addresses: list[dict],
     gateway: dict,
     neighbor_result: NeighborTableResult,
+    dhcp_snapshot: tuple[DhcpLeaseSourceResult, ...] | None = None,
 ) -> tuple[list[str], bool, str]:
     sources = []
     if local_addresses:
@@ -1428,7 +1445,7 @@ def discovery_source_status(
         sources.append("arp_table")
     else:
         sources.append("arp_table_empty")
-    _, lease_status = dhcp_lease_discovery(config)
+    _, lease_status = dhcp_lease_discovery(config, dhcp_snapshot)
     sources.append(lease_status)
     state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
     integration_root = Path(config.get("HIOC_INVENTORY_INTEGRATION_DIR", "")) if config.get("HIOC_INVENTORY_INTEGRATION_DIR", "") else state_root / "inventory" / "integrations"
@@ -1496,11 +1513,13 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     canonical_local_interface = select_canonical_local_interface(local_addresses, gateway)
     gateway_ip = gateway.get("ip", "")
     neighbor_result = _collect_neighbor_table()
+    dhcp_snapshot = capture_dhcp_lease_snapshot(config)
     discovery_sources, discovery_limited, discovery_limit_reason = discovery_source_status(
         config,
         local_addresses,
         gateway,
         neighbor_result,
+        dhcp_snapshot,
     )
     active_discovery = str(config.get("HIOC_INVENTORY_ACTIVE_DISCOVERY", "off")).lower() in ("1", "true", "yes", "on", "enabled")
     records = []
@@ -1532,7 +1551,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         records.append({"type": "network_device", "name": "Default Gateway", "ip": gateway_ip, "interface": gateway.get("interface", ""), "source": "gateway", "last_seen_source": "gateway"})
     state_root = Path(config.get("HIOC_HOME", "/home/jazofv1/hioc")) / "state"
     registry = DriverRegistry()
-    registry.register(PassiveNetworkDriver(neighbor_result))
+    registry.register(PassiveNetworkDriver(neighbor_result, dhcp_snapshot))
     if active_discovery:
         registry.register(ActiveNetworkDriver())
     for result in registry.run(config):

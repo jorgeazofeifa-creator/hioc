@@ -433,6 +433,16 @@ Implementation commit `054fb55a2e70901f3230145b76983c31d2b5ce61` (`Phase 7A: har
 
 **Final result:** **PASS**
 
+#### Pi-hole DHCP Lease Ingestion
+
+Status: **IN PROGRESS**
+
+The first bounded implementation establishes one authoritative DHCP lease snapshot per inventory cycle. `discover_inventory()` now acquires the existing structured lease-source results once and supplies that same cycle-local tuple to discovery-source status reporting and `PassiveNetworkDriver` device evidence. Status, sanitized warnings, parsed observations, and central reconciliation therefore describe one captured filesystem state rather than two potentially different reads. Standalone compatibility helpers continue acquiring current source results when no snapshot is supplied; no global cache or cross-cycle state was introduced.
+
+Repository validation passed with 115 focused inventory tests, 177 full-suite tests and 6 skips, Python compilation, release validation, and `git diff --check`. Regression coverage confirms single acquisition for one and multiple configured files, shared valid/missing/partial snapshot behavior, no duplicate malformed-row warnings, and independent compatibility-helper acquisition. Existing parsing, assignment-only observation, source-state vocabulary, source authority, deterministic duplicate handling, identity, health, topology, dependency, schema, MQTT, Home Assistant, dashboard, and event contracts remain unchanged.
+
+This is only the single-snapshot sub-checkpoint. Production deployment and validation remain pending, and the overall Pi-hole DHCP Lease Ingestion checkpoint remains open. Separate bounded decisions remain unresolved for finite expired-lease policy, advertised ISC `dhcpd.leases` compatibility, the IPv4-versus-IPv6 contract, explicit-empty-list fallback behavior, and discovery-limitation semantics. None of those behaviors changed in this implementation.
+
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.

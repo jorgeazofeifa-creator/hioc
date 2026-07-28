@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "pi4" / "lib"))
 
 from hioc.inventory import (
     DURABLE_NEIGHBOR_STATES,
+    DhcpLeaseSourceResult,
     NEIGHBOR_STATES,
     NeighborTableResult,
     PassiveNetworkDriver,
@@ -18,6 +19,7 @@ from hioc.inventory import (
     build_dependencies,
     build_inventory_summary,
     build_topology,
+    capture_dhcp_lease_snapshot,
     classify_device,
     dhcp_lease_discovery,
     dhcp_lease_observations,
@@ -1613,6 +1615,174 @@ class InventoryModelTests(unittest.TestCase):
         self.assertFalse(lease["_positive_observation"])
         self.assertEqual(discovered["aa:bb:cc:dd:ee:ff"]["ip"], "192.168.1.50")
         self.assertEqual(status, "dhcp_leases_found")
+
+    def test_inventory_cycle_acquires_each_dhcp_source_once(self):
+        paths = [Path("/leases/first"), Path("/leases/second")]
+        config = {
+            "HIOC_HOME": "/nonexistent", "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_DHCP_LEASE_FILES": ",".join(str(path) for path in paths),
+            "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+        missing = [DhcpLeaseSourceResult(path, "missing", {}, []) for path in paths]
+        with patch("hioc.inventory._read_dhcp_lease_source", side_effect=missing) as reader, \
+             patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
+             patch("hioc.inventory.default_gateway", return_value={}), \
+             patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
+             patch("hioc.inventory.integration_inventory", return_value={}), \
+             patch("hioc.inventory.package_version", return_value=""):
+            discover_inventory(config, {"devices": []})
+
+        self.assertEqual(reader.call_count, 2)
+        self.assertEqual([call.args[0] for call in reader.call_args_list], paths)
+
+    def test_inventory_cycle_uses_same_valid_dhcp_snapshot_for_status_and_devices(self):
+        path = Path("/leases/current")
+        first = {
+            "ip": "192.168.1.50", "mac": "aa:bb:cc:dd:ee:50", "hostname": "first",
+            "lease_expires_epoch": 2000, "dhcp_lease_source": str(path), "source": "dhcp_leases",
+            "last_seen_source": str(path), "_positive_observation": False,
+        }
+        valid = DhcpLeaseSourceResult(path, "found", {first["mac"]: first}, [first], 1, 0)
+        hypothetical_missing = DhcpLeaseSourceResult(path, "missing", {}, [])
+        config = {
+            "HIOC_HOME": "/nonexistent", "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_DHCP_LEASE_FILES": str(path), "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+        with patch("hioc.inventory._read_dhcp_lease_source", side_effect=[valid, hypothetical_missing]) as reader, \
+             patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
+             patch("hioc.inventory.default_gateway", return_value={}), \
+             patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
+             patch("hioc.inventory.integration_inventory", return_value={}), \
+             patch("hioc.inventory.package_version", return_value=""):
+            inventory = discover_inventory(config, {"devices": []})
+
+        self.assertEqual(reader.call_count, 1)
+        self.assertIn("dhcp_leases_found", inventory["summary"]["discovery_sources"])
+        self.assertIn(first["mac"], {device["mac"] for device in inventory["devices"]})
+
+    def test_inventory_cycle_does_not_consume_hypothetical_valid_second_snapshot(self):
+        path = Path("/leases/current")
+        second = {
+            "ip": "192.168.1.51", "mac": "aa:bb:cc:dd:ee:51", "hostname": "second",
+            "lease_expires_epoch": 2000, "dhcp_lease_source": str(path), "source": "dhcp_leases",
+            "_positive_observation": False,
+        }
+        missing = DhcpLeaseSourceResult(path, "missing", {}, [])
+        hypothetical_valid = DhcpLeaseSourceResult(path, "found", {second["mac"]: second}, [second], 1, 0)
+        config = {
+            "HIOC_HOME": "/nonexistent", "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_DHCP_LEASE_FILES": str(path), "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+        with patch("hioc.inventory._read_dhcp_lease_source", side_effect=[missing, hypothetical_valid]) as reader, \
+             patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
+             patch("hioc.inventory.default_gateway", return_value={}), \
+             patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
+             patch("hioc.inventory.integration_inventory", return_value={}), \
+             patch("hioc.inventory.package_version", return_value=""):
+            inventory = discover_inventory(config, {"devices": []})
+
+        self.assertEqual(reader.call_count, 1)
+        self.assertIn("dhcp_leases_missing", inventory["summary"]["discovery_sources"])
+        self.assertNotIn(second["mac"], {device["mac"] for device in inventory["devices"]})
+
+    def test_partial_dhcp_snapshot_emits_warning_once_and_shares_valid_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "dhcp.leases"
+            path.write_text("2000 aa:bb:cc:dd:ee:52 192.168.1.52 current *\nmalformed line\n")
+            config = {
+                "HIOC_HOME": tmp, "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+                "HIOC_INVENTORY_DHCP_LEASE_FILES": str(path), "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+            }
+            with patch("hioc.inventory.local_ipv4_addresses", return_value=[{
+                     "interface": "eth0", "cidr": "192.168.1.2/24", "ip": "192.168.1.2",
+                     "mac": "aa:bb:cc:dd:ee:02",
+                 }]), \
+                 patch("hioc.inventory.default_gateway", return_value={"interface": "eth0"}), \
+                 patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
+                 patch("hioc.inventory.integration_inventory", return_value={}), \
+                 patch("hioc.inventory.systemd_services", return_value={}), \
+                 patch("hioc.inventory.listening_services", return_value=[]), \
+                 patch("hioc.inventory.package_version", return_value=""), \
+                 self.assertLogs("hioc-inventory-engine", level="WARNING") as logs:
+                inventory = discover_inventory(config, {"devices": []})
+
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn("dhcp_leases_partial", inventory["summary"]["discovery_sources"])
+        self.assertIn("aa:bb:cc:dd:ee:52", {device["mac"] for device in inventory["devices"]})
+
+    def test_inventory_cycle_does_not_consume_different_snapshot_after_partial_result(self):
+        path = Path("/leases/current")
+        first = {
+            "ip": "192.168.1.56", "mac": "aa:bb:cc:dd:ee:56", "hostname": "partial-first",
+            "lease_expires_epoch": 2000, "dhcp_lease_source": str(path), "source": "dhcp_leases",
+            "_positive_observation": False,
+        }
+        second = {
+            "ip": "192.168.1.57", "mac": "aa:bb:cc:dd:ee:57", "hostname": "hypothetical-second",
+            "lease_expires_epoch": 3000, "dhcp_lease_source": str(path), "source": "dhcp_leases",
+            "_positive_observation": False,
+        }
+        partial = DhcpLeaseSourceResult(path, "partial", {first["mac"]: first}, [first], 1, 1)
+        hypothetical = DhcpLeaseSourceResult(path, "found", {second["mac"]: second}, [second], 1, 0)
+        config = {
+            "HIOC_HOME": "/nonexistent", "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
+            "HIOC_INVENTORY_DHCP_LEASE_FILES": str(path), "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
+        }
+        with patch("hioc.inventory._read_dhcp_lease_source", side_effect=[partial, hypothetical]) as reader, \
+             patch("hioc.inventory.local_ipv4_addresses", return_value=[]), \
+             patch("hioc.inventory.default_gateway", return_value={}), \
+             patch("hioc.inventory._collect_neighbor_table", return_value=NeighborTableResult({}, True)), \
+             patch("hioc.inventory.integration_inventory", return_value={}), \
+             patch("hioc.inventory.package_version", return_value=""):
+            inventory = discover_inventory(config, {"devices": []})
+
+        macs = {device["mac"] for device in inventory["devices"]}
+        self.assertEqual(reader.call_count, 1)
+        self.assertIn("dhcp_leases_partial", inventory["summary"]["discovery_sources"])
+        self.assertIn(first["mac"], macs)
+        self.assertNotIn(second["mac"], macs)
+
+    def test_standalone_dhcp_helpers_each_acquire_their_own_snapshot(self):
+        path = Path("/leases/current")
+        record = {
+            "ip": "192.168.1.53", "mac": "aa:bb:cc:dd:ee:53", "lease_expires_epoch": 2000,
+            "dhcp_lease_source": str(path), "source": "dhcp_leases", "_positive_observation": False,
+        }
+        result = DhcpLeaseSourceResult(path, "found", {record["mac"]: record}, [record], 1, 0)
+        config = {"HIOC_INVENTORY_DHCP_LEASE_FILES": str(path)}
+        with patch("hioc.inventory._read_dhcp_lease_source", side_effect=[result, result]) as reader:
+            discovered, discovery_status = dhcp_lease_discovery(config)
+            observations, observation_status = dhcp_lease_observations(config)
+
+        self.assertEqual(reader.call_count, 2)
+        self.assertEqual(discovery_status, "dhcp_leases_found")
+        self.assertEqual(observation_status, "dhcp_leases_found")
+        self.assertEqual(discovered[record["mac"]], record)
+        self.assertEqual(observations, [record])
+
+    def test_dhcp_snapshot_can_be_reused_by_compatibility_helpers(self):
+        config = {"HIOC_INVENTORY_DHCP_LEASE_FILES": "/leases/current"}
+        with patch("hioc.inventory._read_dhcp_lease_source", return_value=DhcpLeaseSourceResult(
+            Path("/leases/current"), "empty", {}, []
+        )) as reader:
+            snapshot = capture_dhcp_lease_snapshot(config)
+            self.assertEqual(dhcp_lease_discovery(config, snapshot), ({}, "dhcp_leases_empty"))
+            self.assertEqual(dhcp_lease_observations(config, snapshot), ([], "dhcp_leases_empty"))
+
+        self.assertEqual(reader.call_count, 1)
+
+    def test_expired_and_ipv6_dhcp_rows_retain_current_parsing_behavior(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "dhcp.leases"
+            path.write_text(
+                "1 aa:bb:cc:dd:ee:54 192.168.1.54 expired *\n"
+                "2000 aa:bb:cc:dd:ee:55 2001:db8::55 ipv6 *\n"
+            )
+            discovered, status = dhcp_lease_discovery({"HIOC_INVENTORY_DHCP_LEASE_FILES": str(path)})
+
+        self.assertEqual(status, "dhcp_leases_found")
+        self.assertEqual(discovered["aa:bb:cc:dd:ee:54"]["lease_expires_epoch"], 1)
+        self.assertEqual(discovered["aa:bb:cc:dd:ee:55"]["ip"], "2001:db8::55")
 
     def test_dhcp_lease_missing_is_reported(self):
         with tempfile.TemporaryDirectory() as tmp:
