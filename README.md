@@ -37,14 +37,17 @@ VERSION.yaml            Machine-readable release version manifest
 
 ## Installation Overview
 
-On the Pi4:
+On PI3, clone or update the Git-managed release source, validate it, and install from there:
 
 ```bash
-git clone https://github.com/jorgeazofeifa-creator/hioc.git ~/hioc
-cd ~/hioc
-bash pi4/install_pi4.sh
-bash pi4/validate_pi4.sh
+git clone https://github.com/jorgeazofeifa-creator/hioc.git /home/jazofv1/hioc-release-source
+cd /home/jazofv1/hioc-release-source
+bash release/validate.sh
+bash release/install.sh pi4
+/home/jazofv1/hioc/pi4/validate_pi4.sh
 ```
+
+`/home/jazofv1/hioc` is the deployed production runtime, not a Git checkout. Do not run `git pull`, `git reset`, `git clean`, `git checkout`, or other source-management commands there. Initial installation and upgrades must use `/home/jazofv1/hioc-release-source` or a validated release package. Production version identity comes from `VERSION.yaml` and release metadata, not runtime Git state.
 
 For Home Assistant:
 

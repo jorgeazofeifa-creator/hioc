@@ -1,5 +1,7 @@
 from pathlib import Path
+import shutil
 import subprocess
+import tempfile
 import unittest
 
 
@@ -70,10 +72,62 @@ class ReleaseScriptTests(unittest.TestCase):
         for exclusion in SOURCE_ONLY_EXCLUSIONS:
             self.assertIn(exclusion, deployment)
             self.assertNotIn(exclusion, backup)
+        self.assertIn("--exclude .git", backup)
+        self.assertIn("--exclude .git", deployment)
         for exclusion in ("state", "history", "logs", "backups"):
+            self.assertIn(f"--exclude {exclusion}", backup)
             self.assertIn(f"--exclude {exclusion}", deployment)
+        self.assertNotIn("--exclude .*", backup)
+        self.assertNotIn("--exclude '.*'", backup)
+        self.assertNotIn("--delete", backup)
         self.assertNotIn("--delete", deployment)
         self.assertNotIn("--delete-excluded", deployment)
+
+    def test_rollback_copy_contract(self):
+        rollback_script = (ROOT / "release" / "rollback.sh").read_text(encoding="utf-8")
+        commands = rsync_commands(rollback_script)
+        restoration = next(
+            command
+            for command in commands
+            if '"$BACKUP_DIR/current/" "$INSTALL_DIR/"' in command
+        )
+
+        self.assertIn("--exclude .git", restoration)
+        self.assertNotIn("--exclude .*", restoration)
+        self.assertNotIn("--exclude '.*'", restoration)
+        self.assertNotIn("--delete", restoration)
+        self.assertNotIn("--delete-excluded", restoration)
+
+    @unittest.skipUnless(shutil.which("rsync"), "rsync is not installed")
+    def test_git_exclusion_preserves_legitimate_hidden_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "backup" / "current"
+            destination = root / "runtime"
+            (source / ".git").mkdir(parents=True)
+            (source / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+            (source / ".git" / "config").write_text("[core]\n", encoding="utf-8")
+            (source / "nested" / ".git").mkdir(parents=True)
+            (source / "nested" / ".git" / "HEAD").write_text("nested\n", encoding="utf-8")
+            (source / ".env.example").write_text("safe=true\n", encoding="utf-8")
+            (source / ".operator").mkdir()
+            (source / ".operator" / "settings").write_text("preserve\n", encoding="utf-8")
+            (source / "pi4").mkdir()
+            (source / "pi4" / "app.py").write_text("pass\n", encoding="utf-8")
+
+            subprocess.run(
+                ["rsync", "-a", "--exclude", ".git", f"{source}/", f"{destination}/"],
+                check=True,
+            )
+
+            self.assertFalse((destination / ".git").exists())
+            self.assertFalse((destination / "nested" / ".git").exists())
+            self.assertEqual((destination / ".env.example").read_text(encoding="utf-8"), "safe=true\n")
+            self.assertEqual(
+                (destination / ".operator" / "settings").read_text(encoding="utf-8"),
+                "preserve\n",
+            )
+            self.assertEqual((destination / "pi4" / "app.py").read_text(encoding="utf-8"), "pass\n")
 
     def test_pi4_install_copy_contract(self):
         install_script = (ROOT / "pi4" / "install_pi4.sh").read_text(encoding="utf-8")
@@ -86,6 +140,7 @@ class ReleaseScriptTests(unittest.TestCase):
 
         for exclusion in SOURCE_ONLY_EXCLUSIONS:
             self.assertIn(exclusion, deployment)
+        self.assertIn("--exclude .git", deployment)
         self.assertNotIn("--delete", deployment)
         self.assertNotIn("--delete-excluded", deployment)
 
@@ -97,6 +152,15 @@ class ReleaseScriptTests(unittest.TestCase):
         self.assertNotIn("tests/", runtime_validator)
         self.assertNotIn("/tests", runtime_validator)
         self.assertIn("hioc-validate-mqtt.py", runtime_validator)
+
+    def test_runtime_version_comes_from_version_manifest(self):
+        platform_status = (ROOT / "pi4" / "bin" / "hioc-platform-status.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn('read_version_manifest(home / "VERSION.yaml")', platform_status)
+        self.assertNotIn(".git", platform_status)
+        self.assertNotIn("git ", platform_status)
 
     def test_mqtt_runtime_validator_is_installed_executable(self):
         install_script = (ROOT / "pi4" / "install_pi4.sh").read_text(encoding="utf-8")

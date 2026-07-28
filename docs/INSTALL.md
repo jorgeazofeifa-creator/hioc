@@ -20,9 +20,9 @@ The deployed production runtime is:
 /home/jazofv1/hioc
 ```
 
-Git operations, development, validation, release preparation, and release execution originate from the authoritative source checkout. The production runtime contains persistent runtime state and installer-managed changes and must not be treated as a clean development checkout.
+Git operations, development, source validation, release preparation, and release execution originate from the authoritative source checkout. The production runtime contains deployed files, persistent runtime state, and installer-managed changes. It is a non-Git deployment target and must not contain `.git` after the approved migration.
 
-The deployed runtime is not the normal location for Git development or upgrade operations. Do not use direct `git pull` operations inside `/home/jazofv1/hioc` as the standard production upgrade method. Use the supported release workflow from the authoritative source checkout or a validated release package.
+Do not run `git pull`, `git reset`, `git clean`, `git checkout`, or other source-management commands inside `/home/jazofv1/hioc`. Installation must not create a Git-backed runtime. Use the supported release workflow from the authoritative source checkout or a validated release package.
 
 For governance, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md). For release packaging and workflow, see [RELEASE.md](RELEASE.md). The accepted architecture decision is recorded in [../DECISIONS.md](../DECISIONS.md#adr-0013-development-checkout-and-production-runtime-have-separate-roles).
 
@@ -37,6 +37,15 @@ bash release/install.sh pi4
 ```
 
 The Pi4 release installer invokes `pi4/install_pi4.sh` and installs to `/home/jazofv1/hioc` by default. It requires `rsync`, `crontab`, `flock`, `python3`, and the existing Pi4 toolkit configuration. Set `HIOC_INSTALL_DIR` or `PI4_TOOLS_DIR` only when intentionally using nondefault paths.
+
+Verify the non-Git runtime boundary without using Git status:
+
+```bash
+test ! -e /home/jazofv1/hioc/.git
+/home/jazofv1/hioc/pi4/validate_pi4.sh
+```
+
+The first command must succeed. Runtime health and version are established by the supported validator, `VERSION.yaml`, platform state, and release evidence, not by runtime Git metadata.
 
 The installer uses the existing Pi4 toolkit configuration at:
 
@@ -141,7 +150,7 @@ configuration. Preserve its output and exit status as post-install or
 post-upgrade evidence. See [MQTT.md](MQTT.md#operational-runtime-validation) for
 preconditions, checked topics, and PASS, FAIL, and INCOMPLETE semantics.
 
-The upgrade preserves the existing `state`, `history`, `logs`, and `backups` directories. Before copying the validated release, it records the replaceable installation content, including configuration, under a timestamped directory in `/home/jazofv1/hioc/backups`.
+The upgrade preserves the existing `state`, `history`, `logs`, and `backups` directories. Before copying the validated release, it records replaceable installation content, including configuration, under a timestamped directory in `/home/jazofv1/hioc/backups`. Runtime `.git` is excluded from both deployment and newly created upgrade backups.
 
 Use the latest recorded upgrade backup for rollback:
 
@@ -157,7 +166,7 @@ cd /home/jazofv1/hioc-release-source
 bash release/rollback.sh /home/jazofv1/hioc/backups/release-upgrade-YYYYMMDD-HHMMSS
 ```
 
-The same release commands may be run from a validated versioned release package. Do not use direct Git updates inside `/home/jazofv1/hioc` as the standard production upgrade path.
+The same release commands may be run from a validated versioned release package. Rollback excludes `.git`, including when a historical backup contains Git metadata, so it cannot recreate a Git-backed runtime. Persistent operational directories remain protected because deployment and rollback do not use delete semantics. Do not perform direct Git updates inside `/home/jazofv1/hioc`.
 
 Then enable notifications:
 
@@ -172,7 +181,7 @@ The Home Assistant installer copies packages into `/config/packages` and dashboa
 On Pi4:
 
 ```bash
-bash ~/hioc/pi4/uninstall_pi4.sh
+bash /home/jazofv1/hioc/pi4/uninstall_pi4.sh
 ```
 
 On Home Assistant, remove:

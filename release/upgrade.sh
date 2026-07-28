@@ -17,6 +17,7 @@ fi
 
 mkdir -p "$BACKUP_DIR"
 rsync -a \
+  --exclude .git \
   --exclude state \
   --exclude history \
   --exclude logs \
