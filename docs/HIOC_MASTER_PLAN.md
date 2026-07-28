@@ -391,24 +391,36 @@ Implementation commit `8278e54bacb68f25821e6a4981bb01273c32e469` (`Phase 7A: uni
 
 **Final result:** **PASS**
 
-#### Dashboard Severity Mapping — IN PROGRESS
+#### Dashboard Severity Mapping — COMPLETE
 
 Repository review identified two bounded presentation defects. Aggregate Watch wording treated every Watch record as a stale observation even though Watch can also represent expired passive evidence or DHCP-only operational availability that remains unknown. Dashboard v2's Inventory Summary accent also evaluated retained offline or degraded counts before an unavailable inventory status, allowing confident severity styling when current inventory truth was unavailable.
 
-The repository correction uses policy-neutral aggregate Watch wording and makes unknown inventory status take precedence in the affected Inventory Summary style. Detailed per-device `health_reasons`, health computation, summary membership, schemas, MQTT contracts, Home Assistant entities, incident severity, and dashboard layout remain unchanged. The existing blue Watch palette is intentionally preserved; its relationship to the Design System is deferred to a separate UX/design decision. This checkpoint remains **IN PROGRESS** pending production validation.
+The repository correction uses policy-neutral aggregate Watch wording and makes unknown inventory status take precedence in the affected Inventory Summary style. Detailed per-device `health_reasons`, health computation, health-score thresholds, Watch membership, inventory counts, schemas, the `status.json` contract, MQTT contracts, Home Assistant entities and attributes, incident severity, dashboard layout, and collector and DHCP behavior remain unchanged. The existing blue Watch palette is intentionally preserved; its relationship to the Design System remains deferred to a separate UX/design decision.
+
+##### Production Evidence Report
+
+**Deployment result:** **PASS**. Implementation commit `1e2dcf973d02514561b7bb8a4f5c6f495350ab09` (`Phase 7A: refine dashboard severity presentation`) passed release-source validation and the supported production upgrade. The installed runtime remained `/home/jazofv1/hioc`; install backup `/home/jazofv1/hioc/backups/install-20260727-205938` and release-upgrade backup `/home/jazofv1/hioc/backups/release-upgrade-20260727-205938` were created. `bash pi4/validate_pi4.sh` reported `HIOC Pi4 validation passed.`
+
+**Intended behavior:** Aggregate Watch presentation describes observation or availability review without claiming every Watch condition is stale. Dashboard v2 Inventory Summary styling treats unknown, unavailable, invalid, or otherwise untrustworthy inventory status as higher priority than retained offline or degraded counts. Health and inventory semantics, public contracts, incident presentation, layout, and the existing blue Watch palette remain unchanged.
+
+**Invariant checks:** Production inventory status was `online`, schema version was `1.0`, and status `device_count` matched summary `device_count` at 148. Health categories reconciled exactly: 96 healthy + 52 Watch + 0 degraded + 0 offline = 148 devices. Inventory classes reconciled exactly: 2 infrastructure + 146 clients = 148 devices, and `network_client_count` equaled `client_count` at 146. Both infrastructure devices were healthy with health score 100. Lowest inventory health score was 75; 8 services, 147 topology edges, and 296 dependency edges remained present. Discovery was not limited, the limit reason was empty, and expected sources `local_host`, `gateway`, `arp_table`, `dhcp_leases_found`, and `known_infrastructure` were present.
+
+**Warnings and deferred risks:** The 52 Watch devices are expected operational inventory state and are not a deployment failure. The separate Watch color and Design System UX decision remains explicitly deferred and was not resolved by this checkpoint.
+
+**Final result:** **PASS**
 
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; verify dashboard severity mapping; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
+3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; validate collector canonical ownership; and validate Pi-hole DHCP lease ingestion.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-The required hygiene checkpoint, Phase 7A.9, Identity Reconciliation Hardening, and FAILED/INCOMPLETE ARP semantics are complete. Dashboard severity mapping is the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
+The required hygiene checkpoint, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, and Dashboard Severity Mapping are complete. Collector canonical ownership validation is the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
 
 ---
 
@@ -709,7 +721,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, and FAILED/INCOMPLETE ARP semantics are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, with dashboard severity mapping as its next active inventory checkpoint.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, and Dashboard Severity Mapping are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, with collector canonical ownership validation as its next active inventory checkpoint.
 
 ## Current Branch
 
@@ -741,11 +753,11 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Verify dashboard severity mapping while preserving the documented inventory and operational-truth contracts.
+Validate collector canonical ownership while preserving the documented inventory and operational-truth contracts.
 
 ## Next Planned Task
 
-Verify dashboard severity mapping while preserving the documented inventory and operational-truth contracts.
+Validate collector canonical ownership while preserving the documented inventory and operational-truth contracts.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
