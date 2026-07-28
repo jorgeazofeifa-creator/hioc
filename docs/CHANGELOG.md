@@ -26,6 +26,7 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Documentation
 
+- Closed the Phase 7A Collector Canonical Ownership checkpoint after implementation commit `054fb55a2e70901f3230145b76983c31d2b5ce61` passed release validation, supported production upgrade, Pi4 validation, and production evidence review. The canonical collector remained MAC-backed at `192.168.100.252`, all eight services were owned by `Pi3 - NUT and Pi-hole`, and the historical `.105` ownership defect was not observed; this documentation-only closeout does not change runtime or public contracts.
 - Recorded successful production deployment and validation of the single-snapshot ARP semantics correction: normal discovery reported `arp_table`, discovery remained unlimited, and the checkpoint closed after PASS evidence.
 - Recorded successful ADR-0014 production validation and made the repository the
   authoritative operational reference for configured, read-only MQTT runtime

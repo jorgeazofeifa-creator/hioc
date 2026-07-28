@@ -411,7 +411,7 @@ The repository correction uses policy-neutral aggregate Watch wording and makes 
 
 #### Collector Canonical Ownership
 
-Status: **IN PROGRESS**
+Status: **COMPLETE**
 
 The bounded repository implementation corrects two confirmed ownership defects. Collector identity previously depended on local-interface enumeration order and could compose an IP from one interface with a MAC from another. Known-infrastructure enrichment also discarded operator metadata after a legitimate observed IP or hostname change despite an exact normalized MAC match.
 
@@ -419,20 +419,32 @@ Canonical collector IP and MAC now come atomically from one complete interface r
 
 Exact normalized MAC matches now establish canonical discovered identity for known-infrastructure enrichment even when configured IP or hostname values are stale. Current observed IP, MAC, hostname, positive-observation timestamps, reachability, and discovery provenance remain authoritative, while supported operator metadata continues to enrich the device and preserve its configured classification. Weaker IP- or hostname-only matches continue rejecting conflicting MAC evidence and ambiguous identities are not guessed together. A MAC change does not imply continuity.
 
-This implementation does not change inventory schemas, MQTT topics or payloads, Home Assistant entity IDs, dashboard layout, health computation or thresholds, incident behavior, discovery policy, or MAC-change continuity policy. Production deployment and validation remain pending, so this checkpoint is not complete. Pi-hole DHCP lease validation remains the next corrective checkpoint only after collector canonical ownership receives production evidence.
+Implementation commit `054fb55a2e70901f3230145b76983c31d2b5ce61` (`Phase 7A: harden collector canonical ownership`) implements the bounded correction. `stable_device_id()` was unchanged. The exact-MAC known-infrastructure continuity behavior was validated by the implementation and regression suite. No inventory schema, stable-ID precedence, MQTT topic or payload, Home Assistant contract, dashboard contract, health behavior, incident behavior, discovery policy, or MAC-change continuity policy changed.
+
+##### Production Evidence Report
+
+**Deployment result:** **PASS**. The PI3 release source was fast-forwarded to implementation commit `054fb55a2e70901f3230145b76983c31d2b5ce61`. Release validation reported `HIOC release validation passed.`, the supported production upgrade completed successfully, and production validation reported `HIOC Pi4 validation passed.` The installed runtime remained `/home/jazofv1/hioc`; release-upgrade backup `/home/jazofv1/hioc/backups/release-upgrade-20260728-114736` and install backup `/home/jazofv1/hioc/backups/install-20260728-114737` were created.
+
+**Intended behavior:** Collector identity is derived from one deterministic complete local-interface record, with default-route preference and atomic IP/MAC ownership. Exact normalized MAC matches preserve supported known-infrastructure metadata across legitimate observed IP or hostname movement while current observed runtime fields remain authoritative. Weaker IP or hostname matches continue rejecting conflicting MAC identities, and no heuristic continuity across MAC changes is inferred.
+
+**Invariant checks:** Pre-commit validation passed with 107 focused inventory tests, 169 full-suite tests and 6 skips, Python compilation, release validation, and final diff review. At `2026-07-28T11:47:56-06:00`, production inventory was online at schema `1.0` with 148 devices, 107 healthy, 41 Watch, 0 degraded, 0 offline, 2 infrastructure devices, 146 clients, 8 services, 147 topology edges, 296 dependency edges, and unrestricted discovery. The canonical collector was `Pi3 - NUT and Pi-hole`, role `Core Infrastructure`, at observed IP `192.168.100.252` and MAC `b8:27:eb:70:ab:df`, online and healthy with health score 100 and sources `known_infrastructure` and `local_host`. All eight discovered services—`pihole-FTL`, `pihole-FTL.service`, network service ports 53 and 67, `cron`, `ssh`, `nut-monitor`, and `nut-server`—were owned by that collector and reported host `Pi3 - NUT and Pi-hole`. No service was assigned to the historical incorrect `.105` owner. Inventory generation remained healthy, discovery was not limited, and no JSON, MQTT, Home Assistant, or dashboard contract failure was observed.
+
+**Warnings and deferred risks:** No checkpoint-specific production warning was observed. Pi-hole DHCP lease ingestion validation and the subsequent passive-enrichment roadmap remain separate work.
+
+**Final result:** **PASS**
 
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **IN PROGRESS**; and validate Pi-hole DHCP lease ingestion after collector ownership production validation.
+3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **COMPLETE**; and validate Pi-hole DHCP lease ingestion.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-The required hygiene checkpoint, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, and Dashboard Severity Mapping are complete. Collector canonical ownership validation is the next active work. Remaining inventory correctness work follows in the documented order, and passive enrichment resumes only after that corrective work.
+The required hygiene checkpoint, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. Pi-hole DHCP lease ingestion validation is the next active work. Passive enrichment resumes only after that corrective checkpoint.
 
 ---
 
@@ -733,7 +745,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, and Dashboard Severity Mapping are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, with collector canonical ownership validation as its next active inventory checkpoint.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Repository and Deployment Hygiene checkpoint, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The temporary PI3 preservation branch has been retired, and GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, with Pi-hole DHCP lease ingestion validation as its next active inventory checkpoint.
 
 ## Current Branch
 
@@ -765,11 +777,11 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Validate collector canonical ownership while preserving the documented inventory and operational-truth contracts.
+Validate Pi-hole DHCP lease ingestion while preserving assignment-evidence, observation, identity-authority, and operational-truth contracts.
 
 ## Next Planned Task
 
-Validate collector canonical ownership while preserving the documented inventory and operational-truth contracts.
+Validate Pi-hole DHCP lease ingestion while preserving assignment-evidence, observation, identity-authority, and operational-truth contracts.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
