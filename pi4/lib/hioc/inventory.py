@@ -93,6 +93,8 @@ class DhcpLeaseSourceResult:
     valid_lines: int = 0
     malformed_lines: int = 0
     error: str = ""
+    expired_lines: int = 0
+    unsupported_lines: int = 0
 
 
 @dataclass(frozen=True)
@@ -254,18 +256,23 @@ def neighbor_table() -> dict:
 
 
 def dhcp_lease_paths(config: dict | None = None) -> list[Path]:
-    configured = (config or {}).get("HIOC_INVENTORY_DHCP_LEASE_FILES", "")
-    if configured:
+    if config is not None and "HIOC_INVENTORY_DHCP_LEASE_FILES" in config:
+        configured = str(config.get("HIOC_INVENTORY_DHCP_LEASE_FILES", ""))
         return [Path(item.strip()) for item in configured.split(",") if item.strip()]
     return [
         Path("/etc/pihole/dhcp.leases"),
-        Path("/var/lib/misc/dnsmasq.leases"),
-        Path("/var/lib/dhcp/dhcpd.leases"),
     ]
 
 
-def _parse_dhcp_lease_line(raw: str, path: Path, line_number: int) -> tuple[dict | None, str]:
+def _parse_dhcp_lease_line(
+    raw: str,
+    path: Path,
+    line_number: int,
+    collection_epoch: int,
+) -> tuple[dict | None, str]:
     parts = raw.split()
+    if len(parts) >= 3 and parts[0].lower() == "lease" and parts[-1] == "{":
+        return None, "unsupported ISC lease format"
     if len(parts) < 3 or len(parts) > 5:
         return None, "expected 3 to 5 fields"
     try:
@@ -278,9 +285,13 @@ def _parse_dhcp_lease_line(raw: str, path: Path, line_number: int) -> tuple[dict
     if not mac:
         return None, "invalid MAC"
     try:
-        ipaddress.ip_address(parts[2])
+        address = ipaddress.ip_address(parts[2])
     except ValueError:
         return None, "invalid IP"
+    if not isinstance(address, ipaddress.IPv4Address):
+        return None, "unsupported IPv6 address"
+    if expires != 0 and expires <= collection_epoch:
+        return None, "expired"
     hostname = parts[3] if len(parts) >= 4 and parts[3] != "*" else ""
     client_id = parts[4] if len(parts) >= 5 and parts[4] != "*" else ""
     return {
@@ -296,7 +307,8 @@ def _parse_dhcp_lease_line(raw: str, path: Path, line_number: int) -> tuple[dict
     }, ""
 
 
-def _read_dhcp_lease_source(path: Path) -> DhcpLeaseSourceResult:
+def _read_dhcp_lease_source(path: Path, collection_epoch: int | None = None) -> DhcpLeaseSourceResult:
+    epoch = int(time.time()) if collection_epoch is None else int(collection_epoch)
     if not path.exists():
         return DhcpLeaseSourceResult(path, "missing", {}, [])
     try:
@@ -308,14 +320,22 @@ def _read_dhcp_lease_source(path: Path) -> DhcpLeaseSourceResult:
     devices = {}
     observations = []
     malformed = 0
+    expired = 0
+    unsupported = 0
     nonempty = 0
     for line_number, raw in enumerate(lines, 1):
         if not raw.strip():
             continue
         nonempty += 1
-        record, reason = _parse_dhcp_lease_line(raw, path, line_number)
+        record, reason = _parse_dhcp_lease_line(raw, path, line_number, epoch)
         if record is None:
-            malformed += 1
+            if reason == "expired":
+                expired += 1
+                continue
+            if reason.startswith("unsupported "):
+                unsupported += 1
+            else:
+                malformed += 1
             LOG.warning("DHCP lease ignored path=%s line=%s reason=%s", path, line_number, reason)
             continue
         observations.append(record)
@@ -323,24 +343,43 @@ def _read_dhcp_lease_source(path: Path) -> DhcpLeaseSourceResult:
         if current is None or _dhcp_record_order(record) > _dhcp_record_order(current):
             devices[record["mac"]] = record
     valid = len(observations)
-    if valid and malformed:
+    if valid and (malformed or unsupported):
         status = "partial"
     elif valid:
         status = "found"
+    elif unsupported:
+        status = "unsupported"
     elif malformed or nonempty:
         status = "malformed"
     else:
         status = "empty"
-    return DhcpLeaseSourceResult(path, status, devices, observations, valid, malformed)
+    if not valid and expired and not malformed and not unsupported:
+        status = "empty"
+    return DhcpLeaseSourceResult(
+        path,
+        status,
+        devices,
+        observations,
+        valid,
+        malformed,
+        expired_lines=expired,
+        unsupported_lines=unsupported,
+    )
 
 
-def dhcp_lease_source_results(paths: list[Path] | None = None) -> list[DhcpLeaseSourceResult]:
-    return [_read_dhcp_lease_source(path) for path in (paths or dhcp_lease_paths())]
+def dhcp_lease_source_results(
+    paths: list[Path] | None = None,
+    collection_epoch: int | None = None,
+) -> list[DhcpLeaseSourceResult]:
+    epoch = int(time.time()) if collection_epoch is None else int(collection_epoch)
+    selected_paths = dhcp_lease_paths() if paths is None else paths
+    return [_read_dhcp_lease_source(path, epoch) for path in selected_paths]
 
 
 def capture_dhcp_lease_snapshot(config: dict) -> tuple[DhcpLeaseSourceResult, ...]:
     """Acquire one immutable set of parsed DHCP source results for an inventory cycle."""
-    return tuple(dhcp_lease_source_results(dhcp_lease_paths(config)))
+    collection_epoch = int(time.time())
+    return tuple(dhcp_lease_source_results(dhcp_lease_paths(config), collection_epoch))
 
 
 def _dhcp_record_order(record: dict) -> tuple:
@@ -355,6 +394,8 @@ def _dhcp_record_order(record: dict) -> tuple:
 
 
 def _aggregate_dhcp_lease_results(results: list[DhcpLeaseSourceResult]) -> tuple[dict, str]:
+    if not results:
+        return {}, "dhcp_leases_disabled"
     devices = {}
     for result in results:
         for mac, record in result.devices.items():
@@ -363,18 +404,21 @@ def _aggregate_dhcp_lease_results(results: list[DhcpLeaseSourceResult]) -> tuple
                 devices[mac] = record
     statuses = {result.status for result in results}
     if devices:
-        degraded = {"partial", "malformed", "unreadable", "io_error"}
-        status = "dhcp_leases_partial" if statuses & degraded else "dhcp_leases_found"
-    elif "io_error" in statuses:
-        status = "dhcp_leases_io_error"
-    elif "unreadable" in statuses:
-        status = "dhcp_leases_unreadable"
-    elif "malformed" in statuses or "partial" in statuses:
-        status = "dhcp_leases_malformed"
-    elif "empty" in statuses:
+        status = "dhcp_leases_found" if statuses <= {"found", "empty"} else "dhcp_leases_partial"
+    elif statuses == {"empty"}:
         status = "dhcp_leases_empty"
+    elif len(statuses) == 1:
+        source_status = next(iter(statuses))
+        status = {
+            "io_error": "dhcp_leases_io_error",
+            "malformed": "dhcp_leases_malformed",
+            "missing": "dhcp_leases_missing",
+            "partial": "dhcp_leases_partial",
+            "unreadable": "dhcp_leases_unreadable",
+            "unsupported": "dhcp_leases_unsupported",
+        }.get(source_status, "dhcp_leases_partial")
     else:
-        status = "dhcp_leases_missing"
+        status = "dhcp_leases_partial"
     return devices, status
 
 
@@ -1451,20 +1495,21 @@ def discovery_source_status(
     integration_root = Path(config.get("HIOC_INVENTORY_INTEGRATION_DIR", "")) if config.get("HIOC_INVENTORY_INTEGRATION_DIR", "") else state_root / "inventory" / "integrations"
     if integration_root.exists():
         sources.append("integration_inventory")
-    lease_unavailable = any(source in {
+    lease_limited = lease_status in {
         "dhcp_leases_io_error",
         "dhcp_leases_malformed",
         "dhcp_leases_missing",
+        "dhcp_leases_partial",
         "dhcp_leases_unreadable",
-    } for source in sources)
+        "dhcp_leases_unsupported",
+    }
     arp_unavailable = not neighbor_result.collection_succeeded
-    lease_limited = lease_unavailable and not any(source == "integration_inventory" for source in sources)
     limited = arp_unavailable or lease_limited
     reasons = []
     if arp_unavailable:
         reasons.append("ARP/neigh collection is unavailable; inventory is limited to other discovery sources and prior retained devices.")
     if lease_limited:
-        reasons.append("DHCP lease input is unavailable, unreadable, malformed, or failed; inventory is limited to local host, gateway, ARP/neigh, integrations, and prior retained devices.")
+        reasons.append("DHCP assignment evidence is incomplete or unavailable; existing inventory and other discovery sources remain preserved.")
     reason = " ".join(reasons)
     return sources, limited, reason
 

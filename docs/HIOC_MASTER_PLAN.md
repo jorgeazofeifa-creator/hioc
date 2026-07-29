@@ -457,7 +457,7 @@ Implementation commit `a01b6b77350ee22a40e8aacca72e256b826c8a3f` (`Phase 7A: uni
 
 ##### DHCP Identity Architecture Decision
 
-Status: **DESIGN APPROVED; IMPLEMENTATION NOT STARTED**
+Status: **IMPLEMENTED AND TESTED IN AUTHORITATIVE REPOSITORY; PRODUCTION VALIDATION PENDING**
 
 The approved architecture is **Pi-hole-specific integration through the existing passive-driver and source-tagged device-record convention**. Pi-hole lease acquisition and parsing remain source-specific adapter functions used by `PassiveNetworkDriver`; valid records enter the existing `DriverResult.devices` flow and central `merge_records()` reconciliation. No new `IdentitySource` protocol, abstract base class, registry, plugin framework, dependency-injection layer, or generalized provider model is introduced. [ADR-0015](../DECISIONS.md#adr-0015-keep-pi-hole-dhcp-within-the-existing-passive-driver-contract) records the binding decision.
 
@@ -473,7 +473,7 @@ This choice preserves the repository's current separation of concerns. Collectio
 | Friendly name | DHCP never contributes `name` or future `friendly_name` and never overwrites operator-managed naming. |
 | Vendor | DHCP does not contribute or alter vendor information. |
 | Lease start | The supported Pi-hole/dnsmasq row does not supply a lease-start value, so none is fabricated. A future source-format decision is required before adding such a field. |
-| Lease expiry | Preserved as source attribution metadata in `lease_expires_epoch`. Zero retains its current infinite-lease meaning. Finite-expiry policy remains a separate open DHCP sub-checkpoint. |
+| Lease expiry | Preserved as source attribution metadata in `lease_expires_epoch`. Zero retains its infinite-lease meaning. A finite lease contributes current assignment evidence only when its expiry is later than the inventory cycle's fixed collection epoch. |
 | Lease active state | Assignment evidence only. No canonical online, offline, health, reachability, or observation field is derived from it. Presence, active assignment, positive observation, staleness, degradation, and offline state remain distinct. |
 | Last seen | Never created or refreshed by DHCP. `_positive_observation` remains false for DHCP records. |
 | Online or offline state | DHCP has no direct authority. Expiry never becomes an offline event. |
@@ -488,31 +488,35 @@ This choice preserves the repository's current separation of concerns. Collectio
 3. A conflicting passive hostname outranks the DHCP hostname. A DHCP hostname may fill a missing hostname.
 4. DHCP never contributes `name` or `friendly_name`, so operator naming remains unchanged.
 5. When DHCP reports a different IP from a stronger recent passive observation, the passive IP remains canonical and the DHCP assignment remains source evidence.
-6. An expired finite lease is not positive observation and never proves offline. Its participation in current assignment evidence remains governed by the open expiry-policy sub-checkpoint.
+6. An expired finite lease contributes no current assignment evidence, is not positive observation, does not enrich or refresh a retained device, and never proves offline.
 7. Multiple leases for one MAC remain separate input observations until central deterministic selection; the established ordering selects the infinite lease first, otherwise the greatest expiry, followed by stable source and value tie-breakers.
 8. The same IP associated with different MACs produces separate MAC-backed identities. It never authorizes a merge; ambiguous weak reconciliation is skipped.
-9. Malformed or incomplete rows contribute no identity record. Sanitized warnings and source health preserve malformed, partial, unreadable, I/O-error, missing, empty, and found distinctions.
+9. Malformed, unsupported, or incomplete rows contribute no identity record. Sanitized warnings and source health preserve malformed, unsupported, partial, unreadable, I/O-error, missing, disabled, empty, and found distinctions.
 10. A hostname with no usable MAC is rejected by this Pi-hole lease path and cannot create an IP-only or hostname-only device.
 11. A valid MAC with a blank or `*` hostname is accepted without fabricating a hostname.
 12. No archived-asset schema or retention policy exists. Later implementation must preserve retained canonical records and must not invent archive revival or deletion behavior.
 13. Temporary source unavailability contributes no new evidence, preserves prior inventory through existing retention behavior, and reports the established source status and discovery limitation semantics.
 14. Successful collection with zero leases contributes no devices and reports `dhcp_leases_empty`; it is not treated as failure, device disappearance, or offline evidence.
 
-###### Next implementation boundary
+###### Implementation Evidence Report
 
-The later coding checkpoint is limited to reading Pi-hole DHCP lease information, converting it into the existing source-tagged device-record representation, reconciling it through the established inventory identity path, preserving strong MAC-backed identity, safely upgrading an unambiguous weak IP-only identity, retaining Pi-hole source attribution, testing parser and merge behavior, validating production behavior, and documenting the results. Expected implementation review is bounded primarily to `pi4/lib/hioc/inventory.py`, `tests/test_inventory.py`, applicable inventory data-model documentation, this Master Plan, ADR-0015, and the authoritative changelog.
+**Implementation validation:** **PASS**. Pi-hole/dnsmasq rows now use one fixed collection epoch per inventory cycle. Active finite IPv4 leases and expiry-zero infinite leases remain eligible; expired finite leases, IPv6 entries, clearly recognized ISC lease blocks, malformed rows, and unusable identities contribute no device evidence. Expired leases cannot enrich, move, refresh, or mark retained devices offline. DHCP remains assignment-only and cannot overwrite stronger current MAC-backed, local-host, gateway, ARP, integration, known-infrastructure, or operator-managed metadata.
 
-Explicit non-goals are Home Assistant identity ingestion, mDNS, SSDP, MQTT identity ingestion, additional providers, Active Discovery, plugin discovery, manual asset-management redesign, retention-policy implementation, incident-history validator changes, dependency-graph work, topology work, backup and disaster-recovery work, unrelated collector corrections, and dashboard changes unless a later DHCP implementation proves one strictly necessary and stops for approval. The later checkpoint must validate source isolation, parsing, deterministic ordering, identity promotion and ambiguity protection, field precedence, assignment-only timestamps and health, source-state reporting, full regression compatibility, supported production deployment, and observable production inventory behavior.
+Source aggregation now preserves complete `found`, `empty`, and explicitly `disabled` states; distinguishes missing, unreadable, malformed, unsupported, I/O-error, and partial input; and reports configured incomplete or unavailable DHCP evidence as a discovery limitation independently of integration evidence. Existing inventory and all other discovery sources remain preserved. The default source is the production-confirmed `/etc/pihole/dhcp.leases`; other dnsmasq-format files require explicit configuration, and ISC `dhcpd.leases` is not advertised as supported.
 
-##### Remaining Open DHCP Sub-checkpoints
+The focused identity checks passed 6 tests, the inventory suite passed 123 tests, the correlation suite passed 12 tests, and the full regression suite passed 191 tests with 7 skips. Production deployment and observable production validation have not occurred for this implementation.
 
-- **Expired finite-lease policy:** Define how finite leases whose expiry is in the past participate in current assignment evidence.
-- **ISC `dhcpd.leases` compatibility:** Resolve the advertised ISC lease path versus the current dnsmasq/Pi-hole row parser.
-- **IPv4 / IPv6 contract clarification:** Define whether this ingestion path is IPv4-only or intentionally accepts both address families.
-- **Explicit empty-list behavior:** Define whether an explicitly empty path list disables acquisition or falls back to defaults.
-- **Discovery-limitation semantics:** Define how DHCP source availability and integration evidence determine `discovery_limited`.
+**Final result:** **PASS** for repository implementation and automated regression validation. The overall Pi-hole DHCP Lease Ingestion checkpoint remains **IN PROGRESS** pending supported production deployment and validation.
 
-These items remain deferred future bounded sub-checkpoints and were not changed by Single Snapshot Acquisition.
+##### Resolved DHCP Implementation Decisions
+
+- **Expired finite-lease policy:** Only finite leases with expiry later than the fixed cycle epoch contribute current assignment evidence. Expiry zero remains infinite.
+- **ISC `dhcpd.leases` compatibility:** ISC syntax is unsupported and is no longer included in default source paths.
+- **IPv4 / IPv6 contract:** This ingestion path is IPv4-only. IPv6 rows are unsupported.
+- **Explicit empty-list behavior:** An explicitly blank configured path list disables DHCP acquisition and reports `dhcp_leases_disabled`; absent configuration uses the Pi-hole default.
+- **Discovery-limitation semantics:** Found, empty, and disabled are complete states. Missing, unreadable, malformed, unsupported, I/O-error, and partial configured input limit discovery independently of integration evidence.
+
+These decisions complete the bounded repository implementation. Production validation remains the only open work for this Pi-hole DHCP Lease Ingestion checkpoint.
 
 #### Remaining Phase 7A Corrective Sequence
 

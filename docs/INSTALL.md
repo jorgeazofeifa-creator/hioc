@@ -71,13 +71,15 @@ HIOC_INVENTORY_STALE_AFTER_SEC="900"
 HIOC_INVENTORY_OFFLINE_AFTER_SEC="3600"
 HIOC_INVENTORY_SNMP_COMMUNITY=""
 HIOC_INVENTORY_INTEGRATION_DIR=""
-HIOC_INVENTORY_DHCP_LEASE_FILES="/etc/pihole/dhcp.leases,/var/lib/misc/dnsmasq.leases,/var/lib/dhcp/dhcpd.leases"
+HIOC_INVENTORY_DHCP_LEASE_FILES="/etc/pihole/dhcp.leases"
 HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE="/home/jazofv1/hioc/config/inventory/known_infrastructure.json"
 ```
 
 Leave `HIOC_INVENTORY_ACTIVE_DISCOVERY` set to `off` for the currently approved passive discovery mode from host facts, default route, neighbor table, DHCP leases, integration hint files, and optional known infrastructure definitions.
 
-`HIOC_INVENTORY_DHCP_LEASE_FILES` is an ordered, comma-separated list of local lease files. HIOC reads these files passively and reports whether records were found or the sources were empty, missing, unreadable, malformed, affected by an I/O error, or only partially usable. A lease is assignment metadata and does not prove reachability or refresh a device's positive-observation timestamp.
+`HIOC_INVENTORY_DHCP_LEASE_FILES` is an ordered, comma-separated list of Pi-hole/dnsmasq row-format lease files. The default is `/etc/pihole/dhcp.leases`. Additional dnsmasq-format paths may be configured explicitly. An explicitly blank value disables DHCP lease acquisition; it does not restore defaults. ISC `dhcpd.leases` syntax and IPv6 lease entries are not supported by this ingestion path.
+
+HIOC captures all configured DHCP sources once at a fixed epoch during each inventory cycle. Active finite IPv4 leases and expiry-zero infinite leases provide assignment metadata. Expired finite leases are ignored and do not prove disappearance or offline state. HIOC reports found, empty, disabled, missing, unreadable, malformed, unsupported, I/O-error, or partial source state. Incomplete or unavailable configured input marks discovery as limited while existing inventory and other discovery sources remain preserved. A lease does not prove reachability or refresh a device's positive-observation timestamp.
 
 If Pi-hole's lease file exists but the HIOC service account cannot read it, grant only that account read access and verify it explicitly. For example, run the following manually with the actual service account substituted for `hioc-user`:
 

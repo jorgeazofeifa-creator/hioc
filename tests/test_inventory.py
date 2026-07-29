@@ -1601,7 +1601,7 @@ class InventoryModelTests(unittest.TestCase):
     def test_dhcp_lease_parsing_when_file_is_present(self):
         with tempfile.TemporaryDirectory() as tmp:
             lease_file = Path(tmp) / "dhcp.leases"
-            lease_file.write_text("1780000000 aa:bb:cc:dd:ee:ff 192.168.1.50 phone-one 01:aa:bb:cc:dd:ee:ff\n")
+            lease_file.write_text("4102444800 aa:bb:cc:dd:ee:ff 192.168.1.50 phone-one 01:aa:bb:cc:dd:ee:ff\n")
 
             leases = dhcp_leases([lease_file])
             discovered, status = dhcp_lease_discovery({"HIOC_INVENTORY_DHCP_LEASE_FILES": str(lease_file)})
@@ -1609,7 +1609,7 @@ class InventoryModelTests(unittest.TestCase):
         lease = leases["aa:bb:cc:dd:ee:ff"]
         self.assertEqual(lease["hostname"], "phone-one")
         self.assertEqual(lease["source"], "dhcp_leases")
-        self.assertEqual(lease["lease_expires_epoch"], 1780000000)
+        self.assertEqual(lease["lease_expires_epoch"], 4102444800)
         self.assertEqual(lease["dhcp_client_id"], "01:aa:bb:cc:dd:ee:ff")
         self.assertEqual(lease["dhcp_lease_source"], str(lease_file))
         self.assertFalse(lease["_positive_observation"])
@@ -1688,7 +1688,7 @@ class InventoryModelTests(unittest.TestCase):
     def test_partial_dhcp_snapshot_emits_warning_once_and_shares_valid_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "dhcp.leases"
-            path.write_text("2000 aa:bb:cc:dd:ee:52 192.168.1.52 current *\nmalformed line\n")
+            path.write_text("4102444800 aa:bb:cc:dd:ee:52 192.168.1.52 current *\nmalformed line\n")
             config = {
                 "HIOC_HOME": tmp, "HIOC_INVENTORY_KNOWN_INFRASTRUCTURE_FILE": "",
                 "HIOC_INVENTORY_DHCP_LEASE_FILES": str(path), "HIOC_INVENTORY_ACTIVE_DISCOVERY": "off",
@@ -1771,18 +1771,117 @@ class InventoryModelTests(unittest.TestCase):
 
         self.assertEqual(reader.call_count, 1)
 
-    def test_expired_and_ipv6_dhcp_rows_retain_current_parsing_behavior(self):
+    def test_dhcp_snapshot_uses_one_collection_epoch_for_all_sources(self):
+        paths = [Path("/leases/first"), Path("/leases/second")]
+        empty_results = [DhcpLeaseSourceResult(path, "empty", {}, []) for path in paths]
+        config = {"HIOC_INVENTORY_DHCP_LEASE_FILES": ",".join(str(path) for path in paths)}
+
+        with patch("hioc.inventory.time.time", return_value=1234) as clock, \
+             patch("hioc.inventory._read_dhcp_lease_source", side_effect=empty_results) as reader:
+            snapshot = capture_dhcp_lease_snapshot(config)
+
+        self.assertEqual(snapshot, tuple(empty_results))
+        clock.assert_called_once_with()
+        self.assertEqual(reader.call_args_list[0].args, (paths[0], 1234))
+        self.assertEqual(reader.call_args_list[1].args, (paths[1], 1234))
+
+    def test_dhcp_path_configuration_distinguishes_defaults_explicit_and_disabled(self):
+        defaults = dhcp_lease_paths()
+        explicit = dhcp_lease_paths({"HIOC_INVENTORY_DHCP_LEASE_FILES": "/leases/one,/leases/two"})
+        disabled = dhcp_lease_paths({"HIOC_INVENTORY_DHCP_LEASE_FILES": "  "})
+
+        self.assertEqual(defaults, [Path("/etc/pihole/dhcp.leases")])
+        self.assertEqual(explicit, [Path("/leases/one"), Path("/leases/two")])
+        self.assertEqual(disabled, [])
+
+    def test_explicitly_disabled_dhcp_performs_no_file_reads(self):
+        config = {"HIOC_INVENTORY_DHCP_LEASE_FILES": ""}
+        with patch("hioc.inventory._read_dhcp_lease_source") as reader:
+            snapshot = capture_dhcp_lease_snapshot(config)
+            discovered, discovery_status = dhcp_lease_discovery(config, snapshot)
+            observations, observation_status = dhcp_lease_observations(config, snapshot)
+
+        reader.assert_not_called()
+        self.assertEqual(snapshot, ())
+        self.assertEqual((discovered, discovery_status), ({}, "dhcp_leases_disabled"))
+        self.assertEqual((observations, observation_status), ([], "dhcp_leases_disabled"))
+
+    def test_dhcp_eligibility_uses_fixed_epoch_and_rejects_ipv6(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "dhcp.leases"
             path.write_text(
-                "1 aa:bb:cc:dd:ee:54 192.168.1.54 expired *\n"
+                "1001 aa:bb:cc:dd:ee:51 192.168.1.51 active *\n"
+                "1000 aa:bb:cc:dd:ee:52 192.168.1.52 boundary *\n"
+                "999 aa:bb:cc:dd:ee:53 192.168.1.53 expired *\n"
+                "0 aa:bb:cc:dd:ee:54 192.168.1.54 infinite *\n"
                 "2000 aa:bb:cc:dd:ee:55 2001:db8::55 ipv6 *\n"
             )
-            discovered, status = dhcp_lease_discovery({"HIOC_INVENTORY_DHCP_LEASE_FILES": str(path)})
+            result = dhcp_lease_source_results([path], collection_epoch=1000)[0]
 
-        self.assertEqual(status, "dhcp_leases_found")
-        self.assertEqual(discovered["aa:bb:cc:dd:ee:54"]["lease_expires_epoch"], 1)
-        self.assertEqual(discovered["aa:bb:cc:dd:ee:55"]["ip"], "2001:db8::55")
+        self.assertEqual(result.status, "partial")
+        self.assertEqual(set(result.devices), {"aa:bb:cc:dd:ee:51", "aa:bb:cc:dd:ee:54"})
+        self.assertEqual(result.expired_lines, 2)
+        self.assertEqual(result.unsupported_lines, 1)
+        self.assertEqual(result.devices["aa:bb:cc:dd:ee:54"]["lease_expires_epoch"], 0)
+
+    def test_only_expired_dhcp_rows_are_successful_empty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "dhcp.leases"
+            path.write_text(
+                "1000 aa:bb:cc:dd:ee:51 192.168.1.51 boundary *\n"
+                "999 aa:bb:cc:dd:ee:52 192.168.1.52 expired *\n"
+            )
+            result = dhcp_lease_source_results([path], collection_epoch=1000)[0]
+
+        self.assertEqual(result.status, "empty")
+        self.assertEqual(result.devices, {})
+        self.assertEqual(result.observations, [])
+        self.assertEqual(result.expired_lines, 2)
+
+    def test_expired_dhcp_lease_does_not_enrich_move_refresh_or_offline_retained_device(self):
+        mac = "aa:bb:cc:dd:ee:51"
+        previous = {"devices": [{
+            "id": stable_device_id({"mac": mac}),
+            "ip": "192.168.1.50",
+            "mac": mac,
+            "hostname": "retained-name",
+            "source": "arp_table",
+            "sources": ["arp_table"],
+            "last_seen": "earlier",
+            "last_seen_epoch": 950,
+        }]}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "dhcp.leases"
+            path.write_text("900 aa:bb:cc:dd:ee:51 192.168.1.99 expired-name *\n")
+            result = dhcp_lease_source_results([path], collection_epoch=1000)[0]
+
+        devices = merge_records(
+            result.observations,
+            previous,
+            "now",
+            1000,
+            {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"},
+        )
+        self.assertEqual(result.status, "empty")
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["ip"], "192.168.1.50")
+        self.assertEqual(devices[0]["hostname"], "retained-name")
+        self.assertEqual(devices[0]["last_seen_epoch"], 950)
+        self.assertNotEqual(devices[0]["health_status"], "offline")
+        self.assertNotIn("dhcp_leases", devices[0].get("sources", []))
+
+    def test_isc_and_ipv6_only_sources_are_unsupported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            isc = Path(tmp) / "dhcpd.leases"
+            ipv6 = Path(tmp) / "ipv6.leases"
+            isc.write_text("lease 192.168.1.20 {\n")
+            ipv6.write_text("2000 aa:bb:cc:dd:ee:55 2001:db8::55 ipv6 *\n")
+
+            with self.assertLogs("hioc-inventory-engine", level="WARNING"):
+                results = dhcp_lease_source_results([isc, ipv6], collection_epoch=1000)
+
+        self.assertEqual([result.status for result in results], ["unsupported", "unsupported"])
+        self.assertTrue(all(not result.devices for result in results))
 
     def test_dhcp_lease_missing_is_reported(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1845,9 +1944,9 @@ class InventoryModelTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             lease_file = Path(tmp) / "dhcp.leases"
             lease_file.write_text(
-                "100 aa:bb:cc:dd:ee:01 192.168.1.10 first *\n"
-                "200 aa:bb:cc:dd:ee:01 192.168.1.10 latest *\n"
-                "300 aa:bb:cc:dd:ee:02 192.168.1.10 other *\n"
+                "4102444800 aa:bb:cc:dd:ee:01 192.168.1.10 first *\n"
+                "4102444801 aa:bb:cc:dd:ee:01 192.168.1.10 latest *\n"
+                "4102444802 aa:bb:cc:dd:ee:02 192.168.1.10 other *\n"
             )
             discovered, status = dhcp_lease_discovery({"HIOC_INVENTORY_DHCP_LEASE_FILES": str(lease_file)})
         self.assertEqual(status, "dhcp_leases_found")
@@ -1860,8 +1959,8 @@ class InventoryModelTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             first = Path(tmp) / "first.leases"
             second = Path(tmp) / "second.leases"
-            first.write_text("100 aa:bb:cc:dd:ee:80 192.168.1.80 first *\n")
-            second.write_text("200 aa:bb:cc:dd:ee:80 192.168.1.81 second *\n")
+            first.write_text("4102444800 aa:bb:cc:dd:ee:80 192.168.1.80 first *\n")
+            second.write_text("4102444801 aa:bb:cc:dd:ee:80 192.168.1.81 second *\n")
             observations, status = dhcp_lease_observations({
                 "HIOC_INVENTORY_DHCP_LEASE_FILES": f"{first},{second}",
             })
@@ -1874,7 +1973,7 @@ class InventoryModelTests(unittest.TestCase):
         self.assertEqual(forward, reverse)
         self.assertEqual(forward[0]["ip"], "192.168.1.81")
         self.assertEqual(forward[0]["hostname"], "second")
-        self.assertEqual(forward[0]["lease_expires_epoch"], 200)
+        self.assertEqual(forward[0]["lease_expires_epoch"], 4102444801)
 
     def test_infinite_dhcp_lease_has_deterministic_assignment_authority(self):
         finite = {
@@ -1900,7 +1999,7 @@ class InventoryModelTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             valid = Path(tmp) / "valid.leases"
             malformed = Path(tmp) / "malformed.leases"
-            valid.write_text("100 aa:bb:cc:dd:ee:01 192.168.1.10 host *\n")
+            valid.write_text("4102444800 aa:bb:cc:dd:ee:01 192.168.1.10 host *\n")
             malformed.write_text("bad line\n")
             config = {"HIOC_INVENTORY_DHCP_LEASE_FILES": f"{valid},{malformed}"}
             self.assertEqual([str(path) for path in dhcp_lease_paths(config)], [str(valid), str(malformed)])
@@ -1908,6 +2007,64 @@ class InventoryModelTests(unittest.TestCase):
                 discovered, status = dhcp_lease_discovery(config)
         self.assertEqual(set(discovered), {"aa:bb:cc:dd:ee:01"})
         self.assertEqual(status, "dhcp_leases_partial")
+
+    def test_dhcp_source_aggregation_preserves_complete_and_incomplete_states(self):
+        path = Path("/leases/source")
+        record = {
+            "ip": "192.168.1.80", "mac": "aa:bb:cc:dd:ee:80", "source": "dhcp_leases",
+            "lease_expires_epoch": 4102444800, "_positive_observation": False,
+        }
+        cases = (
+            ((DhcpLeaseSourceResult(path, "found", {record["mac"]: record}, [record]),), "dhcp_leases_found"),
+            ((DhcpLeaseSourceResult(path, "empty", {}, []),), "dhcp_leases_empty"),
+            ((DhcpLeaseSourceResult(path, "missing", {}, []),), "dhcp_leases_missing"),
+            ((DhcpLeaseSourceResult(path, "unreadable", {}, []),), "dhcp_leases_unreadable"),
+            ((DhcpLeaseSourceResult(path, "io_error", {}, []),), "dhcp_leases_io_error"),
+            ((DhcpLeaseSourceResult(path, "malformed", {}, []),), "dhcp_leases_malformed"),
+            ((DhcpLeaseSourceResult(path, "unsupported", {}, []),), "dhcp_leases_unsupported"),
+            ((DhcpLeaseSourceResult(path, "missing", {}, []), DhcpLeaseSourceResult(Path("/other"), "unreadable", {}, [])), "dhcp_leases_partial"),
+            ((DhcpLeaseSourceResult(path, "found", {record["mac"]: record}, [record]), DhcpLeaseSourceResult(Path("/other"), "missing", {}, [])), "dhcp_leases_partial"),
+            ((DhcpLeaseSourceResult(path, "found", {record["mac"]: record}, [record]), DhcpLeaseSourceResult(Path("/other"), "empty", {}, [])), "dhcp_leases_found"),
+            ((DhcpLeaseSourceResult(path, "empty", {}, []), DhcpLeaseSourceResult(Path("/other"), "empty", {}, [])), "dhcp_leases_empty"),
+            ((), "dhcp_leases_disabled"),
+        )
+
+        for snapshot, expected in cases:
+            with self.subTest(expected=expected):
+                _, status = dhcp_lease_discovery({}, snapshot)
+                self.assertEqual(status, expected)
+
+    def test_dhcp_limitation_mapping_is_independent_of_integration_evidence(self):
+        limited_statuses = {
+            "missing", "unreadable", "io_error", "malformed", "partial", "unsupported",
+        }
+        complete_statuses = {"found", "empty"}
+        neighbor = NeighborTableResult({}, True)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            integration_root = Path(tmp) / "state" / "inventory" / "integrations"
+            integration_root.mkdir(parents=True)
+            config = {"HIOC_HOME": tmp}
+            for source_status in limited_statuses | complete_statuses:
+                record = {
+                    "ip": "192.168.1.80", "mac": "aa:bb:cc:dd:ee:80", "source": "dhcp_leases",
+                    "lease_expires_epoch": 4102444800, "_positive_observation": False,
+                }
+                devices = {record["mac"]: record} if source_status == "found" else {}
+                observations = [record] if source_status == "found" else []
+                snapshot = (DhcpLeaseSourceResult(Path("/leases/source"), source_status, devices, observations),)
+                sources, limited, reason = discovery_source_status(config, [], {}, neighbor, snapshot)
+                with self.subTest(source_status=source_status):
+                    self.assertIn("integration_inventory", sources)
+                    self.assertEqual(limited, source_status in limited_statuses)
+                    self.assertEqual(bool(reason), source_status in limited_statuses)
+                    if limited:
+                        self.assertIn("existing inventory and other discovery sources remain preserved", reason)
+
+            sources, limited, reason = discovery_source_status(config, [], {}, neighbor, ())
+            self.assertIn("dhcp_leases_disabled", sources)
+            self.assertFalse(limited)
+            self.assertEqual(reason, "")
 
     def test_dhcp_merge_fills_missing_metadata_without_overwriting_stronger_observation(self):
         config = {"HIOC_INVENTORY_STALE_AFTER_SEC": "60", "HIOC_INVENTORY_OFFLINE_AFTER_SEC": "120"}
