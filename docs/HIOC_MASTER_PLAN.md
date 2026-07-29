@@ -455,6 +455,55 @@ Implementation commit `a01b6b77350ee22a40e8aacca72e256b826c8a3f` (`Phase 7A: uni
 
 **Final result:** **PASS** for Single Snapshot Acquisition only. The overall Pi-hole DHCP Lease Ingestion checkpoint remains **IN PROGRESS**.
 
+##### DHCP Identity Architecture Decision
+
+Status: **DESIGN APPROVED; IMPLEMENTATION NOT STARTED**
+
+The approved architecture is **Pi-hole-specific integration through the existing passive-driver and source-tagged device-record convention**. Pi-hole lease acquisition and parsing remain source-specific adapter functions used by `PassiveNetworkDriver`; valid records enter the existing `DriverResult.devices` flow and central `merge_records()` reconciliation. No new `IdentitySource` protocol, abstract base class, registry, plugin framework, dependency-injection layer, or generalized provider model is introduced. [ADR-0015](../DECISIONS.md#adr-0015-keep-pi-hole-dhcp-within-the-existing-passive-driver-contract) records the binding decision.
+
+This choice preserves the repository's current separation of concerns. Collection adapters acquire and normalize evidence; source-tagged records carry provenance; centralized reconciliation selects canonical identity and field values; known infrastructure supplies limited operator metadata; observation timestamps represent positive observation only; and health, monitoring, topology, dependencies, MQTT publication, and Home Assistant projections consume the reconciled inventory. The existing `DriverResult` mapping convention is already the minimal generic boundary. Adding another identity-source interface would duplicate it and force a classification hierarchy that the current single DHCP implementation does not need.
+
+###### Identity and field ownership
+
+| Field | Approved DHCP contribution |
+|---|---|
+| MAC address | A valid normalized MAC may create a MAC-backed technical identity or confirm an existing matching identity. It may upgrade one unambiguous IP-only weak identity through existing reconciliation. It never replaces a conflicting MAC or causes ambiguous identities to merge. |
+| IP address | Assignment evidence. It may populate the current record and participate in unambiguous reconciliation, but it does not override a stronger current local-host, gateway, ARP, or integration association. A differing passive IP remains stronger current observation evidence. |
+| DHCP hostname | Technical identity metadata. It may populate a missing hostname and may win only among DHCP observations by deterministic lease ordering. It does not replace a stronger current passive hostname. |
+| Friendly name | DHCP never contributes `name` or future `friendly_name` and never overwrites operator-managed naming. |
+| Vendor | DHCP does not contribute or alter vendor information. |
+| Lease start | The supported Pi-hole/dnsmasq row does not supply a lease-start value, so none is fabricated. A future source-format decision is required before adding such a field. |
+| Lease expiry | Preserved as source attribution metadata in `lease_expires_epoch`. Zero retains its current infinite-lease meaning. Finite-expiry policy remains a separate open DHCP sub-checkpoint. |
+| Lease active state | Assignment evidence only. No canonical online, offline, health, reachability, or observation field is derived from it. Presence, active assignment, positive observation, staleness, degradation, and offline state remain distinct. |
+| Last seen | Never created or refreshed by DHCP. `_positive_observation` remains false for DHCP records. |
+| Online or offline state | DHCP has no direct authority. Expiry never becomes an offline event. |
+| Device identity | A valid MAC-backed lease may create a technical inventory record. A hostname-only or unusable-MAC lease cannot. Stable identity remains MAC-first, and conflicts remain separate. |
+| Source provenance | Records retain `source: dhcp_leases`, combined canonical `sources`, the source file in `dhcp_lease_source`, and source status in `discovery_sources`. No field-level provenance system is added. |
+| Confidence or authority | Deterministic source precedence and ambiguity checks remain sufficient. No numeric confidence score is introduced. |
+
+###### Deterministic conflict and edge-case rules
+
+1. A DHCP record with the same valid MAC as an existing strong identity merges into that identity; stronger current values remain authoritative.
+2. One IP-only weak identity and one DHCP MAC-backed identity sharing an IP reconcile only when the existing central rules find exactly one weak identity, one strong identity, and no conflicting MAC.
+3. A conflicting passive hostname outranks the DHCP hostname. A DHCP hostname may fill a missing hostname.
+4. DHCP never contributes `name` or `friendly_name`, so operator naming remains unchanged.
+5. When DHCP reports a different IP from a stronger recent passive observation, the passive IP remains canonical and the DHCP assignment remains source evidence.
+6. An expired finite lease is not positive observation and never proves offline. Its participation in current assignment evidence remains governed by the open expiry-policy sub-checkpoint.
+7. Multiple leases for one MAC remain separate input observations until central deterministic selection; the established ordering selects the infinite lease first, otherwise the greatest expiry, followed by stable source and value tie-breakers.
+8. The same IP associated with different MACs produces separate MAC-backed identities. It never authorizes a merge; ambiguous weak reconciliation is skipped.
+9. Malformed or incomplete rows contribute no identity record. Sanitized warnings and source health preserve malformed, partial, unreadable, I/O-error, missing, empty, and found distinctions.
+10. A hostname with no usable MAC is rejected by this Pi-hole lease path and cannot create an IP-only or hostname-only device.
+11. A valid MAC with a blank or `*` hostname is accepted without fabricating a hostname.
+12. No archived-asset schema or retention policy exists. Later implementation must preserve retained canonical records and must not invent archive revival or deletion behavior.
+13. Temporary source unavailability contributes no new evidence, preserves prior inventory through existing retention behavior, and reports the established source status and discovery limitation semantics.
+14. Successful collection with zero leases contributes no devices and reports `dhcp_leases_empty`; it is not treated as failure, device disappearance, or offline evidence.
+
+###### Next implementation boundary
+
+The later coding checkpoint is limited to reading Pi-hole DHCP lease information, converting it into the existing source-tagged device-record representation, reconciling it through the established inventory identity path, preserving strong MAC-backed identity, safely upgrading an unambiguous weak IP-only identity, retaining Pi-hole source attribution, testing parser and merge behavior, validating production behavior, and documenting the results. Expected implementation review is bounded primarily to `pi4/lib/hioc/inventory.py`, `tests/test_inventory.py`, applicable inventory data-model documentation, this Master Plan, ADR-0015, and the authoritative changelog.
+
+Explicit non-goals are Home Assistant identity ingestion, mDNS, SSDP, MQTT identity ingestion, additional providers, Active Discovery, plugin discovery, manual asset-management redesign, retention-policy implementation, incident-history validator changes, dependency-graph work, topology work, backup and disaster-recovery work, unrelated collector corrections, and dashboard changes unless a later DHCP implementation proves one strictly necessary and stops for approval. The later checkpoint must validate source isolation, parsing, deterministic ordering, identity promotion and ambiguity protection, field precedence, assignment-only timestamps and health, source-state reporting, full regression compatibility, supported production deployment, and observable production inventory behavior.
+
 ##### Remaining Open DHCP Sub-checkpoints
 
 - **Expired finite-lease policy:** Define how finite leases whose expiry is in the past participate in current assignment evidence.
