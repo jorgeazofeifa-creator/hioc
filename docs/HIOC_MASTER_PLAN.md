@@ -435,7 +435,7 @@ Implementation commit `054fb55a2e70901f3230145b76983c31d2b5ce61` (`Phase 7A: har
 
 #### Pi-hole DHCP Lease Ingestion
 
-Status: **IN PROGRESS**
+Status: **COMPLETE - PASS WITH DOCUMENTED WARNING**
 
 ##### Single Snapshot Acquisition
 
@@ -453,11 +453,11 @@ Implementation commit `a01b6b77350ee22a40e8aacca72e256b826c8a3f` (`Phase 7A: uni
 
 **Intentionally unchanged:** This sub-checkpoint does not alter lease-expiration policy, IPv6 handling, ISC lease compatibility, or discovery-limitation semantics.
 
-**Final result:** **PASS** for Single Snapshot Acquisition only. The overall Pi-hole DHCP Lease Ingestion checkpoint remains **IN PROGRESS**.
+**Final result at this sub-checkpoint:** **PASS** for Single Snapshot Acquisition only. The overall Pi-hole DHCP Lease Ingestion checkpoint remained **IN PROGRESS** until the later bounded implementation and production validation recorded below.
 
 ##### DHCP Identity Architecture Decision
 
-Status: **IMPLEMENTED AND TESTED IN AUTHORITATIVE REPOSITORY; PRODUCTION VALIDATION PENDING**
+Status: **COMPLETE - PASS WITH DOCUMENTED WARNING**
 
 The approved architecture is **Pi-hole-specific integration through the existing passive-driver and source-tagged device-record convention**. Pi-hole lease acquisition and parsing remain source-specific adapter functions used by `PassiveNetworkDriver`; valid records enter the existing `DriverResult.devices` flow and central `merge_records()` reconciliation. No new `IdentitySource` protocol, abstract base class, registry, plugin framework, dependency-injection layer, or generalized provider model is introduced. [ADR-0015](../DECISIONS.md#adr-0015-keep-pi-hole-dhcp-within-the-existing-passive-driver-contract) records the binding decision.
 
@@ -504,9 +504,19 @@ This choice preserves the repository's current separation of concerns. Collectio
 
 Source aggregation now preserves complete `found`, `empty`, and explicitly `disabled` states; distinguishes missing, unreadable, malformed, unsupported, I/O-error, and partial input; and reports configured incomplete or unavailable DHCP evidence as a discovery limitation independently of integration evidence. Existing inventory and all other discovery sources remain preserved. The default source is the production-confirmed `/etc/pihole/dhcp.leases`; other dnsmasq-format files require explicit configuration, and ISC `dhcpd.leases` is not advertised as supported.
 
-The focused identity checks passed 6 tests, the inventory suite passed 123 tests, the correlation suite passed 12 tests, and the full regression suite passed 191 tests with 7 skips. Production deployment and observable production validation have not occurred for this implementation.
+The focused identity checks passed 6 tests, the inventory suite passed 123 tests, the correlation suite passed 12 tests, and the full regression suite passed 191 tests with 7 skips.
 
-**Final result:** **PASS** for repository implementation and automated regression validation. The overall Pi-hole DHCP Lease Ingestion checkpoint remains **IN PROGRESS** pending supported production deployment and validation.
+###### Production Evidence Report
+
+**Deployment result:** **PASS**. Implementation commit `be9035a0641f16cdfc5c8aa1b090056c519881b7` was deployed through the supported production upgrade, which exited 0 and created install backup `install-20260729-102325` and release-upgrade backup `release-upgrade-20260729-102325`. The general PI3 validator passed with exit code 0 and confirmed that at least one configured DHCP lease file was readable. The inventory engine exited 0 and regenerated valid `inventory.json`, `devices.json`, `services.json`, `capabilities.json`, `topology.json`, `dependencies.json`, `summary.json`, and `status.json` artifacts.
+
+**Intended behavior:** Pi-hole DHCP ingestion reads eligible active IPv4 dnsmasq leases, preserves assignment provenance and expiry metadata, reconciles them with stable MAC-backed identities, and does not treat DHCP evidence as positive liveness, a health reason, or direct online or offline authority. Canonical-address selection remains governed by existing reconciliation and was not changed by this checkpoint.
+
+**Invariant checks:** At collection time the source contained 140 nonblank rows, all 140 of which were valid active finite IPv4 leases with 140 unique MACs, IPv4 addresses, and MAC/IP pairs. There were no expired, infinite, IPv6, ISC, or malformed source rows. All 140 active lease MAC identities were represented in the canonical inventory. The 150-device inventory contained 147 DHCP-backed canonical identities, all with DHCP provenance and lease-expiry metadata, with no missing or unexpected source path. DHCP-backed records did not assert `_positive_observation=true`, add DHCP or lease text to health reasons, or directly assert online or offline from DHCP-only evidence. Discovery reported `dhcp_leases_found`, `discovery_limited=false`, and an empty limit reason. Seven DHCP-backed identities beyond the 140 active leases were retained expired historical canonical records with no corresponding active lease, consistent with persistent inventory behavior rather than duplicate active ingestion.
+
+**Warnings:** One active lease MAC/IP pair did not match the chosen canonical IP, although the active lease MAC identity was represented. The same MAC owned two simultaneous `STALE` neighbor-table addresses: one was the selected canonical IP and the other was the active DHCP lease IP. The lease IP had no conflicting active DHCP owner. This exposes a separate canonical-address selection concern, not a DHCP ingestion failure. The mismatch was not resolved by this checkpoint, and DHCP assignment evidence alone must not be allowed to fabricate liveness in the future correction.
+
+**Final result:** **PASS WITH DOCUMENTED WARNING**. Pi-hole DHCP Lease Ingestion is complete. Canonical-address selection remains unchanged and is retained as a separate Phase 7A hardening checkpoint. Active Discovery remains postponed.
 
 ##### Resolved DHCP Implementation Decisions
 
@@ -516,20 +526,28 @@ The focused identity checks passed 6 tests, the inventory suite passed 123 tests
 - **Explicit empty-list behavior:** An explicitly blank configured path list disables DHCP acquisition and reports `dhcp_leases_disabled`; absent configuration uses the Pi-hole default.
 - **Discovery-limitation semantics:** Found, empty, and disabled are complete states. Missing, unreadable, malformed, unsupported, I/O-error, and partial configured input limit discovery independently of integration evidence.
 
-These decisions complete the bounded repository implementation. Production validation remains the only open work for this Pi-hole DHCP Lease Ingestion checkpoint.
+These decisions and the production Evidence Report complete the bounded Pi-hole DHCP Lease Ingestion checkpoint.
+
+#### Canonical Address Selection Hardening
+
+Status: **FUTURE PHASE 7A CORRECTIVE CHECKPOINT**
+
+Production DHCP validation demonstrated that one MAC may have multiple neighbor-table IP entries and that multiple entries may simultaneously be `STALE`. The current canonical selector may choose a stale non-DHCP address even when the active DHCP lease address is also present in the neighbor table, owned by the same MAC, and has no conflicting active DHCP owner.
+
+This checkpoint must investigate and define deterministic canonical-address precedence using source authority, observation recency, neighbor state, lease validity, and existing identity invariants. Any correction must preserve stable MAC-backed identity, prevent duplicate canonical identities, and must not allow DHCP assignment evidence alone to fabricate liveness. It must include regression validation, supported production validation, and a Production Evidence Report. This work is distinct from the completed Collector Canonical Ownership and Pi-hole DHCP Lease Ingestion checkpoints.
 
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene - **COMPLETE**.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **COMPLETE**; and validate Pi-hole DHCP lease ingestion.
+3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **COMPLETE**; Pi-hole DHCP Lease Ingestion — **COMPLETE WITH DOCUMENTED WARNING**; and Canonical Address Selection Hardening — **FUTURE CORRECTIVE CHECKPOINT**.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. Pi-hole DHCP lease ingestion validation remains the current unresolved corrective task. Passive enrichment resumes only after the required corrective work.
+Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, Collector Canonical Ownership, and Pi-hole DHCP Lease Ingestion are complete. Canonical Address Selection Hardening preserves the production warning as a separate future corrective checkpoint. Passive enrichment resumes only after the required corrective work.
 
 ---
 
@@ -922,7 +940,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active. Pi-hole DHCP Lease Ingestion is the current unresolved corrective task, and Active Discovery remains postponed.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. Phase 7A remains active, Canonical Address Selection Hardening preserves that warning as a separate future corrective checkpoint, and Active Discovery remains postponed.
 
 ## Current Branch
 
@@ -954,11 +972,11 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Validate Pi-hole DHCP lease ingestion while preserving assignment-evidence, observation, identity-authority, and operational-truth contracts.
+Preserve the completed Pi-hole DHCP evidence chain and continue Phase 7A without losing the documented canonical-address selection warning.
 
 ## Next Planned Task
 
-Validate Pi-hole DHCP lease ingestion while preserving assignment-evidence, observation, identity-authority, and operational-truth contracts.
+Investigate and design the bounded Canonical Address Selection Hardening checkpoint before implementation.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
