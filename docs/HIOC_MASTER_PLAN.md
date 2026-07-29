@@ -467,7 +467,7 @@ These items remain deferred future bounded sub-checkpoints and were not changed 
 
 #### Remaining Phase 7A Corrective Sequence
 
-1. Repository and Deployment Hygiene.
+1. Repository and Deployment Hygiene - **COMPLETE**.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
 3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **COMPLETE**; and validate Pi-hole DHCP lease ingestion.
 4. Resume passive enrichment.
@@ -476,7 +476,7 @@ These items remain deferred future bounded sub-checkpoints and were not changed 
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. The overall Repository and Deployment Hygiene checkpoint remains in progress through its explicitly listed follow-up checkpoints. Pi-hole DHCP lease ingestion validation also remains active. Passive enrichment resumes only after the required corrective work.
+Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. Pi-hole DHCP lease ingestion validation remains the current unresolved corrective task. Passive enrichment resumes only after the required corrective work.
 
 ---
 
@@ -579,13 +579,13 @@ Deliberate source changes are developed and validated in an authorized developme
 
 The current repository workflow was not introduced through a single planned migration. It evolved organically as operational experience demonstrated the need to separate a clean development and release checkout from the production runtime. This document formalizes that proven workflow rather than introducing a new architectural model.
 
-The production runtime is formally a non-Git deployment target. Its historical `.git` directory is residue from the former clone-in-place installation model, not an operational dependency. The authoritative Windows repository, GitHub, and `/home/jazofv1/hioc-release-source` own Git history and source operations. Runtime Git metadata must be retired through the current Repository and Deployment Hygiene procedure while preserving configuration, state, history, logs, backups, credentials, permissions, and all other operational data.
+The production runtime is formally a non-Git deployment target. Its historical `.git` directory was residue from the former clone-in-place installation model, not an operational dependency, and has been retired. The authoritative Windows repository, GitHub, and `/home/jazofv1/hioc-release-source` own Git history and source operations. Retirement preserved configuration, state, history, logs, backups, credentials, permissions, and all other operational data.
 
 ## Repository and Deployment Hygiene Checkpoint
 
-Status: **IN PROGRESS**
+Status: **COMPLETE**
 
-The source/runtime architecture is settled and is not being reopened. The earlier production-content classification, approved source-only deployment exclusions, controlled one-time cleanup, and production validation remain complete. A later Windows repository audit opened additional bounded hygiene work. The overall Repository and Deployment Hygiene checkpoint remains open until those local findings are resolved and separate manual PI3 release-source and runtime evidence is collected.
+The source/runtime architecture is settled and is not being reopened. The Windows repository work, PI3 release-source audit, runtime provenance audit, controlled runtime Git quarantine and removal, production engineering validation, upgrade proof, rollback proof, and source/runtime consistency validation are complete. All Repository and Deployment Hygiene closure criteria are satisfied.
 
 ### Release Boundary Hardening
 
@@ -629,7 +629,7 @@ Validation confirmed the retained branch at its documented commit, all removed b
 
 ### Runtime Git Metadata Retirement
 
-Status: **REPOSITORY IMPLEMENTATION COMPLETE; PRODUCTION MIGRATION PENDING**
+Status: **COMPLETE**
 
 The architectural investigation reviewed runtime code, installers, release build and packaging, upgrade, backup, rollback, validation, uninstall, version reporting, recovery documentation, operator workflows, ADRs, tests, and relevant Git history. It found no supported runtime, installation, validation, versioning, upgrade, rollback, or disaster-recovery dependency on `/home/jazofv1/hioc/.git`. Runtime version identity comes from `VERSION.yaml` and release metadata. Git is used only at the authoritative source boundary. The runtime `.git` directory is historical residue from the original installation model in which the production path was also a clone.
 
@@ -637,45 +637,45 @@ ADR-0013 is resolved: `/home/jazofv1/hioc` is a non-Git deployment target, all G
 
 Repository validation established the exact backup, deployment, and rollback contracts; continued persistent-state exclusions; `VERSION.yaml` as runtime version authority; Git-aware source construction only in the authoritative checkout; shell syntax; release build and package validity; documentation-link integrity; contradiction-free active guidance; the complete regression suite; and a clean diff. Focused release and version tests passed 13 tests with one Windows-only `rsync` availability skip. The full suite passed 183 tests with 7 skips. Python compilation, release validation, shell syntax, Markdown link checks, package construction, required-file checks, and archive inspection for `.git` all passed. The executable `rsync` semantics test preserves legitimate hidden files while excluding root and nested `.git` directories and will run on hosts where `rsync` is installed, including PI3. Repository implementation and documentation are committed and pushed together only after these checks pass.
 
-Production retirement is not yet complete. The user must manually execute the current PI3 migration and validation work. It is part of this checkpoint, not deferred work:
+Production migration, engineering validation, and quarantine removal are complete. `/home/jazofv1/hioc` is formally non-Git. Its historical `61/62 commits behind` condition is permanently resolved because that status described stale, intentionally excluded runtime metadata rather than deployed application content, and the runtime is no longer a Git checkout.
 
-1. Synchronize `/home/jazofv1/hioc-release-source` with approved `main`, verify its branch, HEAD, origin, and clean state, and run release validation.
-2. Capture `/home/jazofv1/hioc/.git` provenance, including exact path, size, HEAD, remotes, status, branches, tags, and unique commits. Stop if any runtime-only commit is not preserved in authoritative history.
-3. Record baseline hashes or an explicit manifest for deployed application files and confirm persistent `config`, `state`, `history`, `logs`, and `backups` are present.
-4. Deploy the hardened backup and rollback behavior through the supported release workflow.
-5. Move `/home/jazofv1/hioc/.git` to a dated quarantine location outside both `/home/jazofv1/hioc` and `/home/jazofv1/hioc-release-source`. Do not delete it at this stage.
-6. Confirm `test ! -e /home/jazofv1/hioc/.git`, then run the supported Pi4 validator, MQTT runtime validator, required engines, cron checks, inventory generation, and state validation.
-7. Run a supported upgrade and prove it does not recreate runtime `.git`.
-8. Run a controlled supported rollback from a historical backup that contains `.git`, prove rollback does not restore it, and confirm legitimate hidden application files are restored.
-9. Verify persistent configuration, state, history, logs, backups, credentials, ownership, permissions, and operational data remain intact throughout migration, upgrade, and rollback.
-10. Remove the quarantine copy only after the complete evidence set is reviewed and explicitly approved.
-11. Record the production Evidence Report, synchronize its documentation to `main`, and verify local and remote `main` plus the release-source checkout are clean and synchronized.
+#### Production Evidence Report
+
+**Deployment result:** `/home/jazofv1/hioc-release-source` was synchronized at commit `5d189535d81a5689b9d5f0d96caba49d3fee609c` with clean `main` matching `origin/main`. The supported hardened upgrade completed. Runtime Git metadata was moved to `/home/jazofv1/hioc-hygiene-evidence/runtime-git-quarantine-20260729T001505Z/runtime.git`, validated, and then removed after approval. `/home/jazofv1/hioc/.git` does not exist, the runtime is not a Git working tree, and quarantine removal reported `PASS`.
+
+**Intended behavior:** The production runtime operates without Git metadata. Supported deployment, upgrade, backup, rollback, validation, version reporting, and recovery continue through release artifacts and `/home/jazofv1/hioc-release-source`. Runtime state and legitimate hidden files remain protected. Runtime Git metadata cannot be recreated by upgrade or restored by rollback.
+
+**Validation performed:** The historical runtime repository reported HEAD `94e1997f0d9df9e43209e44f7eb62a8d808714cc`, while its stale `origin/main` reference was `5d189535d81a5689b9d5f0d96caba49d3fee609c`. Its HEAD was an ancestor of authoritative history; no runtime-only commits, branches, tags, or stashes existed. The approximately 2.6 MB repository was quarantined, remained readable, and passed `git fsck --full`. Pre-migration evidence at `/home/jazofv1/hioc-hygiene-evidence/pre-migration-20260728T231517Z` inventoried 17,449 runtime paths, checksummed 72 deployment-managed files, recorded persistent directories and Git provenance, and included an evidence checksum manifest. `pi4/validate_pi4.sh` passed after quarantine. A subsequent supported non-Git upgrade and controlled rollback both completed, left the runtime non-Git, and passed production validation. Post-rollback SHA-256 comparisons matched release source and runtime for `release/upgrade.sh`, `release/rollback.sh`, `release/validate.sh`, `pi4/validate_pi4.sh`, and `VERSION.yaml`.
+
+**Invariant checks:** Upgrade backup `/home/jazofv1/hioc/backups/release-upgrade-20260728-181815`, install backup `/home/jazofv1/hioc/backups/install-20260728-181815`, and the plain-text `last-upgrade-backup` pointer were valid. Rollback from that release-upgrade backup did not restore `.git`. `VERSION.yaml` remained valid. Binaries, configuration, runtime state, JSON projections, cron entries, DHCP lease access, version declarations, validators, and persistent runtime data remained operational and intact. Checked deployment artifacts matched the authoritative release source after rollback.
+
+**Warnings / remaining action:** No Repository and Deployment Hygiene engineering work remains. Interactive console sessions that closed during evidence collection are not classified as HIOC failures: upgrade, rollback, and validation completed successfully, and pasted commands used persistent interactive `set -euo pipefail` with visible paste corruption. Future interactive validation should contain strict mode inside a script or subshell and capture output and exit status so the outer session remains open.
+
+**Final result:** **PASS; REPOSITORY AND DEPLOYMENT HYGIENE COMPLETE**
 
 Closure requires every item below:
 
-- hardened backup behavior validated;
-- hardened rollback behavior validated;
-- documentation reconciled;
-- runtime `.git` provenance captured;
-- unique runtime-only commits ruled out;
-- runtime `.git` quarantined outside both repositories;
-- production validation passes without runtime `.git`;
-- supported upgrade does not recreate `.git`;
-- supported rollback does not restore `.git`;
-- persistent `config`, `state`, `history`, `logs`, and `backups` remain intact;
-- quarantine copy removed only after final approval;
-- production Evidence Report recorded;
-- code and documentation committed and pushed together;
-- `main` synchronized;
-- clean working tree confirmed.
+- [x] hardened backup behavior validated;
+- [x] hardened rollback behavior validated;
+- [x] documentation reconciled through the production Evidence Report working-tree update;
+- [x] runtime `.git` provenance captured;
+- [x] unique runtime-only commits ruled out;
+- [x] runtime `.git` quarantined outside both repositories;
+- [x] production validation passes without runtime `.git`;
+- [x] supported upgrade does not recreate `.git`;
+- [x] supported rollback does not restore `.git`;
+- [x] persistent `config`, `state`, `history`, `logs`, and `backups` remain intact;
+- [x] quarantine copy removed after final approval;
+- [x] production Evidence Report recorded in this working-tree update;
+- [x] final documentation closeout prepared and validated;
+- [x] Windows `main`, `origin/main`, and PI3 release-source synchronization established for the validated implementation baseline;
+- [x] documentation-only working-tree scope confirmed for final review.
 
-The overall Repository and Deployment Hygiene checkpoint remains open until the production Evidence Report proves every closure criterion. No production removal is claimed by the repository-side implementation.
+The overall Repository and Deployment Hygiene checkpoint is complete. Runtime migration, production validation, supported upgrade and rollback proof, quarantine removal, evidence documentation, and repository-scope validation are complete.
 
 **Remaining Repository and Deployment Hygiene checkpoints:**
 
-1. PI3 release-source audit, performed manually by the user.
-2. PI3 runtime audit, performed manually by the user.
-3. Repository and Deployment Hygiene closeout.
+None. Repository and Deployment Hygiene is complete.
 
 Repository and runtime artifacts use these disposition categories:
 
@@ -689,7 +689,7 @@ Repository and runtime artifacts use these disposition categories:
 | GENERATED / TRANSIENT | `__pycache__/`, `*.pyc`, `.pytest_cache/`, and similar generated caches. Cleanup candidates only after validation. |
 | SOURCE-ONLY | `README.md`, `ROADMAP.md`, `DECISIONS.md`, `CHANGELOG.md`, and `docs/` remain in authoritative source and are excluded from production deployment. |
 | SOURCE / RELEASE VALIDATION | `tests/` is used by `release/validate.sh` in the source or release-validation context and is excluded from production deployment. |
-| HISTORICAL RUNTIME METADATA | The production runtime's `.git/` directory is proven historical residue and is approved for the controlled quarantine, validation, and retirement procedure in the current checkpoint. It is not source, runtime state, or a recovery dependency. |
+| RETIRED HISTORICAL RUNTIME METADATA | The production runtime's former `.git/` directory was proven historical residue, quarantined, validated, and removed after approval. It was not source, runtime state, or a recovery dependency. |
 
 ### Dependency Review Findings
 
@@ -869,7 +869,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, and Repository Governance Reconciliation sub-checkpoints, Phase 7A.9 Passive Inventory Correctness Validation, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, and Collector Canonical Ownership are complete. Runtime Git Metadata Retirement repository implementation is complete, ADR-0013 is resolved, and the production runtime is formally a non-Git deployment target. The overall Repository and Deployment Hygiene checkpoint remains in progress pending manual PI3 provenance capture, quarantine, production validation, upgrade and rollback proof, approved quarantine removal, the production Evidence Report, and final closeout. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active, including the remaining Pi-hole DHCP lease ingestion work.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Phase 7A remains active. Pi-hole DHCP Lease Ingestion is the current unresolved corrective task, and Active Discovery remains postponed.
 
 ## Current Branch
 
