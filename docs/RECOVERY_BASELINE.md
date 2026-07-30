@@ -4,6 +4,8 @@
 
 This file records the authoritative integrity and approval references for the completed Phase 7A.8 recovery validation chain.
 
+For current runtime contents and safe operational validation, see [SYSTEM_REFERENCE.md](SYSTEM_REFERENCE.md) and [OPERATIONS.md](OPERATIONS.md). For the supported source-to-runtime workflow and rollback boundary, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## Governance
 
 `docs/HIOC_MASTER_PLAN.md` remains authoritative. Phase 7A Passive Living Inventory remains active. Active Discovery remains postponed and disabled. This completed recovery milestone does not replace the Master Plan.

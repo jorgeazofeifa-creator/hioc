@@ -33,7 +33,9 @@ It owns:
 - next task
 - working agreement
 
-It should not contain detailed architecture, MQTT documentation, Home Assistant documentation, data model details, installation instructions, release procedures, design system rules, or dashboard implementation details. Those belong in the focused documents linked from [../README.md](../README.md).
+It should not contain detailed architecture, runtime procedures, network configuration, MQTT documentation, Home Assistant documentation, data model details, installation instructions, release procedures, design system rules, or dashboard implementation details. Those belong in the focused documents linked from [../README.md](../README.md).
+
+The Master Plan explains how HIOC is built and evolves. [SYSTEM_REFERENCE.md](SYSTEM_REFERENCE.md) explains what HIOC is today. [OPERATIONS.md](OPERATIONS.md) is the authoritative runtime reference, [NETWORK_FOUNDATION.md](NETWORK_FOUNDATION.md) owns network dependencies, [DEPLOYMENT.md](DEPLOYMENT.md) owns deployment boundaries, and [INCIDENT_MODEL.md](INCIDENT_MODEL.md) owns incident semantics.
 
 Update this document only when project direction, roadmap, phase, objective, next task, or implementation status changes.
 
@@ -536,6 +538,10 @@ Production DHCP validation demonstrated that one MAC may have multiple neighbor-
 
 This checkpoint must investigate and define deterministic canonical-address precedence using source authority, observation recency, neighbor state, lease validity, and existing identity invariants. Any correction must preserve stable MAC-backed identity, prevent duplicate canonical identities, and must not allow DHCP assignment evidence alone to fabricate liveness. It must include regression validation, supported production validation, and a Production Evidence Report. This work is distinct from the completed Collector Canonical Ownership and Pi-hole DHCP Lease Ingestion checkpoints.
 
+#### July 29 DHCP Pool Exhaustion Incident - RESOLVED
+
+The production address-allocation failure was caused by exhaustion of the former `192.168.100.50 - 192.168.100.150` dynamic pool. The operator expanded it to `192.168.100.50 - 192.168.100.250`; a previously failing client immediately obtained a lease; critical static networking and infrastructure services were validated; and HIOC deployment validation passed. The permanent evidence report is [INCIDENT_2026-07-29_DHCP_POOL_EXHAUSTION.md](INCIDENT_2026-07-29_DHCP_POOL_EXHAUSTION.md). This resolved incident motivates a future DHCP capacity-monitoring phase but does not alter the current Phase 7A corrective sequence.
+
 #### Remaining Phase 7A Corrective Sequence
 
 1. Repository and Deployment Hygiene - **COMPLETE**.
@@ -568,6 +574,38 @@ Goals include:
 - Safe network probing
 - No continuous scanning
 - No aggressive port scanning
+
+---
+
+### Future Phase - DHCP Service Health & Capacity Monitoring
+
+Status: **PLANNED; NOT IMPLEMENTED**
+
+Originating production evidence: [July 29, 2026 DHCP Pool Exhaustion Incident](INCIDENT_2026-07-29_DHCP_POOL_EXHAUSTION.md). This phase does not supersede Phase 7A, its corrective checkpoints, or postponed Phase 7B.
+
+#### Pool Utilization
+
+Plan monitoring for configured pool size, active leases, free addresses, utilization percentage, configurable warning and critical thresholds, exhaustion, and trend over time.
+
+#### Lease and Transaction Failures
+
+Plan detection of repeated unsuccessful client acquisition attempts without assuming every failure is capacity-related. Future design must evaluate DHCP `DISCOVER`, `OFFER`, `REQUEST`, `ACK`, `NAK`, declines, timeouts, repeated attempts, and incomplete exchanges. Packet capture may be evaluated as a design option but is not selected by this plan.
+
+#### Selective Allocation Failure
+
+Detect the condition where the DHCP daemon is active and some clients retain connectivity while new or renewing clients cannot obtain usable leases. Daemon-up status alone is insufficient.
+
+#### Planned Health and Incident Semantics
+
+Interpret service evidence through existing project conventions for healthy, warning, degraded, critical, and unavailable states. Plan stable incident lifecycle behavior for high and critical utilization, exhaustion, unanswered requests, missing OFFER or ACK behavior, abnormal lease churn, transaction failures, selective degradation, recovery, and resolution. Do not implement or conflate the deferred incident-history validator rewrite.
+
+#### Planned Dashboard Visibility
+
+Plan current DHCP health, utilization, free capacity, trend, active warning or incident, recent transaction failures, affected-client count where measurable, and last successful DHCP activity. No HIOC dashboard endpoint or port is established by this phase.
+
+#### Future Production Validation
+
+Validation must cover normal capacity, warning threshold, critical threshold, full pool, successful lease recovery after capacity restoration, selective client failure, daemon healthy while service is degraded, incident creation and resolution, dashboard accuracy, and no false offline state for retained leases. Implementation, tests, deployment, production Evidence Report, and documentation closeout are all required before this phase may be complete.
 
 ---
 
@@ -920,6 +958,28 @@ Every completed phase ends with:
 
 `docs/HIOC_MASTER_PLAN.md` remains the authoritative project source of truth.
 
+## Operations Acceptance Standard
+
+A release or completed checkpoint is not operationally complete until committed repository documentation answers, without requiring SSH discovery:
+
+- What exists?
+- Why does it exist?
+- How does it run?
+- How is it validated?
+- How is it recovered?
+
+Each completion review must verify:
+
+- All new runtime components and their purposes are listed.
+- Execution mechanisms, schedules, triggers, and locks are documented.
+- Outputs, logs, status artifacts, and freshness expectations are documented.
+- Validation and safe recovery procedures are documented.
+- Relevant network ports and dependencies are documented without unsupported guesses.
+- Current-state documentation and cross-references are synchronized.
+- No critical operational fact exists only in chat history or only on the production host.
+
+If production verification is required, it must be captured in an Evidence Report and committed back to the repository. This standard adds to, and does not weaken, the permanent workflow to validate, update the Master Plan and affected documentation, commit code and documentation together, push `main`, and verify a clean synchronized working tree.
+
 ---
 
 # Working Agreement
@@ -940,7 +1000,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. Phase 7A remains active, Canonical Address Selection Hardening preserves that warning as a separate future corrective checkpoint, and Active Discovery remains postponed.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. The July 29 DHCP pool-exhaustion incident is resolved, HIOC deployment validation passed, and the documentation architecture now assigns current-state, runtime, network, deployment, incident, and recovery authority to focused documents. DHCP Service Health & Capacity Monitoring is planned and not implemented. Phase 7A remains active, Canonical Address Selection Hardening preserves its separate warning as a future corrective checkpoint, and Active Discovery remains postponed.
 
 ## Current Branch
 
@@ -969,6 +1029,7 @@ Phase 7A - Passive Living Inventory
 | Initial Living Inventory | ✅ Complete |
 | Phase 7A - Passive Living Inventory | 🚧 In Progress |
 | Phase 7B - Safe Active Discovery | ⏳ Planned |
+| DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
 

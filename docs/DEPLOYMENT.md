@@ -1,0 +1,47 @@
+# HIOC Deployment
+
+## Document Ownership
+
+This document owns the repository-to-production workflow, source and runtime boundaries, operator responsibilities, synchronization expectations, and production acceptance boundary. Detailed commands remain in [INSTALL.md](INSTALL.md) and packaging mechanics remain in [RELEASE.md](RELEASE.md).
+
+## Deployment Boundaries
+
+| Boundary | Role |
+| --- | --- |
+| Windows development repository | Authoritative development workspace; changes are validated, committed, and pushed here. |
+| GitHub `main` | Shared authoritative Git history. |
+| `/home/jazofv1/hioc-release-source` | PI3 Git checkout used for release validation and supported deployment execution. |
+| `/home/jazofv1/hioc` | Non-Git production runtime containing deployed files and persistent runtime data. |
+
+The supported flow is:
+
+```text
+Windows repository -> GitHub main -> PI3 release source -> validated upgrade -> non-Git runtime
+```
+
+Codex operates only in the Windows repository. The operator performs PI3 synchronization, deployment, rollback, and production evidence capture. Direct Git operations inside `/home/jazofv1/hioc` are unsupported.
+
+## Supported Workflow
+
+1. Validate repository changes.
+2. Update the Master Plan and affected focused documentation.
+3. Commit related code and documentation together.
+4. Push `main` and verify a clean Windows working tree.
+5. Operator verifies a clean, non-divergent PI3 release-source checkout and fast-forwards it to `origin/main`.
+6. Operator runs `release/validate.sh` and the supported `release/upgrade.sh` when runtime files changed.
+7. Operator runs `/home/jazofv1/hioc/pi4/validate_pi4.sh` and any checkpoint-specific validation.
+8. Operator captures production evidence and commits required closeout documentation.
+
+Documentation-only source changes are excluded from the deployed runtime by `pi4/install_pi4.sh`. Whether to run a production upgrade for such a commit must follow the operator handoff and the established release workflow; do not copy documentation ad hoc into the non-Git runtime.
+
+## Preservation and Recovery
+
+Upgrade preserves `config`, `state`, `history`, `logs`, and `backups`. Supported rollback uses `release/rollback.sh` and excludes `.git`. Source recovery comes from GitHub, the release-source checkout, or an approved release package. Runtime recovery comes from release backups and preserved persistent data. See [RECOVERY_BASELINE.md](RECOVERY_BASELINE.md).
+
+## Production Validation Expectations
+
+Production acceptance uses the deployed validator, cron inspection, fresh state, logs, generated artifacts, and checkpoint-specific evidence. A successful repository test does not prove production behavior. A production observation does not prove an internal implementation invariant unless the artifact exposes it.
+
+## Operations Acceptance Standard
+
+A release is not complete until repository documentation answers what exists, why it exists, how it runs, how it is validated, and how it is recovered without requiring SSH discovery. The actionable checklist is authoritative in [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md#operations-acceptance-standard). Any required production verification must be captured in an Evidence Report and committed back to the repository.

@@ -6,7 +6,7 @@ HIOC releases are built from the repository into a versioned package.
 
 This document owns release procedure, branch strategy, tagging expectations, packaging, versioning workflow, and release checklists.
 
-It should not contain roadmap or implementation status. For install and upgrade commands from an operator perspective, see [INSTALL.md](INSTALL.md). For the current development phase, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
+It should not contain roadmap or implementation status. For install and upgrade commands from an operator perspective, see [INSTALL.md](INSTALL.md). For repository-to-production boundaries, see [DEPLOYMENT.md](DEPLOYMENT.md). For the current development phase, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
 
 ## Release Execution Context
 

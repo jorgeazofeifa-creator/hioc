@@ -73,10 +73,16 @@ The Master Plan governs project direction. It does not replace the technical doc
 | --- | --- |
 | What is HIOC? | [README.md](README.md) |
 | Where is the project going? | [docs/HIOC_MASTER_PLAN.md](docs/HIOC_MASTER_PLAN.md) |
+| What is deployed today? | [docs/SYSTEM_REFERENCE.md](docs/SYSTEM_REFERENCE.md) |
 | What is the project context? | [docs/PROJECT.md](docs/PROJECT.md) |
 | How is it built? | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| How does it run and how is it validated or recovered? | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
+| What network infrastructure does it depend on? | [docs/NETWORK_FOUNDATION.md](docs/NETWORK_FOUNDATION.md) |
+| How does source become a production deployment? | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
+| What do incident states mean? | [docs/INCIDENT_MODEL.md](docs/INCIDENT_MODEL.md) |
+| What is the approved recovery baseline? | [docs/RECOVERY_BASELINE.md](docs/RECOVERY_BASELINE.md) |
 | How will devices evolve into operator-managed assets? | [docs/ASSET_MODEL.md](docs/ASSET_MODEL.md) |
-| How does the runtime work? | [docs/CORE.md](docs/CORE.md) |
+| How do shared runtime libraries work? | [docs/CORE.md](docs/CORE.md) |
 | How does MQTT work? | [docs/MQTT.md](docs/MQTT.md) |
 | How does Home Assistant integrate? | [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |
 | How does the dashboard consume operational truth and preserve its layout? | [docs/DASHBOARD_ARCHITECTURE.md](docs/DASHBOARD_ARCHITECTURE.md) |
@@ -92,6 +98,9 @@ The Master Plan governs project direction. It does not replace the technical doc
 ## Documentation Governance
 
 - [docs/HIOC_MASTER_PLAN.md](docs/HIOC_MASTER_PLAN.md) owns project direction, implementation phases, current objective, next task, and working agreements.
+- [docs/SYSTEM_REFERENCE.md](docs/SYSTEM_REFERENCE.md) is the authoritative current-state reference: the Master Plan explains how HIOC evolves, while the System Reference Manual explains what HIOC is today.
+- [docs/OPERATIONS.md](docs/OPERATIONS.md) owns current runtime operation, schedules, outputs, validation, and recovery procedures.
+- [docs/NETWORK_FOUNDATION.md](docs/NETWORK_FOUNDATION.md), [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), and [docs/INCIDENT_MODEL.md](docs/INCIDENT_MODEL.md) own their focused operational contracts.
 - Technical details belong in the focused technical documents linked above.
 - [ROADMAP.md](ROADMAP.md) is a short public summary and points to the Master Plan for the detailed implementation roadmap.
 - [DECISIONS.md](DECISIONS.md) explains why long-term architectural decisions were made.

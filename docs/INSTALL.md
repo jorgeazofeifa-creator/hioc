@@ -2,7 +2,7 @@
 
 ## Document Ownership
 
-This document owns installation, configuration, dependencies, deployment, upgrade, validation, and rollback instructions.
+This document owns operator installation, configuration, upgrade, validation, and rollback commands. [DEPLOYMENT.md](DEPLOYMENT.md) owns repository-to-production boundaries and operator responsibility; [OPERATIONS.md](OPERATIONS.md) owns runtime operation and health validation.
 
 It should not contain roadmap, architecture rationale, release history, or dashboard design. For release packaging workflow, see [RELEASE.md](RELEASE.md). For project direction, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
 

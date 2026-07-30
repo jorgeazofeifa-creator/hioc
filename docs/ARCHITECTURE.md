@@ -15,6 +15,11 @@ Related technical documents:
 - MQTT contract: [MQTT.md](MQTT.md)
 - Home Assistant integration: [HOME_ASSISTANT.md](HOME_ASSISTANT.md)
 - Asset model and operator concepts: [ASSET_MODEL.md](ASSET_MODEL.md)
+- Current deployed system: [SYSTEM_REFERENCE.md](SYSTEM_REFERENCE.md)
+- Runtime operations: [OPERATIONS.md](OPERATIONS.md)
+- Network foundation: [NETWORK_FOUNDATION.md](NETWORK_FOUNDATION.md)
+- Incident semantics: [INCIDENT_MODEL.md](INCIDENT_MODEL.md)
+- Deployment boundaries: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## Runtime Flow
 
@@ -41,6 +46,12 @@ Pi4 historical sampling
 ## HIOC Core
 
 HIOC Core provides shared runtime services for configuration, atomic JSON state, retained MQTT publishing, structured logging, schema validation, internal events, driver execution, and capability inference. New subsystems should use Core instead of creating local config, MQTT, state, or logging helpers.
+
+## Runtime and Service-Health Principles
+
+HIOC engines are conceptually short-lived scheduled processors, not persistent HIOC services. Production uses the user crontab and nonblocking `flock` locks. Operational health therefore depends on scheduler availability, fresh state, successful output, logs, generated artifacts, and dependencies rather than persistent process presence. Exact schedules and procedures belong in [OPERATIONS.md](OPERATIONS.md).
+
+Process health and service-delivery health are distinct. A daemon can run while its service is degraded by exhausted capacity or failed dependencies. Capacity is therefore part of service health. The July 29, 2026 DHCP pool exhaustion incident is the confirmed production example; monitoring for this condition remains planned rather than implemented.
 
 ## Correlation Engine v2
 
