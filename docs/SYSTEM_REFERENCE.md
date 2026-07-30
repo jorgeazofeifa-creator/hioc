@@ -43,7 +43,7 @@ MQTT relationships are repository-supported, but broker host, authentication, an
 | `/home/jazofv1/hioc/logs` | Runtime logs | Known and verified |
 | `/home/jazofv1/hioc/backups` | Installer and release-upgrade backups | Repository-derived |
 | `/home/jazofv1/pi4-tools` | External Pi4 toolkit | Known and verified |
-| `/home/jazofv1/pi4-tools/scripts` | External scheduled toolkit scripts | Known and verified |
+| `/home/jazofv1/pi4-tools/scripts` | Mixed boundary: governed HIOC network probe plus remaining external scheduled toolkit scripts | Network probe repository source established; remaining intake pending |
 
 The source repository additionally contains `pi4`, `homeassistant`, `release`, `docs`, and `tests`. Runtime-generated state and logs do not belong in Git.
 

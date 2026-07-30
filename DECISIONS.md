@@ -254,3 +254,16 @@ Implementation boundary: The next checkpoint may change Pi-hole lease reading an
 Non-goals: Home Assistant, mDNS, SSDP, MQTT, or other identity providers; Active Discovery; dynamic plugins; dependency injection; asynchronous source events; generalized asset management; retention or archive implementation; incident-history validation; dependency graphs; topology; backup and disaster recovery; unrelated collectors; and dashboard work are outside this decision.
 
 Validation required: Focused tests must cover source parsing, malformed and empty inputs, multiple leases, deterministic ordering, matching strong identity, unambiguous weak promotion, conflicting MAC and IP reuse, hostname and operator-name precedence, blank hostname, source unavailability, expiry without liveness, no `last_seen` refresh, and source attribution. Full regression, release validation, supported deployment, production inventory validation, and documentation closeout remain required before the DHCP checkpoint can complete.
+
+
+## ADR-0016: Govern the HIOC Network Probe in the Authoritative Repository
+
+Date: 2026-07-29
+
+Status: Accepted for repository scope. Production deployment is pending.
+
+Decision: The checksum-verified production baseline for `hioc-network-probe.sh` is imported at `pi4-tools/scripts/hioc-network-probe.sh`. This repository path is authoritative for future changes, while the deployed path remains `/home/jazofv1/pi4-tools/scripts/hioc-network-probe.sh`. The runtime `toolkit.conf` remains untracked configuration and must never be committed with credentials.
+
+Context: The production script had no enclosing Git repository. A first correction stopped rather than reconstruct undisclosed behavior from fragments. The operator then captured the complete script in `hioc-network-probe-source-intake-20260729-220644.tar.gz`; the archive and script hashes were verified before review.
+
+Consequences: The repository copy becomes the approved source after review, commit, and push, but production remains unvalidated until controlled deployment and checksum comparison. Future changes must pass through Git and the deterministic deployment helper. Emergency production edits must be reconciled immediately through documented source intake. Only this script was captured; other `pi4-tools` components remain external or unmanaged pending complete checksum-verified intake. Direct unrecorded production editing is not an accepted workflow.

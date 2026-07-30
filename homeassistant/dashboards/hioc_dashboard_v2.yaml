@@ -455,37 +455,38 @@ views:
                         ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_dns_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
                         h1 { font-size: 21px; color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
                   - type: markdown
-                    title: MQTT
+                    title: MQTT Operational Health
                     content: >-
-                      {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}
-                      {% if trend == 'rising' %}
-                      # Watch
-
-                      Meaning: MQTT publish timing trend is increasing.
-
-                      Action: open Diagnostics and check telemetry path.
-                      {% elif trend in ['stable', 'falling'] %}
+                      {% set raw = states('sensor.pi4_network_probe_mqtt_last_publish_success') | trim %}
+                      {% set parsed = strptime(raw, '%Y-%m-%d %H:%M:%S', none) if raw not in ['', 'unknown', 'unavailable'] else none %}
+                      {% set age = (as_timestamp(now()) - as_timestamp(parsed)) if parsed else none %}
+                      {% if age is not none and age >= -120 and age <= 720 %}
                       # Healthy
 
-                      Meaning: MQTT trend is not rising.
+                      Last successful MQTT publication is fresh (12-minute threshold).
 
-                      Action: no action required.
+                      {% elif age is not none and age > 720 %}
+                      # Stale
+
+                      Last successful MQTT publication is {{ (age / 60) | round(1) }} minutes old.
+
                       {% else %}
                       # Unknown
 
-                      Meaning: MQTT forecast state is unavailable.
+                      Last successful MQTT publication is unavailable, invalid, or implausibly in the future.
 
-                      Action: review Diagnostics evidence.
                       {% endif %}
 
-                      Click: Diagnostics.
+                      Historical failure count: {{ states('sensor.pi4_network_probe_mqtt_publish_failures') }}. It does not determine current health.
+
+                      Publish duration: {{ states('sensor.pi4_network_probe_mqtt_publish_duration') }} ms.
                     tap_action:
                       action: navigate
                       navigation_path: /lovelace/hioc-v2-diagnostics
                     card_mod:
                       style: |
-                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
-                        h1 { font-size: 21px; color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
+                        ha-card { min-height: 155px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set raw = states('sensor.pi4_network_probe_mqtt_last_publish_success') | trim %}{% set parsed = strptime(raw, '%Y-%m-%d %H:%M:%S', none) if raw not in ['', 'unknown', 'unavailable'] else none %}{% set age = (as_timestamp(now()) - as_timestamp(parsed)) if parsed else none %}{% if age is not none and age >= -120 and age <= 720 %}#22c55e{% elif age is not none and age > 720 %}#f59e0b{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 10px 26px rgba(0,0,0,.24); }
+                        h1 { font-size: 21px; color: #dcecff; }
                   - type: markdown
                     title: Pi4
                     content: >-
@@ -1089,28 +1090,31 @@ views:
                 h1 { color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
 
           - type: markdown
-            title: MQTT
+            title: MQTT Operational Health
             content: >-
-              {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}
-              {% if trend == 'rising' %}
-              # Watch
-
-              MQTT publish trend is rising.
-
-              Next step: open Diagnostics.
-              {% elif trend in ['stable', 'falling'] %}
+              {% set raw = states('sensor.pi4_network_probe_mqtt_last_publish_success') | trim %}
+              {% set parsed = strptime(raw, '%Y-%m-%d %H:%M:%S', none) if raw not in ['', 'unknown', 'unavailable'] else none %}
+              {% set age = (as_timestamp(now()) - as_timestamp(parsed)) if parsed else none %}
+              {% if age is not none and age >= -120 and age <= 720 %}
               # Healthy
 
-              MQTT trend is not rising.
+              Last successful MQTT publication is fresh (12-minute threshold).
 
-              Next step: no action required.
+              {% elif age is not none and age > 720 %}
+              # Stale
+
+              Last successful MQTT publication is {{ (age / 60) | round(1) }} minutes old.
+
               {% else %}
               # Unknown
 
-              MQTT forecast state is unavailable or unrecognized.
+              Last successful MQTT publication is unavailable, invalid, or implausibly in the future.
 
-              Next step: review Diagnostics evidence.
               {% endif %}
+
+              Historical failure count: {{ states('sensor.pi4_network_probe_mqtt_publish_failures') }}. It does not determine current health.
+
+              Publish duration: {{ states('sensor.pi4_network_probe_mqtt_publish_duration') }} ms.
             tap_action:
               action: navigate
               navigation_path: /lovelace/hioc-v2-diagnostics
@@ -1119,8 +1123,8 @@ views:
               rows: auto
             card_mod:
               style: |
-                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}{% if trend == 'rising' %}#f59e0b{% elif trend in ['stable', 'falling'] %}#22c55e{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
-                h1 { color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; font-size: 22px; }
+                ha-card { min-height: 180px; border-radius: 14px; border: 1px solid rgba(90,140,185,.24); border-left: 5px solid {% set raw = states('sensor.pi4_network_probe_mqtt_last_publish_success') | trim %}{% set parsed = strptime(raw, '%Y-%m-%d %H:%M:%S', none) if raw not in ['', 'unknown', 'unavailable'] else none %}{% set age = (as_timestamp(now()) - as_timestamp(parsed)) if parsed else none %}{% if age is not none and age >= -120 and age <= 720 %}#22c55e{% elif age is not none and age > 720 %}#f59e0b{% else %}#64748b{% endif %}; background: rgba(12,27,43,.96); color: #dcecff; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+                h1 { color: #dcecff; font-size: 22px; }
 
           - type: markdown
             title: Pi4
@@ -2038,7 +2042,7 @@ views:
                 h1 { color: {% if trend == 'rising' %}#fcd34d{% elif trend in ['stable', 'falling'] %}#86efac{% else %}#cbd5e1{% endif %}; }
 
           - type: markdown
-            title: MQTT Path
+            title: MQTT Forecast Trend
             content: >-
               {% set trend = states('sensor.hioc_forecast_mqtt_trend') | lower | trim %}
               {% if trend == 'rising' %}
@@ -2050,9 +2054,9 @@ views:
 
               Recommended action: open Diagnostics and check engine state.
               {% elif trend in ['stable', 'falling'] %}
-              # Healthy
+              # Favorable
 
-              MQTT forecast trend is not rising.
+              MQTT forecast trend is stable or falling.
 
               Recommended action: no action required.
               {% else %}

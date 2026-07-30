@@ -31,7 +31,7 @@ The confirmed crontab lines do not redirect stdout or stderr. Repository-managed
 
 ## External Pi4 Toolkit Jobs
 
-The following six scripts are confirmed production components under `/home/jazofv1/pi4-tools`, but their implementations are outside this repository. Their names, paths, schedules, triggers, and locks are verified; detailed output, log, and recovery contracts require production verification.
+The following six scripts are confirmed production components under `/home/jazofv1/pi4-tools`. The network probe is now governed at `pi4-tools/scripts/hioc-network-probe.sh`; the other five implementations remain outside this repository pending complete source intake. Their names, paths, schedules, triggers, and locks are verified; detailed output, log, and recovery contracts require production verification.
 
 ### Daily Maintenance
 

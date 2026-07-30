@@ -105,3 +105,5 @@ Initial real HIOC core foundation.
 
 - This release is intentionally compatible with the existing `~/pi4-tools` installation.
 - It does not replace the existing `hioc-network-probe.sh`.
+
+- Phase 7A repository governance now owns the checksum-verified HIOC network probe source, derives PI5 probing and inventory addressing from `HOME_ASSISTANT_IP`, provides guarded deterministic deployment, and separates Dashboard V2 MQTT operational freshness from forecast trend. PI3 and PI5 deployment validation remains pending.

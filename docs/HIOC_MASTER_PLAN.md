@@ -1073,3 +1073,30 @@ Routine implementation work should update only:
 - Next Planned Task
 
 Changes to the project's philosophy, architecture, or roadmap should be made intentionally and reflected in the Decision Log.
+
+
+## Phase 7A Network Probe Source Governance and MQTT Health Hardening
+
+Status: **REPOSITORY IMPLEMENTATION PASS; PRODUCTION PENDING**.
+
+This bounded corrective checkpoint responds to the July 29, 2026 PI5 address change from `192.168.100.152` to `192.168.100.251`. The operator corrected `HOME_ASSISTANT_IP`, `MQTT_HOST`, and the webhook endpoint in PI3 `toolkit.conf`, and host and service-port checks passed. The network probe nevertheless retained two old executable literals, so MQTT publication and PI5 probing used competing endpoint sources.
+
+The production probe was absent from every Git repository. The first implementation attempt stopped because rebuilding production behavior from fragments was unsafe. The operator captured the complete script and evidence. The intake archive SHA-256 `74e7e251bd0848a0b87d2f314fd2d0958bd5c9730a8b6ff37fff449c1052bf6d` and script SHA-256 `edf6ad456292a0fb9441f09e7eb59fa02831cee46aa7071dcaa7b8d3eadc39a1` were verified before import.
+
+The authoritative source is now `pi4-tools/scripts/hioc-network-probe.sh`; the production path remains `/home/jazofv1/pi4-tools/scripts/hioc-network-probe.sh`. The probe derives PI5 reachability and inventory addressing only from required `HOME_ASSISTANT_IP`. `toolkit.conf` remains runtime configuration and is not committed. `pi4-tools/deploy-network-probe.sh` validates syntax, creates a timestamped backup, installs atomically with owner/group `jazofv1` and mode `0755`, and verifies source/deployed hashes without touching configuration, logs, state, or prior backups.
+
+Dashboard V2 now separates MQTT Operational Health from MQTT Forecast Trend. Operational health uses the parseable last-success timestamp with a 12-minute freshness threshold and two-minute future-clock tolerance. Unavailable, unknown, empty, invalid, stale, or implausibly future data cannot be green. The cumulative failure counter remains historical evidence and is not reset or treated as permanent current degradation. Forecast rising is Watch; stable or falling is Favorable and cannot override operational health.
+
+### Infrastructure-change governance
+
+Any IP address, hostname, DNS name, broker, Home Assistant endpoint, webhook, service port, or comparable dependency change requires repository and production impact review. Review active configuration, executable scripts, cron/timers, systemd, publishers/subscribers, Home Assistant integrations, dashboards, inventory, incidents, health models, deployment, backup/restore, tests, runbooks, and evidence classification where applicable. Historical evidence is not rewritten. Current documentation reflects current infrastructure. Executable code uses an authoritative configuration value instead of duplicated literals whenever one exists.
+
+Validation order is: configuration values; host reachability; service-port reachability; controlled publisher execution; subscriber receipt; last-success advancement; failure-counter behavior; freshness; dashboard operational health; forecast separation; inventory address; incident behavior; runtime checksum; repository cleanliness.
+
+### Future complete pi4-tools source-governance checkpoint
+
+Only `hioc-network-probe.sh` was captured. A future checkpoint must perform complete checksum-verified intake of all active scripts, secret-free configuration templates, cron ownership, state/log/generated/backup boundaries, deployment and restore procedures, tests, documentation, and production checksum validation. No uncaptured script is fabricated or claimed as governed here.
+
+### Evidence Report
+
+Repository evidence is recorded in [NETWORK_PROBE_GOVERNANCE_EVIDENCE.md](NETWORK_PROBE_GOVERNANCE_EVIDENCE.md). Repository implementation may pass independently; the overall checkpoint remains open until controlled PI3 and PI5 deployment evidence is returned and documented.
