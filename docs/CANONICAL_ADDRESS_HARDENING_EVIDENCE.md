@@ -203,10 +203,44 @@ canonical-selector, and inventory suites passed 147 tests. The broader
 non-Bash repository suite passed 229 tests with nine environment-dependent
 skips.
 
+### Second governed validator run
+
+The second run again proved comparator artifact identity and all six actual
+Boolean invariants: artifact identity, unique MAC identity, inventory-count
+consistency, health/liveness field presence, stable identity fields, and
+bounded unrelated canonical changes. Device count remained 151 and unrelated
+canonical-IP changes were zero. No candidate qualified: PI5 had DHCP IPv4
+`.152`, a current `REACHABLE` IPv4 at `.251`, and only a link-local IPv6
+`STALE` neighbor.
+
+The validator nevertheless returned `FAIL` because it evaluated every value in
+the invariant JSON with generic truthiness. Diagnostic metadata
+`_unrelated_canonical_change_count: 0` was therefore incorrectly added to
+`failed_invariants`. Rollback was not performed. This is a validator
+input-contract defect; the evidence implies
+`NO_QUALIFYING_CANDIDATE` with `rollback_recommended=false`.
+
+The corrected contract is closed and typed. Exactly six required invariant
+names must be present and each must be a JSON Boolean. Required `false` values
+are genuine failed invariants. Missing or non-Boolean required values and
+unexpected non-underscore keys are explicit input errors and produce `FAIL`.
+Underscore-prefixed keys are preserved as diagnostic metadata and never
+participate in Boolean evaluation; zero, positive counts, null, and strings are
+valid metadata values.
+
+Sixteen focused validator tests cover valid `PASS`,
+`NO_QUALIFYING_CANDIDATE`, and `FAIL` paths; zero, positive, null, and string
+diagnostics; required false values; missing fields; integer `0` and `1` type
+errors; and unexpected public keys. The combined validator, canonical-address,
+and inventory suites passed 153 tests. The broader non-Bash regression suite
+passed 235 tests with nine environment-dependent skips.
+
 ### Retired `.152` DHCP finding
 
-The active DHCP evidence for retired PI5 address `192.168.100.152` remains
-unresolved. Repository configuration selects
+The retired PI5 address `192.168.100.152` was confirmed as an unexpired old
+lease, with no renewal observed during the bounded 60-second production check.
+Its ultimate classification and any cleanup remain unresolved. Repository
+configuration selects
 `HIOC_INVENTORY_DHCP_LEASE_FILES`, defaulting to
 `/etc/pihole/dhcp.leases`; explicit configuration can name multiple
 comma-separated dnsmasq-format files. Repository evidence cannot determine
@@ -229,9 +263,8 @@ Pi-hole emits static reservations into the runtime lease file is production
 configuration evidence, not proven by this repository.
 
 **IN PROGRESS.** The comparator is deployed, but production validation remains
-open. Revised operator validation and the read-only `.152` DHCP investigation
-are required. No success is declared and rollback is not recommended from the
-invalid candidate result.
+open. The corrected strict validator must be rerun on PI3. No success is
+declared and rollback is not recommended from either validator defect.
 
 ## Final Result
 

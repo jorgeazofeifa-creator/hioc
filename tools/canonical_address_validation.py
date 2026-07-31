@@ -10,6 +10,14 @@ from pathlib import Path
 
 HIGHER_RANKED_SOURCES = {"local_host", "gateway"}
 HIGHER_RANKED_NEIGHBOR_STATES = {"REACHABLE", "PERMANENT"}
+REQUIRED_BOOLEAN_INVARIANTS = {
+    "artifact_identity",
+    "bounded_unrelated_canonical_changes",
+    "health_and_liveness_fields_present",
+    "inventory_count_consistent",
+    "stable_identity_fields_present",
+    "unique_mac_identity",
+}
 
 
 def canonical_ipv4(value):
@@ -125,6 +133,31 @@ def find_qualifying_candidates(inventory, leases, neighbors, now_epoch=None, his
     return candidates, exclusions
 
 
+def validate_invariants(invariants):
+    if not isinstance(invariants, dict):
+        return [], ["invariants must be a JSON object"], {}
+    failed = []
+    errors = []
+    metadata = {}
+    for name in sorted(REQUIRED_BOOLEAN_INVARIANTS):
+        if name not in invariants:
+            errors.append(f"missing required Boolean invariant: {name}")
+            continue
+        value = invariants[name]
+        if type(value) is not bool:
+            errors.append(f"required invariant must be Boolean: {name}")
+        elif not value:
+            failed.append(name)
+    for name, value in invariants.items():
+        if name in REQUIRED_BOOLEAN_INVARIANTS:
+            continue
+        if name.startswith("_"):
+            metadata[name] = value
+        else:
+            errors.append(f"unexpected non-diagnostic invariant key: {name}")
+    return failed, sorted(errors), metadata
+
+
 def evaluate(inventory, leases, neighbors, invariants=None, now_epoch=None, historical_inventory=None):
     candidates, exclusions = find_qualifying_candidates(
         inventory,
@@ -133,8 +166,8 @@ def evaluate(inventory, leases, neighbors, invariants=None, now_epoch=None, hist
         now_epoch=now_epoch,
         historical_inventory=historical_inventory,
     )
-    failed_invariants = sorted(name for name, value in (invariants or {}).items() if not value)
-    if failed_invariants:
+    failed_invariants, invariant_input_errors, diagnostic_metadata = validate_invariants(invariants)
+    if failed_invariants or invariant_input_errors:
         result = "FAIL"
     elif not candidates:
         result = "NO_QUALIFYING_CANDIDATE"
@@ -147,6 +180,8 @@ def evaluate(inventory, leases, neighbors, invariants=None, now_epoch=None, hist
         "qualifying_candidates": candidates,
         "excluded_candidates": exclusions,
         "failed_invariants": failed_invariants,
+        "invariant_input_errors": invariant_input_errors,
+        "diagnostic_metadata": diagnostic_metadata,
         "rollback_recommended": result == "FAIL",
     }
 

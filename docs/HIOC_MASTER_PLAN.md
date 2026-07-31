@@ -570,6 +570,23 @@ its source, expiry, reservation/configuration status, interface ownership, and
 recent DHCP activity before any DHCP cleanup or parser follow-up is proposed.
 The comparator remains deployed and the checkpoint remains **IN PROGRESS**.
 
+A second production validator execution passed comparator identity and all six
+real Boolean invariants, with 151 devices before and after and zero unrelated
+canonical-address changes. No candidate qualified because PI5 had current
+`REACHABLE` IPv4 `.251`, DHCP IPv4 `.152`, and only an IPv6 link-local `STALE`
+neighbor. Generic truthiness incorrectly treated diagnostic metadata value
+`_unrelated_canonical_change_count: 0` as a failed invariant and returned
+`FAIL`. Rollback was not performed. The corrected validator requires exactly
+the six documented Boolean invariants, preserves underscore-prefixed metadata
+without evaluating it, and rejects missing, mistyped, or unexpected public
+keys explicitly. The expected evidence result is
+`NO_QUALIFYING_CANDIDATE`, pending PI3 rerun.
+
+The `.152` finding is separately recorded as an unexpired old lease with no
+renewal observed during the bounded 60-second check. It remains an
+infrastructure-evidence finding and does not change ADR-0018 or justify
+comparator rollback.
+
 #### July 29 DHCP Pool Exhaustion Incident - RESOLVED
 
 The production address-allocation failure was caused by exhaustion of the former `192.168.100.50 - 192.168.100.150` dynamic pool. The operator expanded it to `192.168.100.50 - 192.168.100.250`; a previously failing client immediately obtained a lease; critical static networking and infrastructure services were validated; and HIOC deployment validation passed. The permanent evidence report is [INCIDENT_2026-07-29_DHCP_POOL_EXHAUSTION.md](INCIDENT_2026-07-29_DHCP_POOL_EXHAUSTION.md). This resolved incident motivates a future DHCP capacity-monitoring phase but does not alter the current Phase 7A corrective sequence.

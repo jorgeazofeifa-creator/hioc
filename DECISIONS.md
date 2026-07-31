@@ -364,3 +364,13 @@ not recommend rollback. `FAIL` is reserved for a qualifying stale IPv4 that
 still wins or an independent deployment/invariant failure. The first governed
 run's IPv6 link-local candidate with higher-authority integration evidence was
 a validator-selection defect, not a reason to change this decision.
+
+Invariant input refinement: Production validation accepts exactly six required
+Boolean invariants: artifact identity, unique MAC identity, inventory-count
+consistency, health/liveness field presence, stable identity fields, and
+bounded unrelated canonical changes. Each must be present and have JSON Boolean
+type. Required `false` values fail; missing or non-Boolean required values and
+unexpected non-underscore keys are input errors and also fail validation.
+Underscore-prefixed keys are diagnostic metadata and never enter Boolean
+evaluation. A diagnostic count of zero therefore preserves
+`NO_QUALIFYING_CANDIDATE` and cannot recommend rollback.

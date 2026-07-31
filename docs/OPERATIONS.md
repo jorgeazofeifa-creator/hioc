@@ -144,6 +144,16 @@ non-secret Pi-hole/dnsmasq reservation definitions, DHCP logs, and neighbor
 evidence before classifying or changing it. Evidence collection must not alter
 DHCP or network configuration.
 
+The revised validator invariant document has a strict schema. Required Boolean
+keys are `artifact_identity`, `unique_mac_identity`,
+`inventory_count_consistent`, `health_and_liveness_fields_present`,
+`stable_identity_fields_present`, and
+`bounded_unrelated_canonical_changes`. All must exist and be JSON Booleans.
+Only required `false` values fail an invariant. Keys beginning with `_` are
+diagnostic metadata and may contain zero, counts, null, or strings without
+affecting the outcome. Missing or mistyped required keys and unexpected
+non-underscore keys are explicit input failures.
+
 ### HIOC Platform Status
 
 - **Purpose:** Reads `VERSION.yaml`, builds platform version/status documents, writes local state, and publishes retained platform MQTT topics.

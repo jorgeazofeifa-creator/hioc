@@ -43,6 +43,15 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Fixed
 
+- Fixed the revised canonical production validator's invariant input contract.
+  It previously applied generic truthiness to diagnostic metadata and treated
+  `_unrelated_canonical_change_count: 0` as failure despite all six Boolean
+  invariants passing. The validator now requires the closed, typed Boolean
+  schema, preserves underscore-prefixed diagnostics without evaluating them,
+  and reports malformed input explicitly. The expected second-run result is
+  `NO_QUALIFYING_CANDIDATE`; rollback was not performed, the comparator is
+  unchanged, and the checkpoint remains open pending PI3 rerun.
+
 - Corrected the Canonical Address Selection production-validation procedure
   after the first governed run admitted an IPv6 link-local stale neighbor and
   ignored higher-authority configured integration evidence. Repository-owned
