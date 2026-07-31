@@ -117,6 +117,18 @@ The following six scripts are confirmed production components under `/home/jazof
 - **Recovery:** Inspect status, log, source availability, config, and JSON first. Run once manually only when no execution owns the lock. Deployment repair uses supported release tooling.
 - **Validation:** Cron present; status and inventory artifacts valid and fresh; expected source state truthful; current log has successful updates; deployed validator passes.
 
+Canonical IPv4 is the inventory engine's deterministic representative address
+for one reconciled MAC-backed identity. It is not complete address history and
+does not prove reachability, health, or online status. Strong current or
+configured evidence may outrank DHCP; active DHCP outranks `STALE` neighbor
+evidence for the same MAC; `FAILED` and `INCOMPLETE` cannot become preferred
+operational addresses. Equal evidence uses explicit lease, observation, and
+numeric-address tie-breaks rather than collection order. Static devices remain
+supported. Production investigation compares DHCP leases, `ip neigh`, the
+canonical inventory record, stable ID, sources, and health fields without
+treating a lease as a liveness check. See the
+[Canonical Address Selection Hardening Evidence Report](CANONICAL_ADDRESS_HARDENING_EVIDENCE.md).
+
 ### HIOC Platform Status
 
 - **Purpose:** Reads `VERSION.yaml`, builds platform version/status documents, writes local state, and publishes retained platform MQTT topics.

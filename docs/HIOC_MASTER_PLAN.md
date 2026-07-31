@@ -532,11 +532,26 @@ These decisions and the production Evidence Report complete the bounded Pi-hole 
 
 #### Canonical Address Selection Hardening
 
-Status: **FUTURE PHASE 7A CORRECTIVE CHECKPOINT**
+Status: **IN PROGRESS - REPOSITORY IMPLEMENTATION COMPLETE; PRODUCTION VALIDATION PENDING**
 
 Production DHCP validation demonstrated that one MAC may have multiple neighbor-table IP entries and that multiple entries may simultaneously be `STALE`. The current canonical selector may choose a stale non-DHCP address even when the active DHCP lease address is also present in the neighbor table, owned by the same MAC, and has no conflicting active DHCP owner.
 
 This checkpoint must investigate and define deterministic canonical-address precedence using source authority, observation recency, neighbor state, lease validity, and existing identity invariants. Any correction must preserve stable MAC-backed identity, prevent duplicate canonical identities, and must not allow DHCP assignment evidence alone to fabricate liveness. It must include regression validation, supported production validation, and a Production Evidence Report. This work is distinct from the completed Collector Canonical Ownership and Pi-hole DHCP Lease Ingestion checkpoints.
+
+Repository implementation now preserves neighbor state as private reconciliation
+evidence and selects canonical IPv4 through one explicit, order-independent
+comparator. Local collector, gateway, configured integration, `REACHABLE`, and
+`PERMANENT` evidence outrank active DHCP; active DHCP outranks `DELAY`, `PROBE`,
+unknown fallback ARP, and `STALE`; unusable neighbor states cannot become
+preferred operational addresses. Equal evidence uses lease validity/expiry,
+observation epoch, and numeric IPv4 tie-breaking. Selection remains separate
+from MAC-backed identity, positive observation, health, and retention.
+
+The repository defect reproduction, contract, source map, downstream review,
+validation record, warnings, and pending production requirements are in the
+[Canonical Address Selection Hardening Evidence Report](CANONICAL_ADDRESS_HARDENING_EVIDENCE.md).
+The checkpoint remains open until supported deployment, production evidence,
+and documentation closeout pass.
 
 #### July 29 DHCP Pool Exhaustion Incident - RESOLVED
 
@@ -546,14 +561,14 @@ The production address-allocation failure was caused by exhaustion of the former
 
 1. Repository and Deployment Hygiene - **COMPLETE**.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **COMPLETE**; Pi-hole DHCP Lease Ingestion — **COMPLETE WITH DOCUMENTED WARNING**; and Canonical Address Selection Hardening — **FUTURE CORRECTIVE CHECKPOINT**.
+3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **COMPLETE**; Pi-hole DHCP Lease Ingestion — **COMPLETE WITH DOCUMENTED WARNING**; and Canonical Address Selection Hardening — **IN PROGRESS; PRODUCTION VALIDATION PENDING**.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, Collector Canonical Ownership, and Pi-hole DHCP Lease Ingestion are complete. Canonical Address Selection Hardening preserves the production warning as a separate future corrective checkpoint. Passive enrichment resumes only after the required corrective work.
+Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, Collector Canonical Ownership, and Pi-hole DHCP Lease Ingestion are complete. Canonical Address Selection Hardening has a complete repository implementation and remains in progress pending governed production validation. Passive enrichment resumes only after the required corrective work.
 
 ---
 
@@ -1033,11 +1048,14 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Preserve the completed Pi-hole DHCP evidence chain and continue Phase 7A without losing the documented canonical-address selection warning.
+Validate the completed repository implementation of Canonical Address Selection
+Hardening through the governed PI3 production workflow without changing
+identity, provenance, liveness, health, or retention contracts.
 
 ## Next Planned Task
 
-Investigate and design the bounded Canonical Address Selection Hardening checkpoint before implementation.
+Complete governed production validation and documentation closeout for the
+bounded Canonical Address Selection Hardening checkpoint.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

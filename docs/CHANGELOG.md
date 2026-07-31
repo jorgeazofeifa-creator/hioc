@@ -43,6 +43,15 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Fixed
 
+- Implemented the repository correction for deterministic canonical IPv4
+  selection. Neighbor state now participates as private reconciliation
+  evidence; an active DHCP assignment for a MAC cannot lose merely to a stale
+  neighbor address, while stronger current/configured evidence and legitimate
+  static devices remain supported. Stable MAC identity, aggregate provenance,
+  liveness, health, schemas, dashboards, incidents, and retention are
+  unchanged. Production validation remains pending, so the Phase 7A checkpoint
+  is still open.
+
 - Closed the network-probe checksum-governance and PI5 endpoint-migration
   correction after governed PI3 deployment at
   `e06539d9bece040d721b9912213559cc54f1610d`. Blob, worktree, and deployed

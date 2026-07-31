@@ -314,3 +314,43 @@ incident convergence is **PARTIAL PASS** and exits successfully for separate
 follow-up; it must not trigger rollback by itself. **PASS** requires evidence
 from both domains. Git-object authority and the Endpoint Migration Audit
 conclusion remain unchanged.
+
+## ADR-0018: Select Canonical IPv4 by Explicit Operational Evidence
+
+Date: 2026-07-30
+
+Status: Accepted and repository implemented; production validation pending.
+
+Decision: For observations already reconciled to one MAC-backed identity,
+select the representative canonical IPv4 through one deterministic evidence
+comparator. The evidence order is local collector, gateway, explicitly
+configured integration, `REACHABLE`, `PERMANENT`, active DHCP, `DELAY`,
+`PROBE`, unknown fallback ARP, `STALE`, generic driver, expired DHCP, and other
+weak evidence. Normal neighbor collection rejects `FAILED`, `INCOMPLETE`, and
+other unusable observations; they have no preferred operational authority if
+presented directly. Invalid, IPv6, unspecified, loopback, link-local,
+multicast, reserved, and limited-broadcast values are ineligible.
+
+Equal evidence uses infinite-lease preference, later finite expiry, later
+available observation epoch, then numerically lowest IPv4. Missing timestamps
+are zero. Selection is independent of input, dictionary, and set order.
+
+Rationale: The former generic field-authority selector ranked all ARP evidence
+above DHCP and broke equal ARP ties lexically. It could therefore choose a stale
+old address over the active lease for the same MAC. The explicit comparator
+corrects that defect while allowing stronger current neighbor or configured
+evidence to outrank DHCP and preserving static devices.
+
+Boundaries: Canonical address is one representative address, not complete
+address history, liveness, health, retention, or archive state. DHCP assignment
+does not refresh `last_seen` or force online status. MAC normalization,
+identity grouping, ambiguity protection, source aggregation, public schemas,
+incident severity, dashboards, and the separate atomic collector-interface
+selector remain unchanged. The existing model has aggregate provenance but no
+field-level candidate-address history; this decision does not create one.
+
+Validation: Focused tests must prove DHCP-over-STALE behavior, order
+independence, strong/static neighbor support, unusable and invalid candidate
+handling, deterministic ties, identity and provenance preservation, and
+liveness independence. Full regression and governed PI3 production validation
+remain required before checkpoint closure.

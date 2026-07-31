@@ -233,6 +233,7 @@ def _collect_neighbor_table() -> NeighborTableResult:
         parts = line.split()
         interface = next((parts[index + 1] for index, token in enumerate(parts[:-1]) if token in ("dev", "on")), "")
         if fallback:
+            state = "UNKNOWN"
             if not mac:
                 state = "INCOMPLETE" if "<incomplete>" in line.lower() else "UNKNOWN"
                 LOG.debug("neighbor entry ignored ip=%s interface=%s state=%s reason=missing_valid_mac", ip, interface, state)
@@ -243,7 +244,13 @@ def _collect_neighbor_table() -> NeighborTableResult:
                 reason = "unresolved_state" if state in {"FAILED", "INCOMPLETE", "NONE"} else "missing_valid_mac" if not mac else "non_durable_state"
                 LOG.debug("neighbor entry ignored ip=%s interface=%s state=%s reason=%s", ip, interface, state, reason)
                 continue
-        neighbors[ip] = {"ip": ip, "mac": mac, "source": "arp_table", "last_seen_source": "arp_table"}
+        neighbors[ip] = {
+            "ip": ip,
+            "mac": mac,
+            "source": "arp_table",
+            "last_seen_source": "arp_table",
+            "_neighbor_state": state,
+        }
     return NeighborTableResult(
         records=neighbors,
         collection_succeeded=True,
@@ -940,7 +947,89 @@ def _record_authority(record: dict, field: str, value) -> tuple:
     return source_rank, observation_order, tuple(sources), _stable_value_key(value)
 
 
+CANONICAL_NEIGHBOR_RANK = {
+    "REACHABLE": 600,
+    "PERMANENT": 590,
+    "DELAY": 450,
+    "PROBE": 440,
+    "UNKNOWN": 350,
+    "STALE": 300,
+    "NOARP": 100,
+    "NONE": 50,
+    "FAILED": 0,
+    "INCOMPLETE": 0,
+}
+
+
+def _canonical_ipv4(value) -> ipaddress.IPv4Address | None:
+    try:
+        address = ipaddress.ip_address(str(value or "").strip())
+    except ValueError:
+        return None
+    if not isinstance(address, ipaddress.IPv4Address):
+        return None
+    if (
+        address.is_unspecified
+        or address.is_loopback
+        or address.is_link_local
+        or address.is_multicast
+        or address.is_reserved
+        or address == ipaddress.IPv4Address("255.255.255.255")
+    ):
+        return None
+    return address
+
+
+def _canonical_ip_order(record: dict, value) -> tuple | None:
+    """Rank one owned IPv4 candidate without treating address choice as liveness."""
+    address = _canonical_ipv4(value)
+    if address is None:
+        return None
+    sources = _record_sources(record)
+    source_classes = []
+    for source in sources:
+        if source == "local_host":
+            source_classes.append(800)
+        elif source == "gateway":
+            source_classes.append(750)
+        elif source.startswith("integration:"):
+            source_classes.append(700)
+        elif source == "dhcp_leases":
+            active = record.get("_dhcp_active", True)
+            source_classes.append(500 if active else 200)
+        elif source == "arp_table":
+            state = str(record.get("_neighbor_state", "UNKNOWN") or "UNKNOWN").upper()
+            source_classes.append(CANONICAL_NEIGHBOR_RANK.get(state, 250))
+        elif source.startswith("driver:"):
+            source_classes.append(250)
+        else:
+            source_classes.append(150)
+    evidence_rank = max(source_classes, default=100)
+    try:
+        observation_epoch = int(record.get("_observation_epoch", record.get("last_seen_epoch", 0)) or 0)
+    except (TypeError, ValueError):
+        observation_epoch = 0
+    try:
+        expiry = int(record.get("lease_expires_epoch", 0) or 0)
+    except (TypeError, ValueError):
+        expiry = 0
+    lease_order = (1, 0) if "dhcp_leases" in sources and expiry == 0 else (0, expiry)
+    return evidence_rank, lease_order, observation_epoch, -int(address)
+
+
+def select_canonical_ip(records: list[dict]):
+    candidates = []
+    for record in records:
+        value = record.get("ip")
+        order = _canonical_ip_order(record, value)
+        if order is not None:
+            candidates.append((order, value))
+    return max(candidates, key=lambda item: item[0])[1] if candidates else None
+
+
 def _select_observed_value(records: list[dict], field: str):
+    if field == "ip":
+        return select_canonical_ip(records)
     candidates = []
     for record in records:
         value = record.get(field)
