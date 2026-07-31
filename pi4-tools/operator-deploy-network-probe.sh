@@ -21,6 +21,7 @@ phase_a_failure() {
   trap - ERR
   echo "PHASE A: FAIL" >&2
   echo "PI3 governed deployment: FAIL" >&2
+  echo "Incident recovery observation: NOT RUN" >&2
   echo "Overall checkpoint production validation: FAIL" >&2
   if [ -n "$BACKUP_PATH" ] && [ -e "$BACKUP_PATH" ]; then
     printf 'Rollback backup: %s\n' "$BACKUP_PATH" >&2

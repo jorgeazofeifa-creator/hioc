@@ -57,6 +57,7 @@ class CheckpointSemanticTests(unittest.TestCase):
         self.assertIn('exit "$status"', source)
         self.assertIn('cmp -s -- "$BLOB_TEMP" "$TARGET"', source)
         self.assertIn('Overall checkpoint production validation: FAIL', source)
+        self.assertIn('Incident recovery observation: NOT RUN', source)
         self.assertNotRegex(source, r'incident_cleared.*exit 1')
         phase_b = source[source.index('OBSERVATION="$('):]
         self.assertNotIn("exit 1", phase_b)
