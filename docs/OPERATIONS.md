@@ -154,6 +154,17 @@ diagnostic metadata and may contain zero, counts, null, or strings without
 affecting the outcome. Missing or mistyped required keys and unexpected
 non-underscore keys are explicit input failures.
 
+Production closure passed with strict-validator result
+`NO_QUALIFYING_CANDIDATE`: all six Boolean invariants passed, diagnostic counts
+were preserved separately, inventory remained at 151 devices, and one
+unrelated canonical-address change remained within the bounded invariant.
+Comparator source and runtime matched Git-derived SHA-256
+`35f36916399331a6e1129f7a49ba86933960eca8e94d6b30c80e9be3d7cd75b8`.
+No rollback was recommended or performed. The unexpired `.152` old lease and
+its lack of renewal during the bounded 60-second observation remain separate
+DHCP cleanup evidence; `.251` had stronger current `REACHABLE` and configured
+integration evidence.
+
 ### HIOC Platform Status
 
 - **Purpose:** Reads `VERSION.yaml`, builds platform version/status documents, writes local state, and publishes retained platform MQTT topics.

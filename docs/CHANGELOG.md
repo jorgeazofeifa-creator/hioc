@@ -28,6 +28,15 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Documentation
 
+- Closed Canonical Address Selection Hardening as production validated. The
+  unchanged comparator from `839e924` matched source and runtime at the
+  approved Git-derived SHA-256; all six strict Boolean invariants passed;
+  diagnostic metadata remained informational; inventory stayed at 151 devices;
+  and one unrelated canonical-address change remained within the bounded
+  invariant. Final result was `NO_QUALIFYING_CANDIDATE` with no rollback. Both
+  earlier failures were validator defects, not comparator defects. The
+  unexpired `.152` old lease remains separate future DHCP cleanup evidence.
+
 - Established the focused documentation architecture: the Master Plan remains the authoritative roadmap; the new System Reference Manual owns current state; Operations owns the cron-driven runtime and freshness-based health model; Network Foundation owns critical addresses and dependencies; Deployment owns source-to-runtime boundaries; and Incident Model owns operational incident semantics. Added the permanent July 29 DHCP pool-exhaustion incident report, recorded HIOC deployment validation as PASS, added the Operations Acceptance Standard, and planned a future DHCP Service Health & Capacity Monitoring phase without implementing it.
 - Closed Pi-hole DHCP Lease Ingestion as **PASS WITH DOCUMENTED WARNING** after supported production upgrade, PI3 validation, and successful inventory generation. All 140 active lease MAC identities were represented with DHCP provenance and expiry metadata; seven additional DHCP-backed identities were confirmed as retained expired historical records rather than duplicate active leases. One active lease MAC/IP pair differed from the selected canonical IP because the same MAC owned two simultaneous `STALE` neighbor addresses. DHCP ingestion remains passed; deterministic canonical-address precedence is deferred to a separate Phase 7A hardening checkpoint that must preserve MAC-backed identity and must not treat DHCP assignment as liveness.
 - Accepted ADR-0015 for the active Pi-hole DHCP Lease Ingestion checkpoint. Pi-hole DHCP remains a source-specific adapter within the existing passive-driver and source-tagged device-record convention; central reconciliation continues owning canonical identity, authority, and observation semantics. The decision rejects a new `IdentitySource` or plugin framework, defines DHCP field ownership and deterministic conflict rules, and bounds the later implementation without marking DHCP ingestion complete.
@@ -48,18 +57,19 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
   `_unrelated_canonical_change_count: 0` as failure despite all six Boolean
   invariants passing. The validator now requires the closed, typed Boolean
   schema, preserves underscore-prefixed diagnostics without evaluating them,
-  and reports malformed input explicitly. The expected second-run result is
-  `NO_QUALIFYING_CANDIDATE`; rollback was not performed, the comparator is
-  unchanged, and the checkpoint remains open pending PI3 rerun.
+  and reports malformed input explicitly. At that correction stage the
+  expected rerun result was `NO_QUALIFYING_CANDIDATE`; rollback was not
+  performed, the comparator was unchanged, and closure remained pending the
+  PI3 rerun recorded above.
 
 - Corrected the Canonical Address Selection production-validation procedure
   after the first governed run admitted an IPv6 link-local stale neighbor and
   ignored higher-authority configured integration evidence. Repository-owned
   validation now enforces the intended stale-IPv4-versus-active-DHCP contract
   and distinguishes `PASS`, non-rollback `NO_QUALIFYING_CANDIDATE`, and genuine
-  `FAIL`. The comparator is unchanged and remains deployed. Active DHCP
-  evidence for retired PI5 address `.152` remains unresolved pending a
-  read-only PI3 investigation; the checkpoint remains open.
+  `FAIL`. The comparator was unchanged and remained deployed. Active DHCP
+  evidence for retired PI5 address `.152` remained unresolved pending the
+  read-only PI3 investigation, and the checkpoint remained open at that stage.
 
 - Implemented the repository correction for deterministic canonical IPv4
   selection. Neighbor state now participates as private reconciliation

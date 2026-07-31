@@ -532,7 +532,7 @@ These decisions and the production Evidence Report complete the bounded Pi-hole 
 
 #### Canonical Address Selection Hardening
 
-Status: **IN PROGRESS - REPOSITORY IMPLEMENTATION COMPLETE; PRODUCTION VALIDATION PENDING**
+Status: **COMPLETE - PRODUCTION VALIDATED**
 
 Production DHCP validation demonstrated that one MAC may have multiple neighbor-table IP entries and that multiple entries may simultaneously be `STALE`. The current canonical selector may choose a stale non-DHCP address even when the active DHCP lease address is also present in the neighbor table, owned by the same MAC, and has no conflicting active DHCP owner.
 
@@ -550,8 +550,8 @@ from MAC-backed identity, positive observation, health, and retention.
 The repository defect reproduction, contract, source map, downstream review,
 validation record, warnings, and pending production requirements are in the
 [Canonical Address Selection Hardening Evidence Report](CANONICAL_ADDRESS_HARDENING_EVIDENCE.md).
-The checkpoint remains open until supported deployment, production evidence,
-and documentation closeout pass.
+At that implementation stage, the checkpoint remained open until supported
+deployment, production evidence, and documentation closeout passed.
 
 The first governed production run deployed implementation commit
 `839e924b2249bec736ff74d9a2ac593c7fee6bb8` successfully and passed artifact,
@@ -568,7 +568,8 @@ rollback. Separately, active DHCP evidence for retired PI5 address `.152`
 remains an unresolved production finding. Read-only PI3 evidence must identify
 its source, expiry, reservation/configuration status, interface ownership, and
 recent DHCP activity before any DHCP cleanup or parser follow-up is proposed.
-The comparator remains deployed and the checkpoint remains **IN PROGRESS**.
+At that first-run stage, the comparator remained deployed and the checkpoint
+remained **IN PROGRESS**.
 
 A second production validator execution passed comparator identity and all six
 real Boolean invariants, with 151 devices before and after and zero unrelated
@@ -579,13 +580,31 @@ neighbor. Generic truthiness incorrectly treated diagnostic metadata value
 `FAIL`. Rollback was not performed. The corrected validator requires exactly
 the six documented Boolean invariants, preserves underscore-prefixed metadata
 without evaluating it, and rejects missing, mistyped, or unexpected public
-keys explicitly. The expected evidence result is
-`NO_QUALIFYING_CANDIDATE`, pending PI3 rerun.
+keys explicitly. The expected evidence result was
+`NO_QUALIFYING_CANDIDATE`, pending the strict PI3 rerun recorded below.
 
 The `.152` finding is separately recorded as an unexpired old lease with no
 renewal observed during the bounded 60-second check. It remains an
 infrastructure-evidence finding and does not change ADR-0018 or justify
 comparator rollback.
+
+Final strict validation synchronized clean source commit
+`b3621c3765e56b9741565ac58be6a5fad4d0f302` and retained the unchanged
+comparator from `839e924b2249bec736ff74d9a2ac593c7fee6bb8`. Source and runtime
+bytes matched Git-derived SHA-256
+`35f36916399331a6e1129f7a49ba86933960eca8e94d6b30c80e9be3d7cd75b8`.
+All six Boolean invariants passed; inventory stayed at 151 devices; diagnostic
+metadata recorded one unrelated canonical-address change within the approved
+bound; and no input errors occurred. With no qualifying candidate, the
+successful result was `NO_QUALIFYING_CANDIDATE`, exit code 0, with no rollback
+recommendation or action.
+
+Both earlier failures were validator defects: the first imposed unconditional
+DHCP precedence and admitted link-local IPv6; the second applied Boolean
+truthiness to numeric diagnostic metadata. The strict typed contract resolved
+both. Canonical Address Selection Hardening is production validated and
+**COMPLETE**. The `.152` lease residue and DHCP Service Health & Capacity
+Monitoring remain separate future work.
 
 #### July 29 DHCP Pool Exhaustion Incident - RESOLVED
 
@@ -595,14 +614,14 @@ The production address-allocation failure was caused by exhaustion of the former
 
 1. Repository and Deployment Hygiene - **COMPLETE**.
 2. Phase 7A.9 Passive Inventory Correctness Validation — **COMPLETE**.
-3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **COMPLETE**; Pi-hole DHCP Lease Ingestion — **COMPLETE WITH DOCUMENTED WARNING**; and Canonical Address Selection Hardening — **IN PROGRESS; PRODUCTION VALIDATION PENDING**.
+3. Remaining inventory correctness work: Identity Reconciliation Hardening — **COMPLETE**; FAILED/INCOMPLETE ARP semantics — **COMPLETE**; Dashboard Severity Mapping — **COMPLETE**; Collector Canonical Ownership — **COMPLETE**; Pi-hole DHCP Lease Ingestion — **COMPLETE WITH DOCUMENTED WARNING**; and Canonical Address Selection Hardening — **COMPLETE; PRODUCTION VALIDATED**.
 4. Resume passive enrichment.
 5. Continue toward asset-centric inventory.
 6. Design and approve retention and archival policy.
 7. Complete Phase 7A.
 8. Begin Phase 7B Safe Active Discovery.
 
-Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, Collector Canonical Ownership, and Pi-hole DHCP Lease Ingestion are complete. Canonical Address Selection Hardening has a complete repository implementation and remains in progress pending governed production validation. Passive enrichment resumes only after the required corrective work.
+Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, Collector Canonical Ownership, Pi-hole DHCP Lease Ingestion, and Canonical Address Selection Hardening are complete. Passive enrichment may resume in its documented order; the separate `.152` DHCP residue and DHCP service-health roadmap work remain open.
 
 ---
 
@@ -1049,7 +1068,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. The network-probe checksum-governance and PI5 endpoint-migration correction is complete: repository correction, governed deployment, Phase A, Phase B incident recovery, and overall production validation passed at approved commit `e06539d9bece040d721b9912213559cc54f1610d`. The July 29 DHCP pool-exhaustion incident is resolved, HIOC deployment validation passed, and the documentation architecture now assigns current-state, runtime, network, deployment, incident, and recovery authority to focused documents. DHCP Service Health & Capacity Monitoring is planned and not implemented. Phase 7A remains active, Canonical Address Selection Hardening preserves its warning as the next corrective checkpoint, and Active Discovery remains postponed.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. Canonical Address Selection Hardening is production validated and complete. The network-probe checksum-governance and PI5 endpoint-migration correction is complete: repository correction, governed deployment, Phase A, Phase B incident recovery, and overall production validation passed at approved commit `e06539d9bece040d721b9912213559cc54f1610d`. The July 29 DHCP pool-exhaustion incident is resolved, HIOC deployment validation passed, and the documentation architecture now assigns current-state, runtime, network, deployment, incident, and recovery authority to focused documents. DHCP Service Health & Capacity Monitoring and `.152` DHCP residue cleanup remain separate future work. Phase 7A remains active and Active Discovery remains postponed.
 
 ## Current Branch
 
@@ -1082,14 +1101,13 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Validate the completed repository implementation of Canonical Address Selection
-Hardening through the governed PI3 production workflow without changing
-identity, provenance, liveness, health, or retention contracts.
+Resume the remaining Phase 7A passive-enrichment sequence while preserving the
+completed canonical-address, identity, provenance, liveness, health, and
+retention contracts.
 
 ## Next Planned Task
 
-Complete governed production validation and documentation closeout for the
-bounded Canonical Address Selection Hardening checkpoint.
+Resume passive enrichment in the documented Phase 7A sequence.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

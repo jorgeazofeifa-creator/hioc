@@ -2,10 +2,9 @@
 
 ## Checkpoint
 
-Phase 7A Canonical Address Selection Hardening. Repository implementation is
-complete and production validation is pending. The checkpoint remains
-**IN PROGRESS** until governed PI3 deployment, production evidence, and
-documentation closeout are complete.
+Phase 7A Canonical Address Selection Hardening. Repository implementation,
+governed deployment, corrected strict production validation, and documentation
+closeout are **COMPLETE**.
 
 ## Repository Baseline
 
@@ -235,6 +234,44 @@ errors; and unexpected public keys. The combined validator, canonical-address,
 and inventory suites passed 153 tests. The broader non-Bash regression suite
 passed 235 tests with nine environment-dependent skips.
 
+### Corrected strict production validation
+
+After validator-contract commit
+`b3621c3765e56b9741565ac58be6a5fad4d0f302`, the PI3 release source was clean
+at that exact commit. The canonical comparator remained unchanged at
+`839e924b2249bec736ff74d9a2ac593c7fee6bb8`.
+
+Git-derived identity for `pi4/lib/hioc/inventory.py` passed manifest commit,
+Git-object derivation, source-worktree equality, source equality, and runtime
+equality. Its approved SHA-256 was
+`35f36916399331a6e1129f7a49ba86933960eca8e94d6b30c80e9be3d7cd75b8`.
+
+All six required Boolean invariants passed. Inventory count remained 151.
+Diagnostic metadata was preserved separately: baseline device count 151,
+current device count 151, and one unrelated canonical-address change. That
+single change remained within the bounded-change invariant. There were no
+failed invariants or invariant input errors.
+
+No strict candidate qualified. The final result was
+`NO_QUALIFYING_CANDIDATE`, exit code 0, `rollback_recommended=false`, and no
+rollback action. This is successful validation when the deployed comparator
+and general invariants pass but current production evidence cannot reproduce
+the original bounded defect.
+
+Production evidence is
+`/tmp/hioc-strict-canonical-validation-yJvpWZvu`. Evidence SHA-256 values are:
+
+- `comparator-manifest.json`:
+  `a79eed625067899210974b88c894bd5ade0e56cf8dc83f93e219656675ff35cd`;
+- `invariants.json`:
+  `7efa0569bd57bfdfd8f5a1e48bdceab1c2234ca5f234168c86a380405692232a`;
+- `CANONICAL_ADDRESS_STRICT_VALIDATION.json`:
+  `33c1574a772d2b1a9f1aad1741bdb9f21b06924fee6c54e05fda1298844906a8`.
+
+The first validator's unconditional DHCP expectation and the second
+validator's generic-truthiness handling were validator defects, not canonical
+comparator defects.
+
 ### Retired `.152` DHCP finding
 
 The retired PI5 address `192.168.100.152` was confirmed as an unexpired old
@@ -262,12 +299,15 @@ conflicting-MAC, malformed, IPv6, and deterministic multi-source cases. Whether
 Pi-hole emits static reservations into the runtime lease file is production
 configuration evidence, not proven by this repository.
 
-**IN PROGRESS.** The comparator is deployed, but production validation remains
-open. The corrected strict validator must be rerun on PI3. No success is
-declared and rollback is not recommended from either validator defect.
+**COMPLETE.** The comparator is deployed and production validated. The `.152`
+unexpired old lease remains separate future DHCP cleanup or lease-management
+evidence; its bounded observation found no renewal during 60 seconds. PI5
+`.251` retained stronger current `REACHABLE` and configured integration
+evidence. This closure does not complete that finding or DHCP Service Health &
+Capacity Monitoring.
 
 ## Final Result
 
-**IN PROGRESS.** Deployment succeeded, but closure requires the revised
-validation outcome, explicit `.152` DHCP evidence, and committed production
-closeout documentation.
+**PASS — COMPLETE.** Repository implementation, governed deployment, artifact
+identity, all required invariants, corrected strict validation, and governance
+documentation passed. No rollback was recommended or performed.

@@ -319,7 +319,7 @@ conclusion remain unchanged.
 
 Date: 2026-07-30
 
-Status: Accepted and repository implemented; production validation pending.
+Status: Accepted, implemented, and production validated.
 
 Decision: For observations already reconciled to one MAC-backed identity,
 select the representative canonical IPv4 through one deterministic evidence
@@ -374,3 +374,15 @@ unexpected non-underscore keys are input errors and also fail validation.
 Underscore-prefixed keys are diagnostic metadata and never enter Boolean
 evaluation. A diagnostic count of zero therefore preserves
 `NO_QUALIFYING_CANDIDATE` and cannot recommend rollback.
+
+Production closure: Corrected strict validation at source commit
+`b3621c3765e56b9741565ac58be6a5fad4d0f302` retained the unchanged comparator
+from `839e924b2249bec736ff74d9a2ac593c7fee6bb8`. Source and runtime matched
+Git-derived SHA-256
+`35f36916399331a6e1129f7a49ba86933960eca8e94d6b30c80e9be3d7cd75b8`.
+All six required Boolean invariants passed; diagnostic counts were preserved;
+inventory remained 151; one unrelated canonical-address change stayed within
+the approved bound; and the final result was
+`NO_QUALIFYING_CANDIDATE` with no rollback. The earlier unconditional-DHCP and
+generic-truthiness failures were validator defects. The `.152` lease residue
+and DHCP service-health work remain outside this completed decision.
