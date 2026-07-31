@@ -1124,3 +1124,11 @@ point can enter operator instructions. Repository correction does not complete
 the PI3 deployment; controlled PI5 connectivity, probe, MQTT, inventory, and
 production artifact validation remain pending. Active Discovery and normal
 roadmap work remain paused for this correction.
+
+The final refinement separates deterministic governed deployment from
+downstream incident recovery. Phase A failure remains fail-closed. Delayed or
+inconclusive Phase B convergence produces **PARTIAL PASS**, exits successfully,
+and requires separate follow-up without rollback based solely on observation.
+Full **PASS** requires both domains; **FAIL** is reserved for deterministic
+deployment failure. The checksum-origin and Endpoint Migration Audit findings
+remain unchanged, and production stays open pending operator evidence review.

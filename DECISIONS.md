@@ -297,3 +297,11 @@ self-reference. Deployment helpers must prove clean exact-commit checkout,
 blob/source/target byte equality, syntax, tree mode, backup, ownership, and
 deployed mode. Post-push evidence must be regenerated from exact `origin/main`
 before repository PASS. Production remains pending until operator validation.
+
+Refinement: Deployment correctness and downstream incident recovery are
+separate validation domains. Deterministic deployment failure is **FAIL** and
+exits nonzero. Validated deployment with delayed or inconclusive bounded
+incident convergence is **PARTIAL PASS** and exits successfully for separate
+follow-up; it must not trigger rollback by itself. **PASS** requires evidence
+from both domains. Git-object authority and the Endpoint Migration Audit
+conclusion remain unchanged.

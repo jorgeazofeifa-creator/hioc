@@ -181,6 +181,21 @@ ID, Git-derived SHA-256, worktree comparison, deployed checksum, and
 source-to-target byte identity. Repository PASS is prohibited until this
 post-push evidence is regenerated.
 
+Deployment correctness and downstream incident recovery are separate
+validation domains:
+
+- **PASS:** deterministic deployment and downstream recovery both validated.
+- **PARTIAL PASS:** deployment validated while recovery was delayed or
+  inconclusive and requires separate downstream-state follow-up.
+- **FAIL:** deterministic deployment validation failed.
+
+Delayed recovery, stale presentation, retained state awaiting replacement, or
+debounce/polling delay is not by itself a rollback reason. Do not roll back a
+byte-identical, valid deployment solely because bounded incident observation
+did not converge. The operator procedure captures and validates the helper's
+actual timestamped backup and prints, but never automatically executes, a
+rollback command reserved for justified deterministic failure.
+
 ## Operations Acceptance Standard
 
 The permanent actionable release checklist is in [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md#operations-acceptance-standard). Operations documentation must allow an operator to answer what exists, why, how it runs, how it is validated, and how it is recovered without rediscovering the system through SSH.

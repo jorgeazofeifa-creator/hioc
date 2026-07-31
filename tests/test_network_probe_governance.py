@@ -41,6 +41,12 @@ class NetworkProbeGovernanceTests(unittest.TestCase):
                 if path.is_file() and path.suffix in suffixes:
                     text = path.read_text(encoding="utf-8", errors="replace")
                     if "192.168.100.152" in text or "192.168.100.251" in text:
+                        if path == ROOT / "pi4-tools" / "operator-deploy-network-probe.sh":
+                            self.assertNotIn("192.168.100.251", text)
+                            self.assertEqual(text.count("192.168.100.152"), 2)
+                            self.assertIn('[ "$HOME_ASSISTANT_IP" != "192.168.100.152" ]', text)
+                            self.assertIn('.ip != "192.168.100.152"', text)
+                            continue
                         offenders.append(str(path.relative_to(ROOT)))
         self.assertEqual(offenders, [], f"PI5 address literals found: {offenders}")
 

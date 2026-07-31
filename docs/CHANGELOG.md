@@ -43,6 +43,12 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Fixed
 
+- Separated deterministic network-probe deployment validation from bounded
+  downstream incident-recovery observation. Delayed or inconclusive recovery
+  now produces PARTIAL PASS and follow-up without rollback. Added safe read
+  accounting, malformed-payload handling, backup validation, and a tracked
+  operator procedure.
+
 - Corrected the Phase 7A network-probe checksum-governance defect. The
   previously reported `27e4dec6...` checksum remains only as incident evidence:
   it is proven to be the CRLF Windows checkout hash, not the approved Git blob

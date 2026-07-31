@@ -89,16 +89,20 @@ pushed and evidence is regenerated from that exact `origin/main` commit.
 
 A complete search of tracked source, tests, documentation, Home Assistant YAML,
 Python, Shell, JSON, configuration examples, fixtures, and deployment tooling
-found no PI5 address literal in production logic or runtime configuration
-templates.
+found no active PI5 target literal in production logic or runtime configuration
+templates. The later operator refinement contains the retired address only in
+two fail-closed negative guards; it cannot be used as a probe target.
 
-The old address `192.168.100.152` occurs five times:
+The old address is classified as follows. The tracked operator's two **Current
+production logic** occurrences reject that value in `HOME_ASSISTANT_IP` and
+retained inventory. They are correct negative guards, derive no endpoint, and
+cannot publish probe state.
 
 - `docs/HIOC_MASTER_PLAN.md`: **Historical reference** describing the migration.
-- This Evidence Report (two occurrences): **Historical reference** describing
-  the governed defect and classifying the search result.
-- `tests/test_network_probe_governance.py` (two occurrences): **Test fixture**,
-  used only in negative assertions that prohibit the literal.
+- This Evidence Report: **Historical reference** describing and classifying the
+  governed defect.
+- `tests/test_network_probe_governance.py`: **Test fixture** occurrences used
+  only in negative assertions that prohibit and constrain the literal.
 
 The current address `192.168.100.251` occurs ten times:
 
@@ -113,8 +117,9 @@ The current address `192.168.100.251` occurs ten times:
 - `tests/test_network_probe_governance.py` (two occurrences): **Test fixture**,
   used only in negative assertions that prohibit the literal.
 
-There are zero occurrences classified as **Current production logic**,
-**Runtime configuration template**, or **Obsolete code**.
+There are zero active endpoint occurrences classified as **Current production
+logic**, **Runtime configuration template**, or **Obsolete code**. The two
+current-logic negative guards are not endpoint definitions.
 
 ### Every production endpoint reference
 
@@ -200,3 +205,22 @@ Final conclusions:
 3. Can production deployment proceed safely after this checkpoint? **YES**,
    subject to the existing fail-closed operator validation and post-deployment
    retained-state/recovery checks.
+
+## Deployment and Incident-Recovery Result Semantics
+
+Deployment correctness and downstream incident recovery are separate
+validation domains. Phase A is deterministic and fail-closed. Phase B begins
+only after Phase A passes and observes downstream convergence for a bounded
+period; it cannot reclassify a successful deployment as failed.
+
+- **PASS:** Phase A deployment and Phase B recovery both validate.
+- **PARTIAL PASS:** Phase A validates, but Phase B is delayed or inconclusive.
+  Separate follow-up is required without rollback based solely on Phase B.
+- **FAIL:** A deterministic Phase A invariant fails and the command exits
+  nonzero. Rollback is considered only after a justified post-change failure.
+
+The 190-second window is bounded evidence, not a recovery guarantee. Phase B
+PASS requires a parsed read proving the false key and evidence absent. The
+procedure reports successes, failures/timeouts, malformed payloads, last key,
+last evidence state, and elapsed duration. The checkpoint remains open pending
+operator evidence review. Endpoint Migration Audit conclusions are unchanged.
