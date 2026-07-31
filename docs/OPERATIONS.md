@@ -129,6 +129,21 @@ canonical inventory record, stable ID, sources, and health fields without
 treating a lease as a liveness check. See the
 [Canonical Address Selection Hardening Evidence Report](CANONICAL_ADDRESS_HARDENING_EVIDENCE.md).
 
+Canonical-address production validation must admit only same-MAC active DHCP
+IPv4 versus different `STALE` neighbor IPv4 cases and must exclude local-host,
+gateway, configured-integration, `REACHABLE`, and `PERMANENT` evidence. IPv6
+and non-canonical address classes cannot qualify. `NO_QUALIFYING_CANDIDATE`
+means the deployment and general invariants may pass without a current direct
+reproduction; it is not failure and does not justify rollback. Only a
+qualifying stale IPv4 that still wins, or an independent deployment/invariant
+failure, is `FAIL`.
+
+When retired-address DHCP evidence is found, inspect configured
+`HIOC_INVENTORY_DHCP_LEASE_FILES`, readable lease rows and expiry values,
+non-secret Pi-hole/dnsmasq reservation definitions, DHCP logs, and neighbor
+evidence before classifying or changing it. Evidence collection must not alter
+DHCP or network configuration.
+
 ### HIOC Platform Status
 
 - **Purpose:** Reads `VERSION.yaml`, builds platform version/status documents, writes local state, and publishes retained platform MQTT topics.

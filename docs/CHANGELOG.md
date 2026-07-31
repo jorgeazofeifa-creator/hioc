@@ -43,6 +43,15 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Fixed
 
+- Corrected the Canonical Address Selection production-validation procedure
+  after the first governed run admitted an IPv6 link-local stale neighbor and
+  ignored higher-authority configured integration evidence. Repository-owned
+  validation now enforces the intended stale-IPv4-versus-active-DHCP contract
+  and distinguishes `PASS`, non-rollback `NO_QUALIFYING_CANDIDATE`, and genuine
+  `FAIL`. The comparator is unchanged and remains deployed. Active DHCP
+  evidence for retired PI5 address `.152` remains unresolved pending a
+  read-only PI3 investigation; the checkpoint remains open.
+
 - Implemented the repository correction for deterministic canonical IPv4
   selection. Neighbor state now participates as private reconciliation
   evidence; an active DHCP assignment for a MAC cannot lose merely to a stale

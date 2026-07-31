@@ -354,3 +354,13 @@ independence, strong/static neighbor support, unusable and invalid candidate
 handling, deterministic ties, identity and provenance preservation, and
 liveness independence. Full regression and governed PI3 production validation
 remain required before checkpoint closure.
+
+Production-validation refinement: A direct ADR-0018 production candidate must
+be active DHCP IPv4 versus a different same-MAC `STALE` neighbor IPv4 and must
+have no higher-ranked local, gateway, configured integration, `REACHABLE`, or
+`PERMANENT` evidence. `PASS` proves the qualifying DHCP address wins.
+`NO_QUALIFYING_CANDIDATE` means no current direct reproduction exists and does
+not recommend rollback. `FAIL` is reserved for a qualifying stale IPv4 that
+still wins or an independent deployment/invariant failure. The first governed
+run's IPv6 link-local candidate with higher-authority integration evidence was
+a validator-selection defect, not a reason to change this decision.

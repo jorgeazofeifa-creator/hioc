@@ -149,12 +149,92 @@ final Git checks are recorded with commit evidence.
 
 ## Production Validation Status
 
-**PENDING OPERATOR EXECUTION.** Codex did not access PI3 or PI5. No production
-action occurred. Production validation must use the supported release workflow,
-capture bounded before/after evidence, and record rollback readiness.
+### First governed run
+
+Deployment of `839e924b2249bec736ff74d9a2ac593c7fee6bb8`
+succeeded. Source synchronization, Git-derived artifact identity, release
+validation, supported upgrade, runtime artifact equality, PI3 validation,
+inventory generation, stable one-MAC identity, aggregate provenance,
+monitoring classification, health status, and bounded unrelated-device
+comparison passed. Evidence is in
+`/tmp/hioc-canonical-address-evidence-YKhSwI3v`; rollback backup
+`/home/jazofv1/hioc/backups/release-upgrade-20260730-211723` remains available.
+Rollback was not executed.
+
+The final candidate assertion was invalid. The script selected MAC
+`2c:cf:67:2e:49:d6`, treated active DHCP address `192.168.100.152` as
+unconditionally canonical, and accepted link-local IPv6 neighbor
+`fe80::6c67:535a:74ef:625c` as its supposed competing `STALE` address. The
+inventory instead retained `192.168.100.251`, supported by higher-authority
+configured integration evidence. This did not reproduce the intended
+STALE-IPv4-versus-active-DHCP-IPv4 defect and does not establish a comparator
+failure.
+
+The original validation logic failed to restrict neighbor candidates to
+canonical IPv4, exclude higher-ranked local, gateway, integration,
+`REACHABLE`, or `PERMANENT` evidence, or apply ADR-0018 conditionally. Its
+assumption that every active DHCP address must win contradicted the approved
+comparator.
+
+### Revised production validation contract
+
+A direct production candidate requires exactly one normalized MAC-backed
+identity, active valid DHCP IPv4, a different `STALE` neighbor IPv4 for the
+same MAC, no higher-ranked source or neighbor evidence, and—when historical
+pre-fix inventory is supplied—a historical canonical address equal to the
+stale candidate. Invalid, IPv6, loopback, link-local, multicast, broadcast,
+unspecified, reserved, and malformed addresses are ineligible.
+
+Repository-owned tooling now reports:
+
+- `PASS`: a qualifying candidate exists and active DHCP wins, with all general
+  invariants passing;
+- `NO_QUALIFYING_CANDIDATE`: no current production observation can directly
+  reproduce the bounded defect; this is not failure and never recommends
+  rollback;
+- `FAIL`: a qualifying stale IPv4 still wins, or an independent deployment or
+  invariant check fails. Only this outcome recommends rollback.
+
+Ten focused validator tests cover all three outcomes, IPv6 link-local
+rejection, integration/local/gateway exclusion, `REACHABLE`/`PERMANENT`
+exclusion, historical-canonical matching, expired/invalid DHCP exclusion, and
+independent invariant failure. The combined canonical-validator,
+canonical-selector, and inventory suites passed 147 tests. The broader
+non-Bash repository suite passed 229 tests with nine environment-dependent
+skips.
+
+### Retired `.152` DHCP finding
+
+The active DHCP evidence for retired PI5 address `192.168.100.152` remains
+unresolved. Repository configuration selects
+`HIOC_INVENTORY_DHCP_LEASE_FILES`, defaulting to
+`/etc/pihole/dhcp.leases`; explicit configuration can name multiple
+comma-separated dnsmasq-format files. Repository evidence cannot determine
+which production file supplied this row, its exact expiry, whether a Pi-hole
+or dnsmasq reservation exists, whether `.251` is also configured, whether the
+MAC identifies a current PI5 interface, or whether recent DHCP requests
+occurred. The read-only operator investigation must answer those questions
+before classifying the finding as migration cleanup, parser defect, or valid
+multi-address behavior.
+
+The parser treats expiry zero as an infinite active assignment and a positive
+epoch strictly greater than the fixed collection epoch as active. The source
+format uses epoch seconds. Expired rows, IPv6 rows, malformed rows, and
+unusable MAC/IP identities are rejected. Duplicate rows are deterministically
+ordered, preferring infinite expiry and otherwise later expiry. The parser
+cannot distinguish a configured reservation from an active lease-file row.
+Repository tests cover finite active, expired, zero-expiry, duplicate,
+conflicting-MAC, malformed, IPv6, and deterministic multi-source cases. Whether
+Pi-hole emits static reservations into the runtime lease file is production
+configuration evidence, not proven by this repository.
+
+**IN PROGRESS.** The comparator is deployed, but production validation remains
+open. Revised operator validation and the read-only `.152` DHCP investigation
+are required. No success is declared and rollback is not recommended from the
+invalid candidate result.
 
 ## Final Result
 
-**IN PROGRESS.** Repository implementation is ready for governed operator
-validation. Closure requires passing production deployment and evidence and a
-committed Production Evidence Report.
+**IN PROGRESS.** Deployment succeeded, but closure requires the revised
+validation outcome, explicit `.152` DHCP evidence, and committed production
+closeout documentation.

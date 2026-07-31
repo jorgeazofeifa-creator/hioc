@@ -553,6 +553,23 @@ validation record, warnings, and pending production requirements are in the
 The checkpoint remains open until supported deployment, production evidence,
 and documentation closeout pass.
 
+The first governed production run deployed implementation commit
+`839e924b2249bec736ff74d9a2ac593c7fee6bb8` successfully and passed artifact,
+release, runtime, identity, provenance, monitoring, health, and bounded
+unrelated-device checks. Its final result was invalidated by the validation
+procedure: it admitted a link-local IPv6 `STALE` neighbor, failed to exclude
+higher-authority configured integration evidence, and incorrectly required
+every active DHCP address to become canonical. The retained `.251` PI5 address
+therefore does not prove an ADR-0018 failure. Rollback was not performed.
+
+Revised repository-owned validation distinguishes `PASS`,
+`NO_QUALIFYING_CANDIDATE`, and genuine `FAIL`; only genuine failure recommends
+rollback. Separately, active DHCP evidence for retired PI5 address `.152`
+remains an unresolved production finding. Read-only PI3 evidence must identify
+its source, expiry, reservation/configuration status, interface ownership, and
+recent DHCP activity before any DHCP cleanup or parser follow-up is proposed.
+The comparator remains deployed and the checkpoint remains **IN PROGRESS**.
+
 #### July 29 DHCP Pool Exhaustion Incident - RESOLVED
 
 The production address-allocation failure was caused by exhaustion of the former `192.168.100.50 - 192.168.100.150` dynamic pool. The operator expanded it to `192.168.100.50 - 192.168.100.250`; a previously failing client immediately obtained a lease; critical static networking and infrastructure services were validated; and HIOC deployment validation passed. The permanent evidence report is [INCIDENT_2026-07-29_DHCP_POOL_EXHAUSTION.md](INCIDENT_2026-07-29_DHCP_POOL_EXHAUSTION.md). This resolved incident motivates a future DHCP capacity-monitoring phase but does not alter the current Phase 7A corrective sequence.
