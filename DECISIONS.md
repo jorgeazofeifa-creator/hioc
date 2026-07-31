@@ -267,3 +267,33 @@ Decision: The checksum-verified production baseline for `hioc-network-probe.sh` 
 Context: The production script had no enclosing Git repository. A first correction stopped rather than reconstruct undisclosed behavior from fragments. The operator then captured the complete script in `hioc-network-probe-source-intake-20260729-220644.tar.gz`; the archive and script hashes were verified before review.
 
 Consequences: The repository copy becomes the approved source after review, commit, and push, but production remains unvalidated until controlled deployment and checksum comparison. Future changes must pass through Git and the deterministic deployment helper. Emergency production edits must be reconciled immediately through documented source intake. Only this script was captured; other `pi4-tools` components remain external or unmanaged pending complete checksum-verified intake. Direct unrecorded production editing is not an accepted workflow.
+
+## ADR-0017: Git Objects Own Deployment Artifact Identity
+
+Date: 2026-07-30
+
+Status: Accepted. Repository correction implemented; production deployment pending.
+
+Decision: For every Git-governed deployment artifact, authoritative bytes are
+the raw blob stored at the exact approved commit and path. Artifact evidence
+always binds full commit SHA, repository-relative path, Git blob ID, and
+Git-derived SHA-256. Checksums from worktrees, editor buffers, temporary files,
+pre-commit versions, or normalized text streams are non-authoritative.
+Deployment procedures derive identity locally from Git objects and never trust
+a manually supplied checksum.
+
+Context: The Phase 7A report hashed a CRLF Windows checkout and published that
+value for an LF Git blob. Git clean conversion made the checkout appear clean
+and gave `git hash-object` the committed blob ID, but its raw bytes had a
+different SHA-256. PI3 safely rejected the false value before deployment.
+
+Alternatives: Store a checksum manifest in the same commit it identifies,
+manually transcribe a post-commit hash, or trust a clean worktree. The first is
+self-referential; the others permit stale or platform-specific bytes.
+
+Consequences: `tools/git_artifact_manifest.py` dynamically derives deterministic
+identity from an operator-specified exact commit, avoiding a tracked
+self-reference. Deployment helpers must prove clean exact-commit checkout,
+blob/source/target byte equality, syntax, tree mode, backup, ownership, and
+deployed mode. Post-push evidence must be regenerated from exact `origin/main`
+before repository PASS. Production remains pending until operator validation.

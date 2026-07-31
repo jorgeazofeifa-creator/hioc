@@ -40,3 +40,163 @@ Status: **PENDING**. Codex did not access PI3 or PI5. Controlled deployment, has
 - Repository source existence alone does not validate production.
 
 Final repository result: **PASS**. Overall checkpoint: **OPEN, PRODUCTION PENDING**.
+
+## Corrective checksum-governance checkpoint (2026-07-30)
+
+The original report incorrectly recorded
+`27e4dec6f4b42c6470d0486da37eed5c7f5fc6c5da58fb1b02d49e4534ff4310`
+as the authoritative checksum. PI3 validation stopped before deployment, so no
+production file was changed. The committed blob and PI3 working tree were
+subsequently proven byte-identical. The actual SHA-256 of the committed Git
+blob at commit `f195f823ff2353cf8260fcee1c8a98cde8b13c9a`, path
+`pi4-tools/scripts/hioc-network-probe.sh`, Git blob
+`d0deaa719826525b058235d57d7ef5eac3f9b21a`, is
+`8737ed600270a846f2049843be7e309958d7f6f2ca696f9cba55dd3d0c098887`.
+
+### Forensic conclusion: PROVEN ORIGIN
+
+The authoritative blob is 12,805 bytes with 364 LF and zero CRLF sequences.
+The Windows checkout is the same logical file after Git checkout conversion
+to CRLF: 13,169 raw bytes with 364 CRLF sequences. Those Windows bytes hash
+exactly to the incorrectly reported `27e4...` value. Converting the committed
+blob to CRLF independently reproduces it. The raw worktree and blob are not
+byte-identical, although `git hash-object` produces the same blob ID because
+Git applies configured clean conversion. Missing/added final newline and UTF-8
+BOM variants did not produce the incorrect value. The file did not exist in
+the parent commit, history contains only its introduction in `f195f823`, and
+the reflog did not identify an earlier committed version.
+
+### Process failure analysis
+
+Proven failures: the checksum came from raw Windows worktree bytes rather than
+the final Git blob; it was manually transcribed into the operator command; the
+report omitted the derivation command and blob ID; no test compared published
+identity to raw committed bytes; and the deployment helper trusted worktree
+identity rather than an approved commit. Repository PASS therefore contained
+defective deployment evidence. Inferred from the absence of post-push
+object-derived evidence: calculation was independent of final committed-object
+verification, and final validation did not regenerate all evidence from
+`origin/main`.
+
+The failed PI3 validation is a successful safety stop. The false checksum is a
+governance defect. Production deployment and the overall checkpoint remain
+open. Repository PASS must be recorded only after the corrective commit is
+pushed and evidence is regenerated from that exact `origin/main` commit.
+
+## Endpoint Migration Audit
+
+### Repository-wide search summary
+
+A complete search of tracked source, tests, documentation, Home Assistant YAML,
+Python, Shell, JSON, configuration examples, fixtures, and deployment tooling
+found no PI5 address literal in production logic or runtime configuration
+templates.
+
+The old address `192.168.100.152` occurs five times:
+
+- `docs/HIOC_MASTER_PLAN.md`: **Historical reference** describing the migration.
+- This Evidence Report (two occurrences): **Historical reference** describing
+  the governed defect and classifying the search result.
+- `tests/test_network_probe_governance.py` (two occurrences): **Test fixture**,
+  used only in negative assertions that prohibit the literal.
+
+The current address `192.168.100.251` occurs ten times:
+
+- `docs/HIOC_MASTER_PLAN.md`: **Historical reference** in the migration record.
+- This Evidence Report (two occurrences): **Historical reference** in the
+  migration record and classification.
+- `docs/INCIDENT_2026-07-29_DHCP_POOL_EXHAUSTION.md` (two occurrences):
+  **Historical reference** recording the completed network change.
+- `docs/NETWORK_FOUNDATION.md` (two occurrences): **Documentation** defining the
+  current network contract.
+- `docs/SYSTEM_REFERENCE.md`: **Documentation** describing the current topology.
+- `tests/test_network_probe_governance.py` (two occurrences): **Test fixture**,
+  used only in negative assertions that prohibit the literal.
+
+There are zero occurrences classified as **Current production logic**,
+**Runtime configuration template**, or **Obsolete code**.
+
+### Every production endpoint reference
+
+| Component | Endpoint behavior | Classification and correctness |
+| --- | --- | --- |
+| Network probe | Requires `HOME_ASSISTANT_IP`, assigns it to `pi5_ip`, uses that value for both ping checks and the legacy inventory record, and contains neither address literal. | Current production logic; correct after deployment; derives from the single runtime authority. |
+| Incident Engine v2 | Reads `HIOC_LEGACY_BASE_TOPIC/network/pi5_status`; it does not resolve or contact PI5. MQTT broker connection uses the separate `MQTT_HOST` dependency. | Current production logic; correct status consumer; no independent PI5 endpoint. |
+| Legacy incident engine | Reads the same configured legacy-topic `network/pi5_status`; it does not resolve or contact PI5. | Current production logic retained for compatibility; no independent PI5 endpoint. |
+| Inventory generation | The governed probe publishes its legacy Pi5 inventory address from `pi5_ip`. Core Living Inventory has no PI5 address literal or independent PI5 endpoint. | Current production logic; probe-side record correctly shares `HOME_ASSISTANT_IP`. |
+| Diagnostics and dashboards | Render incident and probe-status entities; no endpoint is contacted or defined. | Current production presentation; no independent PI5 endpoint. |
+| Dependency graph and correlation | Consume inventory/status evidence; no endpoint is contacted or defined. | Current production logic; no independent PI5 endpoint. |
+| REST sensors and ping sensors | No repository definition targets PI5. | Does not reference PI5. |
+| MQTT publishing | Probe publishes the result; Incident Engine publishes correlated incident JSON. `MQTT_HOST` identifies the broker, not PI5 reachability identity. | Current production logic; separate configured dependency, no PI5 literal. |
+| Home Assistant MQTT entities and template sensors | Consume retained HIOC incident topics and render fields; no endpoint is defined. | Current production logic; no independent PI5 endpoint. |
+| Automations | React to incident entity state for notification/logging; no endpoint is defined. | Current production logic; no independent PI5 endpoint. |
+| Deployment helper | Deploys the exact approved Git blob and does not define runtime endpoints. | Current production logic; no PI5 endpoint. |
+
+The repository does not contain a tracked `toolkit.conf` template defining
+`HOME_ASSISTANT_IP`; that file remains deliberately untracked runtime
+configuration. Repository evidence from the prior checkpoint records that its
+value was corrected. Consequently, within governed executable logic there is
+exactly one PI5 endpoint authority: runtime `HOME_ASSISTANT_IP`, owned by
+`toolkit.conf`, consumed only by the network probe. Topic selection is a
+separate hierarchy: the probe publishes under `MQTT_BASE_TOPIC` and the
+incident engines consume the corresponding `HIOC_LEGACY_BASE_TOPIC`.
+
+### Incident publication path
+
+1. `pi4-tools/scripts/hioc-network-probe.sh` pings `HOME_ASSISTANT_IP`, converts
+   the result to `pi5_status`, and publishes the retained topic
+   `home/infrastructure/pi4/network/pi5_status` under the default base.
+2. `pi4/bin/hioc-incident-engine-v2.py` reads
+   `<HIOC_LEGACY_BASE_TOPIC>/network/pi5_status` every scheduled run.
+3. `pi4/lib/hioc/core/correlation.py` converts any value other than `online`
+   into signal `pi5_offline` with evidence
+   `PI5 / Home Assistant host is unreachable from Pi4`, then correlates it to
+   title `Home Assistant host unreachable`.
+4. Incident Engine v2 writes `state/incidents/active.json` and publishes it
+   retained to `home/infrastructure/hioc/incidents/active`.
+
+### Incident consumption path
+
+`homeassistant/packages/hioc_incident_center.yaml` consumes the retained active
+incident topic into `sensor.hioc_incident_active` and related status, severity,
+reason, and recommendation sensors. `homeassistant/dashboards/hioc_dashboard_v2.yaml`
+renders those entities on its incident and Diagnostics views. The separate raw
+probe-status entity `sensor.pi4_network_probe_pi5_status` is referenced by the
+storage-exported dashboard, but its Home Assistant MQTT entity definition is
+not present in this repository; that presentation-only link cannot be proven
+further from repository evidence.
+
+### Remaining risks
+
+- The audit proves repository content, not untracked production configuration
+  or unmanaged Home Assistant entity definitions. Operator validation must
+  still confirm `HOME_ASSISTANT_IP`, topic alignment, new retained probe state,
+  and incident recovery without printing credentials.
+- A successful probe run is required to overwrite the old retained
+  `pi5_status`. Merely copying the corrected file cannot clear the incident.
+- If another unrelated higher-ranked signal exists, correlation may display
+  that incident after the false PI5 signal clears; this is not continued PI5
+  endpoint generation.
+
+### Deployment expectation
+
+After governed deployment and one successful controlled probe run, the probe
+will ping the configured current endpoint and overwrite retained
+`network/pi5_status` with `online`. Incident Engine v2 runs every minute. With
+no remaining actionable signal, it marks the incident recovering on the first
+cycle and clears it after the configured two recovery-confirmation cycles,
+then publishes the non-active document. Thus it clears automatically after
+the retained status is overwritten and the recovery cycles complete; it does
+not require a manual timeout or permanent reset.
+
+Final conclusions:
+
+1. After deployment, is there any known repository component that can still
+   publish a false PI5 unreachable incident? **NO**.
+2. Is the current dashboard incident fully explained by the undeployed probe?
+   **YES**. The exact displayed evidence and title are generated only from the
+   probe-owned retained `pi5_status`, and the stated production probe still
+   targets the old address.
+3. Can production deployment proceed safely after this checkpoint? **YES**,
+   subject to the existing fail-closed operator validation and post-deployment
+   retained-state/recovery checks.

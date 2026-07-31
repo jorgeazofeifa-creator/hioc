@@ -151,6 +151,36 @@ The log retains July 4 through July 12 historical failures caused by `TypeError:
 7. Use `pi4/validate_pi4.sh` and checkpoint-specific validators.
 8. Use supported deployment or rollback for file repair; do not patch the runtime ad hoc.
 
+## Git-Governed Deployment Artifact Identity
+
+The authoritative bytes of a Git-governed deployment artifact are the raw Git
+blob at the exact approved commit and repository-relative path. Editor buffers,
+temporary copies, uncommitted or platform-normalized worktrees, generated
+intermediates, and pre-commit versions are never authoritative.
+
+Use `tools/git_artifact_manifest.py APPROVED_FULL_COMMIT PATH
+--compare-worktree` to derive identity. Record the full commit, path, Git blob
+ID, Git-derived SHA-256, byte length, mode, and worktree comparison together.
+The deterministic output has no timestamp and never accepts a supplied
+checksum.
+
+Network-probe deployment uses
+`pi4-tools/deploy-network-probe.sh APPROVED_FULL_COMMIT
+pi4-tools/scripts/hioc-network-probe.sh`. Synchronization is a separate
+prerequisite. The helper requires a clean checkout at the exact full commit, a
+tracked executable blob, byte-equal source, valid Bash syntax, a successful
+timestamped backup, and byte-equal deployed target. It reports blob, worktree,
+and deployed checksums plus the backup path. Do not add an
+`EXPECTED_SOURCE_SHA` constant to operator instructions.
+
+All deployment evidence must be regenerated after the final commit and push
+from the exact `origin/main` Git object. No pre-commit checksum may appear in
+operator instructions, and no manually transcribed checksum may be the sole
+artifact identity. An Evidence Report must include approved commit, path, blob
+ID, Git-derived SHA-256, worktree comparison, deployed checksum, and
+source-to-target byte identity. Repository PASS is prohibited until this
+post-push evidence is regenerated.
+
 ## Operations Acceptance Standard
 
 The permanent actionable release checklist is in [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md#operations-acceptance-standard). Operations documentation must allow an operator to answer what exists, why, how it runs, how it is validated, and how it is recovered without rediscovering the system through SSH.

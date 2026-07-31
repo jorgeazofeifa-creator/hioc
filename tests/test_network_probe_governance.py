@@ -25,6 +25,36 @@ class NetworkProbeGovernanceTests(unittest.TestCase):
         self.assertIn('--arg pi5_ip "$pi5_ip"', source)
         self.assertIn('ip:$pi5_ip', source)
 
+    def test_production_repository_has_no_pi5_address_literal(self):
+        production_roots = (
+            ROOT / "pi4",
+            ROOT / "pi4-tools",
+            ROOT / "homeassistant",
+            ROOT / "release",
+        )
+        suffixes = {".py", ".sh", ".yaml", ".yml", ".json", ".conf", ".example"}
+        offenders = []
+        for production_root in production_roots:
+            if not production_root.exists():
+                continue
+            for path in production_root.rglob("*"):
+                if path.is_file() and path.suffix in suffixes:
+                    text = path.read_text(encoding="utf-8", errors="replace")
+                    if "192.168.100.152" in text or "192.168.100.251" in text:
+                        offenders.append(str(path.relative_to(ROOT)))
+        self.assertEqual(offenders, [], f"PI5 address literals found: {offenders}")
+
+    def test_pi5_incident_trace_uses_probe_status_not_endpoint_literal(self):
+        engine = (ROOT / "pi4" / "bin" / "hioc-incident-engine-v2.py").read_text(encoding="utf-8")
+        correlation = (ROOT / "pi4" / "lib" / "hioc" / "core" / "correlation.py").read_text(encoding="utf-8")
+        package = (ROOT / "homeassistant" / "packages" / "hioc_incident_center.yaml").read_text(encoding="utf-8")
+        dashboard = (ROOT / "homeassistant" / "dashboards" / "hioc_dashboard_v2.yaml").read_text(encoding="utf-8")
+        self.assertIn('mqtt_read(f"{legacy}/network/pi5_status", "online")', engine)
+        self.assertIn("Pi5 / Home Assistant host is unreachable from Pi4", correlation)
+        self.assertIn("Home Assistant host unreachable", correlation)
+        self.assertIn("state_topic: home/infrastructure/hioc/incidents/active", package)
+        self.assertIn("states('sensor.hioc_incident_active')", dashboard)
+
     def test_missing_home_assistant_ip_fails_without_exposing_credentials(self):
         with tempfile.TemporaryDirectory() as td:
             base = pathlib.Path(td)

@@ -43,6 +43,13 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Fixed
 
+- Corrected the Phase 7A network-probe checksum-governance defect. The
+  previously reported `27e4dec6...` checksum remains only as incident evidence:
+  it is proven to be the CRLF Windows checkout hash, not the approved Git blob
+  hash. Added deterministic Git-object identity, commit-bound deployment with
+  blob/source/target byte comparisons, and stale-checksum regression tests.
+  PI3 deployment remains pending.
+
 - Implemented bounded Pi-hole DHCP lease ingestion semantics. Inventory cycles use one fixed collection epoch; only active finite or infinite IPv4 Pi-hole/dnsmasq leases contribute assignment evidence; expired, IPv6, ISC-format, malformed, and unusable rows contribute no identity evidence. Explicit blank configuration disables acquisition, the default is limited to `/etc/pihole/dhcp.leases`, source aggregation preserves complete and incomplete states, and unavailable configured DHCP evidence reports truthful discovery limitation without weakening MAC-backed identity or observation authority. Automated regression validation passed, and the later production Evidence Report closes the checkpoint with a documented canonical-address warning.
 - Implemented the repository side of runtime Git metadata retirement. Upgrade backups now exclude `.git`, rollback restoration excludes `.git` even from historical backups, and tests preserve legitimate hidden files and persistent-state protections. README and operator documentation now use the release-source installation model, ADR-0013 formally defines `/home/jazofv1/hioc` as a non-Git runtime, and runtime version identity remains owned by `VERSION.yaml`. Manual PI3 provenance capture, quarantine, upgrade, rollback, and production validation were pending at that stage and are recorded as complete in the later production Evidence Report entry, including approved quarantine removal.
 - Hardened release construction so `release/build.sh` obtains its complete source set from Git-tracked files instead of traversing the workspace. Ignored, untracked, cache, and temporary artifacts—including `hioc_known_hosts.tmp`—cannot enter a release merely by existing beside the source. The generated manifest now records the source commit without checkout-path or wall-clock fields, while deployment and runtime behavior remain unchanged.

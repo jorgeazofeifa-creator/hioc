@@ -1100,3 +1100,27 @@ Only `hioc-network-probe.sh` was captured. A future checkpoint must perform comp
 ### Evidence Report
 
 Repository evidence is recorded in [NETWORK_PROBE_GOVERNANCE_EVIDENCE.md](NETWORK_PROBE_GOVERNANCE_EVIDENCE.md). Repository implementation may pass independently; the overall checkpoint remains open until controlled PI3 and PI5 deployment evidence is returned and documented.
+
+## Phase 7A Corrective Checksum-Governance Checkpoint
+
+Status: **CORRECTION IN PROGRESS; PRODUCTION PENDING; OVERALL CHECKPOINT OPEN**.
+
+The first PI3 deployment attempt stopped safely before deployment because the
+operator command contained an incorrect manually transcribed checksum. The
+value is proven to be the SHA-256 of the CRLF Windows checkout, while the
+approved commit stores an LF blob. This is a governance defect, not a PI3
+synchronization, checkout, branch, or production-file failure.
+
+The corrective checkpoint establishes raw Git objects at an exact approved
+commit as the sole artifact-byte authority. It adds deterministic
+commit/path/blob/SHA-256 reporting, prevents manually supplied hashes from
+overriding Git identity, binds the network-probe deployment helper to a clean
+exact commit, and proves blob/source/deployed byte identity in isolated tests.
+The dynamic-manifest design avoids a tracked self-referential checksum.
+
+All deployment evidence is regenerated only after the final corrective commit
+is pushed and `HEAD` equals `origin/main`. No checksum calculated before that
+point can enter operator instructions. Repository correction does not complete
+the PI3 deployment; controlled PI5 connectivity, probe, MQTT, inventory, and
+production artifact validation remain pending. Active Discovery and normal
+roadmap work remain paused for this correction.
