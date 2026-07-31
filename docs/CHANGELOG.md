@@ -43,6 +43,13 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Fixed
 
+- Closed the network-probe checksum-governance and PI5 endpoint-migration
+  correction after governed PI3 deployment at
+  `e06539d9bece040d721b9912213559cc54f1610d`. Blob, worktree, and deployed
+  checksums matched; Phase A and Phase B passed; retained PI5 state and
+  inventory were correct; the false incident cleared; and no rollback or
+  warning was required. Phase 7A remains active.
+
 - Separated deterministic network-probe deployment validation from bounded
   downstream incident-recovery observation. Delayed or inconclusive recovery
   now produces PARTIAL PASS and follow-up without rollback. Added safe read
@@ -54,7 +61,8 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
   it is proven to be the CRLF Windows checkout hash, not the approved Git blob
   hash. Added deterministic Git-object identity, commit-bound deployment with
   blob/source/target byte comparisons, and stale-checksum regression tests.
-  PI3 deployment remains pending.
+  PI3 deployment was pending at that implementation stage and is closed by the
+  later production-validation entry above.
 
 - Implemented bounded Pi-hole DHCP lease ingestion semantics. Inventory cycles use one fixed collection epoch; only active finite or infinite IPv4 Pi-hole/dnsmasq leases contribute assignment evidence; expired, IPv6, ISC-format, malformed, and unusable rows contribute no identity evidence. Explicit blank configuration disables acquisition, the default is limited to `/etc/pihole/dhcp.leases`, source aggregation preserves complete and incomplete states, and unavailable configured DHCP evidence reports truthful discovery limitation without weakening MAC-backed identity or observation authority. Automated regression validation passed, and the later production Evidence Report closes the checkpoint with a documented canonical-address warning.
 - Implemented the repository side of runtime Git metadata retirement. Upgrade backups now exclude `.git`, rollback restoration excludes `.git` even from historical backups, and tests preserve legitimate hidden files and persistent-state protections. README and operator documentation now use the release-source installation model, ADR-0013 formally defines `/home/jazofv1/hioc` as a non-Git runtime, and runtime version identity remains owned by `VERSION.yaml`. Manual PI3 provenance capture, quarantine, upgrade, rollback, and production validation were pending at that stage and are recorded as complete in the later production Evidence Report entry, including approved quarantine removal.
@@ -119,4 +127,4 @@ Initial real HIOC core foundation.
 - This release is intentionally compatible with the existing `~/pi4-tools` installation.
 - It does not replace the existing `hioc-network-probe.sh`.
 
-- Phase 7A repository governance now owns the checksum-verified HIOC network probe source, derives PI5 probing and inventory addressing from `HOME_ASSISTANT_IP`, provides guarded deterministic deployment, and separates Dashboard V2 MQTT operational freshness from forecast trend. PI3 and PI5 deployment validation remains pending.
+- Phase 7A repository governance now owns the checksum-verified HIOC network probe source, derives PI5 probing and inventory addressing from `HOME_ASSISTANT_IP`, provides guarded deterministic deployment, and separates Dashboard V2 MQTT operational freshness from forecast trend. This entry records the earlier pending state; the Unreleased production-validation entry closes it.

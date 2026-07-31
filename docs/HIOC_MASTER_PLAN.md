@@ -1000,7 +1000,7 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. The July 29 DHCP pool-exhaustion incident is resolved, HIOC deployment validation passed, and the documentation architecture now assigns current-state, runtime, network, deployment, incident, and recovery authority to focused documents. DHCP Service Health & Capacity Monitoring is planned and not implemented. Phase 7A remains active, Canonical Address Selection Hardening preserves its separate warning as a future corrective checkpoint, and Active Discovery remains postponed.
+The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. The network-probe checksum-governance and PI5 endpoint-migration correction is complete: repository correction, governed deployment, Phase A, Phase B incident recovery, and overall production validation passed at approved commit `e06539d9bece040d721b9912213559cc54f1610d`. The July 29 DHCP pool-exhaustion incident is resolved, HIOC deployment validation passed, and the documentation architecture now assigns current-state, runtime, network, deployment, incident, and recovery authority to focused documents. DHCP Service Health & Capacity Monitoring is planned and not implemented. Phase 7A remains active, Canonical Address Selection Hardening preserves its warning as the next corrective checkpoint, and Active Discovery remains postponed.
 
 ## Current Branch
 
@@ -1077,7 +1077,7 @@ Changes to the project's philosophy, architecture, or roadmap should be made int
 
 ## Phase 7A Network Probe Source Governance and MQTT Health Hardening
 
-Status: **REPOSITORY IMPLEMENTATION PASS; PRODUCTION PENDING**.
+Status: **COMPLETE — REPOSITORY, DEPLOYMENT, AND PRODUCTION VALIDATION PASS**.
 
 This bounded corrective checkpoint responds to the July 29, 2026 PI5 address change from `192.168.100.152` to `192.168.100.251`. The operator corrected `HOME_ASSISTANT_IP`, `MQTT_HOST`, and the webhook endpoint in PI3 `toolkit.conf`, and host and service-port checks passed. The network probe nevertheless retained two old executable literals, so MQTT publication and PI5 probing used competing endpoint sources.
 
@@ -1099,11 +1099,16 @@ Only `hioc-network-probe.sh` was captured. A future checkpoint must perform comp
 
 ### Evidence Report
 
-Repository evidence is recorded in [NETWORK_PROBE_GOVERNANCE_EVIDENCE.md](NETWORK_PROBE_GOVERNANCE_EVIDENCE.md). Repository implementation may pass independently; the overall checkpoint remains open until controlled PI3 and PI5 deployment evidence is returned and documented.
+Repository evidence is recorded in [NETWORK_PROBE_GOVERNANCE_EVIDENCE.md](NETWORK_PROBE_GOVERNANCE_EVIDENCE.md). At that repository-only stage, implementation could pass independently while the overall checkpoint remained open until controlled deployment evidence was returned and documented.
+
+Closure: operator evidence for approved commit
+`e06539d9bece040d721b9912213559cc54f1610d` records matching Git blob,
+worktree, and deployed checksums, successful PI5/MQTT/inventory validation, and
+cleared false incident. The historical pending condition is satisfied.
 
 ## Phase 7A Corrective Checksum-Governance Checkpoint
 
-Status: **CORRECTION IN PROGRESS; PRODUCTION PENDING; OVERALL CHECKPOINT OPEN**.
+Status: **COMPLETE — CORRECTION, PHASE A, PHASE B, AND PRODUCTION PASS**.
 
 The first PI3 deployment attempt stopped safely before deployment because the
 operator command contained an incorrect manually transcribed checksum. The
@@ -1131,4 +1136,12 @@ inconclusive Phase B convergence produces **PARTIAL PASS**, exits successfully,
 and requires separate follow-up without rollback based solely on observation.
 Full **PASS** requires both domains; **FAIL** is reserved for deterministic
 deployment failure. The checksum-origin and Endpoint Migration Audit findings
-remain unchanged, and production stays open pending operator evidence review.
+remain unchanged. Before operator execution, production stayed open pending
+evidence review.
+
+Closure evidence records Phase A **PASS**, Phase B **PASS**, and overall
+production validation **PASS**. Seven reads succeeded with no failures or
+malformed payloads, false PI5 evidence was absent, the backup was created, and
+no rollback occurred or was required. This closes only this corrective
+checkpoint. Phase 7A remains in progress; Canonical Address Selection
+Hardening remains next.

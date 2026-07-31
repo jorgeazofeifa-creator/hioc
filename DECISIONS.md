@@ -260,7 +260,7 @@ Validation required: Focused tests must cover source parsing, malformed and empt
 
 Date: 2026-07-29
 
-Status: Accepted for repository scope. Production deployment is pending.
+Status: Accepted and production validated.
 
 Decision: The checksum-verified production baseline for `hioc-network-probe.sh` is imported at `pi4-tools/scripts/hioc-network-probe.sh`. This repository path is authoritative for future changes, while the deployed path remains `/home/jazofv1/pi4-tools/scripts/hioc-network-probe.sh`. The runtime `toolkit.conf` remains untracked configuration and must never be committed with credentials.
 
@@ -268,11 +268,16 @@ Context: The production script had no enclosing Git repository. A first correcti
 
 Consequences: The repository copy becomes the approved source after review, commit, and push, but production remains unvalidated until controlled deployment and checksum comparison. Future changes must pass through Git and the deterministic deployment helper. Emergency production edits must be reconciled immediately through documented source intake. Only this script was captured; other `pi4-tools` components remain external or unmanaged pending complete checksum-verified intake. Direct unrecorded production editing is not an accepted workflow.
 
+Validation closure: Approved commit
+`e06539d9bece040d721b9912213559cc54f1610d` passed governed PI3 deployment,
+artifact identity, controlled publication, inventory, and incident-recovery
+validation. The earlier pending condition is satisfied; no rollback was needed.
+
 ## ADR-0017: Git Objects Own Deployment Artifact Identity
 
 Date: 2026-07-30
 
-Status: Accepted. Repository correction implemented; production deployment pending.
+Status: Accepted, implemented, and production validated.
 
 Decision: For every Git-governed deployment artifact, authoritative bytes are
 the raw blob stored at the exact approved commit and path. Artifact evidence
@@ -297,6 +302,10 @@ self-reference. Deployment helpers must prove clean exact-commit checkout,
 blob/source/target byte equality, syntax, tree mode, backup, ownership, and
 deployed mode. Post-push evidence must be regenerated from exact `origin/main`
 before repository PASS. Production remains pending until operator validation.
+
+Production closure: operator evidence confirmed matching Git blob, worktree,
+and deployed bytes; Phase A and Phase B passed; and overall production
+validation passed. The historical pending condition above is satisfied.
 
 Refinement: Deployment correctness and downstream incident recovery are
 separate validation domains. Deterministic deployment failure is **FAIL** and

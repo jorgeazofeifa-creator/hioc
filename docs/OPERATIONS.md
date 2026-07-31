@@ -83,9 +83,17 @@ The following six scripts are confirmed production components under `/home/jazof
 - **Purpose:** Produces network observations consumed by HIOC history and incident processing.
 - **Schedule/trigger/lock:** `*/5 * * * *`, `jazofv1` crontab, `/tmp/hioc-network-probe.lock`.
 - **Command:** `/home/jazofv1/pi4-tools/scripts/hioc-network-probe.sh`.
-- **Outputs/status/logs:** Repository consumers read legacy MQTT network metrics; exact probe writes require production verification because the deployed script is external.
+- **Outputs/status/logs:** The governed probe publishes legacy MQTT network
+  state and inventory. Production validation at approved commit
+  `e06539d9bece040d721b9912213559cc54f1610d` confirmed retained PI5 online
+  state and Pi5 inventory identity at the configured address.
 - **Recovery:** Inspect gateway, DNS, Internet, MQTT, configuration, and current telemetry before a manual run.
-- **Validation:** Cron present and network latency/loss/DNS/MQTT observations update as expected.
+- **Validation:** Cron present and network latency/loss/DNS/MQTT observations
+  update as expected. On 2026-07-30 the Git blob, Linux worktree, and deployed
+  target matched; syntax, owner, group, mode, connectivity, publication,
+  inventory, and incident recovery passed. Backup
+  `hioc-network-probe.sh.20260730T203740.backup` was created; rollback was not
+  required.
 
 ## HIOC Repository-Managed Jobs
 

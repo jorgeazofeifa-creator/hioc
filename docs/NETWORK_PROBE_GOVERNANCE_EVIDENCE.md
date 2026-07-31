@@ -39,7 +39,9 @@ Status: **PENDING**. Codex did not access PI3 or PI5. Controlled deployment, has
 - Dashboard V2 deployment and runtime validation remain operator tasks.
 - Repository source existence alone does not validate production.
 
-Final repository result: **PASS**. Overall checkpoint: **OPEN, PRODUCTION PENDING**.
+Historical repository-stage result: **PASS**. At that stage the overall
+checkpoint was **OPEN, PRODUCTION PENDING**; the Production Evidence Report
+below supersedes that status.
 
 ## Corrective checksum-governance checkpoint (2026-07-30)
 
@@ -222,5 +224,50 @@ period; it cannot reclassify a successful deployment as failed.
 The 190-second window is bounded evidence, not a recovery guarantee. Phase B
 PASS requires a parsed read proving the false key and evidence absent. The
 procedure reports successes, failures/timeouts, malformed payloads, last key,
-last evidence state, and elapsed duration. The checkpoint remains open pending
-operator evidence review. Endpoint Migration Audit conclusions are unchanged.
+last evidence state, and elapsed duration. At this pre-deployment stage the
+checkpoint remained open pending operator evidence review. Endpoint Migration
+Audit conclusions are unchanged.
+
+## Production Evidence Report: 2026-07-30
+
+Checkpoint: **Network probe checksum governance and PI5 endpoint migration correction**
+
+Deployment result: **PASS**
+
+- Approved commit: `e06539d9bece040d721b9912213559cc54f1610d`
+- Target: PI3 NUT&PIHOLE
+- Artifact: `pi4-tools/scripts/hioc-network-probe.sh`
+- Configuration authority: `HOME_ASSISTANT_IP` from
+  `/home/jazofv1/pi4-tools/config/toolkit.conf`
+- Configured PI5 endpoint: `192.168.100.251`
+- Git blob: `d0deaa719826525b058235d57d7ef5eac3f9b21a`
+- Git-derived SHA-256:
+  `8737ed600270a846f2049843be7e309958d7f6f2ca696f9cba55dd3d0c098887`
+- Working-tree SHA-256: matched.
+- Deployed SHA-256: matched.
+- Timestamped backup: `hioc-network-probe.sh.20260730T203740.backup`
+
+The probe derived PI5 from authoritative configuration, published online state
+for `192.168.100.251`, identified Pi5 Home Assistant at that address, did not
+use retired endpoint `192.168.100.152`, and the false Home Assistant host
+unreachable incident cleared.
+
+The approved commit matched `origin/main`; the repository was clean; Git blob,
+worktree, and deployed bytes were identical; syntax, owner `jazofv1`, group
+`jazofv1`, mode `0755`, PI5 connectivity, MQTT publication, and inventory
+identity checks passed. Phase A was **PASS**.
+
+Phase B was **PASS** after 7 successful reads over 60 seconds, with zero read
+failures/timeouts, zero malformed payloads, an empty/no matching incident key,
+and false PI5 evidence absent.
+
+Warnings: **None for this deployment.**
+
+Rollback: **Not required.** No rollback was performed.
+
+Final production result: **PASS**.
+
+This supersedes earlier current-status statements that production was pending
+while preserving them as chronology. Repository correction, deployment, and
+production validation are complete. This corrective checkpoint is
+**COMPLETE**; Phase 7A remains active.
