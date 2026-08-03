@@ -147,3 +147,30 @@ rollback availability under the approved
 
 **PASS - IMPLEMENTED AND REPOSITORY VALIDATED; PRODUCTION PENDING.** This does
 not authorize deployment, close production validation, or begin PE-2.
+
+## Production validator correction
+
+PE-1 was deployed on PI3 from approved commit
+`29737ee97899bf06be09df661725c8186a7c339f`. Repository synchronization,
+Git-derived source and runtime artifact identity, release validation, supported
+upgrade, timestamped backups, Pi4 validation, the first controlled inventory
+execution, and the authoritative hostname-enrichment schema validator all
+passed. The controlled inventory execution returned zero in 1,308 ms, and the
+validator printed `hostname enrichment validation passed`.
+
+The surrounding operator-only aggregate validator then stopped at its line 52.
+That line incorrectly required `source_type` to use acquisition/source identity
+names (`known_infrastructure`, `integration`, `local_host`, and `dhcp`). The
+closed PE-1 schema instead emits `configured_infrastructure`,
+`trusted_integration`, `direct_observation`, and `assignment_observation`, plus
+`historical`. This distinction was already explicit in the approved PE-1
+specification and enforced by the authoritative validator that had passed.
+
+This is a production-validator contract defect, not a PE-1 implementation,
+deployment, schema, artifact, inventory, or runtime failure. The rollback
+recommendation printed by the generic shell error trap is withdrawn; no
+deterministic rollback condition was demonstrated. Production remains deployed.
+The corrected validator imports the authoritative schema enums rather than
+duplicating them and emits only aggregate, documentation-safe evidence.
+Production closure remains pending corrected re-validation of the remaining
+post-deployment invariants. PE-2 has not begun.

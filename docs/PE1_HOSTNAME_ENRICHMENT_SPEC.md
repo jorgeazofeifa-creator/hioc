@@ -142,6 +142,11 @@ Each candidate is closed and contains:
 - `source_id`: stable identifier above.
 - `source_type`: one of the four approved types above, or `historical` for the
   bounded previous selection.
+- Production validators must consume the emitted `source_type` contract
+  (`configured_infrastructure`, `trusted_integration`, `direct_observation`,
+  `assignment_observation`, and `historical`) from the authoritative enrichment
+  module. They must not substitute acquisition `source` or `source_id` names
+  such as `known_infrastructure`, `integration`, `local_host`, or `dhcp`.
 - `source_reference`: sanitized integration stem, DHCP source digest, or JSON
   `null`; never a full file path.
 - `authority`: `configured_fact`, `trusted_enrichment`,

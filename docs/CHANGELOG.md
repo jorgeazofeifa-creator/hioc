@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Corrected the PE-1 production aggregate validator after its duplicated
+  `source_type` allowlist used acquisition/source identity names instead of the
+  emitted closed-schema values. Deployment, Git/runtime artifact identity,
+  controlled inventory execution, and authoritative enrichment validation had
+  already passed; no rollback condition was demonstrated, and the deployed
+  PE-1 implementation remains unchanged.
+
 ## Document Ownership
 
 This document owns released and delivered work.
