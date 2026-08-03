@@ -1,6 +1,6 @@
 # Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE - DESIGN APPROVED; PE-1 NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 IMPLEMENTED AND REPOSITORY VALIDATED - PRODUCTION PENDING**
 
 This document is the implementation-ready design for the remaining Phase 7A
 passive-enrichment work. It does not authorize executable changes, production
@@ -494,8 +494,7 @@ must be read-only, least-privilege, and secret-file/config based.
 - Design expected availability and retention/archival in their own checkpoints.
 
 The parallel local PE-1 artifact and categorical authority/confidence model are
-approved. No PE-1 architectural decision remains open, but implementation must
-not start until explicit authorization is given. The complete package is
+approved. No PE-1 architectural decision remains open. The implemented package is
 [PE1_HOSTNAME_ENRICHMENT_SPEC.md](PE1_HOSTNAME_ENRICHMENT_SPEC.md).
 
 ## PE-0 design review closure
@@ -506,4 +505,7 @@ normalization, conflict, provenance, confidence, storage, lifecycle, failure,
 privacy, compatibility, validation, and rollback decisions required for PE-1.
 No executable or production change occurred. The completion commit is the Git
 commit containing this closure; its exact hash is derived after commit rather
-than embedded self-referentially. PE-1 remains **NOT STARTED**.
+than embedded self-referentially. PE-1 is implemented and repository validated
+without changing public inventory or production. Evidence is in
+[PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
+Deployment and production validation remain pending; PE-2 is not started.

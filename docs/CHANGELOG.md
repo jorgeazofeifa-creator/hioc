@@ -21,6 +21,15 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Added
 
+- Implemented the repository-validated PE-1 Hostname Enrichment Evidence
+  Envelope. The Inventory Engine now produces validated, restrictive local
+  `enrichment.json` and `enrichment_status.json` sidecars from the four approved
+  existing hostname sources, with deterministic normalization, authority,
+  conflict, confidence, bounded history, atomic writes, and fail-open isolation.
+  Public inventory, MQTT, Home Assistant, dashboards, incidents, identity,
+  canonical address, liveness, health, topology, service ownership, retention,
+  and operator metadata remain unchanged. Production deployment is pending.
+
 - Added a deployed, read-only MQTT runtime validator that uses existing HIOC
   configuration to perform bounded retained-topic checks and emit concise
   post-install or post-upgrade Evidence Report output without publishing state

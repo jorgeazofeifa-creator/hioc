@@ -9,6 +9,14 @@ from hioc.config import load_config
 from hioc.core.events import EventBus
 from hioc.core.schemas import INVENTORY_SCHEMA, INVENTORY_SUMMARY_SCHEMA
 from hioc.core.state import StateStore
+from hioc.enrichment import (
+    build_enrichment_status,
+    build_hostname_envelope,
+    collect_hostname_candidates,
+    load_previous_enrichment,
+    validate_enrichment_status,
+    validate_hostname_envelope,
+)
 from hioc.inventory import discover_inventory
 from hioc.mqtt import MqttClient
 from hioc.runtime import load_json, save_json, setup_logger, now_iso
@@ -26,13 +34,16 @@ def main() -> int:
     dependencies_file = state_dir / "dependencies.json"
     summary_file = state_dir / "summary.json"
     status_file = state_dir / "status.json"
+    enrichment_file = state_dir / "enrichment.json"
     event_store = StateStore(home / "state" / "events")
     event_bus = EventBus(event_store, "inventory", int(config.get("HIOC_EVENT_RETENTION", "500")))
     previous = load_json(inventory_file, {"devices": []})
+    previous_enrichment, prior_enrichment_invalid = load_previous_enrichment(enrichment_file)
     try:
-        inventory = discover_inventory(config, previous)
+        inventory = discover_inventory(config, previous, include_hostname_evidence=True)
         store = StateStore(state_dir)
         capabilities = inventory.pop("_capabilities", [])
+        hostname_evidence = inventory.pop("_hostname_evidence", None)
         store.write_json("inventory.json", inventory, INVENTORY_SCHEMA)
         store.write_json("devices.json", inventory["devices"])
         store.write_json("services.json", inventory["services"])
@@ -42,6 +53,55 @@ def main() -> int:
         store.write_json("summary.json", inventory["summary"], INVENTORY_SUMMARY_SCHEMA)
         status = {"status": "online", "updated": now_iso(), "device_count": inventory["summary"]["device_count"], "schema_version": inventory["schema_version"]}
         save_json(status_file, status)
+        enrichment_replaced = False
+        try:
+            state_dir.chmod(0o750)
+            if not isinstance(hostname_evidence, dict):
+                enrichment_status = build_enrichment_status(
+                    "unavailable", inventory["updated"], error_code="evidence_unavailable"
+                )
+                store.write_json("enrichment_status.json", enrichment_status, mode=0o600)
+                log.warning("hostname enrichment status=unavailable code=evidence_unavailable")
+            else:
+                candidates = collect_hostname_candidates(hostname_evidence, inventory["updated"])
+                enrichment = build_hostname_envelope(
+                    inventory["devices"], candidates, previous_enrichment, inventory["updated"]
+                )
+                validate_hostname_envelope(enrichment)
+                enrichment_status = build_enrichment_status(
+                    "degraded" if prior_enrichment_invalid else "online",
+                    inventory["updated"],
+                    enrichment,
+                    "prior_artifact_invalid" if prior_enrichment_invalid else None,
+                )
+                validate_enrichment_status(enrichment_status)
+                store.write_json("enrichment.json", enrichment, mode=0o600)
+                enrichment_replaced = True
+                store.write_json("enrichment_status.json", enrichment_status, mode=0o600)
+                log.info(
+                    "hostname enrichment status=%s records=%s candidates=%s conflicts=%s",
+                    enrichment_status["status"],
+                    enrichment["record_count"],
+                    enrichment["candidate_count"],
+                    enrichment["conflict_count"],
+                )
+        except Exception:
+            if enrichment_replaced:
+                try:
+                    if previous_enrichment is not None:
+                        store.write_json("enrichment.json", previous_enrichment, mode=0o600)
+                    else:
+                        enrichment_file.unlink(missing_ok=True)
+                except Exception:
+                    pass
+            enrichment_status = build_enrichment_status(
+                "error", inventory["updated"], error_code="generation_failed"
+            )
+            try:
+                store.write_json("enrichment_status.json", enrichment_status, mode=0o600)
+            except Exception:
+                pass
+            log.error("hostname enrichment status=error code=generation_failed")
         previous_ids = {device.get("id") for device in previous.get("devices", [])}
         current_ids = {device.get("id") for device in inventory["devices"]}
         for device in inventory["devices"]:

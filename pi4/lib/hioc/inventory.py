@@ -480,6 +480,7 @@ def integration_inventory(config: dict, state_dir: Path) -> dict:
             if key:
                 record.setdefault("source", f"integration:{path.stem}")
                 record.setdefault("last_seen_source", f"integration:{path.stem}")
+                record["_enrichment_source"] = f"integration:{path.stem}"
                 output_key = str(key)
                 if output_key in devices:
                     output_key = f"{output_key}#{path.name}:{item_index}"
@@ -1322,7 +1323,14 @@ def _merge_retained_weak_identity(record: dict, weak: dict) -> None:
         record["sources"] = sorted(sources)
 
 
-def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int, config: dict) -> list[dict]:
+def merge_records(
+    records: list[dict],
+    previous: dict,
+    now: str,
+    now_epoch: int,
+    config: dict,
+    hostname_evidence_bindings: dict[str, list[dict]] | None = None,
+) -> list[dict]:
     by_key = {}
     for record in records:
         key = _record_key(record)
@@ -1346,6 +1354,8 @@ def merge_records(records: list[dict], previous: dict, now: str, now_epoch: int,
         positive_observation = record.pop("_positive_observation", observed)
         record["mac"] = normalize_mac(record.get("mac", ""))
         record["id"] = stable_device_id(record)
+        if hostname_evidence_bindings is not None:
+            hostname_evidence_bindings[record["id"]] = [dict(item) for item in grouped_records]
         prev = prev_by_id.get(record["id"], {})
         retained_weak = retained_reconciliations.get(key, {})
         if retained_weak:
@@ -1638,7 +1648,7 @@ def build_inventory_summary(
     }
 
 
-def discover_inventory(config: dict, previous: dict) -> dict:
+def discover_inventory(config: dict, previous: dict, include_hostname_evidence: bool = False) -> dict:
     now = now_iso()
     now_epoch = int(time.time())
     local_addresses = local_ipv4_addresses()
@@ -1722,7 +1732,15 @@ def discover_inventory(config: dict, previous: dict) -> dict:
             record["role"] = operator_role(record, roles)
         record["inventory_class"] = inventory_class(record["role"])
         enriched.append(record)
-    devices = merge_records(enriched, previous, now, now_epoch, config)
+    hostname_evidence_bindings = {}
+    devices = merge_records(
+        enriched,
+        previous,
+        now,
+        now_epoch,
+        config,
+        hostname_evidence_bindings=hostname_evidence_bindings,
+    )
     resolve_configured_parent_ids(devices)
     service_registry = DriverRegistry()
     local_device = next((device for device in devices if local_device_id and device.get("id") == local_device_id), None)
@@ -1744,7 +1762,7 @@ def discover_inventory(config: dict, previous: dict) -> dict:
     capability_list = capabilities.all()
     summary = build_inventory_summary(devices, services, topology, dependencies, now, discovery_sources, discovery_limited, discovery_limit_reason)
     devices = [{key: value for key, value in device.items() if not key.startswith("_")} for device in devices]
-    return {
+    inventory = {
         "schema_version": "1.0",
         "updated": now,
         "devices": devices,
@@ -1754,3 +1772,6 @@ def discover_inventory(config: dict, previous: dict) -> dict:
         "dependencies": dependencies,
         "summary": summary,
     }
+    if include_hostname_evidence:
+        inventory["_hostname_evidence"] = hostname_evidence_bindings
+    return inventory

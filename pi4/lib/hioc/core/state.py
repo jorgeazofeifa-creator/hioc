@@ -22,14 +22,25 @@ class StateStore:
             return fallback
         return fallback
 
-    def write_json(self, name: str, payload: Any, schema: Optional[Schema] = None) -> None:
+    def write_json(self, name: str, payload: Any, schema: Optional[Schema] = None, mode: Optional[int] = None) -> None:
         if schema is not None:
             schema.validate(payload)
         path = self.path(name)
         path.parent.mkdir(parents=True, exist_ok=True)
         tmp = path.with_suffix(path.suffix + ".tmp")
-        tmp.write_text(json.dumps(payload, indent=2, sort_keys=True))
-        tmp.replace(path)
+        try:
+            tmp.write_text(json.dumps(payload, indent=2, sort_keys=True))
+            if mode is not None:
+                tmp.chmod(mode)
+            tmp.replace(path)
+            if mode is not None:
+                path.chmod(mode)
+        finally:
+            if tmp.exists():
+                try:
+                    tmp.unlink()
+                except OSError:
+                    pass
 
     def append_bounded_json_list(self, name: str, item: dict, limit: int, schema: Optional[Schema] = None) -> list:
         current = self.read_json(name, [])

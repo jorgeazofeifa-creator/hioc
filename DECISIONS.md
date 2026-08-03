@@ -391,7 +391,7 @@ and DHCP service-health work remain outside this completed decision.
 
 Date: 2026-08-03
 
-Status: Accepted and design approved; implementation pending.
+Status: Accepted, implemented, and repository validated; production pending.
 
 Decision: Permanently separate Observation (what a passive source saw),
 Enrichment (what HIOC learned, normalized, correlated, or inferred), and Asset
@@ -457,4 +457,15 @@ resolved inventory. The existing inventory schedule and identity path remain
 authoritative; enrichment is fail-open, never rereads sources, never becomes a
 public payload, and cannot block valid inventory output. The full approved
 implementation contract is
-`docs/PE1_HOSTNAME_ENRICHMENT_SPEC.md`. PE-1 remains not started.
+`docs/PE1_HOSTNAME_ENRICHMENT_SPEC.md`.
+
+Repository implementation: PE-1 uses an isolated enrichment library and the
+existing Inventory Engine schedule. Current-cycle records are bound only by
+central resolved stable identity, passed privately, removed before public
+serialization/events/MQTT, then normalized and written to validated local
+sidecars. Enrichment failure is fail-open for authoritative inventory and
+publication. Focused and full regressions prove the approved source,
+normalization, selection, lifecycle, privacy, determinism, and protected
+invariant contracts. Production remains unchanged and pending controlled
+deployment evidence; PE-2 is not started. See
+`docs/PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md`.

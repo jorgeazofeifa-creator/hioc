@@ -1,6 +1,6 @@
 # PE-1 Hostname Enrichment Evidence Envelope Specification
 
-Status: **APPROVED SPECIFICATION - IMPLEMENTATION NOT STARTED**
+Status: **IMPLEMENTED - REPOSITORY VALIDATED; PRODUCTION VALIDATION PENDING**
 
 PE-1 is a bounded Phase 7A implementation package. It records hostname
 Observation evidence already acquired during an inventory cycle, evaluates it
@@ -275,11 +275,11 @@ artifact on failure, create `state/inventory` as owner-only writable directory
 files receive the same restrictive mode and are cleaned on handled failure.
 
 `enrichment_status.json` is closed version `1.0` with: `schema_version`,
-`updated`, `status` (`online`, `degraded`, or `error`), `record_count`,
+`updated`, `status` (`online`, `degraded`, `error`, or `unavailable`), `record_count`,
 `candidate_count`, `conflict_count`, `generator`, and nullable sanitized
-`error_code`. `unavailable` is a consumer interpretation when no status exists,
-not a written state. It contains no hostname values, source paths, exception
-text, or stack traces.
+`error_code`. `unavailable` is written only when the private evidence handoff is
+absent or unusable; it is enrichment health, never device health. It contains
+no hostname values, source paths, exception text, or stack traces.
 
 Enrichment is fail-open relative to authoritative inventory. Inventory is
 resolved and its normal artifacts/publication remain authoritative. A PE-1
@@ -511,4 +511,6 @@ Implementation and closure documentation updates:
 - new `PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md` containing repository,
   deployment, production, invariant, privacy, runtime, and rollback evidence.
 
-PE-1 remains **NOT STARTED** until a separate implementation authorization.
+Repository implementation and validation are recorded in
+[PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
+Production deployment and validation remain pending separate authorization.

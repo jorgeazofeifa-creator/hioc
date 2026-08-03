@@ -91,6 +91,15 @@ fi
 if [ -f "$INSTALL_DIR/state/inventory/capabilities.json" ]; then
   check "Inventory capabilities JSON valid" jq empty "$INSTALL_DIR/state/inventory/capabilities.json"
 fi
+if [ -f "$INSTALL_DIR/state/inventory/enrichment.json" ] || [ -f "$INSTALL_DIR/state/inventory/enrichment_status.json" ]; then
+  check "Hostname enrichment artifacts valid" test -f "$INSTALL_DIR/state/inventory/enrichment.json"
+  check "Hostname enrichment status valid" test -f "$INSTALL_DIR/state/inventory/enrichment_status.json"
+  if [ -f "$INSTALL_DIR/state/inventory/enrichment.json" ] && [ -f "$INSTALL_DIR/state/inventory/enrichment_status.json" ]; then
+    check "Hostname enrichment schema valid" python3 "$INSTALL_DIR/pi4/bin/hioc-validate-enrichment.py" \
+      "$INSTALL_DIR/state/inventory/enrichment.json" \
+      "$INSTALL_DIR/state/inventory/enrichment_status.json"
+  fi
+fi
 if [ -f "$INSTALL_DIR/state/events/events.json" ]; then
   check "Internal event log JSON valid" jq empty "$INSTALL_DIR/state/events/events.json"
 fi

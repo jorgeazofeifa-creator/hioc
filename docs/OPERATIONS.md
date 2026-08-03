@@ -12,10 +12,10 @@ The confirmed trigger is the `jazofv1` user crontab. Every listed command uses `
 
 ## Planned PE-1 Operational Boundary
 
-PE-1 is design approved but **not implemented or deployed**. Its approved
-future sidecars are `state/inventory/enrichment.json` and
-`state/inventory/enrichment_status.json`; their absence is currently expected.
-PE-1 will run inside the existing Inventory Engine schedule and lock, add no
+PE-1 is repository implemented but **not deployed**. Its production sidecars
+will be `state/inventory/enrichment.json` and
+`state/inventory/enrichment_status.json`; their absence in current production
+is expected. PE-1 runs inside the existing Inventory Engine schedule and lock, adds no
 cron job or network acquisition, and publish neither artifact over MQTT.
 
 When separately implemented, enrichment failure will be isolated from
@@ -25,7 +25,7 @@ records the PE-1 failure without changing device health or creating an
 incident. Detailed schema, permissions, validation, evidence, and rollback
 requirements are in
 [PE1_HOSTNAME_ENRICHMENT_SPEC.md](PE1_HOSTNAME_ENRICHMENT_SPEC.md). This section
-is a future operational contract, not current-state procedure.
+is the approved post-deployment contract, not evidence of current production.
 
 ## Canonical Schedule
 

@@ -112,8 +112,8 @@ operational evaluations. See
 
 Expected availability belongs to the future Asset layer and must precede any
 policy that interprets disappearance as failure. PE-0 is design approved; the
-[PE-1 specification](PE1_HOSTNAME_ENRICHMENT_SPEC.md) is implementation-ready
-but PE-1 and the broader Asset layer remain unimplemented runtime behavior.
+[PE-1 specification](PE1_HOSTNAME_ENRICHMENT_SPEC.md) is repository implemented
+and validated, but not deployed. The broader Asset layer remains unimplemented.
 
 ## Compatibility
 
