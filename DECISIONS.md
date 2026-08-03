@@ -449,7 +449,7 @@ placeholder evidence may be retained but is nonselectable. Selection is
 deterministic in descriptive order: configured fact, trusted integration,
 local observation, DHCP observation, then one-generation historical fallback.
 
-Storage and lifecycle: PE-1 will use closed version `1.0` local sidecars at
+Storage and lifecycle: PE-1 uses closed version `1.0` local sidecars at
 `state/inventory/enrichment.json` and `enrichment_status.json`, keyed by stable
 device ID. It retains current candidates plus at most the immediately previous
 selected candidate for one successful generation while the device remains in
@@ -466,6 +466,18 @@ serialization/events/MQTT, then normalized and written to validated local
 sidecars. Enrichment failure is fail-open for authoritative inventory and
 publication. Focused and full regressions prove the approved source,
 normalization, selection, lifecycle, privacy, determinism, and protected
-invariant contracts. Production remains unchanged and pending controlled
-deployment evidence; PE-2 is not started. See
+invariant contracts.
+
+Production decision: PE-1 deployed from approved implementation commit
+`29737ee97899bf06be09df661725c8186a7c339f`; Git-derived identity, supported
+deployment/backups, authoritative schema validation, and corrected production
+validation passed. The first aggregate validator duplicated the wrong
+acquisition-oriented `source_type` allowlist. Validator-governance commit
+`55186db4ad73131d47271b43dffe20fd53be4a09` corrected it by importing
+`SOURCE_TYPES`, `AUTHORITIES`, and `CONFIDENCES` from the authoritative module.
+The defect was not an implementation or production-invariant failure.
+Production reported `online`, 153 records, 83 candidates, 82 selections, and
+zero conflicts; missing optional source types, history, and conflicts were
+acceptable. No rollback was recommended or performed. PE-1 is **COMPLETE -
+PRODUCTION VALIDATED**; PE-2 is **NOT STARTED**. See
 `docs/PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md`.

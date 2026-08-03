@@ -1,6 +1,6 @@
 # PE-1 Hostname Enrichment Evidence Report
 
-Status: **REPOSITORY IMPLEMENTATION PASS - PRODUCTION VALIDATION PENDING**
+Status: **PE-1 COMPLETE - PRODUCTION VALIDATED**
 
 ## Repository baseline
 
@@ -145,8 +145,9 @@ pre/post invariants, unchanged consumers, bounded runtime, redaction, and
 rollback availability under the approved
 [PE-1 specification](PE1_HOSTNAME_ENRICHMENT_SPEC.md).
 
-**PASS - IMPLEMENTED AND REPOSITORY VALIDATED; PRODUCTION PENDING.** This does
-not authorize deployment, close production validation, or begin PE-2.
+At the repository implementation checkpoint, the result was **PASS -
+IMPLEMENTED AND REPOSITORY VALIDATED; PRODUCTION PENDING**. That historical
+result did not authorize deployment or begin PE-2.
 
 ## Production validator correction
 
@@ -172,5 +173,35 @@ recommendation printed by the generic shell error trap is withdrawn; no
 deterministic rollback condition was demonstrated. Production remains deployed.
 The corrected validator imports the authoritative schema enums rather than
 duplicating them and emits only aggregate, documentation-safe evidence.
-Production closure remains pending corrected re-validation of the remaining
-post-deployment invariants. PE-2 has not begun.
+Production closure remained pending corrected re-validation of the remaining
+post-deployment invariants. PE-2 had not begun.
+
+## Corrected production validation and closure
+
+Corrected production re-validation passed using validator-governance commit
+`55186db4ad73131d47271b43dffe20fd53be4a09`. The deployed PE-1 implementation
+remained the approved Git-derived implementation from
+`29737ee97899bf06be09df661725c8186a7c339f`; no implementation replacement or
+rollback occurred. The documentation-safe production summary was written on
+PI3 at `/tmp/hioc-pe1-corrected-validation-yFDDuoF9.json` and was not copied
+into the repository because production sidecars and household values remain
+private runtime evidence.
+
+The authoritative schema validator and corrected aggregate validator passed.
+Enrichment reported `online` with 153 records, 83 candidates, 82 selected
+candidates, and zero conflicts. Observed source types were
+`assignment_observation`, `configured_infrastructure`, and
+`direct_observation`. The absence of `trusted_integration`, `historical`, and
+hostname conflicts in this snapshot is an acceptable production-data outcome,
+not missing implementation behavior or a validation failure.
+
+Git-derived artifact identity, source/runtime equality, supported release
+deployment, installer and release backups, Pi4 validation, controlled inventory
+execution, schema validation, and corrected production validation passed. The
+protected public inventory, identity, canonical IP, MQTT, Home Assistant,
+dashboard, incident, topology, service-ownership, health, liveness, and
+observation-status contracts did not regress. No actual production invariant
+failed. No rollback was recommended or performed.
+
+**PASS - PE-1 COMPLETE - PRODUCTION VALIDATED.** PE-2 remains **NOT STARTED**,
+and Phase 7A remains in progress.

@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 IMPLEMENTED AND REPOSITORY VALIDATED - PRODUCTION PENDING**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -634,12 +634,14 @@ separates observed, derived, operator-managed, and relationship metadata, and
 defines field-level authority, provenance, confidence, conflict, privacy, and
 rollback contracts.
 
-The proposed minimum implementation is a parallel, local-only hostname
-evidence envelope. It must prove deterministic candidate selection and
+The completed minimum implementation is a parallel, local-only hostname
+evidence envelope. It proved deterministic candidate selection and
 conflict preservation without changing identity, canonical address, public
 inventory, MQTT, Home Assistant, dashboards, incidents, liveness, health, or
-retention. Repository implementation and validation passed; deployment and
-production validation remain pending. Expected availability, permanent-IoT monitoring, Home Assistant
+retention. Repository implementation, governed deployment, Git-derived
+artifact identity, authoritative schema validation, and corrected production
+validation passed. Production reported `online`, 153 records, 83 candidates,
+82 selections, and zero conflicts. Expected availability, permanent-IoT monitoring, Home Assistant
 availability correlation, automation impact, incidents, retention, DHCP
 service health, and `.152` lease cleanup remain separate future work.
 
@@ -650,11 +652,13 @@ persistence, provenance, privacy, and operational meaning. They reference one
 another without destructive transformation. PE-0 is complete and design
 approved. The PE-1 package in
 [PE1_HOSTNAME_ENRICHMENT_SPEC.md](PE1_HOSTNAME_ENRICHMENT_SPEC.md) is
-implemented and repository validated. It adds only private local sidecars and
-does not change public inventory or consumer/operational contracts. Production
-state remains unchanged. The Git commit containing this closure is the
-authoritative completion commit; its hash is reported after commit to avoid a
-self-referential documentation identity. Repository evidence is in
+implemented, deployed, and production validated. It adds only private local
+sidecars and does not change public inventory or consumer/operational contracts.
+The absence of trusted-integration, historical, and conflict candidates in the
+validated production snapshot is acceptable. PE-2 remains not started. The Git
+commit containing this documentation closure is the authoritative completion
+commit; its hash is reported after commit to avoid a self-referential
+documentation identity. Repository evidence is in
 [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
 
 ---
@@ -1135,15 +1139,14 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Complete governed review and push approval for the repository-validated PE-1
-implementation, followed only by separately authorized deployment and
-production validation.
+Maintain Phase 7A after completing and production-validating PE-1. PE-2 remains
+not started.
 
 ## Next Planned Task
 
-After push approval, prepare the separate governed PE-1 deployment and
-production-validation checkpoint. Do not begin PE-2 before PE-1 production
-closure.
+The next authoritative checkpoint is PE-2 - Operator-friendly Naming and
+Physical-location Foundation. It requires separate authorization and has not
+begun. Do not mark Phase 7A complete.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Closed PE-1 Hostname Enrichment Evidence Envelope as **COMPLETE - PRODUCTION
+  VALIDATED**. Git-derived artifact identity, supported deployment and backups,
+  authoritative schema validation, and corrected production validation passed.
+  Production reported `online`, 153 records, 83 candidates, 82 selections, zero
+  conflicts, and the three observed source types `assignment_observation`,
+  `configured_infrastructure`, and `direct_observation`. Missing optional source
+  types, history, and conflicts were acceptable; protected public and
+  operational contracts did not regress, no rollback occurred, and PE-2 was not
+  started.
+
 - Corrected the PE-1 production aggregate validator after its duplicated
   `source_type` allowlist used acquisition/source identity names instead of the
   emitted closed-schema values. Deployment, Git/runtime artifact identity,
@@ -35,7 +45,8 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
   conflict, confidence, bounded history, atomic writes, and fail-open isolation.
   Public inventory, MQTT, Home Assistant, dashboards, incidents, identity,
   canonical address, liveness, health, topology, service ownership, retention,
-  and operator metadata remain unchanged. Production deployment is pending.
+  and operator metadata remain unchanged. Production deployment and validation
+  subsequently passed.
 
 - Added a deployed, read-only MQTT runtime validator that uses existing HIOC
   configuration to perform bounded retained-topic checks and emit concise

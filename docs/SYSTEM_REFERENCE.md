@@ -88,6 +88,8 @@ HIOC engines are scheduled jobs, not persistent HIOC systemd services or Docker 
 | `state/forecast.json` | History Engine forecasts | Structured forecast document; 5-minute producer interval | MQTT/Home Assistant predictive views |
 | `state/statistics.json` | History Engine statistics | Structured statistics document; 5-minute producer interval | MQTT/Home Assistant predictive views |
 | `state/inventory/*.json` | Inventory Engine canonical inventory and projections | Inventory schema plus projection documents; 30-minute producer interval | MQTT, Home Assistant, incident correlation, validator |
+| `state/inventory/enrichment.json` | PE-1 private hostname evidence envelope | Closed schema `1.0`; generated with inventory; production validated | Local validation only; not published to MQTT or consumer contracts |
+| `state/inventory/enrichment_status.json` | PE-1 local generation status | Closed schema `1.0`; production status `online` | Local operational validation only |
 | `state/incidents/*.json` | Incident Engine lifecycle, history, summary, timeline | Current incident contracts in DATA_MODEL/MQTT; 1-minute producer interval | MQTT, Home Assistant, operator review |
 | `state/platform/version.json` | Platform Status version | Version manifest projection; daily producer interval | MQTT and validator |
 | `state/platform/status.json` | Platform Status health | `status`, `updated`, optional publish/error fields; daily producer interval | MQTT and validator |
@@ -146,11 +148,13 @@ External Pi4 toolkit script output contracts, log routing for every cron command
 ### Planned future state
 
 Passive Enrichment and the Observation -> Enrichment -> Asset information
-model, DHCP Service Health & Capacity Monitoring, Safe Active Discovery,
+model beyond PE-1, DHCP Service Health & Capacity Monitoring, Safe Active
+Discovery,
 retention/archival policy, asset-centric digital twin, and later
 topology/dependency intelligence. Canonical-address hardening is complete and
-production validated; PE-0 is design approved and PE-1 is repository
-implemented but not deployed. No production Enrichment sidecar or Asset-layer
-runtime state exists yet. The approved future
-PE-1 paths are `state/inventory/enrichment.json` and
-`state/inventory/enrichment_status.json`; they are not current production artifacts.
+production validated; PE-0 is design approved and PE-1 is complete and
+production validated. Its two private Enrichment sidecars are current runtime
+state; no Asset-layer runtime state exists. Corrected production validation
+reported `online`, 153 records, 83 candidates, 82 selected candidates, and zero
+conflicts without changing public inventory or consumer contracts. PE-2 is not
+started.

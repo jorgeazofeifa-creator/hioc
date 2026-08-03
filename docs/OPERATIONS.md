@@ -10,22 +10,26 @@ HIOC runtime is cron-driven, using short-lived jobs protected by `flock`. A heal
 
 The confirmed trigger is the `jazofv1` user crontab. Every listed command uses `flock -n`: if another live execution owns the lock, the new invocation exits instead of waiting. A lock-path file may remain after a run; its presence alone does not mean a job is stuck because the lock is held by a live file descriptor.
 
-## Planned PE-1 Operational Boundary
+## Deployed PE-1 Operational Boundary
 
-PE-1 is repository implemented but **not deployed**. Its production sidecars
-will be `state/inventory/enrichment.json` and
-`state/inventory/enrichment_status.json`; their absence in current production
-is expected. PE-1 runs inside the existing Inventory Engine schedule and lock, adds no
-cron job or network acquisition, and publish neither artifact over MQTT.
+PE-1 is **complete and production validated**. Its private production sidecars
+are `state/inventory/enrichment.json` and
+`state/inventory/enrichment_status.json`. PE-1 runs inside the existing
+Inventory Engine schedule and lock, adds no cron job or network acquisition,
+and publishes neither artifact over MQTT.
 
-When separately implemented, enrichment failure will be isolated from
+Enrichment failure is isolated from
 authoritative inventory generation: public inventory remains valid, the last
 valid enrichment envelope remains untouched, and a sanitized local status
 records the PE-1 failure without changing device health or creating an
 incident. Detailed schema, permissions, validation, evidence, and rollback
 requirements are in
-[PE1_HOSTNAME_ENRICHMENT_SPEC.md](PE1_HOSTNAME_ENRICHMENT_SPEC.md). This section
-is the approved post-deployment contract, not evidence of current production.
+[PE1_HOSTNAME_ENRICHMENT_SPEC.md](PE1_HOSTNAME_ENRICHMENT_SPEC.md). Corrected
+production validation reported status `online`, 153 records, 83 candidates, 82
+selected candidates, and zero conflicts. Missing optional source types,
+historical candidates, or conflicts are not failures. The public inventory and
+all existing consumer, identity, canonical-address, health, liveness, incident,
+topology, and service-ownership contracts remained protected.
 
 ## Canonical Schedule
 
