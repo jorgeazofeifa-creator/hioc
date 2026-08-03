@@ -28,6 +28,14 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Documentation
 
+- Refined the proposed Passive Enrichment architecture into permanent,
+  non-destructive Observation, Enrichment, and Asset information layers.
+  Documented their separate authority, mutability, provenance, persistence,
+  privacy, stale-observation, and expected-availability meanings; clarified
+  that PE-1 records hostname observations and enrichment candidates but creates
+  no Asset name or public/runtime behavior. PE-0 remains in design review and
+  PE-1 remains not started.
+
 - Defined the Phase 7A Passive Enrichment Architecture and Specification for
   design review. It maps implemented and absent passive sources, audits the
   current schema, separates metadata layers, and proposes field-level

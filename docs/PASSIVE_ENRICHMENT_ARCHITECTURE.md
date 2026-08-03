@@ -16,6 +16,117 @@ merge, rebase, cherry-pick, revert, or bisect operation in progress. Canonical
 Address Selection Hardening was complete and production validated. The Master
 Plan identified passive enrichment as the next Phase 7A work.
 
+## Permanent three-layer information model
+
+Passive Living Inventory uses three distinct information layers:
+
+```text
+Passive sources
+     |
+     v
++------------------+       evidence references       +------------------+
+|   Observation    | ------------------------------> |    Enrichment    |
+| what was seen    |                                 | what was learned |
++------------------+                                 +------------------+
+        |                                                     |
+        | remains preserved                                  | suggestions,
+        |                                                     | never silent writes
+        v                                                     v
+  operational logic <----- reads appropriate layers ---- +------------------+
+                                                        |      Asset       |
+stable identity --------------------------------------> | operator intent  |
+                                                        +------------------+
+```
+
+The arrows are references, not destructive transformation. Observations remain
+source evidence after enrichment is calculated. Enrichment remains identified
+as learned or inferred information if an operator accepts a suggestion. An
+Asset is tied to stable identity and may reference current observations and
+enrichment without absorbing or rewriting them. Operational logic reads the
+appropriate layers while preserving the separately governed identity,
+canonical-address, liveness, health, and incident contracts.
+
+### Observation - what HIOC has seen
+
+Observation is raw or minimally normalized evidence produced by a passive
+source. Examples include ARP and neighbor rows, DHCP leases, interfaces,
+gateway evidence, service observations, timestamps, neighbor state, lease
+expiry, observed hostname, IP candidates, and MAC addresses. Future approved
+sources could include point-in-time ping results, Home Assistant entity
+availability, or MQTT topic presence; their mention here does not implement or
+authorize them.
+
+Observation is source-specific, time-bound, refreshable, potentially stale or
+conflicting, and may disappear or age out. It records what a source actually
+saw, not operator intent or final truth. It retains source and meaningful time
+provenance and is never rewritten to match later interpretation. It may affect
+identity, canonical address, liveness, or health only through those systems'
+existing governed algorithms.
+
+Observation does not contain a friendly name, physical location, expected
+availability, asset criticality, maintenance state, or final device purpose.
+
+### Enrichment - what HIOC has learned
+
+Enrichment is explainable information HIOC normalizes, correlates, derives, or
+obtains from trusted reference data. It includes hostname candidates and a
+selected display candidate, manufacturer derivation, inferred class or role,
+source agreement, metadata confidence, observation/address stability,
+classification suggestions, conflict records, field-level provenance, and
+association candidates for Home Assistant, MQTT, and services.
+
+Enrichment is provenance-backed, deterministic, conflict-preserving, and
+replaceable when stronger evidence appears. It may be recalculated and may
+retain historical candidates. It is subordinate to operator-managed Asset
+metadata. It cannot alter resolved identity, bypass the canonical-address
+comparator, redefine liveness or health, silently overwrite operator knowledge,
+or present an inference as a direct observation.
+
+Enrichment is not operator intent, proof of availability or health, proof of
+expected behavior, identity authority, or an incident by itself.
+
+### Asset - what the operator knows and intends
+
+Asset is the durable operator-managed representation of a real-world device,
+service, or infrastructure component. It is tied to stable identity rather than
+an IP address alone. Asset fields can include friendly name, physical location,
+purpose, owner, criticality, expected availability, notes, maintenance mode,
+purchase date, maintenance history, optional photo reference, confirmed
+manufacturer/class/associations, and an operator-pinned descriptive value where
+the architecture explicitly permits one.
+
+Asset metadata is intentional, independently persistent, locally managed, and
+the highest authority for descriptive fields. Passive evidence and enrichment
+may suggest changes but never silently overwrite it. Operator corrections
+survive rediscovery and address changes. The Asset layer is suitable for later
+lifecycle, expected-availability, retention, recovery, and maintenance
+semantics, but this checkpoint implements none of them.
+
+Asset metadata is separate from raw observations, inference, transient network
+state, liveness, health, and incident state. It is local and privacy-sensitive
+by default.
+
+### Cross-layer rules
+
+- Observations are never rewritten to match enrichment or Asset metadata.
+- Enrichment never pretends it was directly observed.
+- Asset metadata is never silently overwritten by enrichment or observation.
+- Enrichment may suggest an Asset value but cannot confirm it without an
+  explicit governed rule or operator action.
+- Asset metadata references stable identity, never an IP address alone.
+- Canonical IP remains owned by the governed inventory comparator.
+- Expected availability is Asset intent; current availability evidence begins
+  in Observation and is interpreted by separate operational logic.
+- Health is calculated separately from descriptive metadata.
+- Staleness applies to an observation, not to the Asset's continued existence.
+- An Asset remains valid when all current observations are stale.
+- Historical enrichment candidates may remain after selection changes.
+- Conflicts remain visible and attributable to their originating layer/source.
+- Missing enrichment creates no incident; missing Asset metadata implies no
+  health conclusion.
+- Asset retirement or archival cannot erase historical observations without a
+  separately approved retention policy.
+
 ## Current enrichment source map
 
 | Source | Acquisition and authority today | Fields available | Current conflict behavior | Provenance, trust, and freshness | Gaps |
@@ -104,21 +215,12 @@ field-level record; and derived roles do not carry rule provenance.
 
 ## Proposed enrichment domain model
 
-Enrichment is descriptive knowledge attached to an already reconciled stable
-device identity. It is not another identity engine.
-
-1. **Observed identity attributes** are evidence such as DHCP hostname or an
-   integration-reported model. They may conflict and expire, but do not replace
-   stable identity or canonical IP.
-2. **Derived metadata** is deterministic interpretation such as manufacturer
-   from a pinned OUI dataset or a role suggestion. It records rule/dataset
-   version and inputs.
-3. **Operator-managed metadata** expresses intent: friendly name, physical
-   location, purpose, notes, and later lifecycle facts. It is authoritative for
-   its own field and is never silently overwritten by discovery.
-4. **Relationship metadata** associates a stable device with an area, parent,
-   service, Home Assistant device/entity, or later automation. It does not
-   imply identity equivalence or liveness.
+Enrichment is the middle layer of the permanent Observation -> Enrichment ->
+Asset model. It attaches learned descriptive knowledge to an already
+reconciled stable device identity; it is not another identity engine. Observed
+evidence remains in the Observation layer. Operator-managed descriptive and
+lifecycle facts remain in the Asset layer. Relationship candidates are
+Enrichment until explicitly confirmed as Asset knowledge.
 
 The initial storage contract is a parallel local artifact,
 `state/inventory/enrichment.json`, keyed by stable device ID. It is generated
@@ -174,19 +276,20 @@ retention/archive state.
 
 Authority is field-specific. The hierarchy for descriptive enrichment is:
 
-1. operator-pinned value for the same operator field;
-2. explicit known-infrastructure metadata;
-3. a configured trusted integration for a declared field;
-4. strong direct passive observation;
-5. deterministic derived reference data;
-6. weak passive observation;
-7. retained historical candidate;
-8. presentation fallback.
+1. operator-managed Asset metadata;
+2. explicit configured infrastructure facts;
+3. trusted Enrichment for the declared field;
+4. strong Observation;
+5. weak Observation;
+6. historical fallback.
 
 This hierarchy does not replace the current identity, canonical-address, or
 liveness comparators. A source must declare which fields it may supply.
 Unknown integration keys remain compatibility data but cannot gain enrichment
-authority automatically.
+authority automatically. Higher descriptive authority does not make an
+observation current or a device healthy. For example, the Asset name
+`Exterior Wall Switch` remains valid even when separate operational evaluation
+finds no recent network presence and reports stale, offline, or unavailable.
 
 Different nonempty normalized values create a conflict. The system retains the
 candidates and selects deterministically by field authority, confidence,
@@ -234,10 +337,15 @@ identity, health, or availability.
 ## Minimum viable passive enrichment
 
 The smallest safe first implementation is **PE-1: Hostname Enrichment Evidence
-Envelope**. It records local-host, configured-integration, and DHCP hostname
-candidates for existing stable device IDs in the parallel local artifact,
-normalizes them, applies the field-specific deterministic selector, and exposes
-conflicts in that artifact only.
+Envelope**. It ingests local-host, configured-integration, and DHCP hostname
+values as Observation evidence for existing stable device IDs. The Enrichment
+layer normalizes and compares them, selects a deterministic display candidate,
+and preserves conflicts and provenance in the parallel local artifact only.
+
+PE-1 builds evidence for future operator-managed Asset naming. It does not
+create or modify an Asset `friendly_name`, current inventory `name`, or existing
+inventory hostname fields. Any later projection requires an explicitly
+approved implementation checkpoint.
 
 PE-1 must not change selected inventory hostname/name/display name, canonical
 IP, stable ID, source merge, health, liveness, retention, MQTT, Home Assistant,
@@ -267,6 +375,28 @@ PE-1 stopping conditions are any need to change identity/canonical logic,
 public device fields, production source configuration, retention semantics, or
 consumer contracts; any such need returns the design for approval instead of
 expanding scope.
+
+## Expected availability and stale observations
+
+Expected availability is future Asset-layer operator intent. Candidate concepts
+such as `always on`, `scheduled`, `intermittent`, `transient`, `maintenance`,
+and `retired` remain illustrative and are not finalized or implemented here.
+Current availability evidence belongs to Observation; interpreted operational
+state remains owned by existing evaluation logic.
+
+Later comparison of Asset expectation, current Observation evidence, and
+operational interpretation can support permanent-IoT monitoring, Home
+Assistant availability correlation, automation impact, actionable incidents,
+notifications, and troubleshooting. That work depends on stable identity, an
+Asset metadata foundation, confirmed Home Assistant associations, approved
+availability semantics, and incident integration.
+
+A stale observation means a source has not refreshed evidence within its
+expected observation window. It does not mean that the Asset no longer exists
+or is retired, definitely offline, unhealthy, or associated with a failed
+automation. Future dashboard work should combine observation age, Asset
+expected availability, Asset class, operational health, and source confidence;
+this specification does not redesign the dashboard.
 
 ## Ordered implementation sequence
 
@@ -344,13 +474,17 @@ structure. Production values and credentials must never enter Git or test
 fixtures. Tests use synthetic data. Local artifacts inherit restrictive state
 permissions and atomic writes.
 
-MQTT publication is deny-by-default for physical location, notes, owner,
-purchase data, photos, raw HA identifiers, candidate histories, and conflict
-details. Logs and notifications report counts/source IDs and sanitized reasons,
-not sensitive values. Dashboard exposure is field-specific and opt-in; remote
-notifications must not include private enrichment without a separately
-approved policy. Future HA access must be read-only, least-privilege, and
-secret-file/config based.
+Observation may contain MAC/IP addresses, hostnames, and entity states.
+Enrichment may contain inferred type, manufacturer, associations, and
+conflicts. Asset may contain physical location, purpose, owner, notes, photos,
+purchase data, and automation relationships; it is the most privacy-sensitive
+layer.
+
+Asset publication is deny-by-default. No Asset field may enter MQTT,
+notifications, logs, or dashboards without explicit field-level approval.
+Candidate histories and conflict details are also local by default. Logs use
+counts/source IDs and sanitized reasons, not sensitive values. Future HA access
+must be read-only, least-privilege, and secret-file/config based.
 
 ## Open design decisions
 

@@ -92,19 +92,27 @@ A weaker source must not overwrite stronger identity or observation evidence. Li
 
 ## Future Asset-Centric Flow
 
-The planned architectural direction is:
+The permanent information model is non-destructive:
 
 ```text
-Discovery evidence
-  -> stable device identity
-  -> operator asset enrichment
-  -> expected-availability policy
-  -> health and incident interpretation
-  -> dependency and failure analysis
-  -> historical and predictive intelligence
+Observation (what passive sources saw; preserved evidence)
+  -> Enrichment (what HIOC learned; references observations)
+  -> Asset (what the operator knows and intends; tied to stable identity)
+
+Operational logic reads the appropriate layers without collapsing them.
 ```
 
-Stable discovery identity is the anchor: operator knowledge must survive address changes and rediscovery. Asset enrichment remains separable from discovered truth, and expected availability must precede any policy that interprets disappearance as failure. This flow is planned evolution rather than current completed behavior.
+Observation is time-bound source evidence. Enrichment is explainable,
+replaceable, and conflict-preserving. Asset metadata is durable operator intent
+and the highest descriptive authority. The arrows do not erase or rewrite an
+earlier layer. Stable identity is the anchor, canonical address remains owned
+by its comparator, and liveness, health, and incidents remain separate
+operational evaluations. See
+[PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md).
+
+Expected availability belongs to the future Asset layer and must precede any
+policy that interprets disappearance as failure. PE-1 and the broader Asset
+layer remain planned rather than current runtime behavior.
 
 ## Compatibility
 

@@ -387,18 +387,21 @@ the approved bound; and the final result was
 generic-truthiness failures were validator defects. The `.152` lease residue
 and DHCP service-health work remain outside this completed decision.
 
-## ADR-0019: Stage Passive Enrichment Behind a Field-Level Evidence Envelope
+## ADR-0019: Separate Observation, Enrichment, and Asset Information Layers
 
 Date: 2026-08-03
 
 Status: Proposed for design review; not implemented.
 
-Decision: Model descriptive enrichment as field-level candidates attached to
-an already reconciled stable device ID. Keep observed, derived,
-operator-managed, and relationship metadata distinct. Begin with a parallel
-local artifact containing hostname candidates, selected evidence, conflicts,
-categorical authority, confidence, and provenance. Do not project that first
-artifact into public inventory, MQTT, Home Assistant, dashboards, or incidents.
+Decision: Permanently separate Observation (what a passive source saw),
+Enrichment (what HIOC learned, normalized, correlated, or inferred), and Asset
+(what the operator intentionally knows and manages). The layers reference one
+another without destructive transformation and remain tied through stable
+identity. Begin with a parallel local artifact containing observed hostname
+evidence and enrichment candidates, selection, conflicts, categorical
+authority, confidence, and provenance. Do not create Asset-friendly names or
+project that first artifact into public inventory, MQTT, Home Assistant,
+dashboards, or incidents.
 
 Context: Current inventory preserves aggregate sources and deterministic
 selected values but not the candidate, conflict, or provenance for each field.
@@ -417,9 +420,21 @@ classification.
 
 Consequences: Identity, canonical address, liveness, health, monitoring,
 incidents, and retention remain owned by their existing contracts. Operator
-metadata cannot be silently overwritten. Authority is field-specific;
+Asset metadata cannot be silently overwritten. Descriptive authority defaults
+to Asset metadata, configured infrastructure facts, trusted Enrichment, strong
+Observation, weak Observation, then historical fallback. This ordering never
+bypasses identity, canonical-address, liveness, health, or incident algorithms.
+Authority is field-specific;
 confidence is categorical and never acts as identity or health evidence.
 Public projection, OUI data, Home Assistant access, expected availability,
 permanent-IoT monitoring, automation impact, and retention each require later
 review. The full proposed contract is in
 `docs/PASSIVE_ENRICHMENT_ARCHITECTURE.md`.
+
+Cross-layer invariants: Observation is never rewritten to match interpretation;
+Enrichment never claims to be direct evidence; Asset corrections persist;
+expected availability is Asset intent; current availability begins with
+Observation; staleness applies to evidence rather than Asset existence; and
+missing enrichment or Asset metadata cannot independently create an incident
+or health conclusion. Asset data is the most privacy-sensitive layer and is
+deny-by-default for publication.

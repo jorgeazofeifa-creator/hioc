@@ -145,4 +145,9 @@ External Pi4 toolkit script output contracts, log routing for every cron command
 
 ### Planned future state
 
-DHCP Service Health & Capacity Monitoring, canonical-address hardening, Safe Active Discovery, retention/archival policy, asset-centric digital twin, and later topology/dependency intelligence.
+Passive Enrichment and the Observation -> Enrichment -> Asset information
+model, DHCP Service Health & Capacity Monitoring, Safe Active Discovery,
+retention/archival policy, asset-centric digital twin, and later
+topology/dependency intelligence. Canonical-address hardening is complete and
+production validated; PE-1 is not implemented, and no Asset-layer runtime state
+exists yet.

@@ -643,6 +643,13 @@ approval. Expected availability, permanent-IoT monitoring, Home Assistant
 availability correlation, automation impact, incidents, retention, DHCP
 service health, and `.152` lease cleanup remain separate future work.
 
+The permanent design distinguishes **Observation** (what passive sources saw),
+**Enrichment** (what HIOC learned or inferred), and **Asset** (what the operator
+knows and intends). These layers have separate authority, mutability,
+persistence, provenance, privacy, and operational meaning. They reference one
+another without destructive transformation. This refinement remains PE-0
+design review; PE-1 is not started.
+
 ---
 
 ## Planned Phase
