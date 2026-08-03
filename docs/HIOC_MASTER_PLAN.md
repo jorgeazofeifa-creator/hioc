@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -655,7 +655,12 @@ approved. The PE-1 package in
 implemented, deployed, and production validated. It adds only private local
 sidecars and does not change public inventory or consumer/operational contracts.
 The absence of trusted-integration, historical, and conflict candidates in the
-validated production snapshot is acceptable. PE-2 remains not started. The Git
+validated production snapshot is acceptable. PE-2.0 is design approved in
+[PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md). It defines a
+separate stable-ID-keyed, local-only Asset store and governed CLI for
+`friendly_name`, `physical_location`, `purpose`, and private `notes`, while
+deferring owner, public projection, expected availability, lifecycle, and
+identity migration. PE-2.1 remains not started. The Git
 commit containing this documentation closure is the authoritative completion
 commit; its hash is reported after commit to avoid a self-referential
 documentation identity. Repository evidence is in
@@ -1139,14 +1144,13 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Maintain Phase 7A after completing and production-validating PE-1. PE-2 remains
-not started.
+Maintain Phase 7A after completing and production-validating PE-1 and approving
+the PE-2.0 Asset foundation design. PE-2.1 remains not started.
 
 ## Next Planned Task
 
-The next authoritative checkpoint is PE-2 - Operator-friendly Naming and
-Physical-location Foundation. It requires separate authorization and has not
-begun. Do not mark Phase 7A complete.
+The next authoritative checkpoint is separately authorized PE-2.1 Asset
+Foundation implementation. It has not begun. Do not mark Phase 7A complete.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

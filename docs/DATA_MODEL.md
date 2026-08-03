@@ -68,21 +68,29 @@ Current `observation_status` meanings are:
 
 DHCP assignment is identity/address evidence, not liveness, and does not update the positive-observation fields. `operationally_monitored`, health, and incident interpretation are separate policy and derived-state concerns.
 
-### Planned Asset Metadata
+### Approved Future PE-2.1 Asset Metadata
 
-The following names illustrate possible future information. They are planning concepts, not a current runtime schema or finalized field contract:
+PE-2.0 approves a separate future local Asset store keyed by stable device ID.
+PE-2.1 is not implemented, and the current public inventory schema is unchanged.
+The closed schema and validation rules are owned by
+[PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md).
 
-- an `asset_id` or other stable linkage to the discovered device identity;
+The approved first operator fields are:
+
 - `friendly_name`;
-- physical `location`;
+- `physical_location`;
 - `purpose`;
+- private `notes`.
+
+The following remain later planning concepts rather than PE-2.1 fields:
+
 - `owner` or responsible person;
 - asset `category`;
 - operational `criticality`;
 - `expected_availability`;
 - an explicit `monitoring_policy` or monitoring expectation;
 - `lifecycle_state`, such as active, retired, or archived;
-- `notes` and an optional photo reference;
+- an optional photo reference;
 - purchase or installation date;
 - maintenance expectations and maintenance history.
 

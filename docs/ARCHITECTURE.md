@@ -112,8 +112,11 @@ operational evaluations. See
 
 Expected availability belongs to the future Asset layer and must precede any
 policy that interprets disappearance as failure. PE-0 is design approved; the
-[PE-1 specification](PE1_HOSTNAME_ENRICHMENT_SPEC.md) is repository implemented
-and validated, but not deployed. The broader Asset layer remains unimplemented.
+[PE-1 specification](PE1_HOSTNAME_ENRICHMENT_SPEC.md) is production validated.
+PE-2.0 has approved the first Asset foundation architecture in
+[PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md): a separate,
+stable-device-ID-keyed, local-only operator store with no public projection or
+operational authority. PE-2.1 remains unimplemented.
 
 ## Compatibility
 

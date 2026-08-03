@@ -31,6 +31,22 @@ historical candidates, or conflicts are not failures. The public inventory and
 all existing consumer, identity, canonical-address, health, liveness, incident,
 topology, and service-ownership contracts remained protected.
 
+## Planned PE-2.1 Operational Boundary
+
+PE-2.0 is design approved; PE-2.1 is not implemented or deployed. The approved
+future local artifacts are `state/inventory/assets.json` and
+`state/inventory/assets_status.json`. A dedicated local CLI—not manual JSON,
+MQTT, Home Assistant, dashboards, or an API—will own validated edits under
+`/tmp/hioc-assets.lock`, create a validated timestamped backup before each
+mutation, and write atomically with restrictive modes. It will read current
+inventory only for stable-ID/orphan context and will never mutate or block the
+Inventory Engine. The complete future contract is in
+[PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md).
+
+Asset data will remain local and deny-by-default. Missing, empty, or orphaned
+Asset metadata will not affect health, liveness, incidents, or any public
+consumer. No PE-2.1 operator command is approved by this design checkpoint.
+
 ## Canonical Schedule
 
 | Component | Cron expression | Plain-language schedule | Lock |

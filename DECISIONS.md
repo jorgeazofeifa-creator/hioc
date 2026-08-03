@@ -391,7 +391,7 @@ and DHCP service-health work remain outside this completed decision.
 
 Date: 2026-08-03
 
-Status: Accepted, implemented, and repository validated; production pending.
+Status: Accepted; PE-1 production validated; PE-2.0 design approved.
 
 Decision: Permanently separate Observation (what a passive source saw),
 Enrichment (what HIOC learned, normalized, correlated, or inferred), and Asset
@@ -479,5 +479,26 @@ The defect was not an implementation or production-invariant failure.
 Production reported `online`, 153 records, 83 candidates, 82 selections, and
 zero conflicts; missing optional source types, history, and conflicts were
 acceptable. No rollback was recommended or performed. PE-1 is **COMPLETE -
-PRODUCTION VALIDATED**; PE-2 is **NOT STARTED**. See
+PRODUCTION VALIDATED**. See
 `docs/PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md`.
+
+PE-2.0 Asset decision: PE-2.1 will add a separate closed version `1.0` local
+store at `state/inventory/assets.json`, with subsystem status at
+`assets_status.json`. Records are keyed only by current-format stable HIOC
+device ID and contain nullable operator-managed `friendly_name`,
+`physical_location`, `purpose`, and private `notes`, plus system timestamps,
+fixed update source, and revision. Owner is deferred because its human meaning
+and privacy boundary are unresolved. Current public `name`, `display_name`,
+`location`, `area`, `notes`, role, identity, canonical address, health,
+liveness, topology, services, and consumers are not reinterpreted or changed.
+
+A governed local CLI is the only PE-2.1 write path. It uses a dedicated bounded
+lock, strict validation, optimistic revision checks, a validated backup before
+every mutation, restrictive atomic replacement, redacted output, and explicit
+restore. Orphans remain valid and editable without deletion, health, or incident
+meaning. Asset metadata is local-only and deny-by-default for all publication.
+Identity supersession creates an orphan; automatic Asset merge/split/migration
+is prohibited until a later alias contract exists. Expected availability,
+lifecycle, public presentation, HA/UI/API editing, and retention remain later
+decisions. Full contract: `docs/PE2_ASSET_FOUNDATION_SPEC.md`. PE-2.0 is
+**COMPLETE - DESIGN APPROVED**; PE-2.1 is **NOT STARTED**.

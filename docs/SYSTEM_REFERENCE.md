@@ -156,5 +156,7 @@ production validated; PE-0 is design approved and PE-1 is complete and
 production validated. Its two private Enrichment sidecars are current runtime
 state; no Asset-layer runtime state exists. Corrected production validation
 reported `online`, 153 records, 83 candidates, 82 selected candidates, and zero
-conflicts without changing public inventory or consumer contracts. PE-2 is not
-started.
+conflicts without changing public inventory or consumer contracts. PE-2.0 is
+design approved, but PE-2.1 is not implemented: `assets.json`,
+`assets_status.json`, the Asset CLI, and all Asset presentation/publication
+remain future work.

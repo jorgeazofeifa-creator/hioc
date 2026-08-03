@@ -203,5 +203,6 @@ dashboard, incident, topology, service-ownership, health, liveness, and
 observation-status contracts did not regress. No actual production invariant
 failed. No rollback was recommended or performed.
 
-**PASS - PE-1 COMPLETE - PRODUCTION VALIDATED.** PE-2 remains **NOT STARTED**,
-and Phase 7A remains in progress.
+**PASS - PE-1 COMPLETE - PRODUCTION VALIDATED.** At PE-1 closure, PE-2 was
+**NOT STARTED**, and Phase 7A remained in progress. PE-2.0 was subsequently
+authorized as a separate design-only checkpoint.

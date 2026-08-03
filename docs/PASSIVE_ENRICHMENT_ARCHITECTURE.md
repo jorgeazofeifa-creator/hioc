@@ -262,7 +262,7 @@ review.
 | `model` | string/absent | operator, trusted integration, observed source | Preserve disagreements | Operator value persists; observations current | Later inventory | Later |
 | `role_suggestion` | list/empty | deterministic classifier only | Rule version, input field IDs, categorical confidence | Recomputed; never overwrites operator role | Later review UI | Later |
 | `operator_role` | string/absent | operator only | Operator provenance | Operator mutable | Later inventory/dashboard | Later |
-| `purpose`, `notes` | string/absent | operator only | Operator provenance | Operator mutable; potentially sensitive | Restricted/opt-in | Later |
+| `purpose`, `notes` | string/absent | operator only | Operator provenance | Operator mutable; potentially sensitive | Local only in PE-2.1 | Next |
 | `ha_device_ids`, `ha_entity_ids` | string lists/empty | future read-only HA registry adapter | Registry instance and observation time | Recomputed; stale association policy deferred | Restricted operations | Later |
 | `service_associations` | object list/empty | local services and future trusted integration/MQTT association evidence | Source and rule per edge | Recomputed | Operations | Later |
 | `metadata_quality` | enum/`unknown` | derived from completeness/conflicts | Rule version and reasons | Recomputed | Summary/dashboard candidate | Later |
@@ -400,12 +400,17 @@ this specification does not redesign the dashboard.
 
 ## Ordered implementation sequence
 
-1. **PE-0 - Architecture and specification (current):** design review only.
-2. **PE-1 - Hostname enrichment evidence envelope:** minimum implementation
-   above.
-3. **PE-2 - Operator-friendly naming and physical-location foundation:** split
-   configured intent from fallback `name`, using known infrastructure and the
-   proven provenance envelope.
+PE-2.0 is design approved. The authoritative PE-2.1 field, storage, CLI,
+privacy, backup, lifecycle, test, and production-validation contract is
+[PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md). PE-2.1 remains not
+started.
+
+1. **PE-0 - Architecture and specification:** complete, design approved.
+2. **PE-1 - Hostname enrichment evidence envelope:** complete, production
+   validated.
+3. **PE-2 - Operator-friendly naming and physical-location foundation:** PE-2.0
+   design approved; PE-2.1 implementation not started. It stores operator intent
+   separately from overloaded public `name` and known-infrastructure metadata.
 4. **PE-3 - Manufacturer reference enrichment:** approve and pin a local OUI
    dataset, license/version/update governance, and deterministic derivation.
 5. **PE-4 - Trusted integration association:** add a read-only Home Assistant
@@ -428,7 +433,7 @@ Implementation packages PE-1 through PE-6 are bounded as follows:
 | Package | Objective, fields, and likely modules | Schema and protected invariants | Tests and production validation | Dependencies, rollback, and deferred work |
 |---|---|---|---|---|
 | PE-1 | `observed_hostname` candidates/conflict in `inventory.py`, a core enrichment serializer, inventory engine, and focused tests | New local artifact only; public schema, IDs, IPs, liveness, health unchanged | Candidate normalization/authority/order/conflict tests; full inventory regression; before/after protected-invariant and governed-artifact proof | Depends on design approval; roll back for generation disruption, nondeterminism, leakage, or invariant change; public projection deferred |
-| PE-2 | `friendly_name` and `physical_location`; known-infrastructure loader, enrichment model, synthetic example/schema, and later presentation adapter | Additive configuration keys only after compatibility review; no name-based identity; no canonical/liveness/health effect | Empty/duplicate/conflict/operator-precedence tests; old-config compatibility; production proof that IDs/IPs/count/health remain stable and only approved metadata changes | Depends on PE-1; roll back for silent overwrite, private-data exposure, or invariant change; owner/purpose/lifecycle deferred |
+| PE-2 | Private stable-ID-keyed `friendly_name`, `physical_location`, `purpose`, and `notes` store with governed CLI; no presentation adapter in PE-2.1 | Separate closed local schema; no reinterpretation of public name/location/notes; no identity/canonical/liveness/health effect | Strict store/CLI/backup/orphan/privacy tests; production proof that public and operational contracts remain stable | Depends on PE-1; owner, structured location, public projection, identity migration, and lifecycle remain deferred; roll back only for deterministic corruption, privacy, or invariant failure |
 | PE-3 | `manufacturer` candidates using known/integration values and a pinned local OUI reference adapter | Local enrichment extension; dataset version/license explicit; vendor cannot influence identity or canonical rank | MAC-prefix, local/private/randomized MAC, override, dataset-version, determinism tests; governed dataset/artifact identity and bounded metadata-only production diff | Depends on PE-1 and dataset approval; roll back for licensing, nondeterminism, excessive/unbounded changes, or protected-field changes; online lookup prohibited |
 | PE-4 | `ha_device_ids`, `ha_entity_ids`, and area/name candidates through a new read-only adapter | Local association evidence initially; HA names cannot replace operator fields; availability is excluded | Synthetic registry fixtures, secret redaction, missing/duplicate association, order tests; least-privilege read proof, bounded association counts, unchanged public/health state | Depends on PE-1/2 and access/schema approval; roll back for secret leakage, ambiguous identity mutation, or HA impact; availability correlation deferred |
 | PE-5 | `service_associations` and MQTT association evidence using existing service ownership and declared configured mappings | Relationship layer only; MQTT presence is not device observation or health | Edge stability, missing endpoint, duplicate/conflict, no-liveness tests; bounded relationship diff and no publish/subscribe behavior change | Depends on provenance foundation; roll back for cycles, unstable IDs, topic leakage, or protected-state change; automation dependencies deferred |
@@ -500,12 +505,12 @@ approved. No PE-1 architectural decision remains open. The implemented package i
 ## PE-0 design review closure
 
 PE-0 is **COMPLETE - DESIGN APPROVED**. ADR-0019, this architecture, and the
-PE-1 specification resolve the Observation, Enrichment, Asset, authority,
+PE-1 specification resolved the Observation, Enrichment, Asset, authority,
 normalization, conflict, provenance, confidence, storage, lifecycle, failure,
 privacy, compatibility, validation, and rollback decisions required for PE-1.
-No executable or production change occurred. The completion commit is the Git
-commit containing this closure; its exact hash is derived after commit rather
-than embedded self-referentially. PE-1 is implemented and repository validated
-without changing public inventory or production. Evidence is in
-[PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
-Deployment and production validation remain pending; PE-2 is not started.
+No executable or production change occurred during PE-0. The completion commit
+is the Git commit containing that closure; its exact hash was derived after
+commit rather than embedded self-referentially. PE-1 was later implemented and
+production validated without changing public inventory contracts. Evidence is
+in [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
+PE-2.0 is now design approved; PE-2.1 is not started.

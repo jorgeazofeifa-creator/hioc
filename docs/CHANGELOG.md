@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Completed PE-2.0 design review and approved the implementation-ready Asset
+  foundation for operator-managed `friendly_name`, `physical_location`,
+  `purpose`, and private `notes`. The design uses a separate stable-ID-keyed
+  closed local store, governed CLI, dedicated lock, atomic writes, validated
+  per-mutation backups, explicit orphan handling, and deny-by-default privacy.
+  Existing public naming/location fields are not reinterpreted; owner, public
+  projection, expected availability, lifecycle, identity migration, UI and
+  integrations remain deferred. PE-2.1 is not started and no executable or
+  production behavior changed.
+
 - Closed PE-1 Hostname Enrichment Evidence Envelope as **COMPLETE - PRODUCTION
   VALIDATED**. Git-derived artifact identity, supported deployment and backups,
   authoritative schema validation, and corrected production validation passed.
