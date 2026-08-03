@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **IN PROGRESS - DESIGN REVIEW; NO IMPLEMENTATION STARTED**
+Status: **PE-0 COMPLETE - DESIGN APPROVED; PE-1 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -647,8 +647,13 @@ The permanent design distinguishes **Observation** (what passive sources saw),
 **Enrichment** (what HIOC learned or inferred), and **Asset** (what the operator
 knows and intends). These layers have separate authority, mutability,
 persistence, provenance, privacy, and operational meaning. They reference one
-another without destructive transformation. This refinement remains PE-0
-design review; PE-1 is not started.
+another without destructive transformation. PE-0 is complete and design
+approved. The implementation-ready PE-1 package is
+[PE1_HOSTNAME_ENRICHMENT_SPEC.md](PE1_HOSTNAME_ENRICHMENT_SPEC.md); PE-1 is not
+started and requires separate implementation authorization. No executable code
+or production state changed. The Git commit containing this closure is the
+authoritative completion commit; its hash is reported after commit to avoid a
+self-referential documentation identity.
 
 ---
 
@@ -1128,15 +1133,15 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Review and approve the Phase 7A Passive Enrichment Architecture and
-Specification while preserving the completed canonical-address, identity,
-liveness, health, and retention contracts. No executable implementation has
-started.
+Await separate authorization for PE-1 Hostname Enrichment Evidence Envelope.
+PE-0 architecture and the PE-1 implementation specification are design
+approved; no executable implementation has started.
 
 ## Next Planned Task
 
-After explicit approval, begin only PE-1, the local-only Hostname Enrichment
-Evidence Envelope, with protected-invariant and no-public-change validation.
+After explicit implementation authorization, begin only PE-1 according to the
+approved local-only specification and its protected-invariant,
+failure-isolation, privacy, and no-public-change contract.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

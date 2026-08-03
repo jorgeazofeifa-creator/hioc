@@ -28,6 +28,14 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Documentation
 
+- Completed PE-0 design review and approved the implementation-ready PE-1
+  Hostname Enrichment Evidence Envelope specification. The package closes
+  hostname source eligibility, normalization, authority, deterministic
+  selection, conflict/confidence, local schema, bounded lifecycle,
+  failure-isolation, module, test, production-evidence, rollback, and privacy
+  decisions. PE-1 remains not started; no executable or production behavior
+  changed.
+
 - Refined the proposed Passive Enrichment architecture into permanent,
   non-destructive Observation, Enrichment, and Asset information layers.
   Documented their separate authority, mutability, provenance, persistence,

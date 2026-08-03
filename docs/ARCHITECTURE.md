@@ -111,8 +111,9 @@ operational evaluations. See
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md).
 
 Expected availability belongs to the future Asset layer and must precede any
-policy that interprets disappearance as failure. PE-1 and the broader Asset
-layer remain planned rather than current runtime behavior.
+policy that interprets disappearance as failure. PE-0 is design approved; the
+[PE-1 specification](PE1_HOSTNAME_ENRICHMENT_SPEC.md) is implementation-ready
+but PE-1 and the broader Asset layer remain unimplemented runtime behavior.
 
 ## Compatibility
 

@@ -149,5 +149,7 @@ Passive Enrichment and the Observation -> Enrichment -> Asset information
 model, DHCP Service Health & Capacity Monitoring, Safe Active Discovery,
 retention/archival policy, asset-centric digital twin, and later
 topology/dependency intelligence. Canonical-address hardening is complete and
-production validated; PE-1 is not implemented, and no Asset-layer runtime state
-exists yet.
+production validated; PE-0 is design approved, PE-1 is not implemented, and no
+Enrichment sidecar or Asset-layer runtime state exists yet. The approved future
+PE-1 paths are `state/inventory/enrichment.json` and
+`state/inventory/enrichment_status.json`; they are not current artifacts.

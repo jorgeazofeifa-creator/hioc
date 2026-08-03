@@ -10,6 +10,23 @@ HIOC runtime is cron-driven, using short-lived jobs protected by `flock`. A heal
 
 The confirmed trigger is the `jazofv1` user crontab. Every listed command uses `flock -n`: if another live execution owns the lock, the new invocation exits instead of waiting. A lock-path file may remain after a run; its presence alone does not mean a job is stuck because the lock is held by a live file descriptor.
 
+## Planned PE-1 Operational Boundary
+
+PE-1 is design approved but **not implemented or deployed**. Its approved
+future sidecars are `state/inventory/enrichment.json` and
+`state/inventory/enrichment_status.json`; their absence is currently expected.
+PE-1 will run inside the existing Inventory Engine schedule and lock, add no
+cron job or network acquisition, and publish neither artifact over MQTT.
+
+When separately implemented, enrichment failure will be isolated from
+authoritative inventory generation: public inventory remains valid, the last
+valid enrichment envelope remains untouched, and a sanitized local status
+records the PE-1 failure without changing device health or creating an
+incident. Detailed schema, permissions, validation, evidence, and rollback
+requirements are in
+[PE1_HOSTNAME_ENRICHMENT_SPEC.md](PE1_HOSTNAME_ENRICHMENT_SPEC.md). This section
+is a future operational contract, not current-state procedure.
+
 ## Canonical Schedule
 
 | Component | Cron expression | Plain-language schedule | Lock |

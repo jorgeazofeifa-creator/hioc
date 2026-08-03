@@ -391,7 +391,7 @@ and DHCP service-health work remain outside this completed decision.
 
 Date: 2026-08-03
 
-Status: Proposed for design review; not implemented.
+Status: Accepted and design approved; implementation pending.
 
 Decision: Permanently separate Observation (what a passive source saw),
 Enrichment (what HIOC learned, normalized, correlated, or inferred), and Asset
@@ -438,3 +438,23 @@ Observation; staleness applies to evidence rather than Asset existence; and
 missing enrichment or Asset metadata cannot independently create an incident
 or health conclusion. Asset data is the most privacy-sensitive layer and is
 deny-by-default for publication.
+
+PE-1 approved contract: only existing explicit technical hostnames from known
+infrastructure, configured integrations, the local collector, and active DHCP
+leases are eligible. Configured/integration `name`, retained public hostname,
+ARP, service names, reverse DNS, MQTT, Home Assistant, and legacy toolkit names
+are excluded. Case, Unicode/IDNA equivalent, and trailing-dot forms agree;
+`.lan`, `.local`, short names, and FQDNs are not collapsed. Invalid and
+placeholder evidence may be retained but is nonselectable. Selection is
+deterministic in descriptive order: configured fact, trusted integration,
+local observation, DHCP observation, then one-generation historical fallback.
+
+Storage and lifecycle: PE-1 will use closed version `1.0` local sidecars at
+`state/inventory/enrichment.json` and `enrichment_status.json`, keyed by stable
+device ID. It retains current candidates plus at most the immediately previous
+selected candidate for one successful generation while the device remains in
+resolved inventory. The existing inventory schedule and identity path remain
+authoritative; enrichment is fail-open, never rereads sources, never becomes a
+public payload, and cannot block valid inventory output. The full approved
+implementation contract is
+`docs/PE1_HOSTNAME_ENRICHMENT_SPEC.md`. PE-1 remains not started.

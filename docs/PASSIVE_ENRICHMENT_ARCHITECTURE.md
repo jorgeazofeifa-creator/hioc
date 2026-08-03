@@ -1,6 +1,6 @@
 # Passive Enrichment Architecture and Specification
 
-Status: **IN PROGRESS - DESIGN REVIEW; NO IMPLEMENTATION STARTED**
+Status: **PE-0 COMPLETE - DESIGN APPROVED; PE-1 NOT STARTED**
 
 This document is the implementation-ready design for the remaining Phase 7A
 passive-enrichment work. It does not authorize executable changes, production
@@ -486,14 +486,24 @@ Candidate histories and conflict details are also local by default. Logs use
 counts/source IDs and sanitized reasons, not sensitive values. Future HA access
 must be read-only, least-privilege, and secret-file/config based.
 
-## Open design decisions
+## Decisions deferred beyond PE-1
 
-- Approve PE-1's parallel local artifact as the first provenance boundary.
-- Approve categorical authority/confidence rather than numeric scores.
 - Define a versioned integration input schema before trusting new fields.
 - Select and license a local OUI dataset before PE-3.
 - Decide which later enrichment fields may enter retained MQTT and dashboards.
 - Design expected availability and retention/archival in their own checkpoints.
 
-No open decision blocks review of this specification, but PE-1 must not start
-until explicit approval is given.
+The parallel local PE-1 artifact and categorical authority/confidence model are
+approved. No PE-1 architectural decision remains open, but implementation must
+not start until explicit authorization is given. The complete package is
+[PE1_HOSTNAME_ENRICHMENT_SPEC.md](PE1_HOSTNAME_ENRICHMENT_SPEC.md).
+
+## PE-0 design review closure
+
+PE-0 is **COMPLETE - DESIGN APPROVED**. ADR-0019, this architecture, and the
+PE-1 specification resolve the Observation, Enrichment, Asset, authority,
+normalization, conflict, provenance, confidence, storage, lifecycle, failure,
+privacy, compatibility, validation, and rollback decisions required for PE-1.
+No executable or production change occurred. The completion commit is the Git
+commit containing this closure; its exact hash is derived after commit rather
+than embedded self-referentially. PE-1 remains **NOT STARTED**.
