@@ -28,6 +28,14 @@ Do not place roadmap items here. Future work belongs in [../ROADMAP.md](../ROADM
 
 ### Documentation
 
+- Defined the Phase 7A Passive Enrichment Architecture and Specification for
+  design review. It maps implemented and absent passive sources, audits the
+  current schema, separates metadata layers, and proposes field-level
+  provenance, conflicts, categorical confidence, privacy boundaries, and an
+  ordered implementation sequence. The first proposed sub-checkpoint is a
+  local-only hostname evidence envelope. No executable or production behavior
+  changed, and implementation remains subject to explicit approval.
+
 - Closed Canonical Address Selection Hardening as production validated. The
   unchanged comparator from `839e924` matched source and runtime at the
   approved Git-derived SHA-256; all six strict Boolean invariants passed;

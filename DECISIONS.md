@@ -386,3 +386,40 @@ the approved bound; and the final result was
 `NO_QUALIFYING_CANDIDATE` with no rollback. The earlier unconditional-DHCP and
 generic-truthiness failures were validator defects. The `.152` lease residue
 and DHCP service-health work remain outside this completed decision.
+
+## ADR-0019: Stage Passive Enrichment Behind a Field-Level Evidence Envelope
+
+Date: 2026-08-03
+
+Status: Proposed for design review; not implemented.
+
+Decision: Model descriptive enrichment as field-level candidates attached to
+an already reconciled stable device ID. Keep observed, derived,
+operator-managed, and relationship metadata distinct. Begin with a parallel
+local artifact containing hostname candidates, selected evidence, conflicts,
+categorical authority, confidence, and provenance. Do not project that first
+artifact into public inventory, MQTT, Home Assistant, dashboards, or incidents.
+
+Context: Current inventory preserves aggregate sources and deterministic
+selected values but not the candidate, conflict, or provenance for each field.
+`name` also combines operator intent with display fallback. Home Assistant and
+MQTT are consumers/transport today, and no repository OUI enrichment exists.
+
+Alternatives: Add nested provenance directly to every public device; create a
+database before proving the model; allow every integration dictionary equal
+authority; or start with operator and external-reference data simultaneously.
+
+Reason: A local hostname-only envelope exercises real conflicting passive
+sources with the smallest payload, privacy, identity, and consumer risk. It
+creates the reusable contract needed for later operator-friendly names,
+physical location, manufacturer, Home Assistant association, and explainable
+classification.
+
+Consequences: Identity, canonical address, liveness, health, monitoring,
+incidents, and retention remain owned by their existing contracts. Operator
+metadata cannot be silently overwritten. Authority is field-specific;
+confidence is categorical and never acts as identity or health evidence.
+Public projection, OUI data, Home Assistant access, expected availability,
+permanent-IoT monitoring, automation impact, and retention each require later
+review. The full proposed contract is in
+`docs/PASSIVE_ENRICHMENT_ARCHITECTURE.md`.

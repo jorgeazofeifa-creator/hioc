@@ -623,6 +623,26 @@ The production address-allocation failure was caused by exhaustion of the former
 
 Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Identity Reconciliation Hardening, FAILED/INCOMPLETE ARP semantics, Dashboard Severity Mapping, Collector Canonical Ownership, Pi-hole DHCP Lease Ingestion, and Canonical Address Selection Hardening are complete. Passive enrichment may resume in its documented order; the separate `.152` DHCP residue and DHCP service-health roadmap work remain open.
 
+#### Passive Enrichment Architecture and Specification
+
+Status: **IN PROGRESS - DESIGN REVIEW; NO IMPLEMENTATION STARTED**
+
+The implementation-ready design is maintained in
+[PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
+maps every current passive source, audits the permissive inventory schema,
+separates observed, derived, operator-managed, and relationship metadata, and
+defines field-level authority, provenance, confidence, conflict, privacy, and
+rollback contracts.
+
+The proposed minimum implementation is a parallel, local-only hostname
+evidence envelope. It must prove deterministic candidate selection and
+conflict preservation without changing identity, canonical address, public
+inventory, MQTT, Home Assistant, dashboards, incidents, liveness, health, or
+retention. Implementation has not started and requires explicit design
+approval. Expected availability, permanent-IoT monitoring, Home Assistant
+availability correlation, automation impact, incidents, retention, DHCP
+service health, and `.152` lease cleanup remain separate future work.
+
 ---
 
 ## Planned Phase
@@ -1101,13 +1121,15 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Resume the remaining Phase 7A passive-enrichment sequence while preserving the
-completed canonical-address, identity, provenance, liveness, health, and
-retention contracts.
+Review and approve the Phase 7A Passive Enrichment Architecture and
+Specification while preserving the completed canonical-address, identity,
+liveness, health, and retention contracts. No executable implementation has
+started.
 
 ## Next Planned Task
 
-Resume passive enrichment in the documented Phase 7A sequence.
+After explicit approval, begin only PE-1, the local-only Hostname Enrichment
+Evidence Envelope, with protected-invariant and no-public-change validation.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
