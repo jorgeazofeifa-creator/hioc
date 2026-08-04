@@ -1,6 +1,6 @@
 # PE-3 Manufacturer Reference Enrichment Specification
 
-Status: **PE-3.0 ARCHITECTURE DEFINED; PE-3.1 NOT STARTED**
+Status: **PE-3.0 ARCHITECTURE DEFINED; PE-3.1 IMPLEMENTATION DESIGN APPROVED; EXECUTABLE NOT STARTED**
 
 ## Purpose and boundary
 
@@ -37,7 +37,7 @@ Primary references:
 - [Nmap MAC prefix data description](https://nmap.org/book/nmap-mac-prefixes.html)
 
 No dataset is approved for download, commit, distribution or production use in
-PE-3.0. Before PE-3.1, governance must record the IEEE terms reviewed, reviewer,
+PE-3.0. Before PE-3.1 executable work, governance must record the IEEE terms reviewed, reviewer,
 date, permitted repository/release use, attribution, and any redistribution
 conditions. Failure to obtain approval stops implementation and may trigger a
 new source-selection decision; it never permits silent substitution.
@@ -62,11 +62,12 @@ Each approved snapshot must have a closed manifest containing:
 - parser version and source Git commit;
 - dataset version label derived from immutable evidence, never only “latest”.
 
-The repository location is reserved conceptually as `reference/oui/<version>/`
-with a small current-version manifest selected by configuration. PE-3.1 must
-approve exact paths before creating them. Runtime must use only a release-bundled,
-checksum-verified snapshot; it must never fetch data. Builds operate from pinned
-bytes and reproduce the same normalized artifact on Windows and Linux.
+The PE-3.1 design supersedes the conceptual repository reservation with the
+private runtime path and single configuration key defined in
+[PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md](PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md).
+No repository dataset path is approved. Runtime must use only a governed,
+checksum-verified injected snapshot; it must never fetch data. Builds operate
+from pinned bytes and reproduce the same normalized artifact on Windows and Linux.
 
 Updates are separate reviewed commits. The updater, if later authorized, runs
 outside production, downloads to a temporary location, verifies transport and
@@ -109,8 +110,10 @@ approval.
 
 ## Enrichment model
 
-PE-3.1 may propose a closed private sidecar schema, but PE-3.0 approves only the
-conceptual fields below and does not modify existing schemas:
+PE-3.1 has frozen a closed private sidecar schema in
+[PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md](PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md).
+The conceptual fields below remain the architecture basis; no existing schema
+or runtime has been modified:
 
 | Field | Meaning |
 | --- | --- |
@@ -279,9 +282,11 @@ violation, or protected-invariant regression caused by PE-3. Unknown vendors,
 local-admin results, normal dataset corrections and absence of optional matches
 are not rollback conditions.
 
-## PE-3.1 test matrix
+## PE-3.0 architecture test matrix
 
-The implementation checkpoint must refine and automate at least these 64 cases:
+These 64 architecture cases established the minimum scope. The PE-3.1 design
+refines them into the binding 76-test executable plan; where grouping or exact
+schema behavior differs, the implementation design controls.
 
 | # | Area | Case and expected result |
 | ---: | --- | --- |
@@ -356,6 +361,7 @@ must not embed household data.
 
 ## Checkpoint decision
 
-PE-3.0 defines architecture and governance only. No dataset, schema, executable,
-test, runtime or production change is authorized. PE-3.1 remains **NOT STARTED**
-pending explicit authorization and successful IEEE redistribution-license review.
+PE-3.0 defines architecture and governance only. PE-3.1 implementation design is
+approved, but no dataset, executable, test, runtime, or production change is
+authorized. PE-3.1 executable implementation remains **NOT STARTED** pending
+explicit authorization and successful IEEE license/use review.

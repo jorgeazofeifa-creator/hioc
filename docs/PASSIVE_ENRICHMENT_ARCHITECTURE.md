@@ -1,6 +1,6 @@
 # Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE DEFINED; PE-3.1 NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE DEFINED; PE-3.1 IMPLEMENTATION DESIGN APPROVED; EXECUTABLE NOT STARTED**
 
 This document is the implementation-ready design for the remaining Phase 7A
 passive-enrichment work. It does not authorize executable changes, production
@@ -417,8 +417,11 @@ production validation are complete.
 4. **PE-3 - Manufacturer reference enrichment:** approve and pin a local OUI
    dataset, license/version/update governance, and deterministic derivation.
    PE-3.0 architecture is defined in
-   [PE3_MANUFACTURER_ENRICHMENT_SPEC.md](PE3_MANUFACTURER_ENRICHMENT_SPEC.md);
-   PE-3.1 is not started and remains gated on IEEE redistribution review.
+   [PE3_MANUFACTURER_ENRICHMENT_SPEC.md](PE3_MANUFACTURER_ENRICHMENT_SPEC.md).
+   The PE-3.1 module, normalized-dataset, separate-sidecar, lookup, privacy,
+   failure, validation, and 76-test contracts are frozen in
+   [PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md](PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md).
+   Executable work and dataset use are not started and remain license-gated.
 5. **PE-4 - Trusted integration association:** add a read-only Home Assistant
    registry adapter and declared field/association authority; do not infer
    availability.
@@ -500,7 +503,8 @@ must be read-only, least-privilege, and secret-file/config based.
 ## Decisions deferred beyond PE-1
 
 - Define a versioned integration input schema before trusting new fields.
-- Complete the recorded IEEE redistribution-license gate before PE-3.1.
+- Complete the recorded IEEE license/use gate before PE-3.1 executable work or
+  any dataset acquisition, injection, commit, distribution, or production use.
 - Decide which later enrichment fields may enter retained MQTT and dashboards.
 - Design expected availability and retention/archival in their own checkpoints.
 
@@ -520,4 +524,5 @@ commit rather than embedded self-referentially. PE-1 was later implemented and
 production validated without changing public inventory contracts. Evidence is
 in [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
 PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is complete and
-production validated. PE-3.0 architecture is defined; PE-3.1 is not started.
+production validated. PE-3.0 architecture and the PE-3.1 implementation design
+are approved; PE-3.1 executable implementation is not started.

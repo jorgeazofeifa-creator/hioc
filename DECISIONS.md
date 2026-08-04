@@ -580,4 +580,35 @@ deterministic and fail-open for inventory; local-admin, multicast, private,
 invalid and unknown addresses never receive fabricated manufacturers. Future
 operator correction belongs to Asset and future classification remains separate.
 The complete binding architecture is
-`docs/PE3_MANUFACTURER_ENRICHMENT_SPEC.md`. PE-3.1 is not started.
+`docs/PE3_MANUFACTURER_ENRICHMENT_SPEC.md`.
+
+## ADR-0021: Freeze PE-3.1 as an injected normalized dataset and separate sidecar
+
+Status: Accepted for implementation design; executable implementation gated
+
+Because IEEE redistribution permission is not established, raw and transformed
+assignment data are prohibited from repository/release distribution by default.
+The future offline builder consumes explicitly supplied, checksum-pinned files;
+runtime consumes only a deterministic normalized database. If redistribution is
+not approved, an authorized local build injects the identical artifact without
+changing runtime logic.
+
+The runtime artifact has a closed versioned schema, a canonical-records digest
+distinct from the complete-file artifact checksum, and only normalized prefix,
+length, assignment type, and organization fields. Lookup validates immutable
+36-, 28-, and 24-bit maps in longest-prefix order. Local-admin/randomized and
+multicast addresses cannot produce manufacturer claims, and explicit EUI-64 is
+never converted by removing `FF:FE`.
+
+Manufacturer output uses separate private `manufacturer.json` and status
+sidecars rather than changing the production-validated hostname enrichment
+schema. This isolates dataset licensing, refresh, failure and rollback from
+PE-1 and PE-2. Reference evidence remains immutable provenance; a future
+operator correction is separate Asset metadata. Missing or invalid reference
+data fails open and cannot affect protected operational contracts.
+
+The binding decisions, exact schemas/paths, module boundaries, performance and
+privacy limits, production validator contract, and 76-test plan are in
+`docs/PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md`. No executable or dataset is
+approved by this decision. The next checkpoint is PE-3.1 executable
+implementation after license/use approval and explicit authorization.

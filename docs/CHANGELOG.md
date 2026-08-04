@@ -1,5 +1,14 @@
 # HIOC Changelog
 
+- Approved the documentation-only PE-3.1 Manufacturer Enrichment implementation
+  design. Froze restrictive license and external-injection governance, the
+  normalized MA-L/MA-M/MA-S database schema and digest semantics, O(1)
+  longest-prefix lookup, EUI/address-class behavior, three-module boundary,
+  separate private manufacturer sidecars, provenance, PI3 performance bounds,
+  fail-open isolation, privacy, production validation, rollback, and a 76-test
+  executable plan. No code, dataset, deployment, or production change occurred;
+  executable implementation remains gated and not started.
+
 - Defined PE-3.0 Manufacturer Reference Enrichment architecture and governance
   without code, schema, tests, dataset or runtime changes. Selected pinned IEEE
   Registration Authority listings as the future authoritative upstream subject

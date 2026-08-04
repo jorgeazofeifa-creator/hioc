@@ -161,7 +161,10 @@ design and implementation design approved. PE-2.1 now provides deployed private
 `assets.json`, `assets_status.json`, and the local Asset CLI/validator and is
 production validated. Asset presentation/publication remains future work.
 
-PE-3.0 manufacturer-reference architecture is documentation-only. The selected
-future authority is a pinned offline IEEE public registry snapshot, subject to
-license approval. No dataset, parser, sidecar, schedule, runtime lookup or
-consumer exists; PE-3.1 is not started.
+PE-3.0 manufacturer-reference architecture and the PE-3.1 implementation design
+are documentation-only. The future runtime contract uses an externally
+injectable, normalized, checksum-verified IEEE snapshot and a separate private
+manufacturer sidecar with deterministic 36/28/24-bit lookup. License approval
+is still required. No dataset, executable parser/lookup, sidecar, schedule, or
+consumer exists; PE-3.1 executable implementation is not started. See
+[PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md](PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md).
