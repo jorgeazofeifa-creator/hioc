@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 DESIGN APPROVED; PE-2.1 EXECUTABLE DEPLOYED; PE-2.1 CORRECTED PRODUCTION REVALIDATION PENDING**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -661,12 +661,11 @@ separate stable-ID-keyed, local-only Asset store and governed CLI for
 `friendly_name`, `physical_location`, `purpose`, and private `notes`, while
 deferring owner, public projection, expected availability, lifecycle, and
 identity migration. The PE-2.1 implementation design is approved in
-[PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md), while
-executable implementation remains not started. The Git
-commit containing this documentation closure is the authoritative completion
-commit; its hash is reported after commit to avoid a self-referential
-documentation identity. Repository evidence is in
-[PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
+[PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md), and
+its private Asset foundation is implemented, deployed, and production validated.
+Repository evidence is in
+[PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md) and
+[PE2_ASSET_FOUNDATION_EVIDENCE.md](PE2_ASSET_FOUNDATION_EVIDENCE.md).
 
 ---
 
@@ -1146,15 +1145,16 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Maintain Phase 7A after completing and production-validating PE-1 and approving
-the PE-2.0 Asset foundation design and deploying the repository-validated PE-2.1
-implementation. Artifact bytes passed forensic comparison; corrected production
-revalidation remains pending after a validator-contract defect.
+Maintain Phase 7A after completing and production-validating PE-1 and PE-2.1.
+The private Asset foundation is deployed and validated without changing public
+or operational contracts. Phase 7A is not complete.
 
 ## Next Planned Task
 
-The next authoritative checkpoint requires separate authorization for PE-2.1
-corrected production revalidation. Do not mark Phase 7A complete.
+The next authoritative checkpoint is **PE-3 - Manufacturer reference
+enrichment: approve and pin a local OUI dataset, license/version/update
+governance, and deterministic derivation.** Do not begin it without separate
+authorization, and do not mark Phase 7A complete.
 
 The corrected run completed Asset transactions and cleanup, then exposed a
 second validator-contract defect: live `active.json` was treated as immutable.
@@ -1171,6 +1171,14 @@ No real Asset record or malformed backup was found; classification is
 future pre-invariant current-run cleanup are repository implemented. PE-2.1
 remains deployed and open pending one-time cleanup and separate final
 revalidation. PE-3 remains not started.
+
+Final validation-only revalidation passed at validator-governance commit
+`6bb9e158f9d51d9e43b042950620e0c4aba03eb5`. Deployed implementation identity,
+restrictive permissions, Asset transactions, final-state equality, current-run
+backup cleanup, privacy, performance, and protected invariants passed. Incident
+movement was `INCIDENT_OPERATIONAL_DRIFT` with no causal PE-2 regression. No
+rollback occurred or was required. PE-2.1 is **COMPLETE - PRODUCTION
+VALIDATED**; PE-3 remains **NOT STARTED** and Phase 7A remains in progress.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

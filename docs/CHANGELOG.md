@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Closed PE-2.1 Asset Foundation as **COMPLETE - PRODUCTION VALIDATED**. Deployed
+  Git-derived identity, restrictive permissions, synthetic transactions and
+  cleanup, final Asset equality, protected contracts, privacy, performance, and
+  incident operational-drift classification passed. Four validator-governance
+  defects were corrected without changing deployed Asset implementation files;
+  no rollback occurred. PE-3 remains not started.
+
 - Governed one-time cleanup of six exact PE-2 synthetic-only validation backups.
   Added an exact basename/SHA manifest, two-phase schema-aware cleanup tool, and
   moved future tracked current-run backup cleanup before unrelated invariants.

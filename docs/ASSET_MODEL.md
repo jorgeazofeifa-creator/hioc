@@ -7,8 +7,8 @@ HIOC currently discovers technical device identities and explains their observed
 An asset-centric system does not merely know that a MAC address exists. It can eventually connect that technical evidence to operator knowledge: what the equipment is, where it is, why it matters, who is responsible for it, when it should be available, and what action is appropriate when its state changes.
 
 This document explains that direction. PE-2.0 has approved the first bounded
-Asset foundation and implementation design; PE-2.1 is implemented and repository
-validated but not deployed or production validated;
+Asset foundation and implementation design; PE-2.1 is implemented, deployed,
+and production validated;
 the frozen contract is
 [PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md); planned concepts are
 not claims about current runtime behavior. The authoritative implementation
@@ -65,7 +65,7 @@ The current monitoring policy deliberately avoids turning ordinary ARP/DHCP-only
 A **Device** is a discovered technical identity. It may contain a stable device ID, MAC address, IP address, hostname, sources, services, observation history, and health or status fields.
 
 An **Asset** is durable operator-managed metadata linked to a stable HIOC device
-ID. PE-2.1 is approved to begin only with friendly name, physical location,
+ID. PE-2.1 currently supports only friendly name, physical location,
 purpose, and private notes in a separate local store. Owner, category,
 criticality, expected availability, monitoring/maintenance expectations, photos,
 dates, history, retirement, and archival remain future concepts.

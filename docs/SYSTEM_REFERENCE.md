@@ -154,10 +154,9 @@ retention/archival policy, asset-centric digital twin, and later
 topology/dependency intelligence. Canonical-address hardening is complete and
 production validated; PE-0 is design approved and PE-1 is complete and
 production validated. Its two private Enrichment sidecars are current runtime
-state; no Asset-layer runtime state exists. Corrected production validation
+state. Corrected production validation
 reported `online`, 153 records, 83 candidates, 82 selected candidates, and zero
 conflicts without changing public inventory or consumer contracts. PE-2.0 is
-design and implementation design approved. PE-2.1 code now provides
-`assets.json`, `assets_status.json`, and the local Asset CLI/validator, but is not
-deployed or production validated. All Asset presentation/publication remains
-future work.
+design and implementation design approved. PE-2.1 now provides deployed private
+`assets.json`, `assets_status.json`, and the local Asset CLI/validator and is
+production validated. Asset presentation/publication remains future work.

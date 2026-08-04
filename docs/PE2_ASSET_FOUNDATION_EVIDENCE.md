@@ -1,6 +1,6 @@
 # PE-2.1 Asset Foundation Evidence
 
-Status: **REPOSITORY IMPLEMENTATION PASS; PRODUCTION DEPLOYMENT AND VALIDATION PENDING**
+Status: **COMPLETE - PRODUCTION VALIDATED**
 
 ## Repository baseline
 
@@ -252,3 +252,40 @@ after synthetic removal and final Asset equality, records sanitized evidence,
 and removes only validated synthetic-only current-run backups before unrelated
 invariants. PE-2.1 remains deployed and open pending one-time cleanup followed
 by separate final revalidation. PE-3 is not started.
+
+## Final production validation and checkpoint closure
+
+PE-2.1 was deployed through the supported release upgrade from implementation
+commit `dd6f40b113fe8a395babc8bfb2325262879b8454`. Release backup
+`/home/jazofv1/hioc/backups/release-upgrade-20260803-205823` and installer
+backup `/home/jazofv1/hioc/backups/install-20260803-205823` were created. All
+deployed implementation artifacts matched approved Git objects byte-for-byte,
+and runtime permissions matched the restrictive deployment policy.
+
+The governed one-time cleanup validated and removed six synthetic-only backups
+without changing current Asset state or status and without touching a real Asset
+record. Final validation-only revalidation used validator-governance commit
+`6bb9e158f9d51d9e43b042950620e0c4aba03eb5` and produced sanitized evidence at
+`/tmp/hioc-pe2-production-validation-CtZ4WHUN`.
+
+Asset store/status validation; synthetic creation, update, no-op, stale-revision
+rejection, backup, restore, removal, cleanup; final semantic equality; privacy;
+performance; and all protected invariants passed. All current-run synthetic
+backups were removed. Public inventory, identity, canonical address, health,
+liveness, observation status, MQTT, Home Assistant, dashboards, incident
+history, and incident summary remained protected. Active incident movement was
+`INCIDENT_OPERATIONAL_DRIFT`; no PE-2 causal regression was demonstrated. No
+Asset metadata entered incidents, MQTT, public inventory, logs, or evidence.
+Rollback was neither performed nor required.
+
+The production-validation history contained four governance defects: Git modes
+were mistaken for runtime permission requirements; lowercase JSON booleans were
+interpolated into generated Python; live active incident state was treated as
+immutable; and synthetic backup cleanup followed unrelated invariants. All were
+validator-governance defects, not Asset implementation defects. Deployed Asset
+implementation files remained unchanged throughout correction, defect-based
+rollback recommendations were withdrawn, and the final corrected validator
+passed.
+
+Decision: **PE-2.1 - COMPLETE - PRODUCTION VALIDATED**. Phase 7A remains in
+progress. PE-3 remains not started.

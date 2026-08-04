@@ -34,7 +34,7 @@ topology, and service-ownership contracts remained protected.
 ## Deployed PE-2.1 Operational Boundary
 
 PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is implemented,
-repository validated, and deployed, with final production validation pending.
+repository validated, deployed, and production validated.
 The local artifacts are
 `state/inventory/assets.json` and
 `state/inventory/assets_status.json`. A dedicated local CLI—not manual JSON,
@@ -71,6 +71,12 @@ non-symlink, ownership/mode, SHA-256, JSON, authoritative schema, and synthetic-
 only checks. Wildcard, timestamp-range, and discovered-backup deletion are
 prohibited. Current state, the backup root, and every unlisted operator backup
 are outside scope. Cleanup and final revalidation are separate actions.
+
+Final validation reported deployed-and-validated status, passing Asset and
+protected invariants, passing privacy and performance, complete current-run
+synthetic cleanup, and incident operational drift without causal PE-2 regression.
+No rollback occurred or was required. Evidence is retained at the sanitized
+reference `/tmp/hioc-pe2-production-validation-CtZ4WHUN`.
 
 ## Canonical Schedule
 

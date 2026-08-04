@@ -544,3 +544,20 @@ unlisted backups are prohibited. Future validators clean only explicitly tracked
 current-run synthetic-only backups immediately after final Asset equality and
 before unrelated invariants. This corrects validator ordering without weakening
 the Asset backup implementation or policy.
+
+## PE-2.1 production-validation closure
+
+PE-2.1 is **COMPLETE - PRODUCTION VALIDATED**. Implementation commit
+`dd6f40b113fe8a395babc8bfb2325262879b8454` was deployed through the supported
+release path and matched approved Git objects with restrictive permissions.
+Final validation at governance commit
+`6bb9e158f9d51d9e43b042950620e0c4aba03eb5` passed Asset transactions, cleanup,
+final equality, privacy, performance, and all protected invariants. Incident
+movement was operational drift with no PE-2 causal regression.
+
+The Git-mode/runtime-mode mismatch, generated-Python Boolean serialization,
+immutable-active-incident assumption, and late synthetic-backup cleanup were all
+validator-governance defects. They did not establish an Asset implementation
+defect; deployed Asset files remained unchanged during correction. Associated
+rollback recommendations were withdrawn, and no rollback was executed. Phase 7A
+remains in progress; PE-3 is not started.
