@@ -1,6 +1,10 @@
 # PE-2 Asset Foundation Specification
 
-Status: **PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 NOT STARTED**
+Status: **PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 IMPLEMENTATION DESIGN APPROVED; PE-2.1 EXECUTABLE NOT STARTED**
+
+The exact implementation contract is frozen in
+[PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md). This
+specification remains the product and privacy authority.
 
 ## Purpose and scope
 

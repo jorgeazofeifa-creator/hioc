@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 IMPLEMENTATION DESIGN REVIEW COMPLETE - IMPLEMENTATION DESIGN APPROVED; PE-2.1 EXECUTABLE NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -660,7 +660,9 @@ validated production snapshot is acceptable. PE-2.0 is design approved in
 separate stable-ID-keyed, local-only Asset store and governed CLI for
 `friendly_name`, `physical_location`, `purpose`, and private `notes`, while
 deferring owner, public projection, expected availability, lifecycle, and
-identity migration. PE-2.1 remains not started. The Git
+identity migration. The PE-2.1 implementation design is approved in
+[PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md), while
+executable implementation remains not started. The Git
 commit containing this documentation closure is the authoritative completion
 commit; its hash is reported after commit to avoid a self-referential
 documentation identity. Repository evidence is in
@@ -1145,12 +1147,14 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 
 Maintain Phase 7A after completing and production-validating PE-1 and approving
-the PE-2.0 Asset foundation design. PE-2.1 remains not started.
+the PE-2.0 Asset foundation design and the frozen PE-2.1 implementation design.
+PE-2.1 executable implementation remains not started.
 
 ## Next Planned Task
 
-The next authoritative checkpoint is separately authorized PE-2.1 Asset
-Foundation implementation. It has not begun. Do not mark Phase 7A complete.
+The next authoritative checkpoint requires separate authorization for PE-2.1
+Asset Foundation executable implementation. It has not begun. Do not mark
+Phase 7A complete.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

@@ -501,4 +501,9 @@ Identity supersession creates an orphan; automatic Asset merge/split/migration
 is prohibited until a later alias contract exists. Expected availability,
 lifecycle, public presentation, HA/UI/API editing, and retention remain later
 decisions. Full contract: `docs/PE2_ASSET_FOUNDATION_SPEC.md`. PE-2.0 is
-**COMPLETE - DESIGN APPROVED**; PE-2.1 is **NOT STARTED**.
+**COMPLETE - DESIGN APPROVED**. The PE-2.1 implementation-design review is
+**COMPLETE - IMPLEMENTATION DESIGN APPROVED** in
+`docs/PE2_ASSET_IMPLEMENTATION_DESIGN.md`; PE-2.1 executable implementation is
+**NOT STARTED**. The approved design selects isolated CLI/service/store modules,
+no inventory import or schedule, strict Asset-local transactions, bounded flock,
+closed schemas/errors, deny-by-default output, and release preservation.

@@ -402,7 +402,10 @@ this specification does not redesign the dashboard.
 
 PE-2.0 is design approved. The authoritative PE-2.1 field, storage, CLI,
 privacy, backup, lifecycle, test, and production-validation contract is
-[PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md). PE-2.1 remains not
+[PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md), with exact module,
+CLI and transaction decisions in
+[PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md).
+The implementation-design review is complete; PE-2.1 executable work remains not
 started.
 
 1. **PE-0 - Architecture and specification:** complete, design approved.
@@ -513,4 +516,5 @@ is the Git commit containing that closure; its exact hash was derived after
 commit rather than embedded self-referentially. PE-1 was later implemented and
 production validated without changing public inventory contracts. Evidence is
 in [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
-PE-2.0 is now design approved; PE-2.1 is not started.
+PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 executable
+implementation is not started.

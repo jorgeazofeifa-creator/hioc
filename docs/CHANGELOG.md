@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Completed the PE-2.1 Implementation Design Review without executable or
+  production change. The approved design freezes module boundaries, schemas,
+  normalization, locks, revisions, atomic transactions, backups/restores,
+  sanitized output, exit/error codes, privacy, failures, production validation,
+  cleanup, performance, release preservation, tests and the future implementation
+  prompt. PE-2.1 executable implementation remains not started.
+
 - Completed PE-2.0 design review and approved the implementation-ready Asset
   foundation for operator-managed `friendly_name`, `physical_location`,
   `purpose`, and private `notes`. The design uses a separate stable-ID-keyed

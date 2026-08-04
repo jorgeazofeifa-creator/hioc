@@ -7,7 +7,9 @@ HIOC currently discovers technical device identities and explains their observed
 An asset-centric system does not merely know that a MAC address exists. It can eventually connect that technical evidence to operator knowledge: what the equipment is, where it is, why it matters, who is responsible for it, when it should be available, and what action is appropriate when its state changes.
 
 This document explains that direction. PE-2.0 has approved the first bounded
-Asset foundation design, but PE-2.1 remains unimplemented; planned concepts are
+Asset foundation and implementation design, but PE-2.1 remains unimplemented;
+the frozen contract is
+[PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md); planned concepts are
 not claims about current runtime behavior. The authoritative implementation
 contract is [PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md).
 
