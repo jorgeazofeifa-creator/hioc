@@ -52,6 +52,8 @@ class Pe2ProductionOperatorTests(unittest.TestCase):
         self.assertIn("SYMLINK_REJECTION_FAILED", self.text)
         self.assertNotIn("rm -- $RUNTIME/backups/assets/*", self.text)
         self.assertIn('rm -- "$path"', self.text)
+        self.assertIn("SYNTHETIC_RESIDUE_PRESENT", self.text)
+        self.assertIn("CLEAN_BEFORE_MUTATION", self.text)
 
     def test_authoritative_cli_and_validator_used(self):
         self.assertIn('pi4/bin/hioc-assets.py', self.text)
@@ -66,6 +68,13 @@ class Pe2ProductionOperatorTests(unittest.TestCase):
     def test_validation_failure_never_uses_fail_helper(self):
         self.assertIn('die_validation "VALIDATOR_INTERNAL_ERROR"', self.text)
         self.assertIn('ROLLBACK_RECOMMENDED="FALSE"', self.text)
+
+    def test_incident_contract_is_positive_and_validation_only(self):
+        self.assertIn("validate_pe2_incident_contract.py", self.text)
+        self.assertIn("INCIDENT_OPERATIONAL_DRIFT", self.text)
+        self.assertIn("INCIDENT_VALIDATION_INCONCLUSIVE", self.text)
+        self.assertNotIn('cmp -s "$digest" "$EVIDENCE/post/incidents/$name"', self.text)
+        self.assertNotIn("release/upgrade.sh", self.text)
 
 
 if __name__ == "__main__":

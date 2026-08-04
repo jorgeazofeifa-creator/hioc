@@ -1156,6 +1156,14 @@ revalidation remains pending after a validator-contract defect.
 The next authoritative checkpoint requires separate authorization for PE-2.1
 corrected production revalidation. Do not mark Phase 7A complete.
 
+The corrected run completed Asset transactions and cleanup, then exposed a
+second validator-contract defect: live `active.json` was treated as immutable.
+History and summary digests were unchanged and sanitized comparison found zero
+changed nonvolatile fields. No PE-2 causal regression was demonstrated, so the
+rollback recommendation is withdrawn. Positive incident-contract governance is
+now repository validated. PE-2.1 remains **DEPLOYED - REPOSITORY VALIDATED -
+PRODUCTION REVALIDATION PENDING**. PE-3 remains **NOT STARTED**.
+
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
 Do not begin Active Discovery until Phase 7A has been completed.

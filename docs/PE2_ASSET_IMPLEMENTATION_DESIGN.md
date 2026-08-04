@@ -386,3 +386,12 @@ PE-2.0 is **COMPLETE - DESIGN APPROVED**. PE-2.1 Implementation Design Review is
 **COMPLETE - IMPLEMENTATION DESIGN APPROVED**. PE-2.1 executable implementation
 is **IMPLEMENTED - REPOSITORY VALIDATED**. Production remains unchanged; its
 deployment and validation are pending separate explicit authorization.
+
+# Production validator incident-isolation refinement
+
+Production validation protects incidents through schema, prohibited-data, and
+structural write-path checks rather than equality of live operational snapshots.
+This changes only validator governance, not the approved Asset implementation or
+its design. A pre-mutation residue check also requires the reserved synthetic ID
+to be absent from current Asset state and readable backups; uncertain or present
+residue stops without mutation.

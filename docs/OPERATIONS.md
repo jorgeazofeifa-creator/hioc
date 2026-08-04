@@ -56,6 +56,13 @@ implementation remains in place with approved restrictive modes. Corrected
 validation must use `--revalidate-existing-deployment`; that mode never invokes
 `release/upgrade.sh` and produces a new protected evidence directory.
 
+Incident protection for this revalidation is a positive contract, not live-file
+digest equality. `tools/validate_pe2_incident_contract.py` validates JSON and
+required shape, absence of Asset metadata and synthetic values, and structural
+Asset-to-incident isolation. Normal lifecycle, title, telemetry, history, or
+summary movement is operational drift. Uncertainty is `VALIDATION_FAIL` with
+rollback false; rollback requires a deterministic PE-2-caused regression.
+
 ## Canonical Schedule
 
 | Component | Cron expression | Plain-language schedule | Lock |

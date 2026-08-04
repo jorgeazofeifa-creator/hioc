@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Corrected the second PE-2.1 validator-contract defect. Live `active.json` is
+  no longer digest-immutable; a sanitized positive comparator classifies valid
+  operational drift, proves Asset-to-incident isolation, and reserves rollback
+  for causally demonstrated protected regressions. PE-2.1 remains deployed and
+  open for validation-only production closure.
+
 - Corrected the PE-2 production validator after the first supported deployment.
   All runtime artifact bytes matched Git, while the validator incorrectly
   treated Git `100644`/`100755` modes as runtime `0644`/`0755` requirements and

@@ -194,3 +194,34 @@ and adds `--revalidate-existing-deployment`. Revalidation creates new evidence,
 does not call `release/upgrade.sh`, and does not deploy. PE-2.1 remains open
 pending corrected production revalidation; PE-3 is not started. Historical
 failed evidence remains `/tmp/hioc-pe2-production-validation-j9ZehSdD`.
+
+## Incident-invariant validator correction
+
+Corrected revalidation completed artifact, permission, Asset transaction,
+backup/restore, cleanup, final semantic-equality, and public checks before it
+failed because live `active.json` was required to retain an identical digest.
+Evidence `/tmp/hioc-pe2-production-validation-pqOq652B` showed unchanged history
+and summary digests; sanitized forensic comparison found zero changed
+nonvolatile fields. No raw incident content is recorded here.
+
+This is a **VALIDATOR CONTRACT DEFECT**. Active lifecycle, severity, status,
+title, summary, and telemetry can move through normal scheduled Incident Engine
+activity; history and aggregates can also advance. Digest inequality alone does
+not establish PE-2 causation. The rollback recommendation is withdrawn: cleanup
+and final Asset equality preceded incident comparison, and no causal regression
+was demonstrated.
+
+The governed comparator now validates JSON and protected shape, prohibits Asset
+fields and synthetic values, and structurally proves Asset-to-incident isolation.
+Git history proves implementation commit `dd6f40b113fe8a395babc8bfb2325262879b8454`
+did not modify incident engines. Valid live differences are operational drift;
+uncertainty has rollback false. Only a demonstrated protected regression is
+rollback-eligible. PE-2.1 remains deployed and repository validated but open
+pending a new validation-only Evidence Report. PE-3 is not started.
+
+The prior run reached synthetic removal and final current-state semantic equality,
+but stopped before its later validation-created backup cleanup loop. Synthetic
+backup residue therefore cannot be disproved from repository evidence. The next
+revalidation checks both current Asset state and every readable Asset backup
+before mutation. Any reserved-ID residue stops validation without deleting or
+overwriting it; the sanitized result reports counts only.

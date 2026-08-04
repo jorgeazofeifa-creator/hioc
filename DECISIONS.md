@@ -518,3 +518,15 @@ content identity and runtime permission/ownership failures are distinct. Report
 serialization consumes JSON, and revalidation performs no deployment. The prior
 generic rollback recommendation is withdrawn; corrected production revalidation
 remains required before PE-2.1 closure.
+
+## ADR-0018: Validate PE-2 incident isolation by positive contract
+
+Status: Accepted
+
+PE-2.1 validation does not treat live incident snapshots as immutable. It
+validates JSON and protected shape, prohibits Asset fields and synthetic values,
+proves the absence of an Asset incident write path, and classifies unrelated
+lifecycle changes as operational drift. History and summary may advance normally.
+Comparator uncertainty is non-rollback; rollback requires a deterministic,
+causally demonstrated protected incident regression. The deployed Asset
+implementation and existing incident engine behavior remain unchanged.

@@ -17,7 +17,7 @@ if [ "${1:-}" != "--revalidate-existing-deployment" ] || [ "$#" -ne 1 ]; then
 fi
 ARTIFACT_CONTRACT_REL="pi4/config/pe2_artifacts.json"
 ARTIFACTS=()
-OPERATOR_ARTIFACTS=(tools/hioc-pe2-production-validate.sh tools/validate_pe2_artifacts.py tools/render_pe2_evidence.py pi4/config/pe2_artifacts.json)
+OPERATOR_ARTIFACTS=(tools/hioc-pe2-production-validate.sh tools/validate_pe2_artifacts.py tools/validate_pe2_incident_contract.py tools/render_pe2_evidence.py pi4/config/pe2_artifacts.json)
 PUBLIC_FILES=(inventory.json devices.json services.json topology.json dependencies.json summary.json status.json enrichment.json enrichment_status.json)
 INCIDENT_FILES=(active.json history.json summary.json)
 MQTT_SUFFIXES=(inventory inventory/devices inventory/services inventory/topology inventory/dependencies inventory/summary inventory/status)
@@ -36,6 +36,9 @@ SYNTHETIC_RESULT="NOT_RUN"
 PUBLIC_INVARIANTS="NOT_RUN"
 PRIVACY_RESULT="NOT_RUN"
 PERFORMANCE_RESULT="NOT_RUN"
+INCIDENT_CLASSIFICATION="NOT_RUN"
+CAUSAL_REGRESSION="FALSE"
+SYNTHETIC_CLEANUP_STATUS="NOT_CHECKED"
 
 say() { printf '%s\n' "$*"; }
 die_pre() { say "ERROR_CODE=$1" >&2; say "ERROR_MESSAGE=$2" >&2; exit 20; }
@@ -111,10 +114,10 @@ write_report() {
     --arg artifact_identity "$artifact_state" --arg initial "$INITIAL_STATE" --arg final "$FINAL_STATE" \
     --arg schema "$schema_state" --arg permissions "$permission_state" \
     --arg synthetic "$SYNTHETIC_RESULT" --arg invariants "$PUBLIC_INVARIANTS" \
-    --arg privacy "$PRIVACY_RESULT" --arg performance "$PERFORMANCE_RESULT" \
+    --arg privacy "$PRIVACY_RESULT" --arg performance "$PERFORMANCE_RESULT" --arg incident "$INCIDENT_CLASSIFICATION" --arg causal "$CAUSAL_REGRESSION" \
     --arg result "$RESULT" --arg rollback "$ROLLBACK_RECOMMENDED" \
     --arg rollback_command "$ROLLBACK_COMMAND" --argjson warnings "$warning_json" \
-    '{checkpoint:$checkpoint,target:{hostname:$target_host,infrastructure_ip:$target_ip},approved_commit:$approved_commit,repository:{source:$source,head:$head,origin_main:$origin_main},deployment:{started:($deployment_started=="1"),status:$deployment_status},artifact_identity:$artifact_identity,initial_asset_state:$initial,final_asset_state:$final,asset_schema:$schema,status_schema:$schema,permissions:$permissions,synthetic_validation:$synthetic,revision_validation:$synthetic,backup_validation:$synthetic,restore_validation:$synthetic,rejection_tests:$synthetic,lock_validation:$synthetic,orphan_validation:$synthetic,public_invariants:$invariants,mqtt_contract:$invariants,pe1_enrichment_invariant:$invariants,privacy:$privacy,performance:$performance,warnings:$warnings,result:$result,rollback_recommended:($rollback=="TRUE"),rollback_command:(if $rollback_command=="NONE" then null else $rollback_command end)}' \
+    '{checkpoint:$checkpoint,target:{hostname:$target_host,infrastructure_ip:$target_ip},approved_commit:$approved_commit,repository:{source:$source,head:$head,origin_main:$origin_main},deployment:{started:($deployment_started=="1"),status:$deployment_status},artifact_identity:$artifact_identity,initial_asset_state:$initial,final_asset_state:$final,asset_schema:$schema,status_schema:$schema,permissions:$permissions,synthetic_validation:$synthetic,revision_validation:$synthetic,backup_validation:$synthetic,restore_validation:$synthetic,rejection_tests:$synthetic,lock_validation:$synthetic,orphan_validation:$synthetic,public_invariants:$invariants,mqtt_contract:$invariants,pe1_enrichment_invariant:$invariants,incident_classification:$incident,causal_regression_demonstrated:($causal=="TRUE"),privacy:$privacy,performance:$performance,warnings:$warnings,result:$result,rollback_recommended:($rollback=="TRUE"),rollback_command:(if $rollback_command=="NONE" then null else $rollback_command end)}' \
     | python3 "$SOURCE/tools/render_pe2_evidence.py" > "$EVIDENCE/EVIDENCE_REPORT.json"
   (cd "$EVIDENCE" && find . -type f ! -name EVIDENCE_CHECKSUMS.sha256 -print0 | sort -z | xargs -0 sha256sum > EVIDENCE_CHECKSUMS.sha256)
 }
@@ -133,6 +136,10 @@ finish() {
   say "IMPLEMENTATION_STATUS=REPOSITORY_VALIDATED"
   say "VALIDATOR_STATUS=$SYNTHETIC_RESULT"
   say "PROTECTED_INVARIANT_STATUS=$PUBLIC_INVARIANTS"
+  say "INCIDENT_CLASSIFICATION=$INCIDENT_CLASSIFICATION"
+  say "CAUSAL_REGRESSION_DEMONSTRATED=$CAUSAL_REGRESSION"
+  say "PRIVACY_STATUS=$PRIVACY_RESULT"
+  say "SYNTHETIC_CLEANUP_STATUS=$SYNTHETIC_CLEANUP_STATUS"
   say "RESULT=$RESULT"
   say "ROLLBACK_RECOMMENDED=$ROLLBACK_RECOMMENDED"
   say "ROLLBACK_COMMAND=$ROLLBACK_COMMAND"
@@ -270,6 +277,23 @@ touch "$EVIDENCE/permissions.ok"
 CLI=(python3 "$RUNTIME/pi4/bin/hioc-assets.py" --json)
 run_cli() { local label="$1"; shift; local start end rc; start="$(date +%s%N)"; if HIOC_HOME="$RUNTIME" "${CLI[@]}" "$@" > "$EVIDENCE/$label.json" 2> "$EVIDENCE/$label.err"; then rc=0; else rc=$?; fi; end="$(date +%s%N)"; printf '%s %s\n' "$label" "$(((end-start)/1000000))" >> "$EVIDENCE/performance-ms.txt"; return "$rc"; }
 
+python3 - "$RUNTIME/state/inventory/assets.json" "$RUNTIME/backups/assets" "$SYNTHETIC_ID" <<'PY' > "$EVIDENCE/synthetic-residue-check.json" || die_validation "SYNTHETIC_RESIDUE_PRESENT" "reserved synthetic Asset remains in current state or backups; mutation stopped"
+import json,sys
+from pathlib import Path
+store,backups,reserved=Path(sys.argv[1]),Path(sys.argv[2]),sys.argv[3]
+current=False; backup_count=0; invalid_backup_count=0
+if store.is_file(): current=reserved in json.load(store.open(encoding="utf-8")).get("assets",{})
+if backups.is_dir():
+ for path in backups.iterdir():
+  if not path.is_file() or path.is_symlink(): continue
+  try: present=reserved in json.load(path.open(encoding="utf-8")).get("assets",{})
+  except (OSError,ValueError,TypeError): invalid_backup_count+=1; continue
+  backup_count+=int(present)
+print(json.dumps({"current_state_present":current,"backup_files_present":backup_count,"unreadable_backup_files":invalid_backup_count},sort_keys=True))
+raise SystemExit(1 if current or backup_count or invalid_backup_count else 0)
+PY
+SYNTHETIC_CLEANUP_STATUS="CLEAN_BEFORE_MUTATION"
+
 if [ "$INITIAL_STATE" = UNINITIALIZED ]; then run_cli initialize initialize || die_fail "INITIALIZE_FAILED" "Asset initialization failed"; fi
 run_cli validate-initial validate || die_fail "ASSET_VALIDATE_FAILED" "initial Asset validation failed"
 [ "$(mode "$RUNTIME/state/inventory/assets.json")" = 600 ] && [ "$(mode "$RUNTIME/state/inventory/assets_status.json")" = 600 ] || die_fail "ASSET_FILE_MODE_INVALID" "Asset file mode is invalid"
@@ -332,12 +356,24 @@ python3 - "$RUNTIME/state/inventory/assets.json" "$SYNTHETIC_ID" <<'PY' || die_f
 import json,sys
 raise SystemExit(1 if sys.argv[2] in json.load(open(sys.argv[1]))["assets"] else 0)
 PY
+SYNTHETIC_CLEANUP_STATUS="CLEAN_CURRENT_STATE"
 post_orphans="$(json_get "$RUNTIME/state/inventory/assets_status.json" orphaned_asset_count)"; [ "$post_orphans" = "$pre_orphans" ] || die_fail "ORPHAN_COUNT_MISMATCH" "orphan count did not return to initial value"
 
 for name in "${PUBLIC_FILES[@]}"; do path="$RUNTIME/state/inventory/$name"; if [ -f "$path" ]; then cp "$path" "$EVIDENCE/post/public/$name"; canonical_json_digest "$path" > "$EVIDENCE/post/public/$name.semantic.sha256"; fi; done
 for digest in "$EVIDENCE"/pre/public/*.semantic.sha256; do [ -e "$digest" ] || continue; name="$(basename "$digest")"; cmp -s "$digest" "$EVIDENCE/post/public/$name" || die_fail "PUBLIC_INVARIANT_FAILED" "public inventory contract changed: $name"; done
 for name in "${INCIDENT_FILES[@]}"; do path="$RUNTIME/state/incidents/$name"; if [ -f "$path" ]; then cp "$path" "$EVIDENCE/post/incidents/$name"; canonical_json_digest "$path" > "$EVIDENCE/post/incidents/$name.semantic.sha256"; fi; done
-for digest in "$EVIDENCE"/pre/incidents/*.semantic.sha256; do [ -e "$digest" ] || continue; name="$(basename "$digest")"; cmp -s "$digest" "$EVIDENCE/post/incidents/$name" || die_fail "INCIDENT_INVARIANT_FAILED" "incident contract changed: $name"; done
+set +e
+python3 "$SOURCE/tools/validate_pe2_incident_contract.py" --pre "$EVIDENCE/pre/incidents" --post "$EVIDENCE/post/incidents" --repo "$SOURCE" --implementation-commit "$APPROVED_IMPL" --synthetic-value 'HIOC PE2 Validation Asset' --synthetic-value 'Validation Lab' --synthetic-value 'Governed production validation' --synthetic-value 'Synthetic temporary record for PE-2.1 validation.' > "$EVIDENCE/incident-contract.json"
+incident_rc=$?
+set -e
+INCIDENT_CLASSIFICATION="$(json_get "$EVIDENCE/incident-contract.json" classification)"
+CAUSAL_REGRESSION="$(json_get "$EVIDENCE/incident-contract.json" causal_regression_demonstrated | tr '[:lower:]' '[:upper:]')"
+case "$incident_rc:$INCIDENT_CLASSIFICATION" in
+  0:INCIDENT_CONTRACT_UNCHANGED|0:INCIDENT_OPERATIONAL_DRIFT) ;;
+  40:INCIDENT_VALIDATION_INCONCLUSIVE) die_validation "INCIDENT_VALIDATION_INCONCLUSIVE" "incident evidence could not be classified safely" ;;
+  30:INCIDENT_CONTRACT_REGRESSION) die_fail "INCIDENT_CONTRACT_REGRESSION" "protected incident contract regression demonstrated" TRUE ;;
+  *) die_validation "INCIDENT_VALIDATOR_ERROR" "incident comparator returned an invalid contract" ;;
+esac
 if [ "$MQTT_AVAILABLE" -eq 1 ]; then
   for suffix in "${MQTT_SUFFIXES[@]}"; do mosquitto_sub "${mqtt_args[@]}" -t "$mqtt_base/$suffix" > "$EVIDENCE/post/mqtt/${suffix//\//_}.payload"; cmp -s "$EVIDENCE/pre/mqtt/${suffix//\//_}.payload" "$EVIDENCE/post/mqtt/${suffix//\//_}.payload" || die_fail "MQTT_INVARIANT_FAILED" "established MQTT projection changed"; done
   if mosquitto_sub "${mqtt_args[@]}" -t "$mqtt_base/assets/#" > "$EVIDENCE/post/mqtt/assets.payload" 2>/dev/null; then [ ! -s "$EVIDENCE/post/mqtt/assets.payload" ] || die_fail "ASSET_MQTT_PUBLISHED" "an Asset MQTT topic was published"; fi
@@ -379,6 +415,7 @@ PY
     WARNINGS+=("validation-created backup retained because it also contains pre-existing Asset records: $backup")
   fi
 done
+SYNTHETIC_CLEANUP_STATUS="CLEAN_CURRENT_STATE_AND_VALIDATION_BACKUPS"
 
 if [[ "$SYNTHETIC_RESULT" == PARTIAL_PASS* ]]; then RESULT="PARTIAL_PASS"; else RESULT="PASS"; fi
 ROLLBACK_RECOMMENDED="FALSE"
