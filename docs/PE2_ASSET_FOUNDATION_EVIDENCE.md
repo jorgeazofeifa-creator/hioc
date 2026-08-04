@@ -152,3 +152,14 @@ is pending the separately authorized deployment/validation checkpoint.
 **PASS** for PE-2.1 executable repository implementation, subject to the final
 full validation recorded with the local commit. Production deployment and
 production validation remain pending. No production Asset values or state exist.
+
+## Governed production operator
+
+Production deployment/validation is prepared as the repository-controlled
+`tools/hioc-pe2-production-validate.sh`. A versioned script is required because
+the governed procedure includes repository synchronization, Git-object artifact
+identity, protected pre/post evidence, supported deployment, synthetic revision/
+backup/restore/rejection/lock transactions, privacy scans, invariant comparison,
+performance thresholds, exact cleanup, reporting and non-automatic rollback.
+Tests enforce its target, Git, artifact, privacy, command and rollback boundaries.
+The operator script has not been executed; production remains unchanged.

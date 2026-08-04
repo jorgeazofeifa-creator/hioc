@@ -41,12 +41,15 @@ MQTT, Home Assistant, dashboards, or an API—will own validated edits under
 `/tmp/hioc-assets.lock`, create a validated timestamped backup before each
 mutation, and write atomically with restrictive modes. It will read current
 inventory only for stable-ID/orphan context and will never mutate or block the
-Inventory Engine. The complete future contract is in
+Inventory Engine. The complete contract is in
 [PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md).
 
 Asset data will remain local and deny-by-default. Missing, empty, or orphaned
 Asset metadata will not affect health, liveness, incidents, or any public
-consumer. No PE-2.1 operator command is approved by this design checkpoint.
+consumer. Governed production deployment/validation is prepared in
+`tools/hioc-pe2-production-validate.sh`; it must be invoked only through the
+approved target/repository bootstrap after its governance commit is pushed.
+Preparation does not authorize Codex access, deployment, or production action.
 
 ## Canonical Schedule
 
