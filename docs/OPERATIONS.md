@@ -1,5 +1,22 @@
 # HIOC Operations
 
+## PE-3.1 manufacturer enrichment boundary
+
+PE-3.1 executable contracts are frozen but not implemented. The future operator
+obtains IEEE source files independently, records their SHA-256 values, and runs
+an offline builder into an immutable local version directory under
+`data/manufacturer/versions/`. HIOC never downloads, bundles, or redistributes
+registry data. `MANUFACTURER_DB_PATH` is empty by default and a configured value
+selects one local normalized database; its manifest is the fixed adjacent
+`manufacturer-db.manifest.json`.
+
+The future manually invoked `hioc-generate-manufacturer.py` reads completed
+inventory and writes only private manufacturer sidecars. It has no schedule or
+inventory hook. Install, upgrade, and rollback preserve local databases,
+configuration, and sidecars. Production commands are deliberately deferred.
+The binding operational, failure, locking, and rollback behavior is
+[PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
+
 ## Document Ownership
 
 This is the authoritative operational and runtime reference. It defines how current components run, what they produce, and how operators validate and recover them. The current deployed-system overview is in [SYSTEM_REFERENCE.md](SYSTEM_REFERENCE.md); deployment mechanics are in [DEPLOYMENT.md](DEPLOYMENT.md).

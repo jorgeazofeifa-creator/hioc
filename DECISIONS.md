@@ -584,7 +584,7 @@ The complete binding architecture is
 
 ## ADR-0021: Freeze PE-3.1 as an injected normalized dataset and separate sidecar
 
-Status: Accepted for implementation design; executable implementation gated
+Status: Superseded by ADR-0022 for executable details
 
 Because IEEE redistribution permission is not established, raw and transformed
 assignment data are prohibited from repository/release distribution by default.
@@ -607,8 +607,27 @@ PE-1 and PE-2. Reference evidence remains immutable provenance; a future
 operator correction is separate Asset metadata. Missing or invalid reference
 data fails open and cannot affect protected operational contracts.
 
-The binding decisions, exact schemas/paths, module boundaries, performance and
-privacy limits, production validator contract, and 76-test plan are in
-`docs/PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md`. No executable or dataset is
-approved by this decision. The next checkpoint is PE-3.1 executable
-implementation after license/use approval and explicit authorization.
+ADR-0022 and `docs/PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md` resolve the exact
+schemas, paths, execution model, and test mapping. ADR-0021 remains historical
+context for separation and offline injection, not an executable authority.
+
+## ADR-0022: Freeze the PE-3.1 executable contract around a separate generator
+
+Status: Accepted; executable implementation not started
+
+PE-3.1 uses a separate manually invoked generator that reads completed inventory
+and writes only private manufacturer sidecars. It never hooks the inventory
+engine and has no schedule. This isolates dataset and generation failure from
+identity, canonical address, PE-1, PE-2, and every public consumer.
+
+Local acquisition and local transformation are the approved dataset model.
+Source and normalized registry content cannot enter Git or releases. The offline
+builder produces an immutable version directory containing the closed database
+and manifest as one atomic transaction; configuration selects the local database.
+
+The sidecar is a deterministic mapping keyed by stable device ID. EUI-48 uses
+36/28/24 longest-prefix lookup; EUI-64 is validated/classified but makes no
+manufacturer claim. Exact APIs, CLI flags, exit/error codes, schemas, paths,
+locks, failure behavior, preservation, testing, production validation, and
+rollback are binding in `docs/PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md`. This
+decision creates no executable, dataset, deployment, or production change.

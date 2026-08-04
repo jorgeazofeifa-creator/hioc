@@ -16,12 +16,12 @@ and a pinned, checksum-verified IEEE Registration Authority snapshot. It cannot
 feed identity, canonical address, liveness, health, incidents, Assets, topology
 or public consumers. Dataset failure is fail-open for inventory. The binding
 design is [PE3_MANUFACTURER_ENRICHMENT_SPEC.md](PE3_MANUFACTURER_ENRICHMENT_SPEC.md).
-The frozen implementation architecture is
-[PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md](PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md):
-an offline normalized `manufacturer-db.json`, immutable 36/28/24-bit maps, and
-separate private `manufacturer.json`/status sidecars. Dataset acquisition and
-redistribution remain gated; the same runtime accepts a governed external
-injection if repository distribution is not approved.
+The exact executable architecture is
+[PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md):
+a manually invoked separate generator, offline normalized database in an
+immutable local version directory, immutable 36/28/24-bit EUI-48 maps, and
+separate private manufacturer sidecars. Local acquisition/transformation is the
+approved model; Git and release redistribution remain prohibited.
 
 Related technical documents:
 

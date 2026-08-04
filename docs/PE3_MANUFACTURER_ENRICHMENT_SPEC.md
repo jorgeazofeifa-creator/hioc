@@ -1,6 +1,10 @@
 # PE-3 Manufacturer Reference Enrichment Specification
 
-Status: **PE-3.0 ARCHITECTURE DEFINED; PE-3.1 IMPLEMENTATION DESIGN APPROVED; EXECUTABLE NOT STARTED**
+Status: **PE-3.0 ARCHITECTURE APPROVED; PE-3.1 EXECUTABLE CONTRACT FROZEN; IMPLEMENTATION NOT STARTED**
+
+The exact PE-3.1 implementation contract is
+[PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
+It controls wherever this architecture-level specification is less specific.
 
 ## Purpose and boundary
 
@@ -46,10 +50,9 @@ new source-selection decision; it never permits silent substitution.
 
 The future source artifact is a complete, immutable snapshot of the approved
 IEEE public assignment registries needed for MA-L, MA-M and MA-S/OUI-36 lookup.
-CID is retained only for explicit non-manufacturer/private classification and
-must not be mislabeled as an EUI manufacturer match.
+CID and other registries are outside PE-3.1.
 
-Each approved snapshot must have a closed manifest containing:
+Acquisition governance evidence and the closed runtime manifest together record:
 
 - schema version;
 - upstream name and canonical HTTPS URLs;
@@ -62,9 +65,13 @@ Each approved snapshot must have a closed manifest containing:
 - parser version and source Git commit;
 - dataset version label derived from immutable evidence, never only “latest”.
 
+The executable contract assigns these items to exact owners. URLs, retrieval
+timestamps, license review, and source Git identity remain governance evidence;
+they are prohibited from the deterministic runtime manifest.
+
 The PE-3.1 design supersedes the conceptual repository reservation with the
 private runtime path and single configuration key defined in
-[PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md](PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md).
+[PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
 No repository dataset path is approved. Runtime must use only a governed,
 checksum-verified injected snapshot; it must never fetch data. Builds operate
 from pinned bytes and reproduce the same normalized artifact on Windows and Linux.
@@ -85,56 +92,40 @@ approval.
 2. Parse supported EUI-48 forms by removing only approved separators (`:`, `-`,
    or dotted groups), requiring exactly 12 hexadecimal digits, and canonicalize
    to uppercase colon-delimited octets.
-3. EUI-64 is accepted only when a future schema explicitly supplies a genuine
-   64-bit identifier. Do not infer an EUI-48 by removing `FF:FE`; modified EUI-64
-   construction is not reliable manufacturer proof. Native EUI-64 lookup uses
-   only an allocation type explicitly supported by the pinned registry.
+3. EUI-64 is accepted only through its explicit API. PE-3.1 validates and
+   classifies it but makes no manufacturer claim. Do not infer an EUI-48 by
+   removing `FF:FE`; modified EUI-64 construction is not manufacturer proof.
 4. Reject empty, malformed, all-zero, broadcast and multicast addresses before
    lookup. Multicast/group addresses are never manufacturer evidence.
 5. If the local-admin bit is set, return `locally_administered`; do not look
    through it, clear the bit, or claim the apparent global prefix. This covers
    randomized Wi-Fi, virtual interfaces, containers and many hypervisors.
-6. IEEE entries marked private produce `private_assignment`, not an organization
-   guess. CID matches produce `company_identifier`, not manufacturer.
-7. For a globally administered address, match the longest valid approved prefix:
+6. For a globally administered address, match the longest valid approved prefix:
    MA-S/OUI-36 before MA-M before MA-L/OUI. A shorter match cannot override a
    longer one.
-8. Exact duplicate prefix/value rows normalize to one result. Conflicting rows
+7. Exact duplicate prefix/value rows normalize to one result. Conflicting rows
    within a supposedly valid snapshot make the dataset invalid; runtime does not
    choose arbitrarily.
-9. No match returns `unknown`, preserving normalized input class and provenance
+8. No match returns `unknown_prefix`, preserving normalized input class and provenance
    without fabricating a name.
-10. Lookup order, Unicode normalization, whitespace handling and output ordering
+9. Lookup order, Unicode normalization, whitespace handling and output ordering
     are fixed and locale-independent. No DNS, web API, network scan, system OUI
     database, Wireshark installation or Nmap installation may influence output.
 
 ## Enrichment model
 
 PE-3.1 has frozen a closed private sidecar schema in
-[PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md](PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md).
-The conceptual fields below remain the architecture basis; no existing schema
-or runtime has been modified:
-
-| Field | Meaning |
-| --- | --- |
-| `stable_device_id` | Reference to existing identity; never created by PE-3 |
-| `manufacturer` | Exact display organization from the selected dataset, nullable |
-| `organization` | Optional normalized full organization label, if distinct and approved |
-| `vendor` | Compatibility alias is discouraged; if later required, it must be defined once rather than diverging from manufacturer |
-| `lookup_status` | Closed result such as matched, unknown, private assignment, locally administered, multicast, invalid or unavailable |
-| `assignment_type` | MA-L, MA-M, MA-S/OUI-36, CID or none |
-| `matched_prefix_length` | 24, 28, 36 or other explicitly approved length |
-| `source` | Stable dataset source identifier |
-| `dataset_version` | Pinned immutable version label |
-| `dataset_sha256` | Identity of the normalized reference artifact |
-| `lookup_method` | Closed deterministic algorithm version |
-| `normalization` | Closed MAC normalization method/version |
-| `confidence` | Manufacturer-reference confidence only |
-| `looked_up_at` | Generation timestamp; excluded from semantic selection/equality where appropriate |
-| `provenance` | Sanitized structured source, match and status facts |
+[PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
+The record fields are exactly `stable_device_id`, `lookup_status`,
+`manufacturer`, `confidence`, `assignment_class`, `matched_prefix`,
+`matched_prefix_length`, `source`, `dataset_version`,
+`dataset_semantic_sha256`, and `lookup_method`. Dataset identity and generation
+time also appear at the closed top level. No `organization`, `vendor`, CID,
+free-form provenance, normalization, or per-record lookup timestamp field exists.
+No existing runtime schema has been modified.
 
 Raw dataset addresses, assignee street/contact details and unused upstream fields
-must not enter enrichment. The sidecar must be keyed by existing stable device ID,
+must not enter enrichment. The sidecar uses a mapping keyed by existing stable device ID,
 written atomically and privately, and remain separate from Observation and Asset.
 Missing manufacturer is a valid result, not an inventory error.
 
@@ -142,11 +133,12 @@ Missing manufacturer is a valid result, not an inventory error.
 
 | Confidence | Manufacturer meaning |
 | --- | --- |
-| `authoritative` | Reserved for a future explicit operator Asset override or trusted integration assertion with field authority; IEEE prefix lookup alone does not reach this level |
 | `high` | Current pinned IEEE globally administered longest-prefix match with valid artifact identity |
-| `medium` | Future trusted integration corroboration or an older approved dataset under a documented stale policy; exact rule requires later approval |
-| `low` | Ambiguous legacy/community evidence retained only for explanation and normally nonselectable |
-| `unknown` | No usable manufacturer conclusion: unknown, private, local-admin, multicast, invalid or unavailable |
+| `unknown` | No usable manufacturer conclusion: unknown, local-admin, multicast, invalid, missing, or unsupported address type |
+
+`authoritative`, `medium`, and `low` are outside the PE-3.1 executable enum.
+Future checkpoints must define them before use; ordinary IEEE reference lookup
+can never become authoritative.
 
 This confidence describes only “which organization owns the matched assignment.”
 It is independent of identity confidence, canonical-address confidence and future
@@ -155,12 +147,13 @@ unknown device type and cannot strengthen liveness or health.
 
 ## Provenance and unknown handling
 
-Every result, including failure, records the source identifier, pinned dataset
-version/digest, algorithm and normalization versions, assignment class, lookup
-status, match length when safe, and generation time. It must not copy the full
-MAC into routine status or logs.
+Every sidecar result records the exact source, pinned dataset version/digest,
+lookup method, assignment class, status, and safe match fields frozen in the
+executable contract. Generation time is top-level. Failure status is subsystem
+state and does not fabricate per-device results. Full MACs never enter sidecar,
+status, routine output, or logs.
 
-Unknown, private and locally administered results remain explicit and stable.
+Unknown and locally administered results remain explicit and stable.
 Custom hardware is not guessed. A future operator manufacturer override belongs
 in Asset because it expresses durable operator knowledge; it must preserve the
 reference result as separate provenance. PE-3 does not implement overrides.
@@ -212,17 +205,15 @@ Manufacturer output cannot be consumed by these systems in PE-3.
 
 ## Performance and caching
 
-On PI3-class hardware, reference load and validation target is at most 500 ms per
-inventory generation, lookup target is at most 1 ms median and 5 ms p95 per MAC,
-and total PE-3 work for 500 devices is at most 1 second after file cache warm-up.
-Peak additional resident memory target is 32 MiB and normalized artifact target
-is 10 MiB unless PE-3.1 evidence justifies a reviewed bound.
+On PI3-class hardware, exact hard targets are the executable-contract limits:
+750 ms p95 load, 1 ms median/5 ms p95 lookup, 2 seconds warm/4 seconds cold for
+1,000 devices, 15 seconds for a 100,000-row build, and 48 MiB peak incremental
+resident memory.
 
-Load once per inventory process, index immutable prefixes by length, and perform
+Load once per manually invoked generator process, index immutable prefixes by length, and perform
 O(1)-style map lookup for each approved prefix length. Do not maintain a daemon,
 write per-device caches, use unbounded memoization, or share mutable cache state.
-The pinned artifact checksum/version is the cache key. These are design targets,
-not measurements.
+The pinned artifact checksum/version is the cache key.
 
 ## Failure isolation
 
@@ -284,9 +275,9 @@ are not rollback conditions.
 
 ## PE-3.0 architecture test matrix
 
-These 64 architecture cases established the minimum scope. The PE-3.1 design
-refines them into the binding 76-test executable plan; where grouping or exact
-schema behavior differs, the implementation design controls.
+These 64 architecture cases established the minimum scope. The PE-3.1 executable
+contract preserves the approved 76-case coverage and maps it into at least 92
+tests; where grouping or exact schema behavior differs, that contract controls.
 
 | # | Area | Case and expected result |
 | ---: | --- | --- |
@@ -361,7 +352,8 @@ must not embed household data.
 
 ## Checkpoint decision
 
-PE-3.0 defines architecture and governance only. PE-3.1 implementation design is
-approved, but no dataset, executable, test, runtime, or production change is
-authorized. PE-3.1 executable implementation remains **NOT STARTED** pending
-explicit authorization and successful IEEE license/use review.
+PE-3.0 defines architecture and governance only. PE-3.1 executable contracts are
+frozen, but no dataset, executable, test, runtime, or production change is
+authorized. Local acquisition and transformation are approved without
+redistribution; executable implementation remains **NOT STARTED** pending
+explicit authorization.

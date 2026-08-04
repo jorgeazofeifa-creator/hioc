@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE DEFINED; PE-3.1 IMPLEMENTATION DESIGN APPROVED; EXECUTABLE NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE APPROVED; PE-3.1 EXECUTABLE CONTRACT FROZEN; IMPLEMENTATION NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -674,11 +674,11 @@ authoritative upstream, subject to an explicit redistribution-license gate befor
 any dataset is committed or distributed. Manufacturer is private descriptive
 Enrichment only and cannot affect identity, address selection, availability,
 operations, Asset facts or consumer contracts. The frozen PE-3.1 executable
-contract is [PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md](PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md):
+contract is [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md):
 an externally injected normalized database, separate manufacturer sidecar,
-O(1) longest-prefix lookup, closed provenance, fail-open isolation, and a
-76-test plan. No executable or dataset exists; the restrictive license gate
-remains in force.
+O(1) longest-prefix lookup, closed provenance, fail-open isolation, exact APIs,
+commands, schemas, transactions, and a 92-test mapping. No executable or dataset
+exists. Local transformation is approved; commit and redistribution remain prohibited.
 
 ---
 
@@ -1159,17 +1159,16 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 
 Maintain Phase 7A after completing and production-validating PE-1 and PE-2.1,
-defining PE-3.0 architecture, and approving the PE-3.1 implementation design.
+defining PE-3.0 architecture, and freezing the PE-3.1 executable contract.
 No PE-3 dataset, executable implementation or runtime behavior exists. Phase 7A
 is not complete.
 
 ## Next Planned Task
 
 The next authoritative checkpoint is **PE-3.1 Manufacturer Enrichment executable
-implementation**, but only after the IEEE license/use gate approves a permitted
-acquisition and deployment mode and explicit authorization is given. The frozen
-design permits external dataset injection without later runtime redesign. Do
-not begin executable work and do not mark Phase 7A complete.
+implementation**, after explicit authorization. Local acquisition and local
+transformation are approved; no IEEE data may enter Git or releases. Do not
+begin executable work and do not mark Phase 7A complete.
 
 The corrected run completed Asset transactions and cleanup, then exposed a
 second validator-contract defect: live `active.json` was treated as immutable.

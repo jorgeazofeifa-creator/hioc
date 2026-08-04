@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Froze the documentation-only PE-3.1 executable contract. Resolved the sidecar
+  list-versus-map conflict and specified the separate manual generator, exact
+  APIs/dataclasses/exceptions, database/manifest/sidecar/status schemas, builder,
+  validator and generator CLIs, shared exit/error codes, configuration/paths,
+  locks, atomic transactions, failure preservation, parser rules, EUI-64
+  no-claim behavior, inventory input, privacy, release preservation, 92-test
+  mapping, performance, production validation, and rollback. Local acquisition
+  and transformation are approved; no code, test, dataset, deployment, or
+  production change occurred.
+
 - Approved the documentation-only PE-3.1 Manufacturer Enrichment implementation
   design. Froze restrictive license and external-injection governance, the
   normalized MA-L/MA-M/MA-S database schema and digest semantics, O(1)
