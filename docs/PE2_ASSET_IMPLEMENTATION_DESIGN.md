@@ -332,7 +332,9 @@ Read-only validation reports unsupported version. Future migration requires new
 contract, validated backup, explicit command/tests/evidence/rollback.
 
 Implementation changes `pi4/install_pi4.sh` only for restrictive directories,
-preservation and executable bits; no overwrite/job. Runtime validator checks a
+preservation and executable bits; no overwrite/job. PE-2.1 artifact modes are
+owned by `pi4/config/pe2_artifacts.json`, which distinguishes Git mode, runtime
+mode, executability, ownership and privacy. Runtime validator checks a
 paired store/status only when either exists. Existing release exclusions already
 preserve state/backups; tests must prove install/upgrade/rollback byte identity.
 If they fail, reopen design before changing release scripts.

@@ -162,4 +162,35 @@ identity, protected pre/post evidence, supported deployment, synthetic revision/
 backup/restore/rejection/lock transactions, privacy scans, invariant comparison,
 performance thresholds, exact cleanup, reporting and non-automatic rollback.
 Tests enforce its target, Git, artifact, privacy, command and rollback boundaries.
-The operator script has not been executed; production remains unchanged.
+At preparation time the operator script had not been executed; the following
+section records the later first production attempt.
+
+## First production attempt and validator correction
+
+The first governed PI3 attempt synchronized operator-governance commit
+`d138aa931b6cadc3fdf943e9f35947dc342e1b63` and completed the supported upgrade.
+Release backup `/home/jazofv1/hioc/backups/release-upgrade-20260803-205823` and
+installer backup `/home/jazofv1/hioc/backups/install-20260803-205823` were
+created. The deployed PE-2.1 implementation remains in place.
+
+The run stopped before synthetic transactions because the validator conflated
+Git tree modes with runtime permission policy. Forensic evidence proved all five
+approved deployed artifacts matched their Git-derived SHA-256 byte-for-byte.
+Git modes `100644`/`100755` express repository executable classification; they
+do not require public runtime modes `0644`/`0755`. The installer deliberately
+applied private modes `0600` to the library/non-runtime installer and `0700` to
+the CLI/validators. Those modes satisfy the approved privacy contract.
+
+The failure-report writer separately interpolated lowercase JSON `true`/`false`
+into Python source, causing `NameError` and preventing the sanitized report.
+These are **VALIDATOR CONTRACT DEFECTS**, not deployment, implementation,
+installer, schema, privacy, or artifact failures. No rollback was performed; the
+generic rollback recommendation is withdrawn.
+
+Correction introduces one authoritative `pi4/config/pe2_artifacts.json` runtime
+permission contract used by installer and validator, separates content identity
+from permission/ownership errors, renders reports through validated JSON stdin,
+and adds `--revalidate-existing-deployment`. Revalidation creates new evidence,
+does not call `release/upgrade.sh`, and does not deploy. PE-2.1 remains open
+pending corrected production revalidation; PE-3 is not started. Historical
+failed evidence remains `/tmp/hioc-pe2-production-validation-j9ZehSdD`.

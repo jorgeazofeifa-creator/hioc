@@ -7,17 +7,17 @@ APPROVED_IMPL="dd6f40b113fe8a395babc8bfb2325262879b8454"
 OPERATOR_COMMIT="${HIOC_PE2_OPERATOR_COMMIT:-}"
 SOURCE="/home/jazofv1/hioc-release-source"
 RUNTIME="/home/jazofv1/hioc"
+KNOWN_RELEASE_BACKUP="/home/jazofv1/hioc/backups/release-upgrade-20260803-205823"
 EXPECTED_HOST="nutandpihole"
 EXPECTED_IP="192.168.100.252"
 SYNTHETIC_ID="dev_0000000000000000"
-ARTIFACTS=(
-  pi4/lib/hioc/assets.py
-  pi4/bin/hioc-assets.py
-  pi4/bin/hioc-validate-assets.py
-  pi4/install_pi4.sh
-  pi4/validate_pi4.sh
-)
-OPERATOR_ARTIFACT="tools/hioc-pe2-production-validate.sh"
+if [ "${1:-}" != "--revalidate-existing-deployment" ] || [ "$#" -ne 1 ]; then
+  printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nROLLBACK_RECOMMENDED=FALSE\n'
+  exit 20
+fi
+ARTIFACT_CONTRACT_REL="pi4/config/pe2_artifacts.json"
+ARTIFACTS=()
+OPERATOR_ARTIFACTS=(tools/hioc-pe2-production-validate.sh tools/validate_pe2_artifacts.py tools/render_pe2_evidence.py pi4/config/pe2_artifacts.json)
 PUBLIC_FILES=(inventory.json devices.json services.json topology.json dependencies.json summary.json status.json enrichment.json enrichment_status.json)
 INCIDENT_FILES=(active.json history.json summary.json)
 MQTT_SUFFIXES=(inventory inventory/devices inventory/services inventory/topology inventory/dependencies inventory/summary inventory/status)
@@ -41,8 +41,16 @@ say() { printf '%s\n' "$*"; }
 die_pre() { say "ERROR_CODE=$1" >&2; say "ERROR_MESSAGE=$2" >&2; exit 20; }
 die_fail() {
   RESULT="FAIL"
-  if [ "$DEPLOYMENT_STARTED" -eq 1 ]; then ROLLBACK_RECOMMENDED="TRUE"; fi
+  local rollback_worthy="${3:-TRUE}"
+  if [ "$DEPLOYMENT_STARTED" -eq 1 ] && [ "$rollback_worthy" = TRUE ]; then ROLLBACK_RECOMMENDED="TRUE"; fi
   say "ERROR_CODE=$1" >&2; say "ERROR_MESSAGE=$2" >&2; exit 30
+}
+die_validation() {
+  RESULT="VALIDATION_FAIL"
+  ROLLBACK_RECOMMENDED="FALSE"
+  say "ERROR_CODE=$1" >&2
+  say "ERROR_MESSAGE=$2" >&2
+  exit 40
 }
 require() { command -v "$1" >/dev/null 2>&1 || die_pre "MISSING_COMMAND" "required command is unavailable: $1"; }
 sha() { sha256sum "$1" | awk '{print $1}'; }
@@ -87,39 +95,37 @@ PY
 
 write_report() {
   [ -n "$EVIDENCE" ] || return 0
-  python3 - "$EVIDENCE/EVIDENCE_REPORT.json" <<PY
-import json,sys
-report={
- "checkpoint":"Phase 7A PE-2.1 Asset Foundation production validation",
- "target":{"hostname":"$EXPECTED_HOST","infrastructure_ip":"$EXPECTED_IP"},
- "approved_commit":"$APPROVED_IMPL",
- "repository":{"source":"$SOURCE","head":"$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null || echo unavailable)","origin_main":"$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null || echo unavailable)"},
- "deployment":{"started":bool($DEPLOYMENT_STARTED),"status":"$DEPLOYMENT_STATUS"},
- "artifact_identity":"$(test -f "$EVIDENCE/artifact-post.ok" && echo PASS || echo NOT_PASS)",
- "initial_asset_state":"$INITIAL_STATE","final_asset_state":"$FINAL_STATE",
- "asset_schema":"$(test -f "$EVIDENCE/asset-validator-post.json" && echo PASS || echo NOT_RUN)",
- "status_schema":"$(test -f "$EVIDENCE/asset-validator-post.json" && echo PASS || echo NOT_RUN)",
- "permissions":"$(test -f "$EVIDENCE/permissions.ok" && echo PASS || echo NOT_PASS)",
- "synthetic_validation":"$SYNTHETIC_RESULT","revision_validation":"$SYNTHETIC_RESULT",
- "backup_validation":"$SYNTHETIC_RESULT","restore_validation":"$SYNTHETIC_RESULT",
- "rejection_tests":"$SYNTHETIC_RESULT","lock_validation":"$SYNTHETIC_RESULT",
- "orphan_validation":"$SYNTHETIC_RESULT","public_invariants":"$PUBLIC_INVARIANTS",
- "mqtt_contract":"$PUBLIC_INVARIANTS","pe1_enrichment_invariant":"$PUBLIC_INVARIANTS",
- "privacy":"$PRIVACY_RESULT","performance":"$PERFORMANCE_RESULT",
- "warnings":$(printf '%s\n' "${WARNINGS[@]:-}" | python3 -c 'import json,sys; print(json.dumps([x for x in (s.strip() for s in sys.stdin) if x]))'),
- "result":"$RESULT","rollback_recommended":$([ "$ROLLBACK_RECOMMENDED" = TRUE ] && echo true || echo false)
-}
-json.dump(report,open(sys.argv[1],"w",encoding="utf-8"),indent=2,sort_keys=True); open(sys.argv[1],"a").write("\n")
-PY
+  local warning_json repository_head origin_head artifact_state schema_state permission_state
+  warning_json="$(printf '%s\n' "${WARNINGS[@]:-}" | jq -Rsc 'split("\n") | map(select(length>0))')"
+  repository_head="$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null || printf unavailable)"
+  origin_head="$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null || printf unavailable)"
+  artifact_state="$(test -f "$EVIDENCE/artifact-post.ok" && printf PASS || printf NOT_PASS)"
+  schema_state="$(test -f "$EVIDENCE/asset-validator-post.json" && printf PASS || printf NOT_RUN)"
+  permission_state="$(test -f "$EVIDENCE/permissions.ok" && printf PASS || printf NOT_PASS)"
+  jq -n \
+    --arg checkpoint "Phase 7A PE-2.1 Asset Foundation production validation" \
+    --arg target_host "$EXPECTED_HOST" --arg target_ip "$EXPECTED_IP" \
+    --arg approved_commit "$APPROVED_IMPL" --arg source "$SOURCE" \
+    --arg head "$repository_head" --arg origin_main "$origin_head" \
+    --arg deployment_started "$DEPLOYMENT_STARTED" --arg deployment_status "$DEPLOYMENT_STATUS" \
+    --arg artifact_identity "$artifact_state" --arg initial "$INITIAL_STATE" --arg final "$FINAL_STATE" \
+    --arg schema "$schema_state" --arg permissions "$permission_state" \
+    --arg synthetic "$SYNTHETIC_RESULT" --arg invariants "$PUBLIC_INVARIANTS" \
+    --arg privacy "$PRIVACY_RESULT" --arg performance "$PERFORMANCE_RESULT" \
+    --arg result "$RESULT" --arg rollback "$ROLLBACK_RECOMMENDED" \
+    --arg rollback_command "$ROLLBACK_COMMAND" --argjson warnings "$warning_json" \
+    '{checkpoint:$checkpoint,target:{hostname:$target_host,infrastructure_ip:$target_ip},approved_commit:$approved_commit,repository:{source:$source,head:$head,origin_main:$origin_main},deployment:{started:($deployment_started=="1"),status:$deployment_status},artifact_identity:$artifact_identity,initial_asset_state:$initial,final_asset_state:$final,asset_schema:$schema,status_schema:$schema,permissions:$permissions,synthetic_validation:$synthetic,revision_validation:$synthetic,backup_validation:$synthetic,restore_validation:$synthetic,rejection_tests:$synthetic,lock_validation:$synthetic,orphan_validation:$synthetic,public_invariants:$invariants,mqtt_contract:$invariants,pe1_enrichment_invariant:$invariants,privacy:$privacy,performance:$performance,warnings:$warnings,result:$result,rollback_recommended:($rollback=="TRUE"),rollback_command:(if $rollback_command=="NONE" then null else $rollback_command end)}' \
+    | python3 "$SOURCE/tools/render_pe2_evidence.py" > "$EVIDENCE/EVIDENCE_REPORT.json"
   (cd "$EVIDENCE" && find . -type f ! -name EVIDENCE_CHECKSUMS.sha256 -print0 | sort -z | xargs -0 sha256sum > EVIDENCE_CHECKSUMS.sha256)
 }
 finish() {
   rc=$?
   if [ "$rc" -ne 0 ] && [ "$RESULT" != "FAIL" ]; then
     if [ "$DEPLOYMENT_STARTED" -eq 1 ]; then RESULT="VALIDATION_FAIL"; else RESULT="INPUT_OR_PRECONDITION_ERROR"; fi
+    ROLLBACK_RECOMMENDED="FALSE"
   fi
-  if [ "$RESULT" = "FAIL" ] && [ "$DEPLOYMENT_STARTED" -eq 1 ] && [ -f "$EVIDENCE/release-backup-path.txt" ]; then
-    ROLLBACK_COMMAND="cd $SOURCE && HIOC_INSTALL_DIR=$RUNTIME bash release/rollback.sh $(cat "$EVIDENCE/release-backup-path.txt")"
+  if [ "$RESULT" = "FAIL" ] && [ "$DEPLOYMENT_STARTED" -eq 1 ] && [ "$ROLLBACK_RECOMMENDED" = TRUE ] && [ -d "$KNOWN_RELEASE_BACKUP/current" ]; then
+    ROLLBACK_COMMAND="cd $SOURCE && HIOC_INSTALL_DIR=$RUNTIME bash release/rollback.sh $KNOWN_RELEASE_BACKUP"
   fi
   write_report || true
   say "EVIDENCE_DIR=${EVIDENCE:-NOT_CREATED}"
@@ -171,9 +177,11 @@ chmod 0700 "$EVIDENCE"
   git -C "$SOURCE" status --porcelain=v1 --untracked-files=all
 } > "$EVIDENCE/target-and-repository.txt"
 
-python3 "$SOURCE/tools/git_artifact_manifest.py" "$APPROVED_IMPL" "${ARTIFACTS[@]}" --repo "$SOURCE" --compare-worktree > "$EVIDENCE/artifact-manifest.json"
-jq -e --arg c "$APPROVED_IMPL" '.commit==$c and .generated_from_git_objects and all(.artifacts[];.working_tree_equal==true)' "$EVIDENCE/artifact-manifest.json" >/dev/null || die_pre "SOURCE_ARTIFACT_MISMATCH" "Git-object source identity failed"
-python3 "$SOURCE/tools/git_artifact_manifest.py" HEAD "$OPERATOR_ARTIFACT" --repo "$SOURCE" --compare-worktree > "$EVIDENCE/operator-artifact-manifest.json"
+mapfile -t ARTIFACTS < <(jq -r '.artifacts[].path' "$SOURCE/$ARTIFACT_CONTRACT_REL")
+[ "${#ARTIFACTS[@]}" -gt 0 ] || die_pre "RUNTIME_PERMISSION_CONTRACT_INVALID" "PE-2 artifact permission contract is empty"
+python3 "$SOURCE/tools/git_artifact_manifest.py" "$APPROVED_IMPL" "${ARTIFACTS[@]}" --repo "$SOURCE" > "$EVIDENCE/artifact-manifest.json"
+jq -e --arg c "$APPROVED_IMPL" '.commit==$c and .generated_from_git_objects' "$EVIDENCE/artifact-manifest.json" >/dev/null || die_pre "SOURCE_ARTIFACT_MISMATCH" "Git-object identity generation failed"
+python3 "$SOURCE/tools/git_artifact_manifest.py" HEAD "${OPERATOR_ARTIFACTS[@]}" --repo "$SOURCE" --compare-worktree > "$EVIDENCE/operator-artifact-manifest.json"
 jq -e '.generated_from_git_objects and all(.artifacts[];.working_tree_equal==true)' "$EVIDENCE/operator-artifact-manifest.json" >/dev/null || die_pre "OPERATOR_ARTIFACT_MISMATCH" "operator-script Git identity failed"
 
 mkdir -p "$EVIDENCE/pre/public" "$EVIDENCE/pre/mqtt" "$EVIDENCE/pre/assets" "$EVIDENCE/post/public" "$EVIDENCE/post/mqtt"
@@ -230,35 +238,26 @@ else WARNINGS+=("mosquitto_sub unavailable; MQTT invariant optional observation 
 (cd "$SOURCE" && bash release/validate.sh) > "$EVIDENCE/release-validation.log" 2>&1 || die_pre "RELEASE_VALIDATION_FAILED" "repository release validation failed"
 (cd "$SOURCE" && python3 -m unittest tests.test_assets_schema tests.test_assets_store tests.test_assets_cli tests.test_assets_orphans tests.test_assets_release) > "$EVIDENCE/focused-tests.log" 2>&1 || die_pre "FOCUSED_TESTS_FAILED" "PE-2 focused tests failed"
 
-pre_backup_listing="$(mktemp "$EVIDENCE/pre-release-backups.XXXXXX")"
-find "$RUNTIME/backups" -maxdepth 1 -type d -name 'release-upgrade-*' -printf '%p\n' 2>/dev/null | sort > "$pre_backup_listing"
 DEPLOYMENT_STARTED=1
-DEPLOYMENT_STATUS="STARTED"
-(cd "$SOURCE" && HIOC_INSTALL_DIR="$RUNTIME" bash release/upgrade.sh) > "$EVIDENCE/deployment.log" 2>&1 || die_fail "DEPLOYMENT_FAILED" "supported release upgrade failed"
-DEPLOYMENT_STATUS="DEPLOYED"
-release_backup="$(grep -E '^Backup directory:' "$EVIDENCE/deployment.log" | tail -1 | sed 's/^Backup directory:[[:space:]]*//')"
-[ -n "$release_backup" ] && [ -d "$release_backup/current" ] || die_fail "RELEASE_BACKUP_INVALID" "release backup path is invalid"
-printf '%s\n' "$release_backup" > "$EVIDENCE/release-backup-path.txt"
+DEPLOYMENT_STATUS="DEPLOYED_EXISTING_REVALIDATION"
+say "REVALIDATION_MODE=TRUE"
 
-python3 - "$EVIDENCE/artifact-manifest.json" "$RUNTIME" <<'PY' > "$EVIDENCE/artifact-runtime.json"
-import hashlib,json,pathlib,sys
-m=json.load(open(sys.argv[1])); root=pathlib.Path(sys.argv[2]); out=[]
-for a in m["artifacts"]:
- p=root/a["path"]; raw=p.read_bytes(); out.append({"path":a["path"],"git_blob":a["git_blob"],"git_sha256":a["sha256"],"runtime_sha256":hashlib.sha256(raw).hexdigest(),"equal":hashlib.sha256(raw).hexdigest()==a["sha256"],"mode":oct(p.stat().st_mode&0o777)[2:]})
-print(json.dumps(out,indent=2,sort_keys=True))
-PY
-jq -e 'all(.[];.equal==true) and (.[]|select(.path|endswith("assets.py"))|.mode=="644") and all(.[]|select(.path|contains("/bin/") or endswith(".sh"));.mode=="755")' "$EVIDENCE/artifact-runtime.json" >/dev/null || die_fail "RUNTIME_ARTIFACT_MISMATCH" "deployed runtime differs from approved Git objects"
-operator_sha="$(jq -r '.artifacts[0].sha256' "$EVIDENCE/operator-artifact-manifest.json")"
-[ "$(sha "$RUNTIME/$OPERATOR_ARTIFACT")" = "$operator_sha" ] || die_fail "OPERATOR_ARTIFACT_MISMATCH" "deployed operator script differs from its Git object"
+set +e
+python3 "$SOURCE/tools/validate_pe2_artifacts.py" --contract "$SOURCE/$ARTIFACT_CONTRACT_REL" --git-manifest "$EVIDENCE/artifact-manifest.json" --runtime-root "$RUNTIME" > "$EVIDENCE/artifact-runtime.json"
+artifact_rc=$?
+set -e
+if [ "$artifact_rc" -ne 0 ]; then
+  artifact_error="$(jq -r '.error_code // "VALIDATOR_INTERNAL_ERROR"' "$EVIDENCE/artifact-runtime.json" 2>/dev/null || printf VALIDATOR_INTERNAL_ERROR)"
+  case "$artifact_error" in
+    RUNTIME_ARTIFACT_MISMATCH) die_fail "RUNTIME_ARTIFACT_MISMATCH" "deployed runtime bytes differ from approved Git objects" ;;
+    RUNTIME_PERMISSION_MISMATCH|RUNTIME_OWNERSHIP_MISMATCH) die_fail "$artifact_error" "deployed runtime permission policy failed" ;;
+    *) die_validation "VALIDATOR_INTERNAL_ERROR" "artifact validator procedure failed" ;;
+  esac
+fi
 touch "$EVIDENCE/artifact-post.ok"
 
-if [ "$INITIAL_STATE" = UNINITIALIZED ]; then
-  [ ! -e "$RUNTIME/state/inventory/assets.json" ] && [ ! -e "$RUNTIME/state/inventory/assets_status.json" ] || die_fail "AUTOMATIC_INITIALIZATION" "deployment initialized Asset state"
-else
-  cmp -s "$EVIDENCE/pre/assets/assets.json" "$RUNTIME/state/inventory/assets.json" || die_fail "ASSET_STATE_NOT_PRESERVED" "deployment changed existing Asset state"
-fi
 find "$RUNTIME/backups/assets" -maxdepth 1 -type f -printf '%f\n' | sort > "$EVIDENCE/post-deploy-backup-inventory.txt"
-comm -23 "$EVIDENCE/pre/backup-inventory.txt" "$EVIDENCE/post-deploy-backup-inventory.txt" | grep -q . && die_fail "ASSET_BACKUP_LOSS" "deployment removed Asset backups"
+comm -23 "$EVIDENCE/pre/backup-inventory.txt" "$EVIDENCE/post-deploy-backup-inventory.txt" | grep -q . && die_fail "ASSET_BACKUP_LOSS" "Asset backups were removed"
 
 "$RUNTIME/pi4/validate_pi4.sh" > "$EVIDENCE/runtime-validation.log" 2>&1 || die_fail "RUNTIME_VALIDATION_FAILED" "Pi4 runtime validation failed"
 [ "$(mode "$RUNTIME/state/inventory")" -le 750 ] || die_fail "STATE_MODE_INVALID" "state directory mode is too broad"

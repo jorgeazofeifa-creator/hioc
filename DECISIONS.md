@@ -508,3 +508,13 @@ decisions. Full contract: `docs/PE2_ASSET_FOUNDATION_SPEC.md`. PE-2.0 is
 pending. The approved design selects isolated CLI/service/store modules,
 no inventory import or schedule, strict Asset-local transactions, bounded flock,
 closed schemas/errors, deny-by-default output, and release preservation.
+
+PE-2.1 production-validator correction: the first supported deployment completed
+and all approved runtime bytes matched Git. Its validator incorrectly conflated
+Git tree modes with restrictive runtime permissions, then failed report writing
+by interpolating lowercase JSON booleans into Python. Runtime modes are now owned
+once by `pi4/config/pe2_artifacts.json` and consumed by installer/validator;
+content identity and runtime permission/ownership failures are distinct. Report
+serialization consumes JSON, and revalidation performs no deployment. The prior
+generic rollback recommendation is withdrawn; corrected production revalidation
+remains required before PE-2.1 closure.

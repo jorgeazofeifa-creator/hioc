@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "owner": "jazofv1",
+  "group": "jazofv1",
+  "artifacts": [
+    {
+      "path": "pi4/lib/hioc/assets.py",
+      "runtime_mode": "0600",
+      "executable": false,
+      "privacy": "private_implementation"
+    },
+    {
+      "path": "pi4/bin/hioc-assets.py",
+      "runtime_mode": "0700",
+      "executable": true,
+      "privacy": "private_operator_cli"
+    },
+    {
+      "path": "pi4/bin/hioc-validate-assets.py",
+      "runtime_mode": "0700",
+      "executable": true,
+      "privacy": "private_validator"
+    },
+    {
+      "path": "pi4/install_pi4.sh",
+      "runtime_mode": "0600",
+      "executable": false,
+      "privacy": "deployment_implementation"
+    },
+    {
+      "path": "pi4/validate_pi4.sh",
+      "runtime_mode": "0700",
+      "executable": true,
+      "privacy": "runtime_validator"
+    }
+  ]
+}

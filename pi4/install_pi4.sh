@@ -64,6 +64,15 @@ chmod +x "$INSTALL_DIR/pi4/bin/hioc-validate-assets.py"
 chmod +x "$INSTALL_DIR/pi4/validate_pi4.sh"
 chmod +x "$INSTALL_DIR/pi4/uninstall_pi4.sh"
 
+# PE-2 runtime permissions are owned by one machine-readable deployment policy.
+PE2_ARTIFACT_CONTRACT="$INSTALL_DIR/pi4/config/pe2_artifacts.json"
+if [ -f "$PE2_ARTIFACT_CONTRACT" ]; then
+  while IFS=$'\t' read -r artifact_path artifact_mode; do
+    [ -n "$artifact_path" ] || continue
+    chmod "$artifact_mode" "$INSTALL_DIR/$artifact_path"
+  done < <(jq -r '.artifacts[] | [.path, .runtime_mode] | @tsv' "$PE2_ARTIFACT_CONTRACT")
+fi
+
 crontab -l > "$BACKUP_DIR/crontab.before" 2>/dev/null || true
 current_cron="$(crontab -l 2>/dev/null || true)"
 current_cron="$(printf '%s\n' "$current_cron" | grep -Fv "$INSTALL_DIR/pi4/bin/hioc-incident-engine.sh" | grep -Fv "$INSTALL_DIR/pi4/bin/hioc-incident-engine-v2.py" || true)"

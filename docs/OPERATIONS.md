@@ -50,6 +50,11 @@ consumer. Governed production deployment/validation is prepared in
 `tools/hioc-pe2-production-validate.sh`; it must be invoked only through the
 approved target/repository bootstrap after its governance commit is pushed.
 Preparation does not authorize Codex access, deployment, or production action.
+The initial deployment completed, but its validator stopped on a repository-mode
+versus runtime-mode contract defect before synthetic validation. The deployed
+implementation remains in place with approved restrictive modes. Corrected
+validation must use `--revalidate-existing-deployment`; that mode never invokes
+`release/upgrade.sh` and produces a new protected evidence directory.
 
 ## Canonical Schedule
 

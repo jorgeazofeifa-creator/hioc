@@ -1,5 +1,14 @@
 # HIOC Changelog
 
+- Corrected the PE-2 production validator after the first supported deployment.
+  All runtime artifact bytes matched Git, while the validator incorrectly
+  treated Git `100644`/`100755` modes as runtime `0644`/`0755` requirements and
+  its report writer inserted lowercase JSON booleans into Python source. A
+  shared runtime-permission manifest, independent content/permission checks,
+  safe JSON report renderer, corrected rollback classification and no-deploy
+  revalidation mode now govern closure. No rollback occurred; PE-2.1 remains
+  deployed and awaits corrected production revalidation.
+
 - Implemented and repository-validated PE-2.1 Asset Foundation: strict private
   store/status schemas, governed local CLI, read-only validator, dedicated
   bounded lock, optimistic revisions, atomic fsync transactions, validated
