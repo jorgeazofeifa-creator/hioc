@@ -71,7 +71,8 @@ DHCP assignment is identity/address evidence, not liveness, and does not update 
 ### Approved Future PE-2.1 Asset Metadata
 
 PE-2.0 approves a separate future local Asset store keyed by stable device ID.
-PE-2.1 is not implemented, and the current public inventory schema is unchanged.
+PE-2.1 is implemented in the repository but not deployed or production
+validated, and the current public inventory schema is unchanged.
 Its closed private schemas and transaction behavior are frozen in
 [PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md).
 The closed schema and validation rules are owned by

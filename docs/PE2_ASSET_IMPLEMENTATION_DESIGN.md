@@ -1,6 +1,6 @@
 # PE-2.1 Asset Implementation Design
 
-Status: **COMPLETE - IMPLEMENTATION DESIGN APPROVED; EXECUTABLE IMPLEMENTATION NOT STARTED**
+Status: **COMPLETE - IMPLEMENTATION DESIGN APPROVED; EXECUTABLE IMPLEMENTED - REPOSITORY VALIDATED; PRODUCTION PENDING**
 
 This document freezes the executable design for PE-2.1. It is subordinate to
 [PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md) for product scope
@@ -382,5 +382,5 @@ dashboard, incident, topology, service modules and public schemas.
 
 PE-2.0 is **COMPLETE - DESIGN APPROVED**. PE-2.1 Implementation Design Review is
 **COMPLETE - IMPLEMENTATION DESIGN APPROVED**. PE-2.1 executable implementation
-is **NOT STARTED**. Executable code and production remain unchanged. Explicit
-PE-2.1 executable implementation authorization is required next.
+is **IMPLEMENTED - REPOSITORY VALIDATED**. Production remains unchanged; its
+deployment and validation are pending separate explicit authorization.

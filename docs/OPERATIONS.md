@@ -33,9 +33,9 @@ topology, and service-ownership contracts remained protected.
 
 ## Planned PE-2.1 Operational Boundary
 
-PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is not
-implemented or deployed. The approved
-future local artifacts are `state/inventory/assets.json` and
+PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is implemented
+and repository validated but not deployed. The local artifacts are
+`state/inventory/assets.json` and
 `state/inventory/assets_status.json`. A dedicated local CLI—not manual JSON,
 MQTT, Home Assistant, dashboards, or an API—will own validated edits under
 `/tmp/hioc-assets.lock`, create a validated timestamped backup before each

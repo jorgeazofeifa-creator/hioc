@@ -116,7 +116,8 @@ policy that interprets disappearance as failure. PE-0 is design approved; the
 PE-2.0 has approved the first Asset foundation architecture in
 [PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md): a separate,
 stable-device-ID-keyed, local-only operator store with no public projection or
-operational authority. PE-2.1 remains unimplemented; its exact isolated
+operational authority. PE-2.1 is implemented and repository validated but not
+deployed or production validated; its exact isolated
 CLI/service/store contract is approved in
 [PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md).
 

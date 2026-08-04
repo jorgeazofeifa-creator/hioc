@@ -504,6 +504,7 @@ decisions. Full contract: `docs/PE2_ASSET_FOUNDATION_SPEC.md`. PE-2.0 is
 **COMPLETE - DESIGN APPROVED**. The PE-2.1 implementation-design review is
 **COMPLETE - IMPLEMENTATION DESIGN APPROVED** in
 `docs/PE2_ASSET_IMPLEMENTATION_DESIGN.md`; PE-2.1 executable implementation is
-**NOT STARTED**. The approved design selects isolated CLI/service/store modules,
+**IMPLEMENTED - REPOSITORY VALIDATED**, with deployment and production validation
+pending. The approved design selects isolated CLI/service/store modules,
 no inventory import or schedule, strict Asset-local transactions, bounded flock,
 closed schemas/errors, deny-by-default output, and release preservation.

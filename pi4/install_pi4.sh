@@ -43,6 +43,11 @@ fi
 mkdir -p "$INSTALL_DIR/config" "$INSTALL_DIR/state/incidents" "$INSTALL_DIR/history" "$INSTALL_DIR/logs"
 mkdir -p "$INSTALL_DIR/state/inventory"
 mkdir -p "$INSTALL_DIR/state/platform"
+mkdir -p "$INSTALL_DIR/backups/assets"
+chmod 0750 "$INSTALL_DIR/state/inventory"
+chmod 0700 "$INSTALL_DIR/backups/assets"
+if [ -f "$INSTALL_DIR/state/inventory/assets.json" ]; then chmod 0600 "$INSTALL_DIR/state/inventory/assets.json"; fi
+if [ -f "$INSTALL_DIR/state/inventory/assets_status.json" ]; then chmod 0600 "$INSTALL_DIR/state/inventory/assets_status.json"; fi
 
 if [ ! -f "$INSTALL_DIR/config/hioc.conf" ]; then
   cp "$INSTALL_DIR/pi4/config/hioc.conf.example" "$INSTALL_DIR/config/hioc.conf"
@@ -54,6 +59,8 @@ chmod +x "$INSTALL_DIR/pi4/bin/hioc-history-engine.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-inventory-engine.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-platform-status.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-validate-mqtt.py"
+chmod +x "$INSTALL_DIR/pi4/bin/hioc-assets.py"
+chmod +x "$INSTALL_DIR/pi4/bin/hioc-validate-assets.py"
 chmod +x "$INSTALL_DIR/pi4/validate_pi4.sh"
 chmod +x "$INSTALL_DIR/pi4/uninstall_pi4.sh"
 

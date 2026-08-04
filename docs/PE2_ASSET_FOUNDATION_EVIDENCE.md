@@ -1,0 +1,154 @@
+# PE-2.1 Asset Foundation Evidence
+
+Status: **REPOSITORY IMPLEMENTATION PASS; PRODUCTION DEPLOYMENT AND VALIDATION PENDING**
+
+## Repository baseline
+
+Implementation began on clean `main` at approved implementation-design commit
+`b2b69e50e0583fe00415016b58c1fd5ad1bf8235`, equal to `origin/main`, with no
+merge, rebase, cherry-pick, revert, or bisect active. Work remained inside the
+authoritative Windows repository. Production was not accessed or changed.
+
+## Implementation summary
+
+PE-2.1 implements the approved private, stable-ID-keyed Asset foundation. The
+subsystem is local and operator-invoked only. It provides a strict store/status,
+governed CLI, read-only validator, dedicated bounded lock, optimistic revisions,
+validated pre-mutation backups, atomic restore, orphan context, sanitized output
+and failure isolation. It adds no daemon, schedule, publication or consumer.
+
+New implementation files:
+
+- `pi4/lib/hioc/assets.py`
+- `pi4/bin/hioc-assets.py`
+- `pi4/bin/hioc-validate-assets.py`
+- `tests/test_assets_schema.py`
+- `tests/test_assets_store.py`
+- `tests/test_assets_cli.py`
+- `tests/test_assets_orphans.py`
+- `tests/test_assets_release.py`
+
+Bounded integration changes are limited to `pi4/install_pi4.sh` and
+`pi4/validate_pi4.sh`. The installer creates restrictive directories and makes
+the two commands executable without initializing state. Runtime validation is
+conditional on either Asset artifact existing and never repairs or writes.
+Existing release upgrade/rollback exclusions already preserve `state/` and
+`backups/`, so release scripts required no modification.
+
+## Schema and normalization evidence
+
+The implementation owns closed version `1.0` schemas for `assets.json` and
+`assets_status.json`. Tests prove empty/one/multiple records, fixed key order,
+lexical Asset order, key/embedded-ID agreement, unknown-field and unsupported-
+version rejection, RFC 3339 UTC timestamps, count consistency, revisions and
+deterministic UTF-8 serialization.
+
+Normalization tests prove NFC, outer whitespace, empty-to-null, single-line
+controls, 128/128/256 limits, notes CRLF normalization, internal blank lines,
+trailing whitespace handling, eight-line/1,024-code-point limits and tab/control
+rejection. Duplicate friendly names remain permitted by schema.
+
+## CLI contract evidence
+
+The CLI implements only `initialize`, `list`, `show`, `set`, `clear-field`,
+`remove`, `validate`, `backup`, and `restore`. Tests prove deterministic JSON,
+default value/raw-ID redaction, usage/not-found/revision/privacy exit codes,
+idempotent initialization, create/update/no-op, clear-last-field removal and
+interactive sensitive-display gating. Unexpected exceptions are sanitized as
+`INTERNAL_ERROR`/70 without stack traces.
+
+## Lock and transaction evidence
+
+Production locking uses shared/exclusive `fcntl.flock` on
+`/tmp/hioc-assets.lock`, a five-second bounded wait, kernel crash release,
+non-reentrancy, no stale-file deletion and no inventory lock. Windows test
+portability retains the same service boundary without pretending to test Linux
+kernel contention.
+
+Transactions validate before write, use a unique same-directory temporary file,
+flush/fsync, mode `0600`, revalidate, atomically replace and fsync the directory.
+Tests prove replacement success/failure, prior-byte preservation and temporary
+cleanup. A committed store is not silently rolled back when status writing fails.
+
+## Backup and restore evidence
+
+Backups use the approved UTC microsecond/SHA-256 filename, exact prior bytes,
+`0700` directory, `0600` file, fsync and post-write digest/schema validation.
+Tests prove mutation/no-op behavior, explicit backup, exact bytes, digest
+rejection, basename/traversal/absolute-path rejection, valid restore and
+pre-restore backup. There is no pruning or retention implementation.
+
+## Orphan and failure-isolation evidence
+
+Asset reads only `state/inventory/inventory.json` for orphan context. Missing or
+invalid inventory yields degraded/unknown without fabricated counts. Existing
+orphaned records remain editable; creation requires inventory proof or explicit
+`--allow-orphan`. Tests prove current/orphan counts, malformed/missing context,
+continued editing and byte-identical inventory before/after Asset mutation.
+
+No Asset import was added to inventory or enrichment. Malformed Asset state
+fails closed in the Asset subsystem and is not repaired. Status and routine
+outputs contain no Asset values. No Asset condition creates health, liveness,
+observation or incident semantics.
+
+## Release preservation
+
+Source-contract tests prove installation exposes the CLI/validator and creates
+restrictive paths without cron. Upgrade continues to exclude both `state` and
+`backups` from replacement/backup copying and uses no deletion. Rollback uses no
+deletion and cannot remove the preserved Asset store or Asset backup directory.
+The runtime validator invokes only the read-only Asset validator when artifacts
+exist.
+
+## Protected invariants
+
+Repository diff and focused/full regression prove no changes to:
+
+- `inventory.py`, stable identity, canonical-address selection or serialization;
+- PE-1 enrichment behavior or sidecars;
+- MQTT modules or payload contracts;
+- Home Assistant packages/entities or dashboards;
+- incidents, health, liveness or observation status;
+- topology or service ownership;
+- public inventory schema or values;
+- cron, services, timers or daemon behavior.
+
+## Validation results
+
+- New PE-2.1 suites: **27 passed**.
+- Focused PE-1, inventory, identity, canonical and release suites:
+  **197 passed, 1 platform-dependent skip**.
+- Full repository regression: **304 passed, 7 expected platform skips** after
+  setting the governed Git Bash test path.
+- Python compilation: **PASS**. Shell syntax and `release/validate.sh`: **PASS**
+  (the release wrapper's own Git Bash environment reported its expected Python
+  skip; compilation had already passed with the bundled repository runtime).
+- Documentation links, whitespace, secrets and complete diff review: **PASS**.
+
+## Performance
+
+Repository-host synthetic microbenchmarks measured: initialization/empty
+validation 63.474 ms, mutation 50.786 ms, list 5.711 ms, show 7.504 ms, backup
+32.159 ms, restore 53.144 ms and orphan calculation 0.040 ms. Windows cannot
+measure production `flock` contention; the five-second bound is source- and
+contract-tested. These values are informational rather than PI3 proof. No
+inventory call path, unbounded recursion, network scan or automatic Asset scan
+was introduced. Final measured values are recorded in the commit handoff.
+
+Approved PI3-class targets remain: read <=1 second, mutation <=3 seconds,
+backup/validation <=2 seconds and lock wait <=5 seconds. Production measurement
+is pending the separately authorized deployment/validation checkpoint.
+
+## Warnings
+
+- Repository-host Windows cannot exercise Linux kernel `flock`, POSIX ownership,
+  directory fsync or production hardware timing; Linux behavior is source- and
+  mock-tested, with production proof pending.
+- Local backups do not provide off-host disaster recovery. Retention and
+  off-device transport remain explicitly deferred.
+
+## Repository decision
+
+**PASS** for PE-2.1 executable repository implementation, subject to the final
+full validation recorded with the local commit. Production deployment and
+production validation remain pending. No production Asset values or state exist.

@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Implemented and repository-validated PE-2.1 Asset Foundation: strict private
+  store/status schemas, governed local CLI, read-only validator, dedicated
+  bounded lock, optimistic revisions, atomic fsync transactions, validated
+  backup/restore, orphan context, privacy-safe output, conditional installer
+  validation, release-preservation guards and synthetic tests. No public
+  inventory, consumer, schedule or production change occurred; deployment and
+  production validation remain pending.
+
 - Completed the PE-2.1 Implementation Design Review without executable or
   production change. The approved design freezes module boundaries, schemas,
   normalization, locks, revisions, atomic transactions, backups/restores,

@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 IMPLEMENTATION DESIGN REVIEW COMPLETE - IMPLEMENTATION DESIGN APPROVED; PE-2.1 EXECUTABLE NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 DESIGN APPROVED; PE-2.1 EXECUTABLE IMPLEMENTED - REPOSITORY VALIDATED; PE-2.1 PRODUCTION PENDING**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1147,14 +1147,14 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 
 Maintain Phase 7A after completing and production-validating PE-1 and approving
-the PE-2.0 Asset foundation design and the frozen PE-2.1 implementation design.
-PE-2.1 executable implementation remains not started.
+the PE-2.0 Asset foundation design and repository-validating the PE-2.1
+executable implementation. PE-2.1 production deployment and validation remain
+pending.
 
 ## Next Planned Task
 
 The next authoritative checkpoint requires separate authorization for PE-2.1
-Asset Foundation executable implementation. It has not begun. Do not mark
-Phase 7A complete.
+production deployment and validation. Do not mark Phase 7A complete.
 
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 

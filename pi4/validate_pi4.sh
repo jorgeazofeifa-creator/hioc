@@ -28,6 +28,8 @@ check "History engine executable" test -x "$INSTALL_DIR/pi4/bin/hioc-history-eng
 check "Inventory engine executable" test -x "$INSTALL_DIR/pi4/bin/hioc-inventory-engine.py"
 check "Platform status executable" test -x "$INSTALL_DIR/pi4/bin/hioc-platform-status.py"
 check "MQTT runtime validator executable" test -x "$INSTALL_DIR/pi4/bin/hioc-validate-mqtt.py"
+check "Asset CLI executable" test -x "$INSTALL_DIR/pi4/bin/hioc-assets.py"
+check "Asset validator executable" test -x "$INSTALL_DIR/pi4/bin/hioc-validate-assets.py"
 check "Version manifest exists" test -f "$INSTALL_DIR/VERSION.yaml"
 check "Correlation engine version declared" grep -q '^correlation_engine:' "$INSTALL_DIR/VERSION.yaml"
 check "Active incident JSON exists" test -f "$INSTALL_DIR/state/incidents/active.json"
@@ -98,6 +100,13 @@ if [ -f "$INSTALL_DIR/state/inventory/enrichment.json" ] || [ -f "$INSTALL_DIR/s
     check "Hostname enrichment schema valid" python3 "$INSTALL_DIR/pi4/bin/hioc-validate-enrichment.py" \
       "$INSTALL_DIR/state/inventory/enrichment.json" \
       "$INSTALL_DIR/state/inventory/enrichment_status.json"
+  fi
+fi
+if [ -f "$INSTALL_DIR/state/inventory/assets.json" ] || [ -f "$INSTALL_DIR/state/inventory/assets_status.json" ]; then
+  check "Asset store exists when Asset status exists" test -f "$INSTALL_DIR/state/inventory/assets.json"
+  check "Asset status exists when Asset store exists" test -f "$INSTALL_DIR/state/inventory/assets_status.json"
+  if [ -f "$INSTALL_DIR/state/inventory/assets.json" ] && [ -f "$INSTALL_DIR/state/inventory/assets_status.json" ]; then
+    check "Asset artifacts valid" python3 "$INSTALL_DIR/pi4/bin/hioc-validate-assets.py" --home "$INSTALL_DIR"
   fi
 fi
 if [ -f "$INSTALL_DIR/state/events/events.json" ]; then
