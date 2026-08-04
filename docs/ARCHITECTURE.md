@@ -8,6 +8,15 @@ This document owns system architecture: component interactions, subsystem bounda
 
 It is not the roadmap and should not track current phase, implementation status, release history, or future task sequencing. For those, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md) and [../ROADMAP.md](../ROADMAP.md).
 
+## Manufacturer reference enrichment boundary
+
+The PE-3 architecture defines a future offline manufacturer-reference adapter in
+the private Enrichment layer. It consumes only an already-resolved MAC reference
+and a pinned, checksum-verified IEEE Registration Authority snapshot. It cannot
+feed identity, canonical address, liveness, health, incidents, Assets, topology
+or public consumers. Dataset failure is fail-open for inventory. The binding
+design is [PE3_MANUFACTURER_ENRICHMENT_SPEC.md](PE3_MANUFACTURER_ENRICHMENT_SPEC.md).
+
 Related technical documents:
 
 - Core runtime: [CORE.md](CORE.md)

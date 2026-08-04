@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3 NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE DEFINED; PE-3.1 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -666,6 +666,14 @@ its private Asset foundation is implemented, deployed, and production validated.
 Repository evidence is in
 [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md) and
 [PE2_ASSET_FOUNDATION_EVIDENCE.md](PE2_ASSET_FOUNDATION_EVIDENCE.md).
+
+PE-3.0 manufacturer-reference architecture is defined in
+[PE3_MANUFACTURER_ENRICHMENT_SPEC.md](PE3_MANUFACTURER_ENRICHMENT_SPEC.md).
+It selects pinned IEEE Registration Authority public assignment listings as the
+authoritative upstream, subject to an explicit redistribution-license gate before
+any dataset is committed or distributed. Manufacturer is private descriptive
+Enrichment only and cannot affect identity, address selection, availability,
+operations, Asset facts or consumer contracts. PE-3.1 is not started.
 
 ---
 
@@ -1145,16 +1153,16 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Maintain Phase 7A after completing and production-validating PE-1 and PE-2.1.
-The private Asset foundation is deployed and validated without changing public
-or operational contracts. Phase 7A is not complete.
+Maintain Phase 7A after completing and production-validating PE-1 and PE-2.1 and
+defining PE-3.0 manufacturer-reference architecture. No PE-3 dataset, schema,
+implementation or runtime behavior exists. Phase 7A is not complete.
 
 ## Next Planned Task
 
-The next authoritative checkpoint is **PE-3 - Manufacturer reference
-enrichment: approve and pin a local OUI dataset, license/version/update
-governance, and deterministic derivation.** Do not begin it without separate
-authorization, and do not mark Phase 7A complete.
+The next authoritative checkpoint is **PE-3.1 Manufacturer Reference Enrichment
+implementation**, but only after the IEEE redistribution-license gate is
+resolved and explicit authorization is given. Do not begin it and do not mark
+Phase 7A complete.
 
 The corrected run completed Asset transactions and cleanup, then exposed a
 second validator-contract defect: live `active.json` was treated as immutable.

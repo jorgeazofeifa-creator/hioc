@@ -160,3 +160,8 @@ conflicts without changing public inventory or consumer contracts. PE-2.0 is
 design and implementation design approved. PE-2.1 now provides deployed private
 `assets.json`, `assets_status.json`, and the local Asset CLI/validator and is
 production validated. Asset presentation/publication remains future work.
+
+PE-3.0 manufacturer-reference architecture is documentation-only. The selected
+future authority is a pinned offline IEEE public registry snapshot, subject to
+license approval. No dataset, parser, sidecar, schedule, runtime lookup or
+consumer exists; PE-3.1 is not started.

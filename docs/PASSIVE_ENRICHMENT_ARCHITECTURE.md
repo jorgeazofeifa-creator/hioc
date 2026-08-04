@@ -1,6 +1,6 @@
 # Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 IMPLEMENTED AND REPOSITORY VALIDATED - PRODUCTION PENDING**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE DEFINED; PE-3.1 NOT STARTED**
 
 This document is the implementation-ready design for the remaining Phase 7A
 passive-enrichment work. It does not authorize executable changes, production
@@ -405,17 +405,20 @@ privacy, backup, lifecycle, test, and production-validation contract is
 [PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md), with exact module,
 CLI and transaction decisions in
 [PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md).
-The implementation-design review is complete; PE-2.1 executable work remains not
-started.
+The implementation-design review, executable implementation, deployment and
+production validation are complete.
 
 1. **PE-0 - Architecture and specification:** complete, design approved.
 2. **PE-1 - Hostname enrichment evidence envelope:** complete, production
    validated.
 3. **PE-2 - Operator-friendly naming and physical-location foundation:** PE-2.0
-   design approved; PE-2.1 implementation not started. It stores operator intent
+   design approved; PE-2.1 complete and production validated. It stores operator intent
    separately from overloaded public `name` and known-infrastructure metadata.
 4. **PE-3 - Manufacturer reference enrichment:** approve and pin a local OUI
    dataset, license/version/update governance, and deterministic derivation.
+   PE-3.0 architecture is defined in
+   [PE3_MANUFACTURER_ENRICHMENT_SPEC.md](PE3_MANUFACTURER_ENRICHMENT_SPEC.md);
+   PE-3.1 is not started and remains gated on IEEE redistribution review.
 5. **PE-4 - Trusted integration association:** add a read-only Home Assistant
    registry adapter and declared field/association authority; do not infer
    availability.
@@ -497,7 +500,7 @@ must be read-only, least-privilege, and secret-file/config based.
 ## Decisions deferred beyond PE-1
 
 - Define a versioned integration input schema before trusting new fields.
-- Select and license a local OUI dataset before PE-3.
+- Complete the recorded IEEE redistribution-license gate before PE-3.1.
 - Decide which later enrichment fields may enter retained MQTT and dashboards.
 - Design expected availability and retention/archival in their own checkpoints.
 
@@ -516,5 +519,5 @@ is the Git commit containing that closure; its exact hash was derived after
 commit rather than embedded self-referentially. PE-1 was later implemented and
 production validated without changing public inventory contracts. Evidence is
 in [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
-PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 executable
-implementation is not started.
+PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is complete and
+production validated. PE-3.0 architecture is defined; PE-3.1 is not started.

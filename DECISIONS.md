@@ -561,3 +561,23 @@ validator-governance defects. They did not establish an Asset implementation
 defect; deployed Asset files remained unchanged during correction. Associated
 rollback recommendations were withdrawn, and no rollback was executed. Phase 7A
 remains in progress; PE-3 is not started.
+
+## ADR-0020: Use pinned IEEE assignments for manufacturer reference enrichment
+
+Status: Accepted for PE-3.0 architecture; implementation gated
+
+PE-3 manufacturer information is private descriptive Enrichment, never identity,
+Asset intent, device classification or operational evidence. The future
+authoritative upstream is a pinned checksum-verified snapshot of the IEEE
+Registration Authority public MA-L, MA-M and MA-S/OUI-36 listings. IEEE is the
+assignment authority; Wireshark is a GPL composite with its own collision
+precedence, and Nmap data carries NPSL redistribution constraints.
+
+Before any IEEE data is committed, packaged or deployed, PE-3.1 requires a
+recorded redistribution-terms review and approval. Runtime network lookup and
+automatic updates are prohibited. Lookup is longest-prefix, offline,
+deterministic and fail-open for inventory; local-admin, multicast, private,
+invalid and unknown addresses never receive fabricated manufacturers. Future
+operator correction belongs to Asset and future classification remains separate.
+The complete binding architecture is
+`docs/PE3_MANUFACTURER_ENRICHMENT_SPEC.md`. PE-3.1 is not started.

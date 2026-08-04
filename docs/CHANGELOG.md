@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Defined PE-3.0 Manufacturer Reference Enrichment architecture and governance
+  without code, schema, tests, dataset or runtime changes. Selected pinned IEEE
+  Registration Authority listings as the future authoritative upstream subject
+  to an explicit redistribution-license gate; fixed deterministic lookup,
+  provenance, confidence, privacy, failure-isolation, invariant, performance,
+  validation and 64-case test contracts. PE-3.1 remains not started.
+
 - Closed PE-2.1 Asset Foundation as **COMPLETE - PRODUCTION VALIDATED**. Deployed
   Git-derived identity, restrictive permissions, synthetic transactions and
   cleanup, final Asset equality, protected contracts, privacy, performance, and
