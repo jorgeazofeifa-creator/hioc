@@ -530,3 +530,17 @@ lifecycle changes as operational drift. History and summary may advance normally
 Comparator uncertainty is non-rollback; rollback requires a deterministic,
 causally demonstrated protected incident regression. The deployed Asset
 implementation and existing incident engine behavior remain unchanged.
+
+## ADR-0019: Exact cleanup for PE-2 synthetic validation backups
+
+Status: Accepted
+
+Synthetic validation backups are validation hygiene, not operator retention.
+One-time cleanup requires a closed manifest of exact basenames and SHA-256 values
+and complete validation of containment, type, ownership/mode, digest, JSON,
+authoritative Asset schema, and synthetic-only content before deletion.
+Wildcards, discovery deletion, timestamp ranges, and deletion of mixed or
+unlisted backups are prohibited. Future validators clean only explicitly tracked
+current-run synthetic-only backups immediately after final Asset equality and
+before unrelated invariants. This corrects validator ordering without weakening
+the Asset backup implementation or policy.

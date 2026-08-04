@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Governed one-time cleanup of six exact PE-2 synthetic-only validation backups.
+  Added an exact basename/SHA manifest, two-phase schema-aware cleanup tool, and
+  moved future tracked current-run backup cleanup before unrelated invariants.
+  No Asset implementation, real Asset state, retention policy, deployment, or
+  rollback behavior changed.
+
 - Corrected the second PE-2.1 validator-contract defect. Live `active.json` is
   no longer digest-immutable; a sanitized positive comparator classifies valid
   operational drift, proves Asset-to-incident isolation, and reserves rollback

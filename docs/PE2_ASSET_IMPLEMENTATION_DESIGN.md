@@ -1,6 +1,6 @@
 # PE-2.1 Asset Implementation Design
 
-Status: **COMPLETE - IMPLEMENTATION DESIGN APPROVED; EXECUTABLE IMPLEMENTED - REPOSITORY VALIDATED; PRODUCTION PENDING**
+Status: **COMPLETE - IMPLEMENTATION DESIGN APPROVED; EXECUTABLE DEPLOYED - FINAL PRODUCTION VALIDATION PENDING**
 
 This document freezes the executable design for PE-2.1. It is subordinate to
 [PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md) for product scope
@@ -384,8 +384,8 @@ dashboard, incident, topology, service modules and public schemas.
 
 PE-2.0 is **COMPLETE - DESIGN APPROVED**. PE-2.1 Implementation Design Review is
 **COMPLETE - IMPLEMENTATION DESIGN APPROVED**. PE-2.1 executable implementation
-is **IMPLEMENTED - REPOSITORY VALIDATED**. Production remains unchanged; its
-deployment and validation are pending separate explicit authorization.
+is **IMPLEMENTED - REPOSITORY VALIDATED AND DEPLOYED**. Final production
+validation remains pending separate explicit authorization after residue cleanup.
 
 # Production validator incident-isolation refinement
 
@@ -395,3 +395,10 @@ This changes only validator governance, not the approved Asset implementation or
 its design. A pre-mutation residue check also requires the reserved synthetic ID
 to be absent from current Asset state and readable backups; uncertain or present
 residue stops without mutation.
+
+Validation-created backup basenames are tracked at creation. After removal and
+final semantic equality, the validator classifies those exact files, records
+sanitized basename/digest/role/count evidence, and invokes two-phase cleanup
+before public or incident comparisons. Pre-existing backups are never added to
+that manifest. This changes no Asset transaction, backup, restore, schema, or
+retention implementation.

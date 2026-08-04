@@ -1164,6 +1164,14 @@ rollback recommendation is withdrawn. Positive incident-contract governance is
 now repository validated. PE-2.1 remains **DEPLOYED - REPOSITORY VALIDATED -
 PRODUCTION REVALIDATION PENDING**. PE-3 remains **NOT STARTED**.
 
+The next attempt confirmed current production Asset state is valid and empty but
+stopped on six known synthetic-only backups left by the earlier cleanup ordering.
+No real Asset record or malformed backup was found; classification is
+**BACKUP_RESIDUE_ONLY**, not corruption or rollback. Exact-manifest cleanup and
+future pre-invariant current-run cleanup are repository implemented. PE-2.1
+remains deployed and open pending one-time cleanup and separate final
+revalidation. PE-3 remains not started.
+
 Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
 
 Do not begin Active Discovery until Phase 7A has been completed.

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "purpose": "one-time-pe2-production-validation-cleanup",
+  "entries": [
+    {"basename": "assets-20260804T032209617705Z-b4225a25e2c5.json", "sha256": "b4225a25e2c5af216a438c134501b10fb5ae23958ece1cbd5c1dcc219270c598"},
+    {"basename": "assets-20260804T032211349468Z-23122366a656.json", "sha256": "23122366a6562baccf426a77bb4d8d09e5dce9e9e45f4a2c3f3ba29ea0c277fa"},
+    {"basename": "assets-20260804T032212776048Z-c453cfb7ebf9.json", "sha256": "c453cfb7ebf93d584c8a97183ac6b7ada20477a5a4089a56f1e146031580bf8e"},
+    {"basename": "assets-20260804T032213326802Z-c453cfb7ebf9.json", "sha256": "c453cfb7ebf93d584c8a97183ac6b7ada20477a5a4089a56f1e146031580bf8e"},
+    {"basename": "assets-20260804T032213879913Z-804d40e18f08.json", "sha256": "804d40e18f08842a7e86915720708da10fe7f4b41b113eb1e2b25b1bb678739b"},
+    {"basename": "assets-20260804T032222232536Z-4548c6453e76.json", "sha256": "4548c6453e76dc8adecfdb1018ee78a01092b53ae48b004547eb2afe69bac86c"}
+  ]
+}

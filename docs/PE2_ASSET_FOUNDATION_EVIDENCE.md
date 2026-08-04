@@ -225,3 +225,30 @@ backup residue therefore cannot be disproved from repository evidence. The next
 revalidation checks both current Asset state and every readable Asset backup
 before mutation. Any reserved-ID residue stops validation without deleting or
 overwriting it; the sanitized result reports counts only.
+
+## Synthetic validation backup residue cleanup
+
+The corrected revalidation stopped safely at its residue precondition. Read-only
+production evidence proves the current Asset store is valid schema `1.0`, empty,
+private mode `0600`, correctly owned, and lacks the reserved synthetic ID. Asset
+status is private and correctly owned. The mode-`0700` backup directory contains
+six identified synthetic-only backups from prior validation. Each has one record,
+none contains real Asset state, and no malformed backup was found. Classification
+is **BACKUP_RESIDUE_ONLY**; rollback remains false.
+
+This is a **VALIDATION CLEANUP ORDERING DEFECT**. Created backup basenames were
+tracked, but cleanup followed public, incident, privacy, and performance checks.
+The incident failure therefore occurred after current-state restoration but
+before backup cleanup.
+
+One-time cleanup uses the committed exact-basename/SHA-256 manifest and
+`tools/hioc-pe2-clean-synthetic-backups.py`. Committing bounded forensic names
+avoids transcription and dynamic-discovery risk; the manifest contains no Asset
+values and is not retention policy. The tool validates the complete set before
+deleting anything and never uses wildcard discovery.
+
+Future validation classifies explicitly tracked current-run backups immediately
+after synthetic removal and final Asset equality, records sanitized evidence,
+and removes only validated synthetic-only current-run backups before unrelated
+invariants. PE-2.1 remains deployed and open pending one-time cleanup followed
+by separate final revalidation. PE-3 is not started.

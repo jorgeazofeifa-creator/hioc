@@ -51,7 +51,7 @@ class Pe2ProductionOperatorTests(unittest.TestCase):
     def test_symlink_rejection_and_exact_cleanup(self):
         self.assertIn("SYMLINK_REJECTION_FAILED", self.text)
         self.assertNotIn("rm -- $RUNTIME/backups/assets/*", self.text)
-        self.assertIn('rm -- "$path"', self.text)
+        self.assertIn("hioc-pe2-clean-synthetic-backups.py", self.text)
         self.assertIn("SYNTHETIC_RESIDUE_PRESENT", self.text)
         self.assertIn("CLEAN_BEFORE_MUTATION", self.text)
 
@@ -75,6 +75,13 @@ class Pe2ProductionOperatorTests(unittest.TestCase):
         self.assertIn("INCIDENT_VALIDATION_INCONCLUSIVE", self.text)
         self.assertNotIn('cmp -s "$digest" "$EVIDENCE/post/incidents/$name"', self.text)
         self.assertNotIn("release/upgrade.sh", self.text)
+
+    def test_synthetic_cleanup_precedes_unrelated_invariants(self):
+        cleanup=self.text.index("current-run-synthetic-cleanup.json")
+        public=self.text.index('for name in "${PUBLIC_FILES[@]}"',cleanup)
+        incident=self.text.index("validate_pe2_incident_contract.py",cleanup)
+        self.assertLess(cleanup,public); self.assertLess(cleanup,incident)
+        self.assertIn("CREATED_BACKUPS+=(",self.text)
 
 
 if __name__ == "__main__":

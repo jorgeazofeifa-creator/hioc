@@ -31,10 +31,11 @@ historical candidates, or conflicts are not failures. The public inventory and
 all existing consumer, identity, canonical-address, health, liveness, incident,
 topology, and service-ownership contracts remained protected.
 
-## Planned PE-2.1 Operational Boundary
+## Deployed PE-2.1 Operational Boundary
 
-PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is implemented
-and repository validated but not deployed. The local artifacts are
+PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is implemented,
+repository validated, and deployed, with final production validation pending.
+The local artifacts are
 `state/inventory/assets.json` and
 `state/inventory/assets_status.json`. A dedicated local CLI—not manual JSON,
 MQTT, Home Assistant, dashboards, or an API—will own validated edits under
@@ -62,6 +63,14 @@ required shape, absence of Asset metadata and synthetic values, and structural
 Asset-to-incident isolation. Normal lifecycle, title, telemetry, history, or
 summary movement is operational drift. Uncertainty is `VALIDATION_FAIL` with
 rollback false; rollback requires a deterministic PE-2-caused regression.
+
+One-time PE-2 residue cleanup uses the committed six-entry manifest and
+`tools/hioc-pe2-clean-synthetic-backups.py`. Run validation-only first, then
+delete only after every entry passes basename, containment, regular-file,
+non-symlink, ownership/mode, SHA-256, JSON, authoritative schema, and synthetic-
+only checks. Wildcard, timestamp-range, and discovered-backup deletion are
+prohibited. Current state, the backup root, and every unlisted operator backup
+are outside scope. Cleanup and final revalidation are separate actions.
 
 ## Canonical Schedule
 

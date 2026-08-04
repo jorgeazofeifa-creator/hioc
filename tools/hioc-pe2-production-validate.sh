@@ -17,7 +17,7 @@ if [ "${1:-}" != "--revalidate-existing-deployment" ] || [ "$#" -ne 1 ]; then
 fi
 ARTIFACT_CONTRACT_REL="pi4/config/pe2_artifacts.json"
 ARTIFACTS=()
-OPERATOR_ARTIFACTS=(tools/hioc-pe2-production-validate.sh tools/validate_pe2_artifacts.py tools/validate_pe2_incident_contract.py tools/render_pe2_evidence.py pi4/config/pe2_artifacts.json)
+OPERATOR_ARTIFACTS=(tools/hioc-pe2-production-validate.sh tools/validate_pe2_artifacts.py tools/validate_pe2_incident_contract.py tools/hioc-pe2-clean-synthetic-backups.py tools/render_pe2_evidence.py pi4/config/pe2_artifacts.json)
 PUBLIC_FILES=(inventory.json devices.json services.json topology.json dependencies.json summary.json status.json enrichment.json enrichment_status.json)
 INCIDENT_FILES=(active.json history.json summary.json)
 MQTT_SUFFIXES=(inventory inventory/devices inventory/services inventory/topology inventory/dependencies inventory/summary inventory/status)
@@ -114,10 +114,10 @@ write_report() {
     --arg artifact_identity "$artifact_state" --arg initial "$INITIAL_STATE" --arg final "$FINAL_STATE" \
     --arg schema "$schema_state" --arg permissions "$permission_state" \
     --arg synthetic "$SYNTHETIC_RESULT" --arg invariants "$PUBLIC_INVARIANTS" \
-    --arg privacy "$PRIVACY_RESULT" --arg performance "$PERFORMANCE_RESULT" --arg incident "$INCIDENT_CLASSIFICATION" --arg causal "$CAUSAL_REGRESSION" \
+    --arg privacy "$PRIVACY_RESULT" --arg performance "$PERFORMANCE_RESULT" --arg incident "$INCIDENT_CLASSIFICATION" --arg causal "$CAUSAL_REGRESSION" --arg cleanup "$SYNTHETIC_CLEANUP_STATUS" \
     --arg result "$RESULT" --arg rollback "$ROLLBACK_RECOMMENDED" \
     --arg rollback_command "$ROLLBACK_COMMAND" --argjson warnings "$warning_json" \
-    '{checkpoint:$checkpoint,target:{hostname:$target_host,infrastructure_ip:$target_ip},approved_commit:$approved_commit,repository:{source:$source,head:$head,origin_main:$origin_main},deployment:{started:($deployment_started=="1"),status:$deployment_status},artifact_identity:$artifact_identity,initial_asset_state:$initial,final_asset_state:$final,asset_schema:$schema,status_schema:$schema,permissions:$permissions,synthetic_validation:$synthetic,revision_validation:$synthetic,backup_validation:$synthetic,restore_validation:$synthetic,rejection_tests:$synthetic,lock_validation:$synthetic,orphan_validation:$synthetic,public_invariants:$invariants,mqtt_contract:$invariants,pe1_enrichment_invariant:$invariants,incident_classification:$incident,causal_regression_demonstrated:($causal=="TRUE"),privacy:$privacy,performance:$performance,warnings:$warnings,result:$result,rollback_recommended:($rollback=="TRUE"),rollback_command:(if $rollback_command=="NONE" then null else $rollback_command end)}' \
+    '{checkpoint:$checkpoint,target:{hostname:$target_host,infrastructure_ip:$target_ip},approved_commit:$approved_commit,repository:{source:$source,head:$head,origin_main:$origin_main},deployment:{started:($deployment_started=="1"),status:$deployment_status},artifact_identity:$artifact_identity,initial_asset_state:$initial,final_asset_state:$final,asset_schema:$schema,status_schema:$schema,permissions:$permissions,synthetic_validation:$synthetic,revision_validation:$synthetic,backup_validation:$synthetic,restore_validation:$synthetic,rejection_tests:$synthetic,lock_validation:$synthetic,orphan_validation:$synthetic,synthetic_cleanup:$cleanup,public_invariants:$invariants,mqtt_contract:$invariants,pe1_enrichment_invariant:$invariants,incident_classification:$incident,causal_regression_demonstrated:($causal=="TRUE"),privacy:$privacy,performance:$performance,warnings:$warnings,result:$result,rollback_recommended:($rollback=="TRUE"),rollback_command:(if $rollback_command=="NONE" then null else $rollback_command end)}' \
     | python3 "$SOURCE/tools/render_pe2_evidence.py" > "$EVIDENCE/EVIDENCE_REPORT.json"
   (cd "$EVIDENCE" && find . -type f ! -name EVIDENCE_CHECKSUMS.sha256 -print0 | sort -z | xargs -0 sha256sum > EVIDENCE_CHECKSUMS.sha256)
 }
@@ -359,6 +359,32 @@ PY
 SYNTHETIC_CLEANUP_STATUS="CLEAN_CURRENT_STATE"
 post_orphans="$(json_get "$RUNTIME/state/inventory/assets_status.json" orphaned_asset_count)"; [ "$post_orphans" = "$pre_orphans" ] || die_fail "ORPHAN_COUNT_MISMATCH" "orphan count did not return to initial value"
 
+PYTHONPATH="$SOURCE/pi4/lib" python3 - "$RUNTIME/backups/assets" "$EVIDENCE/current-run-synthetic-cleanup-manifest.json" "$EVIDENCE/current-run-backup-classification.json" "$SYNTHETIC_ID" "${CREATED_BACKUPS[@]:-}" <<'PY' || die_validation "SYNTHETIC_BACKUP_CLASSIFICATION_FAILED" "validation-created backup could not be classified safely"
+import hashlib,json,sys
+from pathlib import Path
+from hioc.assets import validate_store
+root,manifest_path,evidence_path,reserved=Path(sys.argv[1]),Path(sys.argv[2]),Path(sys.argv[3]),sys.argv[4]
+entries=[]; evidence=[]
+for name in filter(None,sys.argv[5:]):
+ path=root/name
+ try: raw=path.read_bytes(); payload=validate_store(json.loads(raw.decode("utf-8")))
+ except Exception: raise SystemExit(1)
+ ids=set(payload["assets"]); contains=reserved in ids; synthetic_only=ids=={reserved}
+ if contains and not synthetic_only: raise SystemExit(1)
+ digest=hashlib.sha256(raw).hexdigest()
+ evidence.append({"basename":name,"sha256":digest,"creation_role":"pe2_validation","record_count":payload["asset_count"],"synthetic_only":synthetic_only})
+ if synthetic_only: entries.append({"basename":name,"sha256":digest})
+manifest={"schema_version":1,"purpose":"current-run-pe2-validation-cleanup","entries":entries}
+manifest_path.write_text(json.dumps(manifest,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+evidence_path.write_text(json.dumps({"tracked_backup_count":len(evidence),"synthetic_only_count":len(entries),"backups":evidence},indent=2,sort_keys=True)+"\n",encoding="utf-8")
+PY
+cleanup_entry_count="$(json_get "$EVIDENCE/current-run-synthetic-cleanup-manifest.json" entries | jq 'length')"
+if [ "$cleanup_entry_count" -gt 0 ]; then
+  PYTHONPATH="$SOURCE/pi4/lib" python3 "$SOURCE/tools/hioc-pe2-clean-synthetic-backups.py" --manifest "$EVIDENCE/current-run-synthetic-cleanup-manifest.json" --backup-root "$RUNTIME/backups/assets" --delete > "$EVIDENCE/current-run-synthetic-cleanup.json" || die_validation "SYNTHETIC_BACKUP_CLEANUP_FAILED" "validation-created synthetic backup cleanup failed"
+  [ "$(json_get "$EVIDENCE/current-run-synthetic-cleanup.json" cleanup_result)" = PASS ] || die_validation "SYNTHETIC_BACKUP_CLEANUP_FAILED" "validation-created synthetic backup cleanup was incomplete"
+fi
+SYNTHETIC_CLEANUP_STATUS="CLEAN_CURRENT_STATE_AND_VALIDATION_BACKUPS"
+
 for name in "${PUBLIC_FILES[@]}"; do path="$RUNTIME/state/inventory/$name"; if [ -f "$path" ]; then cp "$path" "$EVIDENCE/post/public/$name"; canonical_json_digest "$path" > "$EVIDENCE/post/public/$name.semantic.sha256"; fi; done
 for digest in "$EVIDENCE"/pre/public/*.semantic.sha256; do [ -e "$digest" ] || continue; name="$(basename "$digest")"; cmp -s "$digest" "$EVIDENCE/post/public/$name" || die_fail "PUBLIC_INVARIANT_FAILED" "public inventory contract changed: $name"; done
 for name in "${INCIDENT_FILES[@]}"; do path="$RUNTIME/state/incidents/$name"; if [ -f "$path" ]; then cp "$path" "$EVIDENCE/post/incidents/$name"; canonical_json_digest "$path" > "$EVIDENCE/post/incidents/$name.semantic.sha256"; fi; done
@@ -399,23 +425,6 @@ print(json.dumps({"durations_ms":rows,"maximum_ms":max(rows.values(),default=0),
 PY
 jq -e '.threshold_pass==true' "$EVIDENCE/performance-summary.json" >/dev/null || die_fail "PERFORMANCE_THRESHOLD_FAILED" "an approved operation threshold failed"
 PERFORMANCE_RESULT="PASS"
-
-for backup in "${CREATED_BACKUPS[@]:-}"; do
-  [ -n "$backup" ] || continue
-  path="$RUNTIME/backups/assets/$backup"
-  [ -f "$path" ] || continue
-  if python3 - "$path" "$SYNTHETIC_ID" <<'PY'
-import json,sys
-p=json.load(open(sys.argv[1])); ids=set(p["assets"])
-raise SystemExit(0 if ids <= {sys.argv[2]} else 1)
-PY
-  then
-    rm -- "$path"
-  else
-    WARNINGS+=("validation-created backup retained because it also contains pre-existing Asset records: $backup")
-  fi
-done
-SYNTHETIC_CLEANUP_STATUS="CLEAN_CURRENT_STATE_AND_VALIDATION_BACKUPS"
 
 if [[ "$SYNTHETIC_RESULT" == PARTIAL_PASS* ]]; then RESULT="PARTIAL_PASS"; else RESULT="PASS"; fi
 ROLLBACK_RECOMMENDED="FALSE"
