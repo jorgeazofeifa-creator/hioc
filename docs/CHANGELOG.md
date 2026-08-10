@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Corrected the documentation-only PE-3.1 manufacturer generator lock order.
+  The dedicated manufacturer lock now unambiguously covers database, manifest,
+  and completed-inventory snapshot loading and validation through sidecar/status
+  generation and writes. This closes the validation-to-generation TOCTOU gap
+  while serializing manufacturer generators only; it does not acquire an
+  inventory, PE-1, Asset, or other HIOC state lock and does not block or mutate
+  inventory generation. The prior validate-before-lock implementation instruction
+  is superseded only in this respect. No executable, test, dataset, deployment,
+  or production change occurred.
+
 - Froze the documentation-only PE-3.1 executable contract. Resolved the sidecar
   list-versus-map conflict and specified the separate manual generator, exact
   APIs/dataclasses/exceptions, database/manifest/sidecar/status schemas, builder,

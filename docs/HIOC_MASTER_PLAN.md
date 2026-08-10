@@ -1159,7 +1159,9 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 
 Maintain Phase 7A after completing and production-validating PE-1 and PE-2.1,
-defining PE-3.0 architecture, and freezing the PE-3.1 executable contract.
+defining PE-3.0 architecture, freezing the PE-3.1 executable contract, and
+correcting its manufacturer lock order so all mutable generator inputs are read
+and validated under the dedicated manufacturer lock.
 No PE-3 dataset, executable implementation or runtime behavior exists. Phase 7A
 is not complete.
 

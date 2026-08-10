@@ -357,3 +357,11 @@ frozen, but no dataset, executable, test, runtime, or production change is
 authorized. Local acquisition and transformation are approved without
 redistribution; executable implementation remains **NOT STARTED** pending
 explicit authorization.
+
+The documentation-only lock-order correction confirms that the complete manual
+manufacturer-generation transaction is serialized by the dedicated manufacturer
+lock. Mutable database, manifest, and completed inventory content are opened and
+validated only after that lock is acquired; the loaded inventory document then
+serves as the in-memory snapshot for that generation. The lock does not block or
+mutate inventory generation. The executable contract remains the sole normative
+source for the exact transaction order; all other PE-3.1 contracts are unchanged.

@@ -524,12 +524,55 @@ mode 0600, owned by the runtime user, with a 10-second monotonic timeout and
 is never deleted for recovery. Nested manufacturer locks and inventory locks are
 prohibited.
 
-Transaction order is: validate CLI/path relationships; acquire lock; load and
-validate database/manifest; load/validate inventory; build and validate both
-documents in memory; compare sidecar semantic content excluding `generated_at`;
-if changed, atomically write sidecar 0600 and fsync its directory; atomically
-write status 0600 and fsync; release. Temporary files are unique, mode 0600,
-same-directory, cleaned on handled failure, and named `.manufacturer.<pid>.*.tmp`.
+The exact transaction order is:
+
+1. Parse CLI arguments.
+2. Resolve configuration and all effective paths.
+3. Perform only non-content precondition checks that do not require reading
+   mutable manufacturer or inventory data.
+4. Acquire the dedicated manufacturer lock.
+5. Under the lock, load and validate the manufacturer database.
+6. Under the lock, load and validate the adjacent manufacturer manifest.
+7. Under the lock, verify database/manifest checksum, semantic digest, version,
+   and count consistency.
+8. Under the lock, load and validate `inventory.json`.
+9. Under the lock, build manufacturer sidecar and manufacturer status fully in
+   memory.
+10. Validate both generated documents fully in memory.
+11. Determine semantic no-op behavior exactly as frozen below.
+12. Write `manufacturer.json` through the approved same-directory atomic-write
+    process.
+13. Fsync the sidecar and parent directory as required.
+14. Write `manufacturer_status.json` through the approved atomic-write process.
+15. Fsync as required.
+16. Release the manufacturer lock.
+17. Return the documented sanitized result and exit code.
+
+Before lock acquisition, processing is limited to CLI parsing and syntax,
+required-argument presence, path-string normalization, configuration resolution,
+and confirmation that required path arguments were supplied. Opening or
+content-validating the database, manifest, or inventory; reading device IDs or
+MAC fields; checksum, semantic, schema, version, or count validation; generation;
+no-op comparison; and state writes occur only while the manufacturer lock is
+held. Temporary files are unique, mode 0600, same-directory, cleaned on handled
+failure, and named `.manufacturer.<pid>.*.tmp`.
+
+This order supplies one stable manufacturer-generation transaction boundary,
+closes the time-of-check/time-of-use gap between validation and generation, and
+prevents concurrent manufacturer generators from validating one manufacturer
+state and writing from another. It does not lock `inventory.json`: the
+manufacturer lock serializes manufacturer-generation operations only. Inventory
+remains externally managed. After acquiring the manufacturer lock, the generator
+validates and reads one completed inventory snapshot and uses that loaded
+in-memory snapshot for the rest of the generation. Replacement of
+`inventory.json` after that read does not change the current generation, mutate
+inventory, or block inventory generation. No inventory, PE-1 enrichment, Asset,
+or other HIOC state lock is acquired or nested.
+
+The earlier PE-3.1 executable implementation authorization is corrected only in
+this respect: any instruction to validate manufacturer database, manifest, or
+inventory content before acquiring `/tmp/hioc-manufacturer.lock` is superseded.
+All other frozen PE-3.1 implementation contracts remain unchanged.
 
 On semantic no-op, the sidecar is not rewritten and retains `generated_at`;
 status is refreshed with `updated` equal to the retained timestamp and exit 0.

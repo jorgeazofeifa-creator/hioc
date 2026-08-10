@@ -62,6 +62,16 @@ Install, upgrade, and rollback deploy only implementation files and preserve
 local manufacturer data, configuration, and private sidecars. They never bundle,
 initialize, download, update, replace, or delete a dataset.
 
+The dedicated manufacturer lock covers the complete generator transaction.
+Only CLI, configuration, path resolution, and non-content preconditions precede
+lock acquisition; mutable manufacturer inputs and the completed inventory
+snapshot are opened and validated under the lock. This closes the validation-to-
+generation time-of-check/time-of-use gap and serializes manufacturer generators
+without acquiring the inventory, PE-1 enrichment, Asset, or another HIOC state
+lock. The lock does not prevent external replacement of `inventory.json`; the
+generator completes from the validated in-memory snapshot it loaded under its
+own lock. The executable contract contains the sole normative transaction order.
+
 ## Validation and next gate
 
 The exact future file set and minimum 92-test mapping are frozen in the executable

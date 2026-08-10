@@ -631,3 +631,15 @@ manufacturer claim. Exact APIs, CLI flags, exit/error codes, schemas, paths,
 locks, failure behavior, preservation, testing, production validation, and
 rollback are binding in `docs/PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md`. This
 decision creates no executable, dataset, deployment, or production change.
+
+Lock-order clarification: the dedicated manufacturer lock protects the complete
+generation transaction. Database, adjacent manifest, and completed inventory
+content are opened and validated only after lock acquisition; generation and
+sidecar/status writes remain under that lock. This removes the validation-to-
+generation time-of-check/time-of-use gap and serializes manufacturer generators
+without acquiring the inventory, PE-1 enrichment, Asset, or another HIOC state
+lock. The manufacturer lock does not prevent `inventory.json` replacement; the
+generator uses the validated in-memory snapshot loaded under its lock. Any prior
+implementation instruction requiring content validation before lock acquisition
+is superseded only on this point. The executable contract contains the sole
+normative order, and all other PE-3.1 decisions remain unchanged.
