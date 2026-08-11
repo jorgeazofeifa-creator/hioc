@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Added the repository-controlled Windows CPython 3.13 installation and
+  compatibility-validation checkpoint. The PowerShell script self-verifies its
+  approved Git identity and pending support state, uses only the official WinGet
+  Python Install Manager path, executes the complete governed validation matrix
+  through `py -3.13`, preserves repository cleanliness, and emits sanitized
+  promotion evidence. It does not promote support, execute PE-3 Action 1, or
+  perform production work. No installation was executed in this commit.
+
 - Established the authoritative Model D Python runtime compatibility policy.
   CPython 3.10 is the language floor, CPython 3.12.13 is the sole exact
   full-suite-tested version, Windows CPython 3.13.x is proposed with validation

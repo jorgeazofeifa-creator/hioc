@@ -40,6 +40,13 @@ commit the support promotion. Action 1 disables Python Install Manager automatic
 installation during probes. See
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md).
 
+The separate installation/validation action is the repository-controlled
+`tools/hioc-python313-validate.ps1`. It verifies its own approved Git identity,
+installs through the official WinGet Python Install Manager package, explicitly
+installs CPython 3.13, runs the governed validation matrix with `py -3.13`, and
+returns sanitized evidence. It does not execute Action 1 or modify the support
+manifest. Evidence review and support promotion remain a later checkpoint.
+
 Action 1 is implemented only by the repository-controlled Windows PowerShell
 script `tools/hioc-pe3-action1.ps1`; its source must never be reproduced through
 chat. The runbook freezes the script SHA-256 and Git blob identity and provides

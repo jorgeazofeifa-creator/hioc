@@ -72,6 +72,31 @@ only after a separate governed checkpoint:
 6. commits a support-state promotion setting `windows_operator.status` to
    `supported` and `validated_patch` to the exact passing `3.13.x` version.
 
+The installation and compatibility action is the repository-controlled script
+`tools/hioc-python313-validate.ps1`. Never reproduce its source through chat.
+Its governed identities are:
+
+```text
+PYTHON313_CHECKPOINT_SHA256=6ab2ff8631bd205741c69bc2bce3a097562d5ec5cc2f1b72919528337af6cf38
+PYTHON313_CHECKPOINT_GIT_BLOB=9d5af854d37abe94974c202805d78cc2303702fd
+```
+
+After its commit is approved and pushed, prepare only this short invocation:
+
+```powershell
+$Repo = Read-Host 'Enter the authoritative HIOC repository path'
+$GovernanceCommit = Read-Host 'Enter the approved full 40-hex post-push governance commit'
+$CheckpointScript = Join-Path $Repo 'tools/hioc-python313-validate.ps1'
+& $CheckpointScript -Repo $Repo -GovernanceCommit $GovernanceCommit
+```
+
+The script verifies its own Git identity and the synchronized clean repository,
+requires support state `validation_pending`, installs only through the official
+WinGet Python Install Manager package, explicitly installs the 3.13 line,
+executes `py -3.13`, runs the complete validation matrix, and emits sanitized
+evidence. It does not edit support state. Promotion is a separate repository
+checkpoint after evidence review.
+
 The approved installation mechanism is the current official Python Install
 Manager supplied by the CPython project. Installation through the official
 Windows/WinGet mechanism is acceptable. Microsoft WindowsApps placeholders are

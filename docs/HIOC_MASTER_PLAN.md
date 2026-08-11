@@ -1242,7 +1242,10 @@ Validation**. It is separate from Action 1 and requires separate authorization.
 It will install official CPython 3.13.x, record the exact patch, verify actual
 `py -3.13` execution, run the complete repository suite and Action 1-focused
 tests with that interpreter, and promote the repository support state only on
-PASS. Until that promotion, Action 1 is blocked and Action 2 must not be
+PASS. Its governed operator implementation is
+`tools/hioc-python313-validate.ps1`; after this tooling commit is pushed, the
+next authorization is execution of that script on the Windows workstation.
+Until evidence review and a separate promotion commit, Action 1 is blocked and Action 2 must not be
 prepared. Production deployment and PI3 validation have not started; PE-4
 through PE-9 remain not started.
 

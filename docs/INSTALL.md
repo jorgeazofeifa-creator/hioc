@@ -52,6 +52,12 @@ not yet supported. The approved future mechanism is the current official Python
 Install Manager through the official Windows/WinGet path. WindowsApps aliases
 are not installation evidence. Installation and compatibility validation are a
 separate checkpoint; do not install Python as part of PE-3 Action 1.
+The installation/validation checkpoint is implemented only by the governed
+`tools/hioc-python313-validate.ps1` script documented in
+[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). Operator
+guidance invokes that file after its commit is pushed; it must not reproduce the
+installation program through chat. The script produces evidence only and does
+not promote support state.
 
 Verify the non-Git runtime boundary without using Git status:
 

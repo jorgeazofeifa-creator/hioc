@@ -772,3 +772,13 @@ Validation-critical or production-capable multi-line operator programs remain
 versioned in Git whenever practical; chat guidance invokes them rather than
 reproducing their source. This decision installs nothing and performs no PI or
 production action.
+
+Windows checkpoint delivery amendment: the Python 3.13 installation and
+compatibility procedure is substantial and therefore lives only in
+`tools/hioc-python313-validate.ps1`. The script verifies its approved repository
+identity and `validation_pending` support state, uses the official WinGet Python
+Install Manager package, installs the governed 3.13 line explicitly, validates
+CPython and exact major/minor by execution, runs the full/focused/manufacturer
+and compilation checks, and reports sanitized evidence. It cannot promote the
+support manifest, execute Action 1, or perform production work. Chat supplies
+only the short invocation after the tooling commit is pushed.
