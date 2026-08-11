@@ -45,16 +45,24 @@ def source(path_text, expected, cls):
     return output, path
 
 def construct(groups, dataset_id, dataset_version):
-    seen, duplicates = {}, 0
+    grouped, duplicates = {}, 0
     for cls, prefix, organization in sum((group[0] for group in groups), []):
         bits = {"MA-L": 24, "MA-M": 28, "MA-S": 36}[cls]; key = f"{bits}:{prefix}"
-        if key in seen:
-            if seen[key]["assignment_class"] == cls and seen[key]["organization"] == organization: duplicates += 1; continue
-            raise ManufacturerIntegrityError("MANUFACTURER_DATASET_CONFLICT", "normalized dataset conflict")
-        seen[key] = {"prefix": prefix, "prefix_length": bits, "assignment_class": cls, "organization": organization}
-    records = {key: seen[key] for key in sorted(seen)}
+        if key not in grouped: grouped[key] = {"prefix": prefix, "prefix_length": bits, "assignment_class": cls, "organizations": set()}
+        group = grouped[key]
+        if group["prefix"] != prefix or group["prefix_length"] != bits or group["assignment_class"] != cls: raise ManufacturerIntegrityError("MANUFACTURER_DATASET_CONFLICT", "irreconcilable assignment conflict")
+        if organization in group["organizations"]: duplicates += 1
+        else: group["organizations"].add(organization)
+    records, conflicts = {}, {}
+    for key in sorted(grouped):
+        group = grouped[key]
+        if len(group["organizations"]) == 1:
+            records[key] = {"prefix": group["prefix"], "prefix_length": group["prefix_length"], "assignment_class": group["assignment_class"], "organization": next(iter(group["organizations"]))}
+        elif len(group["organizations"]) >= 2:
+            conflicts[key] = {"prefix": group["prefix"], "prefix_length": group["prefix_length"], "assignment_class": group["assignment_class"], "variant_count": len(group["organizations"])}
+        else: raise ManufacturerIntegrityError("MANUFACTURER_DATASET_CONFLICT", "empty assignment conflict group")
     counts = {cls: sum(x["assignment_class"] == cls for x in records.values()) for cls in ("MA-L", "MA-M", "MA-S")}
-    db = {"schema_version": MANUFACTURER_DB_SCHEMA_VERSION, "dataset_id": dataset_id, "dataset_version": dataset_version, "parser_version": MANUFACTURER_GENERATOR_VERSION, "semantic_sha256": "", "record_count": len(records), "ma_l_count": counts["MA-L"], "ma_m_count": counts["MA-M"], "ma_s_count": counts["MA-S"], "conflict_count": 0, "records": records}
+    db = {"schema_version": MANUFACTURER_DB_SCHEMA_VERSION, "dataset_id": dataset_id, "dataset_version": dataset_version, "parser_version": MANUFACTURER_GENERATOR_VERSION, "semantic_sha256": "", "record_count": len(records), "ma_l_count": counts["MA-L"], "ma_m_count": counts["MA-M"], "ma_s_count": counts["MA-S"], "conflict_count": len(conflicts), "records": records, "conflicts": conflicts}
     payload = {key: value for key, value in db.items() if key != "semantic_sha256"}; db["semantic_sha256"] = semantic_sha256(payload); validate_database(db); return db, duplicates
 
 def run(argv=None):
@@ -71,7 +79,7 @@ def run(argv=None):
             if canonical_json_bytes(db1) != canonical_json_bytes(db2) or duplicates1 != duplicates2: raise ManufacturerIntegrityError("MANUFACTURER_DETERMINISM_FAILED", "deterministic build failed")
             db_bytes = canonical_json_bytes(db1)
             sources = [{"source_class": cls, "source_filename": path.name, "source_sha256": expected, "source_size_bytes": path.stat().st_size} for (_, expected, cls), (_, path) in zip(specs, groups)]
-            manifest = {"schema_version": MANUFACTURER_MANIFEST_SCHEMA_VERSION, "database_filename": "manufacturer-db.json", "database_sha256": hashlib.sha256(db_bytes).hexdigest(), "database_size_bytes": len(db_bytes), "database_semantic_sha256": db1["semantic_sha256"], "database_schema_version": MANUFACTURER_DB_SCHEMA_VERSION, "dataset_id": args.dataset_id, "dataset_version": args.dataset_version, "parser_version": MANUFACTURER_GENERATOR_VERSION, "record_count": db1["record_count"], "ma_l_count": db1["ma_l_count"], "ma_m_count": db1["ma_m_count"], "ma_s_count": db1["ma_s_count"], "duplicate_count": duplicates1, "conflict_count": 0, "source_files": sources, "build": {"canonicalization_version": "1", "deterministic_build_verified": True}}
+            manifest = {"schema_version": MANUFACTURER_MANIFEST_SCHEMA_VERSION, "database_filename": "manufacturer-db.json", "database_sha256": hashlib.sha256(db_bytes).hexdigest(), "database_size_bytes": len(db_bytes), "database_semantic_sha256": db1["semantic_sha256"], "database_schema_version": MANUFACTURER_DB_SCHEMA_VERSION, "dataset_id": args.dataset_id, "dataset_version": args.dataset_version, "parser_version": MANUFACTURER_GENERATOR_VERSION, "record_count": db1["record_count"], "ma_l_count": db1["ma_l_count"], "ma_m_count": db1["ma_m_count"], "ma_s_count": db1["ma_s_count"], "duplicate_count": duplicates1, "conflict_count": db1["conflict_count"], "source_files": sources, "build": {"canonicalization_version": "1", "deterministic_build_verified": True}}
             validate_manifest(manifest); stage = pathlib.Path(tempfile.mkdtemp(prefix=f".{out.name}.manufacturer.", dir=out.parent)); os.chmod(stage, 0o700)
             try:
                 for name, data in (("manufacturer-db.json", db_bytes), ("manufacturer-db.manifest.json", canonical_json_bytes(manifest))):
@@ -81,7 +89,7 @@ def run(argv=None):
                 load_database(stage / "manufacturer-db.json", stage / "manufacturer-db.manifest.json"); fsync_directory(stage); os.replace(stage, out); fsync_directory(out.parent); stage = None
             finally:
                 if stage is not None: shutil.rmtree(stage, ignore_errors=True)
-        result = {"schema_version": "1.0", "result": "PASS", "record_count": db1["record_count"], "ma_l_count": db1["ma_l_count"], "ma_m_count": db1["ma_m_count"], "ma_s_count": db1["ma_s_count"], "duplicate_count": duplicates1, "conflict_count": 0, "database_sha256": manifest["database_sha256"], "database_semantic_sha256": db1["semantic_sha256"], "error": None}
+        result = {"schema_version": "1.0", "result": "PASS", "record_count": db1["record_count"], "ma_l_count": db1["ma_l_count"], "ma_m_count": db1["ma_m_count"], "ma_s_count": db1["ma_s_count"], "duplicate_count": duplicates1, "conflict_count": db1["conflict_count"], "database_sha256": manifest["database_sha256"], "database_semantic_sha256": db1["semantic_sha256"], "error": None}
         print(json.dumps(result, separators=(",", ":")) if json_mode else f"manufacturer database build passed | records={db1['record_count']} | duplicate_count={duplicates1}"); return 0
     except ManufacturerError as exc:
         result = {"schema_version": "1.0", "result": "FAIL", "record_count": 0, "ma_l_count": 0, "ma_m_count": 0, "ma_s_count": 0, "duplicate_count": 0, "conflict_count": 0, "database_sha256": None, "database_semantic_sha256": None, "error": {"code": exc.code, "message": exc.safe_message}}

@@ -2,6 +2,14 @@
 
 Status: **PE-3.0 ARCHITECTURE APPROVED; PE-3.1 REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
 
+Official-source compatibility preserves evidence without inventing claims:
+organization normalization removes only U+200B/U+200E and collapses TAB as
+whitespace, while all other prohibited controls remain rejected. A normalized
+assignment with multiple organization variants is retained as a non-selectable
+conflict without organization values. Lookup returns `conflicting_assignment`
+and blocks weaker-prefix fallback; manufacturer remains null and confidence
+unknown.
+
 The exact PE-3.1 implementation contract is
 [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
 It controls wherever this architecture-level specification is less specific.

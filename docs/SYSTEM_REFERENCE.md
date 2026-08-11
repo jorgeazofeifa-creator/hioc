@@ -1,5 +1,14 @@
 # HIOC System Reference Manual
 
+## PE-3 manufacturer conflict reference
+
+The private manufacturer database has disjoint `records` and `conflicts`
+mappings. Records are selectable assignments; conflicts contain only canonical
+prefix metadata and `variant_count`, never organization variants. Lookup checks
+conflicts before records at 36, 28, then 24 bits. A conflict returns
+`conflicting_assignment`, manufacturer null, confidence unknown, and blocks
+shorter-prefix fallback. Sidecar unknown counts include this status.
+
 ## Purpose and Authority
 
 This is the authoritative current-state reference for what HIOC is today. The [Master Plan](HIOC_MASTER_PLAN.md) explains how HIOC is built and evolves. [OPERATIONS.md](OPERATIONS.md) owns detailed runtime procedures.

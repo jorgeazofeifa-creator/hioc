@@ -57,7 +57,7 @@ MANUFACTURER_SIDECAR_SCHEMA_VERSION = "1.0"
 MANUFACTURER_STATUS_SCHEMA_VERSION = "1.0"
 MANUFACTURER_GENERATOR_VERSION = "hioc-manufacturer-1"
 ASSIGNMENT_CLASSES = frozenset({"MA-L", "MA-M", "MA-S"})
-LOOKUP_STATUSES = frozenset({"matched", "unknown_prefix", "invalid_address",
+LOOKUP_STATUSES = frozenset({"matched", "conflicting_assignment", "unknown_prefix", "invalid_address",
     "multicast_address", "locally_administered_address", "missing_address",
     "unsupported_address_type"})
 MANUFACTURER_CONFIDENCES = frozenset({"high", "unknown"})
@@ -74,7 +74,7 @@ ManufacturerManifest(document: dict, database_sha256: str,
                      database_semantic_sha256: str)
 ManufacturerDatabase(document: dict, manifest: ManufacturerManifest,
                      ma_l: MappingProxyType, ma_m: MappingProxyType,
-                     ma_s: MappingProxyType)
+                     ma_s: MappingProxyType, conflicts: MappingProxyType)
 ManufacturerLookupResult(lookup_status: str, manufacturer: str | None,
                          confidence: str, assignment_class: str | None,
                          matched_prefix: str | None,
@@ -195,7 +195,8 @@ and never collapse to `MANUFACTURER_INTERNAL_ERROR`.
   "ma_m_count": 1,
   "ma_s_count": 1,
   "conflict_count": 0,
-  "records": {}
+  "records": {},
+  "conflicts": {}
 }
 ```
 
@@ -203,8 +204,10 @@ The values above are non-normative synthetic examples. `dataset_id` matches
 `^[a-z0-9][a-z0-9._-]{0,63}$`; `dataset_version` matches
 `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`; parser version is exactly the generator
 version. Counts are nonnegative JSON integers, never booleans. A successful
-database is nonempty, `conflict_count` is zero, and class counts sum to
-`record_count`.
+database has at least one selectable record, class counts sum to `record_count`,
+and `conflict_count == len(conflicts)`. `record_count` counts selectable records
+only. Selectable records plus conflict keys equal the normalized unique
+assignment-key count established by the builder.
 
 `records` is a mapping ordered lexically by key. The exact key is
 `<prefix_length>:<uppercase_hex_prefix>`, for example the non-normative synthetic
@@ -212,6 +215,13 @@ keys `24:A1B2C3`, `28:A1B2C3D`, and `36:A1B2C3D4E`. Each value has exactly, in
 order, `prefix`, `prefix_length`, `assignment_class`, `organization`. Prefix
 length/class pairs are 24/`MA-L`, 28/`MA-M`, and 36/`MA-S`; prefix widths are
 6, 7, and 9 uppercase hexadecimal digits. Key and fields must agree.
+
+`conflicts` is a lexically ordered mapping using the same canonical keys. Each
+entry has exactly, in order, `prefix`, `prefix_length`, `assignment_class`,
+`variant_count`. `variant_count` is the number of distinct normalized
+organizations and is at least 2. Conflict entries never contain organization
+values. A key cannot occur in both `records` and `conflicts`; conflicts are
+explicitly non-selectable reference conditions.
 
 The semantic payload is the database object with `semantic_sha256` omitted,
 preserving the specified field and record-key order. `semantic_sha256` is the
@@ -294,6 +304,16 @@ emits one compact object with exactly `schema_version`, `result`, `record_count`
 `database_sha256`, `database_semantic_sha256`, `error`; `error` is null on PASS
 or `{code,message}` on FAIL. It never prints organizations, prefixes, rows, or
 source paths.
+
+The builder groups all normalized rows by canonical assignment key. Exact
+normalized duplicate rows increment `duplicate_count`. A group with one distinct
+organization emits one selectable record. A group with multiple distinct
+organizations emits one conflict entry, no selectable record, and increments
+`conflict_count` by one regardless of source-row multiplicity. Organization
+variant ordering cannot affect output. `MANUFACTURER_DATASET_CONFLICT` remains a
+hard failure for incompatible assignment classes for one normalized key,
+impossible prefix-length metadata, a key in both collections, malformed conflict
+metadata, an empty grouping, or nondeterministic grouping.
 
 ## 9. Validator CLI
 
@@ -472,7 +492,8 @@ null, confidence is `unknown`, source remains the dataset source, and method is
 self-explanatory. Raw MAC, IP, hostname, and Asset data are prohibited.
 
 Counts partition records: `matched_count` is `matched`; `unknown_count` is
-`unknown_prefix` or `unsupported_address_type`; `excluded_count` is multicast or
+`conflicting_assignment`, `unknown_prefix`, or `unsupported_address_type`;
+`excluded_count` is multicast or
 locally administered; `invalid_count` is missing or invalid address. Counts sum
 to `record_count`. `generated_at` is `%Y-%m-%dT%H:%M:%S.%fZ`.
 
@@ -488,6 +509,10 @@ dotted four-hex groups. It returns uppercase colon octets. Mixed separators,
 whitespace, zero, broadcast, wrong type/length, and nonhex are invalid.
 Multicast is tested before local-admin; local-admin includes randomized MACs.
 Eligible global addresses probe immutable maps in 36, 28, 24 order.
+At each width, the exact conflict key is checked before the selectable map. A
+conflict immediately returns `conflicting_assignment` with manufacturer null,
+confidence `unknown`, all assignment/prefix fields null, and method `none`.
+Lookup never falls through a conflicted 36- or 28-bit key to a weaker prefix.
 
 EUI-64 support is **validation without manufacturer claim**. It accepts compact
 16-hex or eight consistently colon/hyphen-separated octets and normalizes to
@@ -509,7 +534,8 @@ error_message
 `schema_version` is `1.0`; `generator` is `hioc-manufacturer-1`; status is
 `online`, `degraded`, `unavailable`, or `error`. Dataset identity fields are
 nonnull only after a valid dataset load. Counts are nonnegative integers.
-`conflict_count` is zero for valid datasets. Online requires dataset available,
+`conflict_count` is the validated database conflict-key count and may be nonzero.
+Online requires dataset available,
 all identity fields, null error fields, and counts matching the new sidecar.
 
 On successful generation, `updated` exactly equals sidecar `generated_at`.
@@ -667,14 +693,18 @@ unchanged.
 ## 20. Conflict and organization normalization
 
 Exact normalized duplicates (same class, prefix, organization) collapse and
-increment manifest `duplicate_count`. Same length/prefix with different
-organization or class is a hard conflict and produces no artifact. Valid
-different-length overlaps are retained; longest prefix resolves lookup. Invalid
-lengths/prefixes and blank organizations fail.
+increment manifest `duplicate_count`. Same key with distinct normalized
+organizations becomes one explicit non-selectable conflict entry. Valid
+different-length overlaps are retained; longest prefix resolves lookup unless
+an exact conflict blocks fallback. Invalid lengths/prefixes and blank
+organizations fail.
 
-Organization normalization is Unicode NFC, outer trim, and collapse of each
-Unicode whitespace run to one ASCII space. CR/LF and Unicode control/format/
-surrogate/private-use/unassigned characters are rejected before collapse.
+Organization normalization removes only U+200B ZERO WIDTH SPACE and U+200E
+LEFT-TO-RIGHT MARK, converts U+0009 TAB to ordinary collapsible whitespace,
+applies Unicode NFC, outer trim, and collapse of each Unicode whitespace run to
+one ASCII space, then rejects every remaining Unicode control/format/surrogate/
+private-use/unassigned character. CR/LF always fail. Removal that leaves an
+empty value fails. No other `Cc` or `Cf` character is removed or accepted.
 Length after normalization is 1–256 code points. Case and punctuation are
 preserved. HTML entities are not decoded, corporate suffixes are not changed,
 and similar names or parent companies are never merged. CSV quoting is decoded

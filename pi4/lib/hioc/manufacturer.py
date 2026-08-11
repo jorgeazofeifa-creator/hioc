@@ -18,7 +18,7 @@ MANUFACTURER_SIDECAR_SCHEMA_VERSION = "1.0"
 MANUFACTURER_STATUS_SCHEMA_VERSION = "1.0"
 MANUFACTURER_GENERATOR_VERSION = "hioc-manufacturer-1"
 ASSIGNMENT_CLASSES = frozenset({"MA-L", "MA-M", "MA-S"})
-LOOKUP_STATUSES = frozenset({"matched", "unknown_prefix", "invalid_address", "multicast_address", "locally_administered_address", "missing_address", "unsupported_address_type"})
+LOOKUP_STATUSES = frozenset({"matched", "conflicting_assignment", "unknown_prefix", "invalid_address", "multicast_address", "locally_administered_address", "missing_address", "unsupported_address_type"})
 MANUFACTURER_CONFIDENCES = frozenset({"high", "unknown"})
 MANUFACTURER_STATUS_VALUES = frozenset({"online", "degraded", "unavailable", "error"})
 MANUFACTURER_ERROR_CODES = frozenset({
@@ -49,8 +49,9 @@ __all__ = (
     "canonical_json_bytes", "semantic_sha256", "file_sha256", "write_json_atomic",
 )
 
-DB_KEYS = ("schema_version", "dataset_id", "dataset_version", "parser_version", "semantic_sha256", "record_count", "ma_l_count", "ma_m_count", "ma_s_count", "conflict_count", "records")
+DB_KEYS = ("schema_version", "dataset_id", "dataset_version", "parser_version", "semantic_sha256", "record_count", "ma_l_count", "ma_m_count", "ma_s_count", "conflict_count", "records", "conflicts")
 RECORD_KEYS = ("prefix", "prefix_length", "assignment_class", "organization")
+CONFLICT_KEYS = ("prefix", "prefix_length", "assignment_class", "variant_count")
 MANIFEST_KEYS = ("schema_version", "database_filename", "database_sha256", "database_size_bytes", "database_semantic_sha256", "database_schema_version", "dataset_id", "dataset_version", "parser_version", "record_count", "ma_l_count", "ma_m_count", "ma_s_count", "duplicate_count", "conflict_count", "source_files", "build")
 SOURCE_KEYS = ("source_class", "source_filename", "source_sha256", "source_size_bytes")
 SIDECAR_KEYS = ("schema_version", "generated_at", "dataset_id", "dataset_version", "dataset_semantic_sha256", "record_count", "matched_count", "unknown_count", "excluded_count", "invalid_count", "records")
@@ -97,7 +98,7 @@ class ManufacturerManifest:
     document: dict; database_sha256: str; database_semantic_sha256: str
 @dataclass(frozen=True)
 class ManufacturerDatabase:
-    document: dict; manifest: ManufacturerManifest; ma_l: MappingProxyType; ma_m: MappingProxyType; ma_s: MappingProxyType
+    document: dict; manifest: ManufacturerManifest; ma_l: MappingProxyType; ma_m: MappingProxyType; ma_s: MappingProxyType; conflicts: MappingProxyType
 @dataclass(frozen=True)
 class ManufacturerLookupResult:
     lookup_status: str; manufacturer: str | None; confidence: str; assignment_class: str | None; matched_prefix: str | None; matched_prefix_length: int | None; lookup_method: str
@@ -169,9 +170,11 @@ def is_multicast_address(normalized: str) -> bool: return bool(_address_bytes(no
 def is_locally_administered_address(normalized: str) -> bool: return bool(_address_bytes(normalized)[0] & 2)
 def normalize_organization(value: str) -> str:
     if not isinstance(value, str): raise ManufacturerInputError("MANUFACTURER_DATABASE_SCHEMA_INVALID", "organization must be text")
+    value = value.replace("\u200b", "").replace("\u200e", "").replace("\t", " ")
     value = unicodedata.normalize("NFC", value)
-    if any(ch in "\r\n" or unicodedata.category(ch)[0] == "C" or unicodedata.category(ch) in {"Co", "Cn"} for ch in value): raise ManufacturerInputError("MANUFACTURER_DATABASE_SCHEMA_INVALID", "organization contains prohibited characters")
+    prohibited = any(ch in "\r\n" or unicodedata.category(ch)[0] == "C" or unicodedata.category(ch) in {"Co", "Cn"} for ch in value)
     value = " ".join(value.split())
+    if prohibited: raise ManufacturerInputError("MANUFACTURER_DATABASE_SCHEMA_INVALID", "organization contains prohibited characters")
     if not 1 <= len(value) <= 256: raise ManufacturerInputError("MANUFACTURER_DATABASE_SCHEMA_INVALID", "organization length is invalid")
     return value
 
@@ -183,9 +186,9 @@ def validate_database(document: object) -> dict:
     if not isinstance(value["semantic_sha256"], str) or not SHA_RE.fullmatch(value["semantic_sha256"]): raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", "semantic digest is invalid")
     counts = {key: _count(value[key], key) for key in ("record_count", "ma_l_count", "ma_m_count", "ma_s_count", "conflict_count")}
     if counts["record_count"] == 0: raise _validation("MANUFACTURER_DATASET_EMPTY", "dataset is empty")
-    if counts["conflict_count"]: raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", "conflict count must be zero")
-    records = value["records"]
+    records, conflicts = value["records"], value["conflicts"]
     if not isinstance(records, dict) or list(records) != sorted(records) or len(records) != counts["record_count"]: raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", "record count or ordering is invalid")
+    if not isinstance(conflicts, dict) or list(conflicts) != sorted(conflicts) or len(conflicts) != counts["conflict_count"] or set(records) & set(conflicts): raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", "conflict count, ordering, or intersection is invalid")
     actual = {"ma_l_count": 0, "ma_m_count": 0, "ma_s_count": 0}
     for key, record in records.items():
         _exact(record, RECORD_KEYS, "record")
@@ -197,6 +200,12 @@ def validate_database(document: object) -> dict:
         except ManufacturerInputError as exc: raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", exc.safe_message) from exc
         if normalized != record["organization"]: raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", "organization is not normalized")
         actual[count_key] += 1
+    for key, conflict in conflicts.items():
+        _exact(conflict, CONFLICT_KEYS, "conflict")
+        cls = conflict["assignment_class"]
+        if cls not in CLASS_META: raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", "conflict assignment class is invalid")
+        bits, width, _ = CLASS_META[cls]; prefix = conflict["prefix"]
+        if conflict["prefix_length"] != bits or not isinstance(prefix, str) or not re.fullmatch(rf"[0-9A-F]{{{width}}}", prefix) or key != f"{bits}:{prefix}" or _count(conflict["variant_count"], "variant count") < 2: raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", "conflict entry is invalid")
     if sum(actual.values()) != counts["record_count"] or any(actual[key] != counts[key] for key in actual): raise _validation("MANUFACTURER_DATABASE_SCHEMA_INVALID", "class counts are invalid")
     payload = {key: copy.deepcopy(item) for key, item in value.items() if key != "semantic_sha256"}
     if semantic_sha256(payload) != value["semantic_sha256"]: raise ManufacturerIntegrityError("MANUFACTURER_DATABASE_SEMANTIC_MISMATCH", "semantic digest mismatch")
@@ -209,7 +218,7 @@ def validate_manifest(document: object) -> dict:
     for key in ("database_sha256", "database_semantic_sha256"):
         if not isinstance(value[key], str) or not SHA_RE.fullmatch(value[key]): raise _validation("MANUFACTURER_MANIFEST_SCHEMA_INVALID", "manifest digest is invalid")
     for key in ("database_size_bytes", "record_count", "ma_l_count", "ma_m_count", "ma_s_count", "duplicate_count", "conflict_count"): _count(value[key], key, "MANUFACTURER_MANIFEST_SCHEMA_INVALID")
-    if value["database_size_bytes"] < 1 or value["conflict_count"]: raise _validation("MANUFACTURER_MANIFEST_SCHEMA_INVALID", "manifest size or conflict count is invalid")
+    if value["database_size_bytes"] < 1: raise _validation("MANUFACTURER_MANIFEST_SCHEMA_INVALID", "manifest size is invalid")
     if not isinstance(value["dataset_id"], str) or not ID_RE.fullmatch(value["dataset_id"]) or not isinstance(value["dataset_version"], str) or not VERSION_RE.fullmatch(value["dataset_version"]): raise _validation("MANUFACTURER_MANIFEST_SCHEMA_INVALID", "manifest identity is invalid")
     sources = value["source_files"]
     if not isinstance(sources, list) or len(sources) != 3 or [x.get("source_class") if isinstance(x, dict) else None for x in sources] != ["MA-L", "MA-M", "MA-S"]: raise _validation("MANUFACTURER_MANIFEST_SCHEMA_INVALID", "source ordering is invalid")
@@ -243,7 +252,7 @@ def validate_manufacturer_sidecar(document: object) -> dict:
     actual = dict.fromkeys(("matched_count", "unknown_count", "excluded_count", "invalid_count"), 0)
     for key, record in records.items():
         _validate_sidecar_record(key, record); status = record["lookup_status"]
-        bucket = "matched_count" if status == "matched" else "unknown_count" if status in {"unknown_prefix", "unsupported_address_type"} else "excluded_count" if status in {"multicast_address", "locally_administered_address"} else "invalid_count"
+        bucket = "matched_count" if status == "matched" else "unknown_count" if status in {"conflicting_assignment", "unknown_prefix", "unsupported_address_type"} else "excluded_count" if status in {"multicast_address", "locally_administered_address"} else "invalid_count"
         actual[bucket] += 1
         if record["dataset_version"] != value["dataset_version"] or record["dataset_semantic_sha256"] != value["dataset_semantic_sha256"]: raise _validation("MANUFACTURER_SIDECAR_INVALID", "sidecar provenance differs")
     if actual != {key: counts[key] for key in actual}: raise _validation("MANUFACTURER_SIDECAR_INVALID", "sidecar partition counts are invalid")
@@ -295,7 +304,8 @@ def load_database(database_path: pathlib.Path, manifest_path: pathlib.Path) -> M
     maps = {key: {} for key in ASSIGNMENT_CLASSES}
     for record in database["records"].values(): maps[record["assignment_class"]][record["prefix"]] = ManufacturerRecord(**record)
     wrapped = ManufacturerManifest(manifest, manifest["database_sha256"], manifest["database_semantic_sha256"])
-    return ManufacturerDatabase(database, wrapped, MappingProxyType(maps["MA-L"]), MappingProxyType(maps["MA-M"]), MappingProxyType(maps["MA-S"]))
+    conflict_map = {key: MappingProxyType(dict(item)) for key, item in database["conflicts"].items()}
+    return ManufacturerDatabase(database, wrapped, MappingProxyType(maps["MA-L"]), MappingProxyType(maps["MA-M"]), MappingProxyType(maps["MA-S"]), MappingProxyType(conflict_map))
 
 def _lookup(status, record=None):
     if record: return ManufacturerLookupResult(status, record.organization, "high", record.assignment_class, record.prefix, record.prefix_length, "longest_prefix_v1")
@@ -308,6 +318,7 @@ def lookup_manufacturer_eui48(database: ManufacturerDatabase, mac: str) -> Manuf
     if is_locally_administered_address(normalized): return _lookup("locally_administered_address")
     raw = normalized.replace(":", "")
     for width, mapping in ((9, database.ma_s), (7, database.ma_m), (6, database.ma_l)):
+        if f"{width * 4}:{raw[:width]}" in database.conflicts: return _lookup("conflicting_assignment")
         if raw[:width] in mapping: return _lookup("matched", mapping[raw[:width]])
     return _lookup("unknown_prefix")
 def lookup_manufacturer_eui64(database: ManufacturerDatabase, eui64: str) -> ManufacturerLookupResult:
@@ -327,9 +338,9 @@ def build_manufacturer_sidecar(inventory_document: dict, database: ManufacturerD
         mac = device.get("mac"); result = _lookup("missing_address") if mac is None or mac == "" else lookup_manufacturer_eui48(database, mac) if isinstance(mac, str) else _lookup("invalid_address")
         records[device["id"]] = {"stable_device_id": device["id"], "lookup_status": result.lookup_status, "manufacturer": result.manufacturer, "confidence": result.confidence, "assignment_class": result.assignment_class, "matched_prefix": result.matched_prefix, "matched_prefix_length": result.matched_prefix_length, "source": "ieee_registration_authority", "dataset_version": database.document["dataset_version"], "dataset_semantic_sha256": database.document["semantic_sha256"], "lookup_method": result.lookup_method}
     records = {key: records[key] for key in sorted(records)}; statuses = [x["lookup_status"] for x in records.values()]
-    counts = {"matched_count": statuses.count("matched"), "unknown_count": sum(x in {"unknown_prefix", "unsupported_address_type"} for x in statuses), "excluded_count": sum(x in {"multicast_address", "locally_administered_address"} for x in statuses), "invalid_count": sum(x in {"missing_address", "invalid_address"} for x in statuses)}
+    counts = {"matched_count": statuses.count("matched"), "unknown_count": sum(x in {"conflicting_assignment", "unknown_prefix", "unsupported_address_type"} for x in statuses), "excluded_count": sum(x in {"multicast_address", "locally_administered_address"} for x in statuses), "invalid_count": sum(x in {"missing_address", "invalid_address"} for x in statuses)}
     sidecar = {"schema_version": MANUFACTURER_SIDECAR_SCHEMA_VERSION, "generated_at": generated_at, "dataset_id": database.document["dataset_id"], "dataset_version": database.document["dataset_version"], "dataset_semantic_sha256": database.document["semantic_sha256"], "record_count": len(records), **counts, "records": records}
-    status = {"schema_version": MANUFACTURER_STATUS_SCHEMA_VERSION, "updated": generated_at, "status": "online", "dataset_available": True, "dataset_id": database.document["dataset_id"], "dataset_version": database.document["dataset_version"], "dataset_semantic_sha256": database.document["semantic_sha256"], "record_count": len(records), **counts, "conflict_count": 0, "generator": MANUFACTURER_GENERATOR_VERSION, "error_code": None, "error_message": None}
+    status = {"schema_version": MANUFACTURER_STATUS_SCHEMA_VERSION, "updated": generated_at, "status": "online", "dataset_available": True, "dataset_id": database.document["dataset_id"], "dataset_version": database.document["dataset_version"], "dataset_semantic_sha256": database.document["semantic_sha256"], "record_count": len(records), **counts, "conflict_count": database.document["conflict_count"], "generator": MANUFACTURER_GENERATOR_VERSION, "error_code": None, "error_message": None}
     validate_manufacturer_sidecar(sidecar); validate_manufacturer_status(status); return sidecar, status
 
 def _fsync_directory(path):

@@ -93,6 +93,15 @@ exists.
 
 ## Validation and next gate
 
+Real-source compatibility is bounded explicitly. Organization normalization
+removes only U+200B and U+200E and treats TAB as collapsible whitespace; all
+other prohibited controls and format characters remain fail-closed. Official
+assignment keys with multiple distinct normalized organizations are represented
+once in the closed conflict map without organization variants. They are
+non-selectable and block shorter-prefix fallback, producing
+`conflicting_assignment`, null manufacturer, and unknown confidence. This does
+not alter identity, health, inventory, Asset data, or consumers.
+
 The exact future file set and minimum 92-test mapping are frozen in the executable
 contract. Future production validation uses synthetic lookup proof plus sanitized
 structural and aggregate verification for the locally generated real database;

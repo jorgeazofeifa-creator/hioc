@@ -672,3 +672,14 @@ and evidence report. No IEEE data, production database, deployment, schedule,
 public projection, or protected subsystem change occurred. Repository validation
 does not complete PE-3; local production dataset creation, deployment, and
 production validation remain separate pending gates, and PE-4 is not started.
+
+Real-source compatibility amendment: organization normalization removes only
+U+200B ZERO WIDTH SPACE and U+200E LEFT-TO-RIGHT MARK, converts U+0009 TAB to
+collapsible whitespace, and continues to reject every other prohibited control
+or format character. Official assignment keys with multiple distinct normalized
+organizations do not select a winner. The database retains one closed conflict
+entry containing only prefix metadata and variant count, never organization
+variants. Conflict lookup is a first-class non-claim that blocks shorter-prefix
+fallback and returns null manufacturer with unknown confidence. Exit 10 remains
+reserved for structurally irreconcilable conflict metadata or nondeterministic
+grouping, not representable official organization variation.

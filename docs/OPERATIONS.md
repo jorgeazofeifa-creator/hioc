@@ -1,5 +1,15 @@
 # HIOC Operations
 
+## PE-3 manufacturer dataset conflicts
+
+The offline PE-3 builder may report an aggregate nonzero conflict count for
+official assignment keys with multiple normalized organization variants. Such
+keys remain in the private database as non-selectable conflict metadata without
+organization values. `conflicting_assignment` is an unknown manufacturer result,
+not an operational fault, and prevents fallback to a shorter prefix. Operators
+must never manually select or patch a winner. IEEE source and generated database
+artifacts remain local and outside Git and releases.
+
 ## PE-3.1 manufacturer enrichment boundary
 
 PE-3.1 executable tooling is repository implemented but not deployed. A future operator

@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Corrected PE-3.1 official-source normalization and conflict preservation.
+  Organization normalization removes only U+200B/U+200E, collapses TAB as
+  whitespace, and leaves every other prohibited control fail-closed. Assignment
+  keys with multiple normalized organizations are stored without organization
+  variants as explicit non-selectable conflicts; lookup returns
+  `conflicting_assignment` and blocks weaker-prefix fallback. No IEEE rows or
+  generated production artifacts entered Git.
+
 - Implemented and repository-validated the private PE-3.1 manufacturer
   foundation: closed schemas, deterministic 36/28/24 lookup, local-only builder,
   lock-free validator, separately locked manual generator, atomic immutable

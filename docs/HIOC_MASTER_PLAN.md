@@ -1168,15 +1168,23 @@ other exit/error semantics. The standalone validator is now explicitly lock-free
 and read-only: immutable database safety comes from atomic directory publication,
 while the builder and generator remain the only owners of the two exclusive
 manufacturer locks.
-PE-3.1 executable implementation is repository validated. No PE-3 production
-dataset, deployment, or runtime behavior exists. Phase 7A is not complete.
+PE-3.1 executable implementation is repository validated. A production-intended
+dataset has been built and validated only in the external operator workspace;
+no PE-3 dataset is deployed and no production runtime behavior exists. Phase 7A
+is not complete.
+
+The bounded real-source correction removes only U+200B/U+200E from organization
+labels, collapses TAB as whitespace, and preserves official multi-organization
+assignment keys as explicit non-selectable conflicts. Conflicted keys block
+weaker-prefix fallback and cannot produce manufacturer claims. No source row or
+organization variant enters Git.
 
 ## Next Planned Task
 
-The next authoritative checkpoint is review and push authorization for the PE-3.1
-repository implementation. Local acquisition and local transformation are
-approved, but production dataset build, deployment, and validation remain later
-gates; no IEEE data may enter Git or releases. Do not mark Phase 7A complete.
+The next authoritative checkpoint is review and push authorization for the
+bounded normalization/conflict correction. Local acquisition and deterministic
+local transformation have passed; deployment and PI3 validation remain later
+gates. No IEEE data may enter Git or releases. Do not mark Phase 7A complete.
 
 The corrected run completed Asset transactions and cleanup, then exposed a
 second validator-contract defect: live `active.json` was treated as immutable.

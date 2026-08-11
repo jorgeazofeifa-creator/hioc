@@ -5,12 +5,43 @@ from hioc.manufacturer import *
 STAMP="2026-08-10T12:00:00.000000Z"
 def database():
     records={"24:A0B1C2":{"prefix":"A0B1C2","prefix_length":24,"assignment_class":"MA-L","organization":"Fictional Lantern Works"},"28:A0B1C2D":{"prefix":"A0B1C2D","prefix_length":28,"assignment_class":"MA-M","organization":"Synthetic Meadow Labs"},"36:A0B1C2D3E":{"prefix":"A0B1C2D3E","prefix_length":36,"assignment_class":"MA-S","organization":"Imaginary Harbor Systems"}}
-    db={"schema_version":"1.0","dataset_id":"synthetic-local","dataset_version":"fixture-r1","parser_version":"hioc-manufacturer-1","semantic_sha256":"","record_count":3,"ma_l_count":1,"ma_m_count":1,"ma_s_count":1,"conflict_count":0,"records":records}; db["semantic_sha256"]=semantic_sha256({k:v for k,v in db.items() if k!="semantic_sha256"}); return db
+    db={"schema_version":"1.0","dataset_id":"synthetic-local","dataset_version":"fixture-r1","parser_version":"hioc-manufacturer-1","semantic_sha256":"","record_count":3,"ma_l_count":1,"ma_m_count":1,"ma_s_count":1,"conflict_count":0,"records":records,"conflicts":{}}; db["semantic_sha256"]=semantic_sha256({k:v for k,v in db.items() if k!="semantic_sha256"}); return db
 def write_pair(root):
     db=database(); data=canonical_json_bytes(db); (root/"manufacturer-db.json").write_bytes(data)
     mf={"schema_version":"1.0","database_filename":"manufacturer-db.json","database_sha256":hashlib.sha256(data).hexdigest(),"database_size_bytes":len(data),"database_semantic_sha256":db["semantic_sha256"],"database_schema_version":"1.0","dataset_id":db["dataset_id"],"dataset_version":db["dataset_version"],"parser_version":"hioc-manufacturer-1","record_count":3,"ma_l_count":1,"ma_m_count":1,"ma_s_count":1,"duplicate_count":0,"conflict_count":0,"source_files":[{"source_class":c,"source_filename":f"synthetic-{c.lower()}.csv","source_sha256":hashlib.sha256(c.encode()).hexdigest(),"source_size_bytes":10} for c in ("MA-L","MA-M","MA-S")],"build":{"canonicalization_version":"1","deterministic_build_verified":True}}
     (root/"manufacturer-db.manifest.json").write_bytes(canonical_json_bytes(mf)); return db,mf
 class ManufacturerSchemaTests(unittest.TestCase):
+    def test_organization_removes_approved_format_controls(self):
+        self.assertEqual(normalize_organization("Synthetic\u200b Works"), "Synthetic Works")
+        self.assertEqual(normalize_organization("Synthetic\u200e Works"), "Synthetic Works")
+        self.assertEqual(normalize_organization("Synthetic\u200b\u200e Works"), "Synthetic Works")
+    def test_organization_format_control_positions_are_deterministic(self):
+        expected = "SyntheticWorks"
+        for value in ("\u200bSyntheticWorks", "Synthetic\u200bWorks", "SyntheticWorks\u200e"):
+            self.assertEqual(normalize_organization(value), expected)
+    def test_organization_removal_precedes_nfc(self):
+        self.assertEqual(normalize_organization("Cafe\u200be\u0301"), "Cafeé")
+        self.assertEqual(normalize_organization("Cafe\u200be\u0301"), normalize_organization("Cafeé"))
+    def test_organization_removal_cannot_create_empty_value(self):
+        for value in ("\u200b", "\u200e", "\u200b\u200e"):
+            with self.subTest(value=repr(value)), self.assertRaises(ManufacturerInputError): normalize_organization(value)
+    def test_organization_other_format_and_control_characters_fail(self):
+        for value in ("Synthetic\u200cWorks", "Synthetic\u2060Works", "Synthetic\x01Works", "Synthetic\nWorks"):
+            with self.subTest(value=repr(value)), self.assertRaises(ManufacturerInputError): normalize_organization(value)
+    def test_organization_tab_collapses_as_whitespace(self):
+        cases = {
+            "Synthetic\tWorks": "Synthetic Works",
+            "Synthetic\t\tWorks": "Synthetic Works",
+            "Synthetic \t  Works": "Synthetic Works",
+            "\tSynthetic Works\t": "Synthetic Works",
+            "Synthetic\t\u200bWorks": "Synthetic Works",
+            "Synthetic\u200e\tWorks": "Synthetic Works",
+        }
+        for value, expected in cases.items():
+            with self.subTest(value=repr(value)): self.assertEqual(normalize_organization(value), expected)
+    def test_organization_unapproved_line_and_control_characters_fail(self):
+        for value in ("Synthetic\rWorks", "Synthetic\nWorks", "Synthetic\x0bWorks", "Synthetic\u200cWorks"):
+            with self.subTest(value=repr(value)), self.assertRaises(ManufacturerInputError): normalize_organization(value)
     def test_database_valid(self): self.assertEqual(validate_database(database())["record_count"],3)
     def test_database_closed(self):
         db=database(); db["extra"]=1
@@ -25,7 +56,7 @@ class ManufacturerSchemaTests(unittest.TestCase):
         db=database(); db["record_count"]=4
         with self.assertRaises(ManufacturerValidationError): validate_database(db)
     def test_database_empty(self):
-        db=database(); db.update(record_count=0,ma_l_count=0,ma_m_count=0,ma_s_count=0,records={}); db["semantic_sha256"]=semantic_sha256({k:v for k,v in db.items() if k!="semantic_sha256"})
+        db=database(); db.update(record_count=0,ma_l_count=0,ma_m_count=0,ma_s_count=0,records={},conflicts={}); db["semantic_sha256"]=semantic_sha256({k:v for k,v in db.items() if k!="semantic_sha256"})
         with self.assertRaises(ManufacturerValidationError) as cm: validate_database(db)
         self.assertEqual(cm.exception.code,"MANUFACTURER_DATASET_EMPTY")
     def test_manifest_valid(self):
