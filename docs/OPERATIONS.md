@@ -30,22 +30,19 @@ are selected lexically only after validation; zero matches fail with
 `VALIDATED_BUILD_PAIR_NOT_FOUND`. No raw registry value or Windows user path is
 printed.
 
-Action 1 is wrapped in `Invoke-PE3ManufacturerAction1`. Expected precondition
-and validation failures print a sanitized `RESULT` and `ERROR_CODE`, then return
-from the function. Unexpected exceptions are caught as
-`ACTION1_UNEXPECTED_ERROR` without exception details. The block contains no
-`exit` command, so the interactive PowerShell prompt remains available for
-evidence capture.
+Action 1 is implemented only by the repository-controlled Windows PowerShell
+script `tools/hioc-pe3-action1.ps1`; its source must never be reproduced through
+chat. The runbook freezes the script SHA-256 and Git blob identity and provides
+only the direct invocation model. Before artifact checks, the script verifies
+the approved main/origin commit, its own path and Git identity, repository
+cleanliness, and implementation ancestry. A script mismatch reports
+`ACTION1_SCRIPT_IDENTITY_MISMATCH`.
 
-Operator delivery must copy the Action 1 fenced block byte-for-byte from the
-runbook. Its SHA-256 is calculated after UTF-8 encoding, LF normalization, and
-exactly one terminal LF; the runbook publishes the expected digest. Action 1
-must not run when the prepared block digest differs. The unchanged canonical
-block prompts for the two operator paths and approved post-push commit, avoiding
-hash-breaking preparation substitutions. An early integrity sentinel
-validates path presence, frozen hash/commit syntax, literal underscores, and the
-Python probe. Unexpected failures report only an approved bounded
-`FAILURE_STAGE`, never exception details or local paths.
+Expected precondition and validation failures print a sanitized `RESULT` and
+`ERROR_CODE`, then return from the script function. Unexpected exceptions are
+caught as `ACTION1_UNEXPECTED_ERROR` with only a bounded `FAILURE_STAGE`. The
+script contains no host-level `exit`, so the interactive PowerShell prompt
+remains available for evidence capture.
 
 ## PE-3.1 manufacturer enrichment boundary
 

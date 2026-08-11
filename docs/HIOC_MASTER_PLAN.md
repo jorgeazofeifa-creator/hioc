@@ -1261,13 +1261,19 @@ to `ACTION1_UNEXPECTED_ERROR`. No `exit` remains, so the operator prompt survive
 The attempted action produced no accepted evidence and did not start transfer or
 production work.
 
-The next operator transcript was classified as an Action 1 delivery-integrity
-failure, not manufacturer validation evidence: Markdown reconstruction escaped
-underscores and removed literal Windows backslashes before PowerShell parsed the
-copy. The fenced runbook block is now the canonical byte source with a normalized
-UTF-8/LF SHA-256. Preparation must reproduce it verbatim and verify the digest.
-The block adds an early integrity sentinel, platform path APIs, and bounded
-sanitized failure stages without weakening containment or any frozen check.
+Two operator attempts are classified as Action 1 delivery-path defects, not
+Python, manufacturer-validator, dataset, repository, or production failures.
+The first delivered block lost literal Windows syntax; the second escaped
+underscores and changed `$env:HIOC_HOME` before PowerShell parsed it. Neither
+attempt produced valid Action 1 evidence or reached PI3 or production.
+
+Action 1 is now executed only from the repository-controlled Windows PowerShell
+script `tools/hioc-pe3-action1.ps1`. The runbook remains the procedural
+authority, freezes the script SHA-256 and Git blob identity, and publishes only
+the direct parameterized invocation. The script verifies its own approved Git
+identity before artifact validation and preserves every previously frozen
+read-only, containment, hash, size, ancestry, resolver, validator, sanitization,
+and stop boundary. Script source must not be distributed through chat.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

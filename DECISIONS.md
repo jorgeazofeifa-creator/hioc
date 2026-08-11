@@ -717,20 +717,21 @@ sizes match. Multiple identical matches are selected deterministically only
 after verification; zero matches stop with `VALIDATED_BUILD_PAIR_NOT_FOUND`.
 Outputs remain sanitized and the action remains read-only and Windows-only.
 
-Interactive-host amendment: Action 1 is a single function-scoped PowerShell
-block. Expected precondition and validation outcomes print sanitized `RESULT`
+Interactive-host amendment: Action 1 uses a single function-scoped PowerShell
+execution path. Expected precondition and validation outcomes print sanitized `RESULT`
 and `ERROR_CODE` values and return from the function; no branch invokes `exit`.
 Unexpected exceptions are caught and rendered only as `VALIDATION_FAIL` /
 `ACTION1_UNEXPECTED_ERROR`, without paths, stack traces, or data values. This
 preserves the operator prompt for evidence capture and changes no artifact,
 validation, transfer, or production contract.
 
-Operator-copy fidelity amendment: the Action 1 fenced PowerShell block in the
-runbook is the sole canonical operator source. Preparation copies those bytes
-verbatim and verifies the published SHA-256 after UTF-8 encoding, LF
-normalization, and exactly one terminal LF. A mismatch prohibits execution. The
-block uses platform separator APIs rather than fragile quoted backslashes,
-performs an early literal/identity sentinel, rejects escaped-underscore
-corruption, and reports unexpected errors only with an approved bounded
-`FAILURE_STAGE`. The corrupted operator transcript is not manufacturer
-validation evidence.
+Repository-executable amendment: two corrupted operator transcripts establish
+an Action 1 delivery-path defect and are not Python, manufacturer-validator,
+dataset, repository, or production evidence. Action 1 source is no longer
+distributed through chat. Its sole canonical executable implementation is
+`tools/hioc-pe3-action1.ps1`; the runbook freezes its SHA-256 and Git blob and
+provides only a direct parameterized invocation from the synchronized
+repository. The script verifies its own approved Git identity and clean state,
+preserves the interactive host on every expected failure, and bounds unexpected
+errors to `ACTION1_UNEXPECTED_ERROR` plus `FAILURE_STAGE`. No attempt reached PI3
+or changed production.
