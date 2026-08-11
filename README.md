@@ -28,6 +28,7 @@ pi4/                    Pi4 engines, shared runtime, configuration, and validati
 homeassistant/          Home Assistant packages, dashboards, install, and validation
 release/                Release build, package, install, upgrade, rollback, and validation scripts
 docs/                   Project, architecture, install, integration, design, and data documentation
+governance/             Machine-readable operational support state
 docs/reviews/           Archived historical reviews
 tests/                  Unit and YAML validation tests
 ROADMAP.md              Short public roadmap summary
@@ -83,6 +84,7 @@ The Master Plan governs project direction. It does not replace the technical doc
 | What is the approved recovery baseline? | [docs/RECOVERY_BASELINE.md](docs/RECOVERY_BASELINE.md) |
 | How will devices evolve into operator-managed assets? | [docs/ASSET_MODEL.md](docs/ASSET_MODEL.md) |
 | How do shared runtime libraries work? | [docs/CORE.md](docs/CORE.md) |
+| Which Python runtimes are compatible, tested, or supported? | [docs/PYTHON_RUNTIME_COMPATIBILITY.md](docs/PYTHON_RUNTIME_COMPATIBILITY.md) |
 | How does MQTT work? | [docs/MQTT.md](docs/MQTT.md) |
 | How does Home Assistant integrate? | [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |
 | How does the dashboard consume operational truth and preserve its layout? | [docs/DASHBOARD_ARCHITECTURE.md](docs/DASHBOARD_ARCHITECTURE.md) |

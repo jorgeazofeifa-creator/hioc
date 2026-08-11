@@ -708,7 +708,8 @@ authoritative commands and classifications are frozen in
 `docs/PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md`. This decision performs no
 production action and does not start PE-4.
 
-Action 1 operator-discovery amendment: Windows verification resolves Python 3
+Historical Action 1 operator-discovery amendment, superseded by ADR-0024:
+Windows verification resolved Python 3
 without a user-specific path, in the strict order `py -3`, `python3`, then
 `python`, and stops with `PYTHON3_NOT_FOUND` if no candidate executes as Python
 3. The operator supplies only the external PE-3 workspace root; the procedure
@@ -735,3 +736,39 @@ repository. The script verifies its own approved Git identity and clean state,
 preserves the interactive host on every expected failure, and bounds unexpected
 errors to `ACTION1_UNEXPECTED_ERROR` plus `FAILURE_STAGE`. No attempt reached PI3
 or changed production.
+
+## ADR-0024: Separate Python language floor, tested evidence, and operational support
+
+Status: Accepted governance; Windows support validation pending
+
+HIOC adopts Model D. CPython 3.10 is the repository language floor because
+production source uses PEP 604 union syntax. This is not a blanket support claim.
+CPython 3.12.13 is the only exact runtime with complete-suite evidence. CPython
+3.13.x is the proposed Windows operator line, with patch releases allowed to
+float, but remains unsupported until an official installation's exact patch,
+execution probe, full suite, and Action 1 tests pass and an approved repository
+commit promotes `governance/python-runtime-support.json`. Production continues
+using distribution-managed CPython `python3`; its exact version is unverified
+and must be independently validated. Other Python implementations are not
+supported.
+
+The operator workstation is controlled operational environment for prerequisite
+identity and reproducibility, although it is not production infrastructure. A
+resolved command or WindowsApps alias is not runtime evidence; actual execution,
+implementation, and version probes are mandatory. Prerequisite failures remain
+distinct from product failures.
+
+The original chat-delivered Action 1 attempts remain delivery-path defects.
+After repository-controlled execution eliminated that variable, the governed
+script genuinely failed at `PYTHON_RESOLUTION`: `py` was absent, `python3` and
+`python` were nonfunctional WindowsApps aliases returning 9009, and bounded
+search found no real installation. This is `ACTION1_PREREQUISITE_MISSING —
+PYTHON3`. Action 1 now selects only CPython 3.13, disables automatic Python
+installation while probing, and cannot proceed until repository support state
+is explicitly promoted. The next checkpoint is Windows Python 3.13 Installation
+& Compatibility Validation, not PE-3 Action 1 or Action 2.
+
+Validation-critical or production-capable multi-line operator programs remain
+versioned in Git whenever practical; chat guidance invokes them rather than
+reproducing their source. This decision installs nothing and performs no PI or
+production action.

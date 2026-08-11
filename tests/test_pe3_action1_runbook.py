@@ -11,6 +11,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 RUNBOOK = ROOT / "docs" / "PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md"
 SCRIPT = ROOT / "tools" / "hioc-pe3-action1.ps1"
 GITATTRIBUTES = ROOT / ".gitattributes"
+SUPPORT = ROOT / "governance" / "python-runtime-support.json"
 
 
 class PE3Action1RepositoryScriptGovernanceTests(unittest.TestCase):
@@ -39,8 +40,33 @@ class PE3Action1RepositoryScriptGovernanceTests(unittest.TestCase):
         script = self.script
         self.assertLess(script.index("Name = 'py'"), script.index("Name = 'python3'"))
         self.assertLess(script.index("Name = 'python3'"), script.index("Name = 'python'"))
-        self.assertIn("Prefix = @('-3')", script)
+        self.assertIn("Prefix = @('-3.13')", script)
+        self.assertNotIn("Prefix = @('-3')", script)
+        self.assertIn("$ExpectedPythonMajorMinor = '3.13'", script)
+        self.assertIn("$ExpectedPythonImplementation = 'CPython'", script)
         self.assertIn("ERROR_CODE=PYTHON3_NOT_FOUND", script)
+        self.assertIn("ERROR_CODE=PYTHON_VERSION_UNSUPPORTED", script)
+
+    def test_python_probe_requires_execution_and_disables_automatic_install(self):
+        script = self.script
+        self.assertIn("platform.python_implementation()", script)
+        self.assertIn("sys.version_info.major", script)
+        self.assertIn("sys.version_info.minor", script)
+        self.assertIn("PYTHON_MANAGER_AUTOMATIC_INSTALL", script)
+        self.assertIn("PYLAUNCHER_ALLOW_INSTALL", script)
+        self.assertIn("'false', 'Process'", script)
+        self.assertNotRegex(script.lower(), r"\b(py|python|winget)\s+install\b")
+
+    def test_python_support_state_blocks_until_promotion(self):
+        script = self.script
+        self.assertIn("governance/python-runtime-support.json", script)
+        self.assertIn("$PythonSupport.windows_operator.status -cne 'supported'", script)
+        self.assertIn("ERROR_CODE=PYTHON_RUNTIME_SUPPORT_PENDING", script)
+        self.assertIn("$PythonSupport.windows_operator.validated_patch -cnotmatch '^3\\.13\\.[0-9]+$'", script)
+        state = __import__("json").loads(SUPPORT.read_text(encoding="utf-8"))
+        self.assertEqual(state["windows_operator"]["major_minor"], "3.13")
+        self.assertEqual(state["windows_operator"]["status"], "validation_pending")
+        self.assertIsNone(state["windows_operator"]["validated_patch"])
 
     def test_expected_and_unexpected_failures_preserve_host(self):
         script = self.script
@@ -50,6 +76,7 @@ class PE3Action1RepositoryScriptGovernanceTests(unittest.TestCase):
         self.assertIn("ERROR_CODE=ACTION1_UNEXPECTED_ERROR", script)
         self.assertIn('Write-Output "FAILURE_STAGE=$Stage"', script)
         for stage in ("INITIALIZATION", "REPOSITORY_CHECK", "SCRIPT_IDENTITY",
+                      "PYTHON_SUPPORT_STATE",
                       "PYTHON_RESOLUTION", "BUILD_PAIR_DISCOVERY",
                       "BUILD_PAIR_CONTAINMENT", "MANUFACTURER_VALIDATION",
                       "FINAL_REPORT"):
@@ -79,6 +106,7 @@ class PE3Action1RepositoryScriptGovernanceTests(unittest.TestCase):
     def test_script_self_identity_and_ancestry_are_required(self):
         script = self.script
         self.assertIn("tools/hioc-pe3-action1.ps1", script)
+        self.assertIn("governance/python-runtime-support.json", script)
         self.assertIn("hash-object --path=tools/hioc-pe3-action1.ps1", script)
         self.assertIn("diff --quiet $GovernanceCommit -- tools/hioc-pe3-action1.ps1", script)
         self.assertIn("ERROR_CODE=ACTION1_SCRIPT_IDENTITY_MISMATCH", script)
@@ -95,6 +123,7 @@ class PE3Action1RepositoryScriptGovernanceTests(unittest.TestCase):
             self.assertNotIn(forbidden, script)
         self.assertNotIn("organization", script)
         self.assertNotIn("matched_prefix", script)
+        self.assertNotIn("winget", script)
 
     def test_runbook_invokes_script_without_embedding_implementation(self):
         action = self.action

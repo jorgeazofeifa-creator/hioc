@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Established the authoritative Model D Python runtime compatibility policy.
+  CPython 3.10 is the language floor, CPython 3.12.13 is the sole exact
+  full-suite-tested version, Windows CPython 3.13.x is proposed with validation
+  pending, and the distribution-managed production version remains unverified.
+  Action 1 now requires explicit repository support promotion, probes only
+  CPython 3.13 in `py -3.13`, `python3`, `python` order, disables automatic
+  installation, and distinguishes missing from incompatible runtimes. The
+  genuine Windows prerequisite failure remains separate from the earlier chat
+  delivery defects. No Python installation or production action occurred.
+
 - Replaced chat-delivered PE-3.3 Action 1 source with the repository-controlled
   Windows PowerShell script `tools/hioc-pe3-action1.ps1`. The runbook now records
   the script SHA-256 and Git blob and exposes only a direct parameterized

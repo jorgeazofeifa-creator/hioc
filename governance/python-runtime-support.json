@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "implementation": "CPython",
+  "language_floor": "3.10",
+  "windows_operator": {
+    "major_minor": "3.13",
+    "status": "validation_pending",
+    "validated_patch": null
+  },
+  "production": {
+    "runtime_source": "distribution_managed",
+    "status": "exact_version_unverified"
+  }
+}

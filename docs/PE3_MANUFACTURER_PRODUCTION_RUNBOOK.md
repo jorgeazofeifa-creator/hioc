@@ -56,8 +56,8 @@ The canonical executable implementation is the checked-in script
 through chat. The approved script identities are:
 
 ```text
-ACTION1_SCRIPT_SHA256=5a0ece86822df57840ad8f296ba8457f6345a96cb51694009d5ce59c5e81154b
-ACTION1_SCRIPT_GIT_BLOB=953c5cf168489c77ff1789f2576b13d47ff882ce
+ACTION1_SCRIPT_SHA256=cd4aa7afe845fbf8a76e6736d956dc1d4818ef87084eeacc0220b980cf5e567c
+ACTION1_SCRIPT_GIT_BLOB=02a89b37eb5458b15a6b037941e023c0911df0b3
 ```
 
 The governance commit supplied by the operator must contain that exact blob.
@@ -66,6 +66,14 @@ its own repository path and Git blob, a clean script diff, and implementation
 ancestry. Script-identity failure returns
 `RESULT=INPUT_OR_PRECONDITION_ERROR` and
 `ERROR_CODE=ACTION1_SCRIPT_IDENTITY_MISMATCH` without closing PowerShell.
+
+Action 1 also reads the approved commit's explicit
+`governance/python-runtime-support.json`. The current Windows CPython 3.13 line
+is `validation_pending`, so Action 1 returns
+`ERROR_CODE=PYTHON_RUNTIME_SUPPORT_PENDING` before interpreter discovery. It may
+proceed only after a separate support-promotion commit records the exact passing
+3.13 patch and changes the state to `supported`. See
+[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md).
 
 Use this invocation block only; enter the two Windows paths and the approved
 full post-push governance commit when prompted:
@@ -78,8 +86,9 @@ $Action1Script = Join-Path $Repo 'tools/hioc-pe3-action1.ps1'
 & $Action1Script -Repo $Repo -ExternalWorkspace $ExternalWorkspace -GovernanceCommit $GovernanceCommit
 ```
 
-Expected output: validator PASS plus the final sanitized PASS object. The
-selected interpreter is reported only as `py -3`, `python3`, or `python`;
+Expected output after support promotion: validator PASS plus the final sanitized
+PASS object. The selected interpreter is reported only as `py -3.13`,
+`python3`, or `python`, with major/minor `3.13`;
 the selected build is relative to the supplied workspace, and no Windows user
 path or registry content is printed. Multiple exact matching pairs are accepted
 only after both hashes and sizes match; lexical absolute-path ordering then makes
@@ -87,6 +96,13 @@ the choice deterministic. Expected failures emit sanitized `RESULT` and
 `ERROR_CODE` lines and return control to the interactive prompt. Unexpected
 failures additionally report only the approved bounded `FAILURE_STAGE`, never
 exception text, command text, stack traces, absolute paths, or registry content.
+
+`py -3.13` has priority. `python3` and `python` are accepted only when execution
+proves CPython 3.13. A usable other runtime returns
+`PYTHON_VERSION_UNSUPPORTED`; no usable runtime returns `PYTHON3_NOT_FOUND`.
+WindowsApps aliases that fail execution are not runtimes. Automatic Python
+Install Manager installation is disabled during probes. Action 1 never installs
+Python.
 
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 

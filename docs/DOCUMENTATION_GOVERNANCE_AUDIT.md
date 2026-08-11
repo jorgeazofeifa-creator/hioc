@@ -23,6 +23,7 @@ authority.
 | AUTHORITATIVE | `docs/HIOC_MASTER_PLAN.md` | Sole project-status, sequence, roadmap, and checkpoint-governance authority. |
 | AUTHORITATIVE | `docs/ARCHITECTURE.md`, `docs/CORE.md`, `docs/DATA_MODEL.md`, `docs/ASSET_MODEL.md`, `docs/PASSIVE_ENRICHMENT_ARCHITECTURE.md`, `docs/INCIDENT_MODEL.md`, `docs/NETWORK_FOUNDATION.md`, `docs/DASHBOARD_ARCHITECTURE.md`, `docs/DESIGN_SYSTEM.md` | Current architecture and focused model contracts. |
 | AUTHORITATIVE | `docs/SYSTEM_REFERENCE.md`, `docs/OPERATIONS.md`, `docs/DEPLOYMENT.md`, `docs/INSTALL.md`, `docs/RELEASE.md`, `docs/RECOVERY_BASELINE.md`, `docs/MQTT.md`, `docs/HOME_ASSISTANT.md` | Current-state, operating, deployment, recovery, and interface contracts. |
+| AUTHORITATIVE | `docs/PYTHON_RUNTIME_COMPATIBILITY.md` | Python implementation, language-floor, tested/supported-runtime, patch, platform, prerequisite, and support-promotion policy. |
 | AUTHORITATIVE | `docs/PE1_HOSTNAME_ENRICHMENT_SPEC.md`, `docs/PE2_ASSET_FOUNDATION_SPEC.md`, `docs/PE2_ASSET_IMPLEMENTATION_DESIGN.md`, `docs/PE3_MANUFACTURER_ENRICHMENT_SPEC.md`, `docs/PE3_MANUFACTURER_IMPLEMENTATION_DESIGN.md`, `docs/PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md`, `docs/PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md` | Checkpoint-specific normative contracts. The PE-3 executable contract owns exact schemas, locks, errors, and exits; the runbook owns the ten-action production procedure. |
 | AUTHORITATIVE | `DECISIONS.md`, `docs/CHANGELOG.md` | Current ADR decisions and chronological repository milestone history. Superseded ADRs are explicitly labeled. |
 | SUPPORTING | `README.md`, `ROADMAP.md`, `docs/PROJECT.md`, `docs/DASHBOARD_V2_PLAN.md` | Entry points and summaries subordinate to focused authorities and the Master Plan. |
@@ -40,7 +41,8 @@ Phase 7A is **IN PROGRESS**. PE-0 is **COMPLETE - DESIGN APPROVED**. PE-1 and
 PE-2 are **COMPLETE - PRODUCTION VALIDATED**. PE-3.0 is complete; PE-3.1 is
 **IMPLEMENTED - REPOSITORY VALIDATED**; PE-3.2 is **COMPLETE - EXTERNAL DATASET
 VALIDATED**; PE-3.3 is **COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED**.
-PE-3 production deployment, manufacturer generation, PI3 production validation,
+PE-3 Production Action 1 is blocked on Windows Python 3.13 installation,
+validation, and support promotion. PE-3 production deployment, manufacturer generation, PI3 production validation,
 and final governance closure remain open. PE-4 through PE-9 are not started.
 
 The Master Plan now defines the controlled vocabulary for design-complete,

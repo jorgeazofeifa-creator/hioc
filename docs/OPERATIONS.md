@@ -22,13 +22,23 @@ an immutable dataset version, silently replace a different configured path, or
 interpret conflict/unknown counts as operational failure.
 
 Action 1 accepts the retained external workspace only as an explicit Windows
-operator variable. It resolves Python 3 in the frozen order `py -3`, `python3`,
-then `python`, failing with `PYTHON3_NOT_FOUND` if none executes as Python 3.
+operator variable. After repository support promotion, it resolves the governed
+Windows line in the order `py -3.13`, `python3`, then `python`; fallbacks must
+execute as CPython 3.13. No usable interpreter yields `PYTHON3_NOT_FOUND`; a
+usable incompatible interpreter yields `PYTHON_VERSION_UNSUPPORTED`.
 Database/manifest selection is based on both frozen SHA-256 values, adjacency,
 regular-file/reparse-point checks, and frozen sizes. Multiple identical matches
 are selected lexically only after validation; zero matches fail with
 `VALIDATED_BUILD_PAIR_NOT_FOUND`. No raw registry value or Windows user path is
 printed.
+
+The current support state is `validation_pending`, so Action 1 stops with
+`PYTHON_RUNTIME_SUPPORT_PENDING` before discovery. The separate Windows Python
+3.13 Installation & Compatibility Validation checkpoint must install an
+official runtime, record its patch, run the full suite and focused tests, and
+commit the support promotion. Action 1 disables Python Install Manager automatic
+installation during probes. See
+[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md).
 
 Action 1 is implemented only by the repository-controlled Windows PowerShell
 script `tools/hioc-pe3-action1.ps1`; its source must never be reproduced through

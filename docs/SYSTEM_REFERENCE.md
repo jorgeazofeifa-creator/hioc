@@ -18,6 +18,15 @@ production dependencies. The exact supported version directory includes both
 identity components as `local-ieee-ra--2026-08-11-r1`. PE-3.3 is design-frozen
 but neither deployed nor production validated.
 
+## Python runtime boundary
+
+The Python language floor is CPython 3.10, while tested and supported claims are
+separate. CPython 3.12.13 has full-suite evidence. Windows CPython 3.13.x is
+proposed with validation pending and is not yet supported. Production uses the
+distribution-managed `python3`, but its exact version remains unverified. The
+authoritative policy and machine-readable support-state relationship are in
+[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md).
+
 ## Purpose and Authority
 
 This is the authoritative current-state reference for what HIOC is today. The [Master Plan](HIOC_MASTER_PLAN.md) explains how HIOC is built and evolves. [OPERATIONS.md](OPERATIONS.md) owns detailed runtime procedures.
@@ -187,4 +196,6 @@ acquisition/transformation is approved; registry content cannot enter Git or
 releases. PE-3.2 externally validated the production-intended dataset and
 manifest; neither is committed or deployed. No production manufacturer sidecar,
 schedule, public projection, or consumer exists. PE-3.3 is design approved;
-production deployment and PI3 validation remain pending.
+Production Action 1 is blocked on the Windows Python prerequisite and support
+promotion. Production deployment has not started and PI3 validation has not
+started.

@@ -6,6 +6,11 @@ This document owns operator installation, configuration, upgrade, validation, an
 
 It should not contain roadmap, architecture rationale, release history, or dashboard design. For release packaging workflow, see [RELEASE.md](RELEASE.md). For project direction, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md).
 
+Python prerequisite compatibility and support claims are governed by
+[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). A resolved
+command name is not sufficient; installation procedures must execute the
+interpreter and verify its CPython implementation and governed version.
+
 ## Repository and Runtime Layout
 
 The authoritative source checkout is:
@@ -37,6 +42,16 @@ bash release/install.sh pi4
 ```
 
 The Pi4 release installer invokes `pi4/install_pi4.sh` and installs to `/home/jazofv1/hioc` by default. It requires `rsync`, `crontab`, `flock`, `python3`, and the existing Pi4 toolkit configuration. Set `HIOC_INSTALL_DIR` or `PI4_TOOLS_DIR` only when intentionally using nondefault paths.
+
+Production uses the distribution-managed CPython `python3`; do not replace the
+system interpreter to match Windows. Its exact production major/minor remains
+unverified and must be recorded during governed PI validation.
+
+For Windows operator checkpoints, official CPython 3.13.x is the proposed line,
+not yet supported. The approved future mechanism is the current official Python
+Install Manager through the official Windows/WinGet path. WindowsApps aliases
+are not installation evidence. Installation and compatibility validation are a
+separate checkpoint; do not install Python as part of PE-3 Action 1.
 
 Verify the non-Git runtime boundary without using Git status:
 

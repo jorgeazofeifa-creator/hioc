@@ -19,9 +19,14 @@ $ExpectedDatabaseSha256 = '81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702
 $ExpectedManifestSha256 = '10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4'
 $ExpectedDatabaseBytes = 8652642
 $ExpectedManifestBytes = 1338
+$ExpectedPythonImplementation = 'CPython'
+$ExpectedPythonMajorMinor = '3.13'
+$PythonSupportPath = 'governance/python-runtime-support.json'
 $Git = 'git'
-$PythonProbeCode = 'import sys; print(sys.executable); raise SystemExit(0 if sys.version_info.major == 3 else 1)'
+$PythonProbeCode = 'import platform,sys; print(platform.python_implementation()+" "+str(sys.version_info.major)+"."+str(sys.version_info.minor))'
 $PriorHiocHome = [Environment]::GetEnvironmentVariable('HIOC_HOME', 'Process')
+$PriorAutomaticInstall = [Environment]::GetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'Process')
+$PriorLauncherAllowInstall = [Environment]::GetEnvironmentVariable('PYLAUNCHER_ALLOW_INSTALL', 'Process')
 
 if ([string]::IsNullOrWhiteSpace($Repo) -or
     [string]::IsNullOrWhiteSpace($ExternalWorkspace) -or
@@ -29,6 +34,8 @@ if ([string]::IsNullOrWhiteSpace($Repo) -or
     $ExpectedManifestSha256 -cnotmatch '^[0-9a-f]{64}$' -or
     $ImplementationCommit -cnotmatch '^[0-9a-f]{40}$' -or
     $GovernanceCommit -cnotmatch '^[0-9a-f]{40}$' -or
+    $ExpectedPythonMajorMinor -cnotmatch '^3\.[0-9]+$' -or
+    -not $PythonProbeCode.Contains('python_implementation') -or
     -not $PythonProbeCode.Contains('sys.version_info')) {
     Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
     Write-Output 'ERROR_CODE=ACTION1_BLOCK_INTEGRITY_FAILED'
@@ -67,12 +74,34 @@ if ($RepositoryStatus.Count -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_
 & $Git -C $Repo merge-base --is-ancestor $ImplementationCommit $GovernanceCommit
 if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=IMPLEMENTATION_ANCESTRY_FAILED'; return }
 
+$Stage = 'PYTHON_SUPPORT_STATE'
+$SupportSpec = '{0}:{1}' -f $GovernanceCommit, $PythonSupportPath
+$SupportText = & $Git -C $Repo show $SupportSpec 2>$null
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($SupportText -join "`n"))) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=PYTHON_SUPPORT_STATE_INVALID'; return }
+try { $PythonSupport = ($SupportText -join "`n") | ConvertFrom-Json } catch { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=PYTHON_SUPPORT_STATE_INVALID'; return }
+if ($PythonSupport.schema_version -ne 1 -or
+    $PythonSupport.implementation -cne $ExpectedPythonImplementation -or
+    $PythonSupport.language_floor -cne '3.10' -or
+    $PythonSupport.windows_operator.major_minor -cne $ExpectedPythonMajorMinor -or
+    $PythonSupport.production.runtime_source -cne 'distribution_managed') {
+    Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
+    Write-Output 'ERROR_CODE=PYTHON_SUPPORT_STATE_INVALID'
+    return
+}
+if ($PythonSupport.windows_operator.status -cne 'supported' -or
+    $PythonSupport.windows_operator.validated_patch -cnotmatch '^3\.13\.[0-9]+$') {
+    Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
+    Write-Output 'ERROR_CODE=PYTHON_RUNTIME_SUPPORT_PENDING'
+    return
+}
+
 $Stage = 'PYTHON_RESOLUTION'
 $PythonExecutable = $null
 $PythonPrefix = @()
 $PythonResolverName = $null
+$UsablePythonFound = $false
 $PythonCandidates = @(
-    [ordered]@{ Name = 'py'; Prefix = @('-3') },
+    [ordered]@{ Name = 'py'; Prefix = @('-3.13') },
     [ordered]@{ Name = 'python3'; Prefix = @() },
     [ordered]@{ Name = 'python'; Prefix = @() }
 )
@@ -80,17 +109,21 @@ foreach ($Candidate in $PythonCandidates) {
     $Command = Get-Command -Name $Candidate.Name -CommandType Application -ErrorAction SilentlyContinue
     if ($null -eq $Command) { continue }
     $ProbePrefix = @($Candidate.Prefix)
+    [Environment]::SetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'false', 'Process')
+    [Environment]::SetEnvironmentVariable('PYLAUNCHER_ALLOW_INSTALL', $null, 'Process')
     $Probe = & $Command.Source @ProbePrefix -c $PythonProbeCode 2>$null
-    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($Probe | Select-Object -First 1))) {
+    $ProbeLine = $Probe | Select-Object -First 1
+    if ($LASTEXITCODE -eq 0 -and $ProbeLine -match '^[A-Za-z]+ [0-9]+\.[0-9]+$') { $UsablePythonFound = $true }
+    if ($LASTEXITCODE -eq 0 -and $ProbeLine -ceq "$ExpectedPythonImplementation $ExpectedPythonMajorMinor") {
         $PythonExecutable = $Command.Source
         $PythonPrefix = @($Candidate.Prefix)
-        $PythonResolverName = if ($Candidate.Name -eq 'py') { 'py -3' } else { $Candidate.Name }
+        $PythonResolverName = if ($Candidate.Name -eq 'py') { 'py -3.13' } else { $Candidate.Name }
         break
     }
 }
 if ($null -eq $PythonExecutable) {
     Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
-    Write-Output 'ERROR_CODE=PYTHON3_NOT_FOUND'
+    if ($UsablePythonFound) { Write-Output 'ERROR_CODE=PYTHON_VERSION_UNSUPPORTED' } else { Write-Output 'ERROR_CODE=PYTHON3_NOT_FOUND' }
     return
 }
 
@@ -131,7 +164,7 @@ $env:HIOC_HOME = $Repo
 & $PythonExecutable @PythonPrefix (Join-Path $Repo 'pi4/bin/hioc-validate-manufacturer.py') database --database $Database --manifest $Manifest --json
 if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=VALIDATION_FAIL'; Write-Output 'ERROR_CODE=MANUFACTURER_VALIDATION_FAILED'; return }
 $Stage = 'FINAL_REPORT'
-[ordered]@{ result='PASS'; repository_head=$Head; implementation_commit=$ImplementationCommit; script_blob=$ActualScriptBlob; python_resolver=$PythonResolverName; selected_build_directory=$SelectedBuildDirectory; matching_pair_count=$MatchingPairs.Count; database_sha256=$ExpectedDatabaseSha256; manifest_sha256=$ExpectedManifestSha256; database_bytes=$ExpectedDatabaseBytes; manifest_bytes=$ExpectedManifestBytes } | ConvertTo-Json -Compress
+[ordered]@{ result='PASS'; repository_head=$Head; implementation_commit=$ImplementationCommit; script_blob=$ActualScriptBlob; python_resolver=$PythonResolverName; python_major_minor=$ExpectedPythonMajorMinor; selected_build_directory=$SelectedBuildDirectory; matching_pair_count=$MatchingPairs.Count; database_sha256=$ExpectedDatabaseSha256; manifest_sha256=$ExpectedManifestSha256; database_bytes=$ExpectedDatabaseBytes; manifest_bytes=$ExpectedManifestBytes } | ConvertTo-Json -Compress
 return
 }
 catch {
@@ -142,6 +175,8 @@ catch {
 }
 finally {
     [Environment]::SetEnvironmentVariable('HIOC_HOME', $PriorHiocHome, 'Process')
+    [Environment]::SetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', $PriorAutomaticInstall, 'Process')
+    [Environment]::SetEnvironmentVariable('PYLAUNCHER_ALLOW_INSTALL', $PriorLauncherAllowInstall, 'Process')
 }
 }
 Invoke-PE3ManufacturerAction1

@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PE-3 PRODUCTION DEPLOYMENT PENDING**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1235,20 +1235,21 @@ organization variant enters Git.
 
 ## Next Planned Task
 
-PE-3.3 defines but does not execute the production procedure. Its ten
-operator-gated actions cover Windows verification, explicit two-file transfer,
-PI3 staging validation, release-source fast-forward, supported code upgrade,
-immutable dataset installation, guarded configuration, manufacturer generation,
-production validation/evidence, and exact temporary cleanup. Only the normalized
-database and manifest transfer; raw IEEE source remains on Windows. After this
-documentation-governance checkpoint is committed, the next gate is push
-approval for that commit. PE-3 production Action 1 requires a later, separate
-authorization. PE-4 through PE-9 remain not started.
+Python compatibility governance is resolved under Model D in
+[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). The exact
+next operator checkpoint is **Windows Python 3.13 Installation & Compatibility
+Validation**. It is separate from Action 1 and requires separate authorization.
+It will install official CPython 3.13.x, record the exact patch, verify actual
+`py -3.13` execution, run the complete repository suite and Action 1-focused
+tests with that interpreter, and promote the repository support state only on
+PASS. Until that promotion, Action 1 is blocked and Action 2 must not be
+prepared. Production deployment and PI3 validation have not started; PE-4
+through PE-9 remain not started.
 
 Action 1 pre-execution review identified two operator-input defects without
 executing the action: a hard-coded `python` PATH assumption and ambiguous choice
 between two already-proven deterministic build directories. The corrected
-runbook resolves Python 3 explicitly in the order `py -3`, `python3`, `python`
+historical runbook correction resolved Python 3 in the order `py -3`, `python3`, `python`
 and discovers an adjacent database/manifest pair only when both frozen hashes
 and sizes match. This correction performs no artifact validation run, transfer,
 production access, deployment, configuration change, or sidecar generation.
@@ -1274,6 +1275,22 @@ the direct parameterized invocation. The script verifies its own approved Git
 identity before artifact validation and preserves every previously frozen
 read-only, containment, hash, size, ancestry, resolver, validator, sanitization,
 and stop boundary. Script source must not be distributed through chat.
+
+Repository-controlled execution then eliminated delivery transport as a
+variable and produced the first genuine prerequisite result:
+`FAILURE_STAGE=PYTHON_RESOLUTION`. Read-only diagnostics established that `py`
+was absent, `python3` and `python` were only nonfunctional WindowsApps aliases
+returning 9009, and no real installation existed in bounded normal locations.
+This is **ACTION1_PREREQUISITE_MISSING — PYTHON3**, not a manufacturer,
+dataset, repository, or production failure.
+
+The resulting repository-wide audit froze CPython 3.10 as the language floor,
+recorded CPython 3.12.13 as the sole exact full-suite-tested runtime, proposed
+CPython 3.13.x for Windows with validation pending, and left the exact
+distribution-managed production Python version unverified. Action 1 now prefers
+`py -3.13`, rejects other implementations/minor lines, distinguishes absent and
+incompatible runtimes, and requires an approved support-state promotion before
+Python or artifact validation can proceed.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 
