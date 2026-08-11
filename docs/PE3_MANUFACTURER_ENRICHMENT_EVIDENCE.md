@@ -2,6 +2,15 @@
 
 Status: **PASS — EXECUTABLE IMPLEMENTATION REPOSITORY VALIDATED; PRODUCTION PENDING**
 
+PE-3.3 freezes the production deployment and validation procedure in
+[PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md](PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md).
+The design transfers only the validated normalized database and manifest,
+installs the immutable `local-ieee-ra--2026-08-11-r1` version after supported
+code deployment and staged validation, activates configuration conditionally,
+generates the private sidecar, and captures aggregate protected/privacy/
+performance evidence one operator action at a time. This design has not been
+executed and does not constitute production validation.
+
 ## Scope and implementation
 
 PE-3.1 now provides the isolated manufacturer library, offline local-source

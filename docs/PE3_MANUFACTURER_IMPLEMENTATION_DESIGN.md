@@ -93,6 +93,15 @@ exists.
 
 ## Validation and next gate
 
+Production deployment is governed by the separate
+[PE-3.3 operator runbook](PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md). It freezes a
+two-artifact transfer, Git-object code identity, supported release upgrade,
+same-filesystem atomic dataset promotion, guarded configuration activation,
+aggregate-only generation evidence, live-incident drift classification, PI3
+performance thresholds, and separate code/dataset/config/sidecar rollback
+domains. Ten actions require individual evidence review; no monolithic operator
+script changes PE-3 runtime behavior.
+
 Real-source compatibility is bounded explicitly. Organization normalization
 removes only U+200B and U+200E and treats TAB as collapsible whitespace; all
 other prohibited controls and format characters remain fail-closed. Official

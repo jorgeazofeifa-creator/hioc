@@ -683,3 +683,27 @@ variants. Conflict lookup is a first-class non-claim that blocks shorter-prefix
 fallback and returns null manufacturer with unknown confidence. Exit 10 remains
 reserved for structurally irreconcilable conflict metadata or nondeterministic
 grouping, not representable official organization variation.
+
+## ADR-0023: Gate PE-3 production deployment as ten reviewed operator actions
+
+Status: Accepted design; not executed
+
+PE-3 production deployment transfers only the validated normalized database and
+manifest; raw IEEE CSVs remain on the operator workstation. PI3 first deploys
+approved code through the supported release upgrade, then validates and
+atomically promotes a same-filesystem private dataset staging directory to
+`data/manufacturer/versions/local-ieee-ra--2026-08-11-r1`. Configuration is
+backed up and activated only when absent/empty or already identical; a different
+nonempty value stops without overwrite.
+
+Windows verification, transfer, staging validation, repository synchronization,
+code deployment, dataset installation, configuration, generation, production
+validation, and transfer cleanup are separate actions with an evidence return
+between each. Git-object content plus release policy governs deployed code;
+implementation commit and operator-governance commit are separate identities.
+Protected evidence uses semantic summaries and treats live incident movement as
+operational drift requiring causal review. Evidence is aggregate-only. Code,
+dataset, configuration, and sidecar rollback domains remain separate. The
+authoritative commands and classifications are frozen in
+`docs/PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md`. This decision performs no
+production action and does not start PE-4.

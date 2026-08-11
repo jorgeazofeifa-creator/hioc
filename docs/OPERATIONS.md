@@ -10,6 +10,17 @@ not an operational fault, and prevents fallback to a shorter prefix. Operators
 must never manually select or patch a winner. IEEE source and generated database
 artifacts remain local and outside Git and releases.
 
+## PE-3 production deployment procedure
+
+Production deployment is not an ad hoc shell session. Follow
+[PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md](PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md)
+one action at a time and return sanitized output after every action. The
+supported final dataset path is
+`/home/jazofv1/hioc/data/manufacturer/versions/local-ieee-ra--2026-08-11-r1/`.
+Never transfer IEEE source CSVs, copy code manually into the runtime, overwrite
+an immutable dataset version, silently replace a different configured path, or
+interpret conflict/unknown counts as operational failure.
+
 ## PE-3.1 manufacturer enrichment boundary
 
 PE-3.1 executable tooling is repository implemented but not deployed. A future operator

@@ -1181,10 +1181,14 @@ organization variant enters Git.
 
 ## Next Planned Task
 
-The next authoritative checkpoint is review and push authorization for the
-bounded normalization/conflict correction. Local acquisition and deterministic
-local transformation have passed; deployment and PI3 validation remain later
-gates. No IEEE data may enter Git or releases. Do not mark Phase 7A complete.
+PE-3.3 now defines but does not execute the production procedure. Its ten
+operator-gated actions cover Windows verification, explicit two-file transfer,
+PI3 staging validation, release-source fast-forward, supported code upgrade,
+immutable dataset installation, guarded configuration, manufacturer generation,
+production validation/evidence, and exact temporary cleanup. Only the normalized
+database and manifest transfer; raw IEEE source remains on Windows. The next
+gate is push approval for the PE-3.3 governance commit, followed by separate
+authorization to run Action 1 only.
 
 The corrected run completed Asset transactions and cleanup, then exposed a
 second validator-contract defect: live `active.json` was treated as immutable.

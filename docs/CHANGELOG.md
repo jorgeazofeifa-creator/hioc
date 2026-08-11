@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Defined the documentation-only PE-3.3 production deployment and validation
+  runbook. It freezes ten separately authorized operator actions, transfers only
+  the validated normalized database/manifest, uses Git-object artifact identity
+  and supported release deployment, atomically installs an immutable version,
+  guards configuration changes, validates private sidecars and protected state,
+  measures PI3 thresholds, and separates rollback domains. No transfer,
+  deployment, PI3/PI5 access, sidecar generation, or PE-4 work occurred.
+
 - Corrected PE-3.1 official-source normalization and conflict preservation.
   Organization normalization removes only U+200B/U+200E, collapses TAB as
   whitespace, and leaves every other prohibited control fail-closed. Assignment

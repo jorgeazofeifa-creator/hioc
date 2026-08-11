@@ -9,6 +9,15 @@ conflicts before records at 36, 28, then 24 bits. A conflict returns
 `conflicting_assignment`, manufacturer null, confidence unknown, and blocks
 shorter-prefix fallback. Sidecar unknown counts include this status.
 
+## PE-3 production boundary
+
+The validated production-intended identity is dataset `local-ieee-ra`, version
+`2026-08-11-r1`, with 53,581 selectable records and 2 conflict keys. Deployment
+uses only its normalized database and adjacent manifest; raw source CSVs are not
+production dependencies. The exact supported version directory includes both
+identity components as `local-ieee-ra--2026-08-11-r1`. PE-3.3 is design-frozen
+but neither deployed nor production validated.
+
 ## Purpose and Authority
 
 This is the authoritative current-state reference for what HIOC is today. The [Master Plan](HIOC_MASTER_PLAN.md) explains how HIOC is built and evolves. [OPERATIONS.md](OPERATIONS.md) owns detailed runtime procedures.
