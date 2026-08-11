@@ -81,8 +81,8 @@ The installation and compatibility action is the repository-controlled script
 Its governed identities are:
 
 ```text
-PYTHON313_CHECKPOINT_SHA256=3f3789310cea111a8438e6b68afc77b5982aa6d24194d7239dffdf07028a46ad
-PYTHON313_CHECKPOINT_GIT_BLOB=264bd47e149e834b34a92acd23242ed246345ecb
+PYTHON313_CHECKPOINT_SHA256=b12d11738862ea7d89a75c7241e3b693d23ecf148b01a2548ade0a5cbc5fd760
+PYTHON313_CHECKPOINT_GIT_BLOB=4971c61bfd1fdbbde3bce2fbada7732d21a167ca
 ```
 
 After its commit is approved and pushed, prepare only this short invocation:
@@ -112,6 +112,28 @@ informational native stderr to `NativeCommandError` / `RemoteException` under
 checkpoint now captures native stdout, stderr, and exit status through one
 PowerShell 5.1-compatible process helper. Stderr with exit zero is success;
 nonzero exit remains failure; routine output is not exposed.
+
+The corrected checkpoint then progressed through explicit installation and
+stopped at `PYTHON_PROBE` with `PYTHON_CHECKPOINT_UNEXPECTED_ERROR`. This
+confirmed the remaining **PYTHON CHECKPOINT NATIVE STDERR HANDLING DEFECT —
+RUNTIME INVOCATION PATH**: the probe, test runner, and compilation path still
+used direct native invocation under PowerShell's stop-on-error policy. This is
+not CPython compatibility, HIOC test, manufacturer, version-rejection, PE-3, or
+production failure. CPython 3.13.x may already be installed, but its exact patch
+and compatibility are not established until governed evidence passes.
+
+Every native executable in the checkpoint now uses one process wrapper with a
+deterministically quoted argument list, space-safe paths, bounded stdout/stderr
+capture, and actual native exit status. This includes Git, WinGet, `pymanager`,
+`py -3.13`, every test stage, and `compileall`. Informational stderr with exit
+zero succeeds; nonzero exit fails at the bounded current stage. No routine
+evidence prints executable paths or captured command output.
+
+Before installation, `pymanager list --one --format=json --only-managed 3.13`
+provides the manager's deterministic authoritative selection. One valid entry
+is reused without reinstalling; none triggers the sole explicit
+`pymanager install 3.13`; malformed JSON or a non-authoritative multiple result
+fails closed. CPython 3.14 remains irrelevant to selection.
 
 The operator's later `pymanager install --dry-run 3.13` inspection was
 non-mutating and resolved CPython 3.13.15 as the current candidate. This patch
@@ -176,6 +198,11 @@ execution. A command described informally as a "probe" is not automatically
 read-only. External tool-manager diagnostics must use documented `list`,
 `inspect`, `version`, or `dry-run` forms known not to install or mutate state.
 
+On Windows PowerShell 5.1, validation-critical native executables must be
+evaluated by native exit code through a governed process-execution wrapper.
+Informational stderr alone never determines success or failure. Operator tools
+must not mix wrapped management calls with direct runtime or validation calls.
+
 ## Repository-controlled operator programs
 
 Validation-critical or production-capable multi-line operator programs should
@@ -212,8 +239,16 @@ present, the manager installed its default CPython 3.14.7. This is
 not support promotion, 3.13 validation, PE-3 failure, or production failure.
 The runtime remains present pending a separate cleanup decision and is never
 selected for HIOC. A safe manager dry run subsequently identified CPython
-3.13.15 as the current 3.13 candidate. No 3.13 runtime has yet been installed or
-validated.
+3.13.15 as the current 3.13 candidate. No 3.13 installation or validation has
+yet been established by accepted evidence.
+
+The corrected checkpoint later passed its explicit installation stage and then
+failed at `PYTHON_PROBE`. That progression means a 3.13 runtime may now exist,
+but inference cannot establish its patch or compatibility. Forensic review
+traced the stop to the remaining direct runtime invocation path, extending the
+same native-stderr defect already found in manager calls. The hardened retry
+must safely inspect and reuse a managed 3.13 entry before considering install,
+then establish its exact patch only through the wrapped `py -3.13` probe.
 
 ## Future validation matrix
 

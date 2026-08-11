@@ -110,6 +110,12 @@ unintended CPython 3.14.7 does not satisfy Action 1 and does not change its
 resolver or support-state gate. Action 1 remains blocked until the separate
 3.13 validation passes and a later commit promotes support.
 
+The prerequisite checkpoint's post-install `PYTHON_PROBE` failure is classified
+as native runtime-invocation handling, not Python compatibility or PE-3
+evidence. A 3.13 runtime may exist but remains unvalidated. Action 1 stays
+blocked until the hardened checkpoint reuses or installs 3.13, completes all
+wrapped validation stages, and a separate commit promotes support.
+
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 
 

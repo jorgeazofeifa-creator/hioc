@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Hardened every native execution path in the Windows CPython 3.13 checkpoint
+  after the corrected operator run passed installation and failed at
+  `PYTHON_PROBE`. Git, WinGet, `pymanager`, the exact 3.13 probe, all test
+  stages, and compilation now share one PowerShell 5.1-safe wrapper with
+  deterministic argument quoting, bounded stream capture, and native-exit-code
+  semantics. The checkpoint reuses an authoritative managed 3.13 selection and
+  installs only when absent. No exact 3.13 patch or compatibility result is
+  inferred, support remains pending, and no Python/PI/production action occurred
+  in this repository correction.
+
 - Corrected the governed Windows CPython 3.13 checkpoint after forensic review
   proved that informational Python Manager stderr could become a PowerShell 5.1
   exception before native exit-code evaluation. Scripted management now uses

@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE; WINDOWS PYTHON COMPATIBILITY GOVERNANCE COMPLETE; PYTHON INSTALL MANAGER PRESENT; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; CPYTHON 3.13.X INSTALLATION/VALIDATION PENDING; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE; WINDOWS PYTHON COMPATIBILITY GOVERNANCE COMPLETE; PYTHON INSTALL MANAGER PRESENT; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; CPYTHON 3.13.X INSTALLATION LIKELY COMPLETE / VALIDATION NOT ESTABLISHED; SUPPORT STATE VALIDATION_PENDING; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1250,6 +1250,14 @@ PowerShell exception before exit-code handling. The corrected script uses
 launcher probe, and captures native stderr with its exit code. After this
 corrective commit is pushed, the next authorization is execution of that script
 on the Windows workstation.
+
+That corrected execution passed the explicit installation stage and stopped at
+`PYTHON_PROBE`. Forensic review found that runtime probe, tests, and compilation
+still used direct native invocation and therefore retained the same PowerShell
+5.1 stderr-promotion defect. The script now routes every native executable
+through one exit-code-based wrapper and inventories managed 3.13 first so a
+possibly installed runtime is reused rather than reinstalled. The exact patch
+and compatibility remain unestablished pending the next governed execution.
 Until evidence review and a separate promotion commit, Action 1 is blocked and Action 2 must not be
 prepared. Production deployment and PI3 validation have not started; PE-4
 through PE-9 remain not started.
@@ -1309,8 +1317,12 @@ is `PYTHON_OPERATOR_DIAGNOSTIC_SIDE_EFFECT —
 UNINTENDED_DEFAULT_RUNTIME_INSTALL`, not HIOC support, PE-3 evidence, or
 production state. It remains installed pending a separate cleanup decision.
 The official manager's safe dry run resolved CPython 3.13.15 as the current
-candidate, but the governed 3.13.x line remains uninstalled/unvalidated and the
-support state remains `validation_pending`.
+candidate, but accepted evidence does not establish the current 3.13
+installation or validation result, and support remains `validation_pending`.
+
+The next retry must not infer a patch from the completed install stage. It must
+use the hardened manager inventory and wrapped `py -3.13` probe, then complete
+the full wrapped validation matrix. PE-3 Action 1 remains blocked throughout.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

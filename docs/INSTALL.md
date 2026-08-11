@@ -69,6 +69,14 @@ not HIOC-supported. It is preserved pending a separate cleanup decision and
 does not prevent explicit 3.13 installation. The currently observed dry-run
 candidate is 3.13.15, but no patch is pinned before successful validation.
 
+The first corrected install attempt may already have installed a 3.13 runtime
+before stopping at the wrapped-runtime gap in `PYTHON_PROBE`. The checkpoint
+therefore inventories managed 3.13 runtimes first and reuses the manager's one
+authoritative selection without reinstalling. It installs only when no 3.13 is
+present and fails safely on malformed or ambiguous inventory. Exact patch and
+compatibility remain unknown until the wrapped `py -3.13` probe and complete
+matrix pass.
+
 Verify the non-Git runtime boundary without using Git status:
 
 ```bash

@@ -801,3 +801,20 @@ separate cleanup decision and neither satisfies nor blocks the 3.13 contract.
 A documented manager dry run observed CPython 3.13.15, but patch policy remains
 floating 3.13.x. Diagnostic commands must be assessed for side effects and use
 documented non-mutating list, inspect, version, or dry-run forms.
+
+Runtime-path forensic amendment: the corrected checkpoint passed explicit
+installation and then stopped at `PYTHON_PROBE`. The probe, test runner, and
+compilation still used direct native invocation, so the same PowerShell 5.1
+stderr-promotion defect remained beyond manager calls. This is **PYTHON
+CHECKPOINT NATIVE STDERR HANDLING DEFECT — RUNTIME INVOCATION PATH**, not
+CPython incompatibility, HIOC/manufacturer test failure, version rejection, or
+PE-3/production failure.
+
+All checkpoint-native programs now use one governed process wrapper with
+deterministic Windows argument quoting, bounded stream capture, and actual exit
+status. The manager's filtered `--one` inventory is authoritative: an existing
+3.13 is reused, absence permits one explicit install, and malformed or
+non-authoritative multiple output fails closed. A 3.13 runtime may now exist,
+but exact patch and compatibility are established only by a successful wrapped
+probe and validation matrix. Support remains `validation_pending`; the script
+does not promote itself.

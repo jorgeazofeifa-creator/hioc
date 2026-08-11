@@ -52,6 +52,14 @@ An existing 3.14 runtime neither satisfies nor blocks the 3.13 checkpoint. It
 returns sanitized evidence. It does not execute Action 1 or modify the support
 manifest. Evidence review and support promotion remain a later checkpoint.
 
+The subsequent corrected run passed installation but stopped at
+`PYTHON_PROBE`; this is a remaining runtime-invocation stderr-handling defect,
+not compatibility evidence. A managed 3.13 runtime may therefore already be
+present. The checkpoint now uses the manager's filtered authoritative inventory
+to reuse one existing 3.13 entry, installs only when none exists, and fails
+closed on malformed or ambiguous inventory. Git, WinGet, manager, runtime
+probe, all tests, and compilation share the same exit-code-based native wrapper.
+
 The official manager is present. An informal `py --help` diagnostic installed
 CPython 3.14.7 through automatic default-runtime behavior; classify this as
 `PYTHON_OPERATOR_DIAGNOSTIC_SIDE_EFFECT — UNINTENDED_DEFAULT_RUNTIME_INSTALL`,
@@ -59,6 +67,10 @@ not HIOC support or production state. Do not remove it in this checkpoint. The
 safe manager dry run observed CPython 3.13.15 as the current candidate, while
 the governed line remains floating 3.13.x and installation/validation remains
 pending.
+
+For Windows PowerShell 5.1 operator tooling, informational native stderr is not
+a failure criterion. Validation-critical native programs must run through the
+governed wrapper and be judged by their actual exit code.
 
 Action 1 is implemented only by the repository-controlled Windows PowerShell
 script `tools/hioc-pe3-action1.ps1`; its source must never be reproduced through

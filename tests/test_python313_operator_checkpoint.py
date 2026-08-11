@@ -40,9 +40,9 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
 
     def test_official_install_manager_and_runtime_line_are_exact(self):
         self.assertIn("$InstallerPackageId = '9NQ7512CXL7T'", self.script)
-        self.assertIn("--source msstore", self.script)
+        self.assertIn("'--source', 'msstore'", self.script)
         self.assertIn("Get-Command -Name 'pymanager'", self.script)
-        self.assertIn('Invoke-NativeProcess $ManagerCommand.Source "install $ExpectedMajorMinor"', self.script)
+        self.assertIn("Invoke-NativeProcess $ManagerCommand.Source @('install', $ExpectedMajorMinor)", self.script)
         self.assertNotIn('& $PythonCommand.Source install', self.script)
         self.assertNotIn("Get-Command -Name 'py' -CommandType Application -ErrorAction SilentlyContinue\nif ($null -eq $PythonCommand) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'PYTHON_INSTALL_MANAGER_NOT_RESOLVABLE'", self.script)
         self.assertIn("$ExpectedMajorMinor = '3.13'", self.script)
@@ -56,22 +56,36 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
         self.assertIn("ExitCode = $Process.ExitCode", helper)
         self.assertIn("$StdoutTask = $Process.StandardOutput.ReadToEndAsync()", helper)
         self.assertIn("$StderrTask = $Process.StandardError.ReadToEndAsync()", helper)
-        self.assertIn("Stderr = $StderrTask.Result", helper)
+        self.assertIn("Stderr = Limit-NativeOutput $StderrTask.Result", helper)
+        self.assertIn("[string[]]$ArgumentList", helper)
+        self.assertIn("ConvertTo-NativeArgument", helper)
+        self.assertIn("Limit-NativeOutput", helper)
         self.assertNotIn("throw", helper.lower())
         self.assertIn("if ($Install313.ExitCode -ne 0)", self.script)
         self.assertNotIn("if (-not [string]::IsNullOrWhiteSpace($Install313.Stderr))", self.script)
 
     def test_manager_inspection_is_non_launching_and_existing_other_runtime_is_allowed(self):
-        self.assertIn("list --format=json --only-managed", self.script)
-        self.assertIn('list --format=json --only-managed $ExpectedMajorMinor', self.script)
+        self.assertIn("@('list', '--one', '--format=json', '--only-managed', $ExpectedMajorMinor)", self.script)
         self.assertNotIn("py --help", self.script.lower())
         self.assertNotIn("pymanager --help", self.script.lower())
         self.assertNotIn("3.14", self.script)
         self.assertNotIn("uninstall", self.script.lower())
         self.assertLess(
-            self.script.index("list --format=json --only-managed"),
-            self.script.index('Invoke-NativeProcess $ManagerCommand.Source "install $ExpectedMajorMinor"'),
+            self.script.index("Get-Managed313Inventory"),
+            self.script.index("Invoke-NativeProcess $ManagerCommand.Source @('install', $ExpectedMajorMinor)"),
         )
+
+    def test_existing_313_is_reused_and_inventory_fails_closed(self):
+        self.assertIn("if ($Managed313.Count -eq 0)", self.script)
+        self.assertEqual(
+            self.script.count("Invoke-NativeProcess $ManagerCommand.Source @('install', $ExpectedMajorMinor)"),
+            1,
+        )
+        self.assertIn("PYTHON_MANAGED_INVENTORY_INVALID", self.script)
+        self.assertIn("if ($Entries.Count -gt 1)", self.script)
+        self.assertIn("catch {", self.script)
+        self.assertIn("CPYTHON_313_INSTALL_VERIFICATION_FAILED", self.script)
+        self.assertNotIn("uninstall", self.script.lower())
 
     def test_runtime_probe_is_execution_based_and_cpython_exact(self):
         self.assertIn("platform.python_implementation()", self.script)
@@ -85,23 +99,35 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
             self.script.index("Get-Command -Name 'pymanager'"),
         )
         self.assertLess(
-            self.script.index('Invoke-NativeProcess $ManagerCommand.Source "install $ExpectedMajorMinor"'),
+            self.script.index("Get-Managed313Inventory"),
             self.script.index("Get-Command -Name 'py'"),
         )
         self.assertIn("$ExactVersion = $ProbeLine.Substring('CPython|'.Length)", self.script)
+        self.assertIn("$Probe = Invoke-NativeProcess $PythonCommand.Source", self.script)
+        self.assertNotIn("& $PythonCommand.Source", self.script)
+
+    def test_every_external_executable_uses_native_wrapper(self):
+        self.assertNotRegex(self.script, r"(?m)^\s*&\s+\$")
+        self.assertIn("function Invoke-Git", self.script)
+        self.assertIn("Invoke-NativeProcess $GitCommand.Source", self.script)
+        self.assertIn("Invoke-NativeProcess $Winget.Source", self.script)
+        self.assertIn("Invoke-NativeProcess $ManagerCommand.Source", self.script)
+        self.assertIn("Invoke-NativeProcess $PythonCommand.Source", self.script)
 
     def test_required_validation_matrix_is_run_with_governed_runtime(self):
         for marker in (
-            "unittest', 'discover', '-s', 'tests'",
+            "'unittest', 'discover', '-s', 'tests'",
             "tests.test_python_runtime_compatibility",
             "tests.test_pe3_action1_runbook",
             "test_manufacturer_*.py",
-            "-m compileall",
+            "'-m', 'compileall'",
         ):
             self.assertIn(marker, self.script)
         self.assertIn("PYTHONPYCACHEPREFIX", self.script)
         self.assertIn("FINAL_REPOSITORY_STATE_FAILED", self.script)
         self.assertGreaterEqual(self.script.count(".Ran -le 0"), 4)
+        self.assertIn("$Result = Invoke-NativeProcess $PythonCommand.Source", self.script)
+        self.assertIn("$Compilation = Invoke-NativeProcess $PythonCommand.Source", self.script)
 
     def test_evidence_is_sanitized_and_complete(self):
         for field in (
@@ -168,11 +194,12 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
             "$text=Get-Content -Raw -LiteralPath $env:HIOC_TEST_PY313_SCRIPT;"
             "$tokens=$null;$errors=$null;"
             "$ast=[System.Management.Automation.Language.Parser]::ParseInput($text,[ref]$tokens,[ref]$errors);"
-            "$fn=$ast.Find({param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] "
-            "-and $n.Name -eq 'Invoke-NativeProcess'},$true);"
-            "Invoke-Expression $fn.Extent.Text;"
-            "$ok=Invoke-NativeProcess $env:ComSpec '/d /c \"echo informational 1>&2 & exit /b 0\"';"
-            "$fail=Invoke-NativeProcess $env:ComSpec '/d /c \"echo failure 1>&2 & exit /b 7\"';"
+            "$names=@('ConvertTo-NativeArgument','Limit-NativeOutput','Invoke-NativeProcess');"
+            "$ast.FindAll({param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] "
+            "-and $names -contains $n.Name},$true) | ForEach-Object {Invoke-Expression $_.Extent.Text};"
+            "$MaxNativeCaptureChars=1048576;"
+            "$ok=Invoke-NativeProcess $env:ComSpec @('/d','/c','echo informational 1>&2 & exit /b 0');"
+            "$fail=Invoke-NativeProcess $env:ComSpec @('/d','/c','echo failure 1>&2 & exit /b 7');"
             "if($ok.ExitCode -ne 0 -or $ok.Stderr -notmatch 'informational'){exit 1};"
             "if($fail.ExitCode -ne 7 -or $fail.Stderr -notmatch 'failure'){exit 2}"
         )

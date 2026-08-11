@@ -97,6 +97,10 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "pymanager",
             "NativeCommandError",
             "Diagnostic commands must themselves be assessed for side effects",
+            "RUNTIME INVOCATION PATH",
+            "stopped at `PYTHON_PROBE`",
+            "Every native executable in the checkpoint now uses one process wrapper",
+            "may already be installed",
         ):
             self.assertIn(marker, self.policy)
 
@@ -112,7 +116,8 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE",
             "PYTHON INSTALL MANAGER PRESENT",
             "CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED",
-            "CPYTHON 3.13.X INSTALLATION/VALIDATION PENDING",
+            "CPYTHON 3.13.X INSTALLATION LIKELY COMPLETE / VALIDATION NOT ESTABLISHED",
+            "SUPPORT STATE VALIDATION_PENDING",
             "PRODUCTION DEPLOYMENT NOT STARTED",
             "PI3 VALIDATION NOT STARTED",
             "PE-4 NOT STARTED",
