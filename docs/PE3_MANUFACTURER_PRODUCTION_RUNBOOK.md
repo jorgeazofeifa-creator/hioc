@@ -104,6 +104,12 @@ WindowsApps aliases that fail execution are not runtimes. Automatic Python
 Install Manager installation is disabled during probes. Action 1 never installs
 Python.
 
+The prerequisite checkpoint uses `pymanager` for management and `py -3.13`
+only for execution after explicit 3.13 installation. The operator workstation's
+unintended CPython 3.14.7 does not satisfy Action 1 and does not change its
+resolver or support-state gate. Action 1 remains blocked until the separate
+3.13 validation passes and a later commit promotes support.
+
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 
 

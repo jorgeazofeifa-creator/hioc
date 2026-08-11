@@ -59,6 +59,16 @@ guidance invokes that file after its commit is pushed; it must not reproduce the
 installation program through chat. The script produces evidence only and does
 not promote support state.
 
+For scripted management, the checkpoint uses `pymanager`, never plain `py`:
+`pymanager` lists managed runtimes and explicitly installs the floating 3.13
+line, while `py -3.13` executes the already-installed governed runtime.
+`PYTHON_MANAGER_AUTOMATIC_INSTALL=false` is set before any runtime-launch
+probe. The official manager is currently present; CPython 3.14.7 is present only
+because an operator diagnostic triggered default-runtime installation and is
+not HIOC-supported. It is preserved pending a separate cleanup decision and
+does not prevent explicit 3.13 installation. The currently observed dry-run
+candidate is 3.13.15, but no patch is pinned before successful validation.
+
 Verify the non-Git runtime boundary without using Git status:
 
 ```bash

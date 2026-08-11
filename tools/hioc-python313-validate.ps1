@@ -43,6 +43,30 @@ function Invoke-PythonCheck([string[]]$Arguments) {
     [pscustomobject]@{ Passed = ($Code -eq 0); Ran = $Ran; Skipped = $Skipped }
 }
 
+function Invoke-NativeProcess([string]$FilePath, [string]$Arguments) {
+    $StartInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $StartInfo.FileName = $FilePath
+    $StartInfo.Arguments = $Arguments
+    $StartInfo.UseShellExecute = $false
+    $StartInfo.CreateNoWindow = $true
+    $StartInfo.RedirectStandardOutput = $true
+    $StartInfo.RedirectStandardError = $true
+    $Process = New-Object System.Diagnostics.Process
+    $Process.StartInfo = $StartInfo
+    try {
+        if (-not $Process.Start()) {
+            return [pscustomobject]@{ ExitCode = -1; Stdout = ''; Stderr = '' }
+        }
+        $StdoutTask = $Process.StandardOutput.ReadToEndAsync()
+        $StderrTask = $Process.StandardError.ReadToEndAsync()
+        $Process.WaitForExit()
+        return [pscustomobject]@{ ExitCode = $Process.ExitCode; Stdout = $StdoutTask.Result; Stderr = $StderrTask.Result }
+    }
+    finally {
+        $Process.Dispose()
+    }
+}
+
 if ([string]::IsNullOrWhiteSpace($Repo) -or
     $GovernanceCommit -cnotmatch '^[0-9a-f]{40}$' -or
     $ExpectedMajorMinor -cne '3.13' -or
@@ -50,6 +74,12 @@ if ([string]::IsNullOrWhiteSpace($Repo) -or
     Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'PYTHON_CHECKPOINT_INPUT_INVALID'
     return
 }
+
+# Runtime-launch aliases may install a default runtime when none exists. Keep
+# that behavior disabled for the complete governed session; only the explicit
+# pymanager install command below is authorized to install a runtime.
+[Environment]::SetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'false', 'Process')
+[Environment]::SetEnvironmentVariable('PYLAUNCHER_ALLOW_INSTALL', $null, 'Process')
 
 $Stage = 'REPOSITORY_CHECK'
 if (-not (Test-Path -LiteralPath $Repo -PathType Container)) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'REPOSITORY_MISSING'; return }
@@ -92,23 +122,29 @@ if ($Support.schema_version -ne 1 -or
 $Stage = 'INSTALL_MANAGER'
 $Winget = Get-Command -Name 'winget' -CommandType Application -ErrorAction SilentlyContinue
 if ($null -eq $Winget) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'OFFICIAL_PYTHON_INSTALL_MANAGER_UNAVAILABLE'; return }
-& $Winget.Source list --id $InstallerPackageId --exact --accept-source-agreements --disable-interactivity *> $null
-$InstallManagerPresent = ($LASTEXITCODE -eq 0)
+$WingetList = Invoke-NativeProcess $Winget.Source "list --id $InstallerPackageId --exact --accept-source-agreements --disable-interactivity"
+$InstallManagerPresent = ($WingetList.ExitCode -eq 0)
 if (-not $InstallManagerPresent) {
-    & $Winget.Source install --id $InstallerPackageId --exact --source msstore --accept-package-agreements --accept-source-agreements --disable-interactivity *> $null
-    if ($LASTEXITCODE -ne 0) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'OFFICIAL_PYTHON_INSTALL_MANAGER_FAILED'; return }
+    $WingetInstall = Invoke-NativeProcess $Winget.Source "install --id $InstallerPackageId --exact --source msstore --accept-package-agreements --accept-source-agreements --disable-interactivity"
+    if ($WingetInstall.ExitCode -ne 0) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'OFFICIAL_PYTHON_INSTALL_MANAGER_FAILED'; return }
 }
 
+$Stage = 'PYTHON_MANAGER_RESOLUTION'
+$ManagerCommand = Get-Command -Name 'pymanager' -CommandType Application -ErrorAction SilentlyContinue
+if ($null -eq $ManagerCommand) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'PYTHON_INSTALL_MANAGER_NOT_RESOLVABLE'; return }
+$ManagedBefore = Invoke-NativeProcess $ManagerCommand.Source 'list --format=json --only-managed'
+if ($ManagedBefore.ExitCode -ne 0) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'PYTHON_INSTALL_MANAGER_CHECK_FAILED'; return }
+
 $Stage = 'PYTHON_INSTALLATION'
-$PythonCommand = Get-Command -Name 'py' -CommandType Application -ErrorAction SilentlyContinue
-if ($null -eq $PythonCommand) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'PYTHON_INSTALL_MANAGER_NOT_RESOLVABLE'; return }
-& $PythonCommand.Source install $ExpectedMajorMinor *> $null
-if ($LASTEXITCODE -ne 0) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'CPYTHON_313_INSTALL_FAILED'; return }
+$Install313 = Invoke-NativeProcess $ManagerCommand.Source "install $ExpectedMajorMinor"
+if ($Install313.ExitCode -ne 0) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'CPYTHON_313_INSTALL_FAILED'; return }
+$Managed313 = Invoke-NativeProcess $ManagerCommand.Source "list --format=json --only-managed $ExpectedMajorMinor"
+if ($Managed313.ExitCode -ne 0) { Write-CheckpointFailure 'VALIDATION_FAIL' 'CPYTHON_313_INSTALL_VERIFICATION_FAILED'; return }
 
 $Stage = 'PYTHON_PROBE'
+$PythonCommand = Get-Command -Name 'py' -CommandType Application -ErrorAction SilentlyContinue
+if ($null -eq $PythonCommand) { Write-CheckpointFailure 'VALIDATION_FAIL' 'CPYTHON_313_LAUNCHER_NOT_RESOLVABLE'; return }
 $PythonPrefix = @('-3.13')
-[Environment]::SetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'false', 'Process')
-[Environment]::SetEnvironmentVariable('PYLAUNCHER_ALLOW_INSTALL', $null, 'Process')
 $ProbeCode = 'import platform,sys; print(platform.python_implementation()+"|"+platform.python_version())'
 $Probe = @(& $PythonCommand.Source @PythonPrefix -c $ProbeCode 2>$null)
 $ProbeLine = $Probe | Select-Object -First 1

@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE; WINDOWS PYTHON COMPATIBILITY GOVERNANCE COMPLETE; PYTHON INSTALL MANAGER PRESENT; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; CPYTHON 3.13.X INSTALLATION/VALIDATION PENDING; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1243,8 +1243,13 @@ It will install official CPython 3.13.x, record the exact patch, verify actual
 `py -3.13` execution, run the complete repository suite and Action 1-focused
 tests with that interpreter, and promote the repository support state only on
 PASS. Its governed operator implementation is
-`tools/hioc-python313-validate.ps1`; after this tooling commit is pushed, the
-next authorization is execution of that script on the Windows workstation.
+`tools/hioc-python313-validate.ps1`. The first execution stopped at
+`PYTHON_INSTALLATION` because native informational stderr was promoted to a
+PowerShell exception before exit-code handling. The corrected script uses
+`pymanager` for management, disables automatic runtime installation before any
+launcher probe, and captures native stderr with its exit code. After this
+corrective commit is pushed, the next authorization is execution of that script
+on the Windows workstation.
 Until evidence review and a separate promotion commit, Action 1 is blocked and Action 2 must not be
 prepared. Production deployment and PI3 validation have not started; PE-4
 through PE-9 remain not started.
@@ -1294,6 +1299,18 @@ distribution-managed production Python version unverified. Action 1 now prefers
 `py -3.13`, rejects other implementations/minor lines, distinguishes absent and
 incompatible runtimes, and requires an approved support-state promotion before
 Python or artifact validation can proceed.
+
+The official Python Install Manager is now present. The first governed
+installation checkpoint stopped at `PYTHON_INSTALLATION` because Windows
+PowerShell 5.1 treated informational native stderr as an exception under the
+script's stop-on-error policy. A later informal `py --help` diagnostic triggered
+automatic default-runtime installation and left CPython 3.14.7 installed. This
+is `PYTHON_OPERATOR_DIAGNOSTIC_SIDE_EFFECT —
+UNINTENDED_DEFAULT_RUNTIME_INSTALL`, not HIOC support, PE-3 evidence, or
+production state. It remains installed pending a separate cleanup decision.
+The official manager's safe dry run resolved CPython 3.13.15 as the current
+candidate, but the governed 3.13.x line remains uninstalled/unvalidated and the
+support state remains `validation_pending`.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

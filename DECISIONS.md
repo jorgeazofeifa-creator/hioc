@@ -782,3 +782,22 @@ CPython and exact major/minor by execution, runs the full/focused/manufacturer
 and compilation checks, and reports sanitized evidence. It cannot promote the
 support manifest, execute Action 1, or perform production work. Chat supplies
 only the short invocation after the tooling commit is pushed.
+
+Forensic checkpoint amendment: the first governed run stopped at
+`PYTHON_INSTALLATION` because Windows PowerShell 5.1 promoted informational
+manager stderr to `NativeCommandError` / `RemoteException` before the script
+could evaluate the native exit code. All WinGet and Python-manager calls now use
+one process helper that captures both streams and treats exit zero as success;
+nonzero exit remains failure. Scripted management uses the unambiguous
+`pymanager`; `py -3.13` is reserved for executing the explicitly installed
+governed runtime. Automatic runtime installation is disabled before any
+launcher invocation.
+
+An informal `py --help` diagnostic installed default CPython 3.14.7 when no
+managed runtime existed. This is `PYTHON_OPERATOR_DIAGNOSTIC_SIDE_EFFECT —
+UNINTENDED_DEFAULT_RUNTIME_INSTALL`, not HIOC support promotion, 3.13
+validation, PE-3 failure, or production failure. It remains present pending a
+separate cleanup decision and neither satisfies nor blocks the 3.13 contract.
+A documented manager dry run observed CPython 3.13.15, but patch policy remains
+floating 3.13.x. Diagnostic commands must be assessed for side effects and use
+documented non-mutating list, inspect, version, or dry-run forms.

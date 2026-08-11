@@ -42,7 +42,7 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "NOT YET REPOSITORY-VALIDATED AS A GOVERNED LINE",
             "TESTED — FULL SUITE PASS",
             "PROPOSED WINDOWS OPERATOR LINE — VALIDATION PENDING",
-            "NOT CURRENTLY GOVERNED",
+            "PRESENT FROM OPERATOR-DIAGNOSTIC SIDE EFFECT; NOT HIOC-SUPPORTED",
             "EXACT VERSION UNVERIFIED",
         )
         for status in required:
@@ -90,6 +90,13 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "9009",
             "ACTION1_PREREQUISITE_MISSING — PYTHON3",
             "A command merely resolving by name does not satisfy a prerequisite",
+            "PYTHON_OPERATOR_DIAGNOSTIC_SIDE_EFFECT",
+            "UNINTENDED_DEFAULT_RUNTIME_INSTALL",
+            "CPython 3.14.7",
+            "CPython 3.13.15",
+            "pymanager",
+            "NativeCommandError",
+            "Diagnostic commands must themselves be assessed for side effects",
         ):
             self.assertIn(marker, self.policy)
 
@@ -103,6 +110,9 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED",
             "PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED",
             "PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE",
+            "PYTHON INSTALL MANAGER PRESENT",
+            "CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED",
+            "CPYTHON 3.13.X INSTALLATION/VALIDATION PENDING",
             "PRODUCTION DEPLOYMENT NOT STARTED",
             "PI3 VALIDATION NOT STARTED",
             "PE-4 NOT STARTED",

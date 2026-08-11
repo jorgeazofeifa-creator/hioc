@@ -1,5 +1,16 @@
 # HIOC Changelog
 
+- Corrected the governed Windows CPython 3.13 checkpoint after forensic review
+  proved that informational Python Manager stderr could become a PowerShell 5.1
+  exception before native exit-code evaluation. Scripted management now uses
+  `pymanager`, automatic runtime installation is disabled before every launcher
+  probe, and one native-process helper captures stdout/stderr with the actual
+  exit code. The official manager is present; an informal diagnostic's
+  unintended CPython 3.14.7 installation is preserved and classified as an
+  operator side effect, not HIOC support or production state. A safe dry run
+  observed 3.13.15, while the governed line remains floating 3.13.x and pending
+  validation. No Python install/uninstall or production action occurred here.
+
 - Added the repository-controlled Windows CPython 3.13 installation and
   compatibility-validation checkpoint. The PowerShell script self-verifies its
   approved Git identity and pending support state, uses only the official WinGet

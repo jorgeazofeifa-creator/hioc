@@ -41,10 +41,37 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
     def test_official_install_manager_and_runtime_line_are_exact(self):
         self.assertIn("$InstallerPackageId = '9NQ7512CXL7T'", self.script)
         self.assertIn("--source msstore", self.script)
-        self.assertIn("install $ExpectedMajorMinor", self.script)
+        self.assertIn("Get-Command -Name 'pymanager'", self.script)
+        self.assertIn('Invoke-NativeProcess $ManagerCommand.Source "install $ExpectedMajorMinor"', self.script)
+        self.assertNotIn('& $PythonCommand.Source install', self.script)
+        self.assertNotIn("Get-Command -Name 'py' -CommandType Application -ErrorAction SilentlyContinue\nif ($null -eq $PythonCommand) { Write-CheckpointFailure 'INPUT_OR_PRECONDITION_ERROR' 'PYTHON_INSTALL_MANAGER_NOT_RESOLVABLE'", self.script)
         self.assertIn("$ExpectedMajorMinor = '3.13'", self.script)
         for forbidden in ("conda", "choco", "chocolatey", "scoop"):
             self.assertNotIn(forbidden, self.script.lower())
+
+    def test_native_manager_stderr_is_governed_by_exit_code(self):
+        helper = self.script.split("function Invoke-NativeProcess", 1)[1].split("if ([string]::IsNullOrWhiteSpace", 1)[0]
+        self.assertIn("RedirectStandardOutput = $true", helper)
+        self.assertIn("RedirectStandardError = $true", helper)
+        self.assertIn("ExitCode = $Process.ExitCode", helper)
+        self.assertIn("$StdoutTask = $Process.StandardOutput.ReadToEndAsync()", helper)
+        self.assertIn("$StderrTask = $Process.StandardError.ReadToEndAsync()", helper)
+        self.assertIn("Stderr = $StderrTask.Result", helper)
+        self.assertNotIn("throw", helper.lower())
+        self.assertIn("if ($Install313.ExitCode -ne 0)", self.script)
+        self.assertNotIn("if (-not [string]::IsNullOrWhiteSpace($Install313.Stderr))", self.script)
+
+    def test_manager_inspection_is_non_launching_and_existing_other_runtime_is_allowed(self):
+        self.assertIn("list --format=json --only-managed", self.script)
+        self.assertIn('list --format=json --only-managed $ExpectedMajorMinor', self.script)
+        self.assertNotIn("py --help", self.script.lower())
+        self.assertNotIn("pymanager --help", self.script.lower())
+        self.assertNotIn("3.14", self.script)
+        self.assertNotIn("uninstall", self.script.lower())
+        self.assertLess(
+            self.script.index("list --format=json --only-managed"),
+            self.script.index('Invoke-NativeProcess $ManagerCommand.Source "install $ExpectedMajorMinor"'),
+        )
 
     def test_runtime_probe_is_execution_based_and_cpython_exact(self):
         self.assertIn("platform.python_implementation()", self.script)
@@ -53,6 +80,15 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
         self.assertIn("$PythonPrefix = @('-3.13')", self.script)
         self.assertIn("PYTHON_MANAGER_AUTOMATIC_INSTALL", self.script)
         self.assertIn("PYLAUNCHER_ALLOW_INSTALL", self.script)
+        self.assertLess(
+            self.script.index("SetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'false'"),
+            self.script.index("Get-Command -Name 'pymanager'"),
+        )
+        self.assertLess(
+            self.script.index('Invoke-NativeProcess $ManagerCommand.Source "install $ExpectedMajorMinor"'),
+            self.script.index("Get-Command -Name 'py'"),
+        )
+        self.assertIn("$ExactVersion = $ProbeLine.Substring('CPython|'.Length)", self.script)
 
     def test_required_validation_matrix_is_run_with_governed_runtime(self):
         for marker in (
@@ -117,6 +153,28 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
             "$tokens=$null;$errors=$null;"
             "[System.Management.Automation.Language.Parser]::ParseInput($text,[ref]$tokens,[ref]$errors)|Out-Null;"
             "if($errors.Count){$errors.Message;exit 1}"
+        )
+        env = dict(os.environ)
+        env["HIOC_TEST_PY313_SCRIPT"] = str(SCRIPT)
+        result = subprocess.run([shell, "-NoProfile", "-Command", command], env=env,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_native_helper_preserves_stderr_exit_status(self):
+        shell = shutil.which("powershell.exe") or shutil.which("powershell")
+        if not shell:
+            self.skipTest("Windows PowerShell unavailable")
+        command = (
+            "$text=Get-Content -Raw -LiteralPath $env:HIOC_TEST_PY313_SCRIPT;"
+            "$tokens=$null;$errors=$null;"
+            "$ast=[System.Management.Automation.Language.Parser]::ParseInput($text,[ref]$tokens,[ref]$errors);"
+            "$fn=$ast.Find({param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] "
+            "-and $n.Name -eq 'Invoke-NativeProcess'},$true);"
+            "Invoke-Expression $fn.Extent.Text;"
+            "$ok=Invoke-NativeProcess $env:ComSpec '/d /c \"echo informational 1>&2 & exit /b 0\"';"
+            "$fail=Invoke-NativeProcess $env:ComSpec '/d /c \"echo failure 1>&2 & exit /b 7\"';"
+            "if($ok.ExitCode -ne 0 -or $ok.Stderr -notmatch 'informational'){exit 1};"
+            "if($fail.ExitCode -ne 7 -or $fail.Stderr -notmatch 'failure'){exit 2}"
         )
         env = dict(os.environ)
         env["HIOC_TEST_PY313_SCRIPT"] = str(SCRIPT)

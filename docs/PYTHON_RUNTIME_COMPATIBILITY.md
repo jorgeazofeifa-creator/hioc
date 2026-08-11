@@ -50,13 +50,17 @@ implementation is separately tested and governed.
 | CPython 3.11 | NOT YET REPOSITORY-VALIDATED AS A GOVERNED LINE |
 | CPython 3.12.13 | TESTED — FULL SUITE PASS |
 | CPython 3.13.x | PROPOSED WINDOWS OPERATOR LINE — VALIDATION PENDING |
-| CPython 3.14.x | NOT CURRENTLY GOVERNED |
+| CPython 3.14.7 | PRESENT FROM OPERATOR-DIAGNOSTIC SIDE EFFECT; NOT HIOC-SUPPORTED |
 | Production Python | EXACT VERSION UNVERIFIED |
 
 The machine-readable support state is
 `governance/python-runtime-support.json`. It is explicit repository state, not
 chat state. Its Windows status remains `validation_pending`; therefore PE-3
 Production Action 1 remains blocked even if a Python 3.13 interpreter appears.
+The official Python Install Manager is present on the operator workstation.
+CPython 3.14.7 is also present because an informal `py --help` diagnostic
+triggered the manager's default-runtime automatic installation. Its presence
+does not satisfy, block, or change the governed 3.13.x contract.
 
 ## Windows operator runtime
 
@@ -77,8 +81,8 @@ The installation and compatibility action is the repository-controlled script
 Its governed identities are:
 
 ```text
-PYTHON313_CHECKPOINT_SHA256=6ab2ff8631bd205741c69bc2bce3a097562d5ec5cc2f1b72919528337af6cf38
-PYTHON313_CHECKPOINT_GIT_BLOB=9d5af854d37abe94974c202805d78cc2303702fd
+PYTHON313_CHECKPOINT_SHA256=3f3789310cea111a8438e6b68afc77b5982aa6d24194d7239dffdf07028a46ad
+PYTHON313_CHECKPOINT_GIT_BLOB=264bd47e149e834b34a92acd23242ed246345ecb
 ```
 
 After its commit is approved and pushed, prepare only this short invocation:
@@ -92,10 +96,27 @@ $CheckpointScript = Join-Path $Repo 'tools/hioc-python313-validate.ps1'
 
 The script verifies its own Git identity and the synchronized clean repository,
 requires support state `validation_pending`, installs only through the official
-WinGet Python Install Manager package, explicitly installs the 3.13 line,
-executes `py -3.13`, runs the complete validation matrix, and emits sanitized
-evidence. It does not edit support state. Promotion is a separate repository
-checkpoint after evidence review.
+WinGet Python Install Manager package, and uses the unambiguous `pymanager`
+command for scripted list/install operations. It disables automatic runtime
+installation before any runtime launcher can execute, explicitly runs
+`pymanager install 3.13`, and uses `py -3.13` only after installation for the
+governed execution probe and validation matrix. It emits sanitized evidence and
+does not edit support state. Promotion is a separate repository checkpoint
+after evidence review.
+
+The first governed checkpoint attempt stopped at `PYTHON_INSTALLATION` with
+`PYTHON_CHECKPOINT_UNEXPECTED_ERROR`. Forensic review confirmed a **PYTHON
+CHECKPOINT NATIVE STDERR HANDLING DEFECT**: Windows PowerShell 5.1 can promote
+informational native stderr to `NativeCommandError` / `RemoteException` under
+`$ErrorActionPreference = 'Stop'` before `$LASTEXITCODE` is evaluated. The
+checkpoint now captures native stdout, stderr, and exit status through one
+PowerShell 5.1-compatible process helper. Stderr with exit zero is success;
+nonzero exit remains failure; routine output is not exposed.
+
+The operator's later `pymanager install --dry-run 3.13` inspection was
+non-mutating and resolved CPython 3.13.15 as the current candidate. This patch
+is observed evidence, not a permanent pin: the governed line remains 3.13.x and
+the exact installed patch is recorded only after successful validation.
 
 The approved installation mechanism is the current official Python Install
 Manager supplied by the CPython project. Installation through the official
@@ -150,6 +171,11 @@ Every operator prerequisite must establish:
 
 A command merely resolving by name does not satisfy a prerequisite.
 
+Diagnostic commands must themselves be assessed for side effects before
+execution. A command described informally as a "probe" is not automatically
+read-only. External tool-manager diagnostics must use documented `list`,
+`inspect`, `version`, or `dry-run` forms known not to install or mutate state.
+
 ## Repository-controlled operator programs
 
 Validation-critical or production-capable multi-line operator programs should
@@ -177,6 +203,17 @@ Repository review then found no governed Python minimum or supported-version
 contract. The resulting audit established the 3.10 language floor, recorded
 3.12.13 full-suite evidence, proposed 3.13.x for Windows pending validation, and
 kept production runtime validation independent. These are distinct findings.
+
+The official manager was then installed, but the first governed installation
+checkpoint stopped at `PYTHON_INSTALLATION`. A subsequent diagnostic invoked
+`py --help` before automatic installation was disabled; with no managed runtime
+present, the manager installed its default CPython 3.14.7. This is
+`PYTHON_OPERATOR_DIAGNOSTIC_SIDE_EFFECT — UNINTENDED_DEFAULT_RUNTIME_INSTALL`,
+not support promotion, 3.13 validation, PE-3 failure, or production failure.
+The runtime remains present pending a separate cleanup decision and is never
+selected for HIOC. A safe manager dry run subsequently identified CPython
+3.13.15 as the current 3.13 candidate. No 3.13 runtime has yet been installed or
+validated.
 
 ## Future validation matrix
 

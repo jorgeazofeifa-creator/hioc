@@ -42,10 +42,23 @@ installation during probes. See
 
 The separate installation/validation action is the repository-controlled
 `tools/hioc-python313-validate.ps1`. It verifies its own approved Git identity,
-installs through the official WinGet Python Install Manager package, explicitly
-installs CPython 3.13, runs the governed validation matrix with `py -3.13`, and
+installs through the official WinGet Python Install Manager package, uses
+`pymanager` for non-launching management/list operations and the sole explicit
+`pymanager install 3.13` mutation, then runs the governed validation matrix with
+`py -3.13`. Automatic runtime installation is disabled before any launcher
+probe. Native manager stderr is captured and judged with its actual exit code,
+so informational stderr with exit zero is not a failure and nonzero exit is.
+An existing 3.14 runtime neither satisfies nor blocks the 3.13 checkpoint. It
 returns sanitized evidence. It does not execute Action 1 or modify the support
 manifest. Evidence review and support promotion remain a later checkpoint.
+
+The official manager is present. An informal `py --help` diagnostic installed
+CPython 3.14.7 through automatic default-runtime behavior; classify this as
+`PYTHON_OPERATOR_DIAGNOSTIC_SIDE_EFFECT — UNINTENDED_DEFAULT_RUNTIME_INSTALL`,
+not HIOC support or production state. Do not remove it in this checkpoint. The
+safe manager dry run observed CPython 3.13.15 as the current candidate, while
+the governed line remains floating 3.13.x and installation/validation remains
+pending.
 
 Action 1 is implemented only by the repository-controlled Windows PowerShell
 script `tools/hioc-pe3-action1.ps1`; its source must never be reproduced through
