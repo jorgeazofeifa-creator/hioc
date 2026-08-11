@@ -1,6 +1,6 @@
 # PE-3.1 Manufacturer Enrichment Executable Contract
 
-Status: **COMPLETE — EXECUTABLE CONTRACT FROZEN; IMPLEMENTATION NOT STARTED**
+Status: **COMPLETE — EXECUTABLE CONTRACT FROZEN; REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
 
 This is the single normative executable contract for PE-3.1. It refines the
 architecture in [PE3_MANUFACTURER_ENRICHMENT_SPEC.md](PE3_MANUFACTURER_ENRICHMENT_SPEC.md)

@@ -421,7 +421,8 @@ production validation are complete.
    The PE-3.1 module, normalized-dataset, separate-sidecar, lookup, privacy,
    failure, validation, and 92-test contracts are frozen in
    [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
-   Executable work and dataset use are not started. Local acquisition and local
+   Executable work is repository validated; dataset use, deployment, and
+   production validation are not started. Local acquisition and local
    transformation are approved; repository/release redistribution is prohibited.
 5. **PE-4 - Trusted integration association:** add a read-only Home Assistant
    registry adapter and declared field/association authority; do not infer

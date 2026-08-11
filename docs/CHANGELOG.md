@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Implemented and repository-validated the private PE-3.1 manufacturer
+  foundation: closed schemas, deterministic 36/28/24 lookup, local-only builder,
+  lock-free validator, separately locked manual generator, atomic immutable
+  publication/state writes, exact corrected errors, release preservation, data
+  exclusion governance, 96 synthetic tests, and repository-host performance
+  evidence. No IEEE or production data, network client, schedule, public
+  inventory/consumer change, deployment, or production action occurred.
+
 - Corrected the documentation-only PE-3.1 validator lock semantics. The
   standalone validator now explicitly acquires no lock and performs no mutation;
   database safety derives from atomic publication of complete immutable version

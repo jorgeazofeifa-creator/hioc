@@ -30,6 +30,11 @@ check "Platform status executable" test -x "$INSTALL_DIR/pi4/bin/hioc-platform-s
 check "MQTT runtime validator executable" test -x "$INSTALL_DIR/pi4/bin/hioc-validate-mqtt.py"
 check "Asset CLI executable" test -x "$INSTALL_DIR/pi4/bin/hioc-assets.py"
 check "Asset validator executable" test -x "$INSTALL_DIR/pi4/bin/hioc-validate-assets.py"
+check "Manufacturer library private" test "$(stat -c %a "$INSTALL_DIR/pi4/lib/hioc/manufacturer.py")" = "600"
+check "Manufacturer builder executable" test -x "$INSTALL_DIR/pi4/bin/hioc-build-manufacturer-db.py"
+check "Manufacturer validator executable" test -x "$INSTALL_DIR/pi4/bin/hioc-validate-manufacturer.py"
+check "Manufacturer generator executable" test -x "$INSTALL_DIR/pi4/bin/hioc-generate-manufacturer.py"
+check "Manufacturer versions directory private" test "$(stat -c %a "$INSTALL_DIR/data/manufacturer/versions")" = "700"
 check "Version manifest exists" test -f "$INSTALL_DIR/VERSION.yaml"
 check "Correlation engine version declared" grep -q '^correlation_engine:' "$INSTALL_DIR/VERSION.yaml"
 check "Active incident JSON exists" test -f "$INSTALL_DIR/state/incidents/active.json"
@@ -92,6 +97,13 @@ if [ -f "$INSTALL_DIR/state/inventory/summary.json" ]; then
 fi
 if [ -f "$INSTALL_DIR/state/inventory/capabilities.json" ]; then
   check "Inventory capabilities JSON valid" jq empty "$INSTALL_DIR/state/inventory/capabilities.json"
+fi
+if [ -f "$INSTALL_DIR/state/inventory/manufacturer.json" ] || [ -f "$INSTALL_DIR/state/inventory/manufacturer_status.json" ]; then
+  check "Manufacturer sidecar exists when status exists" test -f "$INSTALL_DIR/state/inventory/manufacturer.json"
+  check "Manufacturer status exists when sidecar exists" test -f "$INSTALL_DIR/state/inventory/manufacturer_status.json"
+  if [ -f "$INSTALL_DIR/state/inventory/manufacturer.json" ] && [ -f "$INSTALL_DIR/state/inventory/manufacturer_status.json" ]; then
+    check "Manufacturer artifacts valid" python3 "$INSTALL_DIR/pi4/bin/hioc-validate-manufacturer.py" sidecar --sidecar "$INSTALL_DIR/state/inventory/manufacturer.json" --status "$INSTALL_DIR/state/inventory/manufacturer_status.json" --inventory "$INSTALL_DIR/state/inventory/inventory.json"
+  fi
 fi
 if [ -f "$INSTALL_DIR/state/inventory/enrichment.json" ] || [ -f "$INSTALL_DIR/state/inventory/enrichment_status.json" ]; then
   check "Hostname enrichment artifacts valid" test -f "$INSTALL_DIR/state/inventory/enrichment.json"

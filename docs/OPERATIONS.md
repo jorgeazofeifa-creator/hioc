@@ -2,7 +2,7 @@
 
 ## PE-3.1 manufacturer enrichment boundary
 
-PE-3.1 executable contracts are frozen but not implemented. The future operator
+PE-3.1 executable tooling is repository implemented but not deployed. A future operator
 obtains IEEE source files independently, records their SHA-256 values, and runs
 an offline builder into an immutable local version directory under
 `data/manufacturer/versions/`. HIOC never downloads, bundles, or redistributes

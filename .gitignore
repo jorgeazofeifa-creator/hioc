@@ -5,4 +5,7 @@
 __pycache__/
 state/
 backups/
+data/manufacturer/
+state/inventory/manufacturer.json
+state/inventory/manufacturer_status.json
 .env

@@ -1,6 +1,6 @@
 # PE-3 Manufacturer Reference Enrichment Specification
 
-Status: **PE-3.0 ARCHITECTURE APPROVED; PE-3.1 EXECUTABLE CONTRACT FROZEN; IMPLEMENTATION NOT STARTED**
+Status: **PE-3.0 ARCHITECTURE APPROVED; PE-3.1 REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
 
 The exact PE-3.1 implementation contract is
 [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
@@ -355,8 +355,8 @@ must not embed household data.
 PE-3.0 defines architecture and governance only. PE-3.1 executable contracts are
 frozen, but no dataset, executable, test, runtime, or production change is
 authorized. Local acquisition and transformation are approved without
-redistribution; executable implementation remains **NOT STARTED** pending
-explicit authorization.
+redistribution. Executable implementation is **REPOSITORY VALIDATED**; production
+dataset creation, deployment, and validation remain pending.
 
 The documentation-only lock-order correction confirms that the complete manual
 manufacturer-generation transaction is serialized by the dedicated manufacturer

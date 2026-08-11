@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE APPROVED; PE-3.1 EXECUTABLE CONTRACT FROZEN; IMPLEMENTATION NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE APPROVED; PE-3.1 REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1168,15 +1168,15 @@ other exit/error semantics. The standalone validator is now explicitly lock-free
 and read-only: immutable database safety comes from atomic directory publication,
 while the builder and generator remain the only owners of the two exclusive
 manufacturer locks.
-No PE-3 dataset, executable implementation or runtime behavior exists. Phase 7A
-is not complete.
+PE-3.1 executable implementation is repository validated. No PE-3 production
+dataset, deployment, or runtime behavior exists. Phase 7A is not complete.
 
 ## Next Planned Task
 
-The next authoritative checkpoint is **PE-3.1 Manufacturer Enrichment executable
-implementation**, after explicit authorization. Local acquisition and local
-transformation are approved; no IEEE data may enter Git or releases. Do not
-begin executable work and do not mark Phase 7A complete.
+The next authoritative checkpoint is review and push authorization for the PE-3.1
+repository implementation. Local acquisition and local transformation are
+approved, but production dataset build, deployment, and validation remain later
+gates; no IEEE data may enter Git or releases. Do not mark Phase 7A complete.
 
 The corrected run completed Asset transactions and cleanup, then exposed a
 second validator-contract defect: live `active.json` was treated as immutable.

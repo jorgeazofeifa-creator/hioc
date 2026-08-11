@@ -37,6 +37,7 @@ if [ "$SRC_DIR" != "$INSTALL_DIR" ]; then
     --exclude '/CHANGELOG.md' \
     --exclude '/docs/' \
     --exclude '/tests/' \
+    --exclude '/data/manufacturer/' \
     "$SRC_DIR/" "$INSTALL_DIR/"
 fi
 
@@ -44,10 +45,14 @@ mkdir -p "$INSTALL_DIR/config" "$INSTALL_DIR/state/incidents" "$INSTALL_DIR/hist
 mkdir -p "$INSTALL_DIR/state/inventory"
 mkdir -p "$INSTALL_DIR/state/platform"
 mkdir -p "$INSTALL_DIR/backups/assets"
+mkdir -p "$INSTALL_DIR/data/manufacturer/versions"
 chmod 0750 "$INSTALL_DIR/state/inventory"
 chmod 0700 "$INSTALL_DIR/backups/assets"
+chmod 0700 "$INSTALL_DIR/data/manufacturer" "$INSTALL_DIR/data/manufacturer/versions"
 if [ -f "$INSTALL_DIR/state/inventory/assets.json" ]; then chmod 0600 "$INSTALL_DIR/state/inventory/assets.json"; fi
 if [ -f "$INSTALL_DIR/state/inventory/assets_status.json" ]; then chmod 0600 "$INSTALL_DIR/state/inventory/assets_status.json"; fi
+if [ -f "$INSTALL_DIR/state/inventory/manufacturer.json" ]; then chmod 0600 "$INSTALL_DIR/state/inventory/manufacturer.json"; fi
+if [ -f "$INSTALL_DIR/state/inventory/manufacturer_status.json" ]; then chmod 0600 "$INSTALL_DIR/state/inventory/manufacturer_status.json"; fi
 
 if [ ! -f "$INSTALL_DIR/config/hioc.conf" ]; then
   cp "$INSTALL_DIR/pi4/config/hioc.conf.example" "$INSTALL_DIR/config/hioc.conf"
@@ -61,6 +66,10 @@ chmod +x "$INSTALL_DIR/pi4/bin/hioc-platform-status.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-validate-mqtt.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-assets.py"
 chmod +x "$INSTALL_DIR/pi4/bin/hioc-validate-assets.py"
+chmod 0600 "$INSTALL_DIR/pi4/lib/hioc/manufacturer.py"
+chmod 0700 "$INSTALL_DIR/pi4/bin/hioc-build-manufacturer-db.py"
+chmod 0700 "$INSTALL_DIR/pi4/bin/hioc-validate-manufacturer.py"
+chmod 0700 "$INSTALL_DIR/pi4/bin/hioc-generate-manufacturer.py"
 chmod +x "$INSTALL_DIR/pi4/validate_pi4.sh"
 chmod +x "$INSTALL_DIR/pi4/uninstall_pi4.sh"
 

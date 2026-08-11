@@ -22,6 +22,7 @@ rsync -a \
   --exclude history \
   --exclude logs \
   --exclude backups \
+  --exclude data/manufacturer \
   "$INSTALL_DIR/" "$BACKUP_DIR/current/"
 
 rsync -a \
@@ -31,6 +32,7 @@ rsync -a \
   --exclude history \
   --exclude logs \
   --exclude backups \
+  --exclude data/manufacturer \
   --exclude '/README.md' \
   --exclude '/ROADMAP.md' \
   --exclude '/DECISIONS.md' \

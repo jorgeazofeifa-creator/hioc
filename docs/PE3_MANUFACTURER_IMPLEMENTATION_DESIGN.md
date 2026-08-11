@@ -1,6 +1,6 @@
 # PE-3.1 Manufacturer Enrichment Implementation Design
 
-Status: **COMPLETE — EXECUTABLE CONTRACT FROZEN; IMPLEMENTATION NOT STARTED**
+Status: **COMPLETE — EXECUTABLE CONTRACT FROZEN; REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
 
 ## Purpose
 
@@ -98,5 +98,7 @@ contract. Future production validation uses synthetic lookup proof plus sanitize
 structural and aggregate verification for the locally generated real database;
 no registry rows or manufacturer names enter repository evidence.
 
-The next authoritative checkpoint is **PE-3.1 executable implementation** after
-explicit authorization. PE-3 production deployment and PE-4 are not started.
+PE-3.1 executable implementation is repository validated. The next gate is a
+separately authorized push, followed later by governed local dataset,
+deployment, and production-validation checkpoints. PE-3 production deployment
+and PE-4 are not started.

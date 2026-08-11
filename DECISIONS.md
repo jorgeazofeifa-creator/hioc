@@ -664,3 +664,11 @@ exclusive generation lock are the complete PE-3.1 manufacturer lock inventory;
 there is no validator, shared, reader/writer, third, or version-directory lock.
 This supersedes only the earlier shared-database-lock instruction. Generator
 order, error mappings, and all other frozen contracts remain unchanged.
+
+Repository implementation: PE-3.1 now implements the frozen library, offline
+builder, lock-free validator, separate generator, schemas, corrected locks and
+errors, installer/release preservation, exclusion governance, synthetic tests,
+and evidence report. No IEEE data, production database, deployment, schedule,
+public projection, or protected subsystem change occurred. Repository validation
+does not complete PE-3; local production dataset creation, deployment, and
+production validation remain separate pending gates, and PE-4 is not started.
