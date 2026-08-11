@@ -1164,7 +1164,10 @@ correcting its manufacturer lock order so all mutable generator inputs are read
 and validated under the dedicated manufacturer lock. The frozen error model now
 also has explicit, non-overlapping causes for dataset conflict, deterministic-
 build mismatch, sidecar validation, and status validation without changing any
-other exit/error semantics.
+other exit/error semantics. The standalone validator is now explicitly lock-free
+and read-only: immutable database safety comes from atomic directory publication,
+while the builder and generator remain the only owners of the two exclusive
+manufacturer locks.
 No PE-3 dataset, executable implementation or runtime behavior exists. Phase 7A
 is not complete.
 

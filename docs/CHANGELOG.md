@@ -1,5 +1,14 @@
 # HIOC Changelog
 
+- Corrected the documentation-only PE-3.1 validator lock semantics. The
+  standalone validator now explicitly acquires no lock and performs no mutation;
+  database safety derives from atomic publication of complete immutable version
+  directories. Runtime sidecar validation observes independently loaded files
+  and reports cross-generation mismatches without repair. The exclusive builder
+  and generator locks remain unchanged and are the complete manufacturer lock
+  inventory. Future acceptance tests must prove the lock-free/read-only behavior.
+  No executable, test, dataset, deployment, or production change occurred.
+
 - Corrected the documentation-only PE-3.1 manufacturer error mappings by adding
   first-class bounded codes for dataset conflict, deterministic-build mismatch,
   sidecar validation, and status validation at the already frozen exits 10, 11,

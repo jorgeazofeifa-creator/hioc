@@ -653,3 +653,14 @@ manufacturer artifact. These bounded manufacturer-subsystem failures leave
 inventory and all protected systems unaffected and do not independently imply
 production rollback. The executable contract remains the sole normative mapping;
 all existing codes and exits, including unused 1 and 13, remain unchanged.
+
+Validator-lock clarification: the standalone manufacturer validator is a
+strictly read-only observer and acquires no lock. Published database safety comes
+from complete atomic directory promotion and immutable version directories, not
+reader/writer locking. Sidecar validation uses independently loaded file values
+and reports any cross-generation mismatch without mutation, automatic retry, or
+rollback inference. The builder-only exclusive build lock and generator-only
+exclusive generation lock are the complete PE-3.1 manufacturer lock inventory;
+there is no validator, shared, reader/writer, third, or version-directory lock.
+This supersedes only the earlier shared-database-lock instruction. Generator
+order, error mappings, and all other frozen contracts remain unchanged.

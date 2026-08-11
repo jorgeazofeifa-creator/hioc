@@ -372,3 +372,11 @@ first-class manufacturer error causes. They prevent creating, accepting, or
 publishing their invalid artifact, leave inventory and protected subsystems
 unchanged, and do not independently imply production rollback. Exact code and
 exit mappings remain solely normative in the executable contract.
+
+The documentation-only validator-lock correction confirms that the standalone
+validator acquires no lock and performs no mutation. Immutable database versions
+are safe to validate because the builder publishes the complete database/manifest
+directory atomically and never replaces it. Runtime sidecar files are observed
+independently; a cross-generation mismatch is reported without repair or rollback
+inference. The builder and generator retain their separate exclusive locks as
+the complete two-lock PE-3.1 inventory.

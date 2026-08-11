@@ -311,7 +311,31 @@ sidecar validation but must appear together. It verifies regular nonsymlink
 files, modes no broader than 0600 on POSIX, parent modes no broader than 0750,
 no `.manufacturer*.tmp` siblings, schemas, ordering, counts, hashes, and
 coherence. It performs no writes, repair, chmod, timestamp update, or lock-file
-mutation. It obtains a shared database lock only when database files are read.
+mutation. It acquires no lock.
+
+For `database`, the validator parses CLI arguments, resolves both supplied paths,
+performs nonmutating path checks, requires both files to belong to the same
+immutable published version directory, then opens both read-only and validates
+file type, symlink policy, ownership, permissions, schemas, versions, size,
+complete-file and semantic digests, counts, source identities, ordering, and
+immutable-directory expectations. Safety comes from atomic publication plus
+immutability: a published pair becomes visible only when complete and is never
+modified or replaced in place, so there is no database writer to exclude.
+
+For `sidecar`, every supplied file is opened read-only and validated independently;
+cross-file relationships use only the values loaded into memory. The validator
+is an observer, not part of the generator transaction, and does not provide a
+transactionally locked view across independently managed runtime files. If an
+external atomic replacement between reads yields inconsistent generations, it
+reports the frozen validation failure without repair, automatic retry, or
+rollback recommendation based only on that observation.
+
+The validator never creates or opens a manufacturer lock file, calls `flock`, or
+acquires the builder, generator, inventory, PE-1 enrichment, Asset, or another
+HIOC state lock. It may only open, read, stat, hash, parse, compare, close, and
+report sanitized results. It must not create, modify, replace, chmod, chown,
+unlink, rename, touch, or write any file or status artifact. Normal filesystem
+atime behavior is outside application control and is not validator mutation.
 
 Human output is `manufacturer validation passed | target=database|sidecar` or a
 sanitized failure. JSON contains exactly `schema_version`, `result`, `target`,
@@ -625,6 +649,21 @@ content and leave all existing version directories unchanged. Replacement is
 prohibited. Dataset activation is a later governed configuration/deployment
 change, never part of the builder.
 
+PE-3.1 has exactly two manufacturer-specific locks. The builder alone owns the
+exclusive `/tmp/hioc-manufacturer-build.lock`, which serializes staging,
+immutable publication, collision handling, and builder transaction coordination;
+it is not a reader/writer lock. The generator alone owns the exclusive
+`/tmp/hioc-manufacturer.lock`, which serializes its complete sidecar-generation
+transaction under section 18; it is not a generic database lock. There is no
+validator lock, shared manufacturer lock, reader/writer lock, third lock, or lock
+inside a version directory. The validator acquires neither existing lock.
+
+The earlier PE-3.1 executable implementation authorization is corrected only for
+validator locking: every instruction requiring the standalone read-only
+validator to obtain a shared database lock is superseded. The corrected generator
+order, builder transaction, error mappings, and all other frozen contracts remain
+unchanged.
+
 ## 20. Conflict and organization normalization
 
 Exact normalized duplicates (same class, prefix, organization) collapse and
@@ -724,6 +763,16 @@ Tests also run PE-1, PE-2, identity, canonical, inventory, release, compilation,
 shell, documentation, and full regression suites. No test uses a network, real
 assignment, production identifier, root access, locale dependence, or clock
 dependence.
+
+Validator-lock acceptance tests additionally prove that the validator opens
+neither manufacturer lock, creates no lock file, performs no `flock`, and leaves
+content, modes, application-controlled modification timestamps, and status
+artifacts unchanged for database and sidecar validation. They prove builder-only
+and generator-only lock ownership, absence of a third lock, immutable published-
+version expectations, acceptance of a valid immutable pair without locking,
+rejection of mismatched pairs, and reporting of inconsistent sidecar/status
+generations without mutation. Existing generator corrected-order and error-
+mapping tests remain unchanged.
 
 ## 26. Performance contract
 

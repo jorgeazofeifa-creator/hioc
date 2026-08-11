@@ -81,6 +81,16 @@ accepted, or published, inventory remains unaffected, and the errors alone do
 not imply production rollback. The executable contract contains the sole
 normative code-to-exit mapping.
 
+The standalone validator is a strictly read-only observer and acquires no lock.
+Database safety derives from the builder's atomic publication of a complete,
+immutable version directory, not reader/writer exclusion. Sidecar validation
+checks independently loaded files and reports any cross-generation mismatch; it
+does not repair, retry, write status, or join the generator transaction. PE-3.1
+therefore has exactly two manufacturer-specific locks: the exclusive builder
+lock owned only by the builder and the exclusive generator lock owned only by the
+generator. No shared, validator, reader/writer, third, or version-directory lock
+exists.
+
 ## Validation and next gate
 
 The exact future file set and minimum 92-test mapping are frozen in the executable

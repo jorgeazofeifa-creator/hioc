@@ -16,6 +16,11 @@ inventory hook. Install, upgrade, and rollback preserve local databases,
 configuration, and sidecars. Production commands are deliberately deferred.
 The binding operational, failure, locking, and rollback behavior is
 [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
+The future standalone manufacturer validator is strictly read-only and acquires
+no lock. Published database versions require no reader lock because the builder
+atomically publishes a complete immutable directory. Runtime sidecar validation
+observes independently loaded files and reports inconsistencies without repair.
+Only the offline builder and manual generator own manufacturer-specific locks.
 
 ## Document Ownership
 
