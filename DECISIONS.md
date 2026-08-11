@@ -724,3 +724,13 @@ Unexpected exceptions are caught and rendered only as `VALIDATION_FAIL` /
 `ACTION1_UNEXPECTED_ERROR`, without paths, stack traces, or data values. This
 preserves the operator prompt for evidence capture and changes no artifact,
 validation, transfer, or production contract.
+
+Operator-copy fidelity amendment: the Action 1 fenced PowerShell block in the
+runbook is the sole canonical operator source. Preparation copies those bytes
+verbatim and verifies the published SHA-256 after UTF-8 encoding, LF
+normalization, and exactly one terminal LF. A mismatch prohibits execution. The
+block uses platform separator APIs rather than fragile quoted backslashes,
+performs an early literal/identity sentinel, rejects escaped-underscore
+corruption, and reports unexpected errors only with an approved bounded
+`FAILURE_STAGE`. The corrupted operator transcript is not manufacturer
+validation evidence.

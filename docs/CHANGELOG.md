@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Corrected PE-3.3 Action 1 operator-copy integrity after a delivered block was
+  corrupted by Markdown escaping and backslash loss. The fenced runbook block
+  is now the canonical byte source with a normalized UTF-8/LF SHA-256, an early
+  literal/identity sentinel, PowerShell 5.1-safe path APIs, and sanitized bounded
+  `FAILURE_STAGE` evidence. Governance tests extract and validate the actual
+  fenced text. The failed transcript is delivery failure, not manufacturer
+  validation evidence; no production action occurred.
+
 - Corrected the PE-3.3 Action 1 interactive-session defect. Expected Python,
   build-pair, repository/Git, containment, and validator failures now print
   sanitized result/error codes and return from a single function-scoped block;

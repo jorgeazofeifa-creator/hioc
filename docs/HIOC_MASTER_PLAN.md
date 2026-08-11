@@ -1261,6 +1261,14 @@ to `ACTION1_UNEXPECTED_ERROR`. No `exit` remains, so the operator prompt survive
 The attempted action produced no accepted evidence and did not start transfer or
 production work.
 
+The next operator transcript was classified as an Action 1 delivery-integrity
+failure, not manufacturer validation evidence: Markdown reconstruction escaped
+underscores and removed literal Windows backslashes before PowerShell parsed the
+copy. The fenced runbook block is now the canonical byte source with a normalized
+UTF-8/LF SHA-256. Preparation must reproduce it verbatim and verify the digest.
+The block adds an early integrity sentinel, platform path APIs, and bounded
+sanitized failure stages without weakening containment or any frozen check.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

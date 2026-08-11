@@ -37,6 +37,16 @@ from the function. Unexpected exceptions are caught as
 `exit` command, so the interactive PowerShell prompt remains available for
 evidence capture.
 
+Operator delivery must copy the Action 1 fenced block byte-for-byte from the
+runbook. Its SHA-256 is calculated after UTF-8 encoding, LF normalization, and
+exactly one terminal LF; the runbook publishes the expected digest. Action 1
+must not run when the prepared block digest differs. The unchanged canonical
+block prompts for the two operator paths and approved post-push commit, avoiding
+hash-breaking preparation substitutions. An early integrity sentinel
+validates path presence, frozen hash/commit syntax, literal underscores, and the
+Python probe. Unexpected failures report only an approved bounded
+`FAILURE_STAGE`, never exception details or local paths.
+
 ## PE-3.1 manufacturer enrichment boundary
 
 PE-3.1 executable tooling is repository implemented but not deployed. A future operator

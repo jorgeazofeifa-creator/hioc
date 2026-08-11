@@ -51,25 +51,60 @@ Versions are never overwritten, merged, pruned, or replaced by release actions.
 
 Target: Windows operator workstation. Mutation: none. Rollback relevance: none.
 
-Set the two operator paths deliberately. `$ExternalWorkspace` is the retained
-PE-3 acquisition/build workspace root, not the repository or a raw-CSV path.
+The canonical block prompts for the two operator paths and the approved
+post-push governance commit so no machine-specific substitution changes its
+bytes. `$ExternalWorkspace` is the retained PE-3 acquisition/build workspace
+root, not the repository or a raw-CSV path.
 Artifact selection below is checksum-driven; directory name, timestamp, and
 enumeration order have no authority.
+
+The fenced PowerShell text below is the canonical operator source. Preparation
+must reproduce its extracted bytes, not reconstruct it in chat. Normalize only
+by encoding as UTF-8, converting line endings to LF, and retaining exactly one
+terminal LF. The canonical normalized digest is:
+
+```text
+ACTION1_BLOCK_SHA256=c02dac9c925537fd67f191a98cd89700a5253a032d69228c7a79bc24ef58642a
+```
+
+Do not execute a prepared copy unless its normalized SHA-256 matches this value.
 
 ```powershell
 function Invoke-PE3ManufacturerAction1 {
 try {
 $ErrorActionPreference = 'Stop'
-$Repo = 'C:\path\to\authoritative\hioc'
-$ExternalWorkspace = 'C:\path\to\retained\hioc-pe3-external-workspace'
+$Stage = 'INITIALIZATION'
+$Repo = Read-Host 'Enter the authoritative HIOC repository path'
+$ExternalWorkspace = Read-Host 'Enter the retained PE-3 external workspace path'
 $ImplementationCommit = '157ae644dcedcbec7c69cb0d8b054e104335e024'
-$OperatorGovernanceCommit = '<approved-full-40-hex-post-push-commit>'
+$OperatorGovernanceCommit = Read-Host 'Enter the approved full 40-hex post-push governance commit'
 $ExpectedDatabaseSha256 = '81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1'
 $ExpectedManifestSha256 = '10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4'
 $ExpectedDatabaseBytes = 8652642
 $ExpectedManifestBytes = 1338
 $Git = 'git'
+$InputErrorLiteral = 'RESULT=INPUT_OR_PRECONDITION_ERROR'
+$PythonNotFoundLiteral = 'ERROR_CODE=PYTHON3_NOT_FOUND'
+$PairNotFoundLiteral = 'ERROR_CODE=VALIDATED_BUILD_PAIR_NOT_FOUND'
+$PythonProbeCode = 'import sys; print(sys.executable); raise SystemExit(0 if sys.version_info.major == 3 else 1)'
+$BackslashUnderscore = ([string][char]92) + '_'
 
+if ([string]::IsNullOrWhiteSpace($Repo) -or
+    [string]::IsNullOrWhiteSpace($ExternalWorkspace) -or
+    $ExpectedDatabaseSha256 -cnotmatch '^[0-9a-f]{64}$' -or
+    $ExpectedManifestSha256 -cnotmatch '^[0-9a-f]{64}$' -or
+    $ImplementationCommit -cnotmatch '^[0-9a-f]{40}$' -or
+    $OperatorGovernanceCommit -cnotmatch '^[0-9a-f]{40}$' -or
+    $InputErrorLiteral.Contains($BackslashUnderscore) -or
+    $PythonNotFoundLiteral.Contains($BackslashUnderscore) -or
+    $PairNotFoundLiteral.Contains($BackslashUnderscore) -or
+    -not $PythonProbeCode.Contains('sys.version_info')) {
+    Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
+    Write-Output 'ERROR_CODE=ACTION1_BLOCK_INTEGRITY_FAILED'
+    return
+}
+
+$Stage = 'REPOSITORY_CHECK'
 if (-not (Test-Path -LiteralPath $Repo -PathType Container)) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=REPOSITORY_MISSING'; return }
 if (-not (Test-Path -LiteralPath $ExternalWorkspace -PathType Container)) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=EXTERNAL_WORKSPACE_MISSING'; return }
 if ((Get-Item -LiteralPath $ExternalWorkspace).Attributes -band [IO.FileAttributes]::ReparsePoint) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=EXTERNAL_WORKSPACE_REPARSE_POINT'; return }
@@ -87,6 +122,7 @@ if ($Head -ne $OperatorGovernanceCommit -or $Origin -ne $OperatorGovernanceCommi
 & $Git -C $Repo merge-base --is-ancestor $ImplementationCommit $OperatorGovernanceCommit
 if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=IMPLEMENTATION_ANCESTRY_FAILED'; return }
 
+$Stage = 'PYTHON_RESOLUTION'
 $PythonExecutable = $null
 $PythonPrefix = @()
 $PythonResolverName = $null
@@ -99,7 +135,7 @@ foreach ($Candidate in $PythonCandidates) {
     $Command = Get-Command -Name $Candidate.Name -CommandType Application -ErrorAction SilentlyContinue
     if ($null -eq $Command) { continue }
     $ProbePrefix = @($Candidate.Prefix)
-    $Probe = & $Command.Source @ProbePrefix -c 'import sys; print(sys.executable); raise SystemExit(0 if sys.version_info.major == 3 else 1)' 2>$null
+    $Probe = & $Command.Source @ProbePrefix -c $PythonProbeCode 2>$null
     if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($Probe | Select-Object -First 1))) {
         $PythonExecutable = $Command.Source
         $PythonPrefix = @($Candidate.Prefix)
@@ -113,6 +149,7 @@ if ($null -eq $PythonExecutable) {
     return
 }
 
+$Stage = 'BUILD_PAIR_DISCOVERY'
 $MatchingPairs = @(
     foreach ($CandidateDatabase in Get-ChildItem -LiteralPath $ExternalWorkspace -Filter 'manufacturer-db.json' -File -Recurse) {
         if ($CandidateDatabase.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
@@ -136,21 +173,26 @@ if ($MatchingPairs.Count -eq 0) {
 $SelectedPair = $MatchingPairs | Sort-Object -Property Database | Select-Object -First 1
 $Database = $SelectedPair.Database
 $Manifest = $SelectedPair.Manifest
-$WorkspacePrefix = [IO.Path]::GetFullPath($ExternalWorkspace).TrimEnd('\\') + '\\'
+$Stage = 'BUILD_PAIR_CONTAINMENT'
+$DirectorySeparators = [char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+$WorkspacePrefix = [IO.Path]::GetFullPath($ExternalWorkspace).TrimEnd($DirectorySeparators) + [IO.Path]::DirectorySeparatorChar
 $SelectedDirectory = [IO.Path]::GetFullPath((Split-Path -Parent $Database))
 if (-not $SelectedDirectory.StartsWith($WorkspacePrefix, [StringComparison]::OrdinalIgnoreCase)) { Write-Output 'RESULT=VALIDATION_FAIL'; Write-Output 'ERROR_CODE=SELECTED_PAIR_OUTSIDE_WORKSPACE'; return }
-$SelectedBuildDirectory = $SelectedDirectory.Substring($WorkspacePrefix.Length).Replace('\\', '/')
+$SelectedBuildDirectory = $SelectedDirectory.Substring($WorkspacePrefix.Length).Replace([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
 if ([string]::IsNullOrWhiteSpace($SelectedBuildDirectory)) { $SelectedBuildDirectory = '.' }
 
+$Stage = 'MANUFACTURER_VALIDATION'
 $env:HIOC_HOME = $Repo
 & $PythonExecutable @PythonPrefix (Join-Path $Repo 'pi4/bin/hioc-validate-manufacturer.py') database --database $Database --manifest $Manifest --json
 if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=VALIDATION_FAIL'; Write-Output 'ERROR_CODE=MANUFACTURER_VALIDATION_FAILED'; return }
+$Stage = 'FINAL_REPORT'
 [ordered]@{ result='PASS'; repository_head=$Head; implementation_commit=$ImplementationCommit; python_resolver=$PythonResolverName; selected_build_directory=$SelectedBuildDirectory; matching_pair_count=$MatchingPairs.Count; database_sha256=$ExpectedDatabaseSha256; manifest_sha256=$ExpectedManifestSha256; database_bytes=$ExpectedDatabaseBytes; manifest_bytes=$ExpectedManifestBytes } | ConvertTo-Json -Compress
 return
 }
 catch {
     Write-Output 'RESULT=VALIDATION_FAIL'
     Write-Output 'ERROR_CODE=ACTION1_UNEXPECTED_ERROR'
+    Write-Output "FAILURE_STAGE=$Stage"
     return
 }
 }
@@ -170,7 +212,10 @@ Repository/Git, validator, and unexpected failures likewise emit only a
 sanitized `RESULT` and `ERROR_CODE`. Every expected or caught failure returns
 from `Invoke-PE3ManufacturerAction1`; Action 1 contains no `exit` command and
 therefore returns control to the interactive PowerShell prompt. Stop on any
-non-PASS result. Run Action 1 only; return output; do not proceed.
+non-PASS result. Unexpected failures additionally report only the approved
+bounded `FAILURE_STAGE`; they never print exception text, command text, stack
+traces, absolute paths, or registry content. Run Action 1 only; return output;
+do not proceed.
 
 ## Action 2 — Manual transfer to unique PI3 staging
 

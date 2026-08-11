@@ -1,5 +1,8 @@
+import hashlib
 import pathlib
 import re
+import shutil
+import subprocess
 import unittest
 
 
@@ -21,6 +24,7 @@ class PE3Action1RunbookGovernanceTests(unittest.TestCase):
         self.assertIn("Prefix = @('-3')", action)
         self.assertIn("sys.version_info.major == 3", action)
         self.assertIn("print(sys.executable)", action)
+        self.assertIn("$PythonProbeCode", action)
         self.assertIn("& $PythonExecutable @PythonPrefix", action)
         self.assertNotIn("$Python = 'python'", action)
 
@@ -48,6 +52,9 @@ class PE3Action1RunbookGovernanceTests(unittest.TestCase):
         self.assertIn("matching_pair_count=$MatchingPairs.Count", action)
         self.assertNotIn("GetRelativePath", action)
         self.assertIn("ERROR_CODE=SELECTED_PAIR_OUTSIDE_WORKSPACE", action)
+        self.assertIn("[IO.Path]::DirectorySeparatorChar", action)
+        self.assertNotIn("TrimEnd('\\')", action)
+        self.assertNotIn("Replace('\\', '/')", action)
 
     def test_expected_failures_return_without_terminating_host(self):
         code = self.code
@@ -59,9 +66,14 @@ class PE3Action1RunbookGovernanceTests(unittest.TestCase):
 
     def test_unexpected_error_is_sanitized_and_returns(self):
         code = self.code
-        self.assertRegex(code, r"catch\s*\{\s*Write-Output 'RESULT=VALIDATION_FAIL'\s*Write-Output 'ERROR_CODE=ACTION1_UNEXPECTED_ERROR'\s*return")
+        self.assertRegex(code, r"catch\s*\{\s*Write-Output 'RESULT=VALIDATION_FAIL'\s*Write-Output 'ERROR_CODE=ACTION1_UNEXPECTED_ERROR'\s*Write-Output \"FAILURE_STAGE=\$Stage\"\s*return")
         self.assertNotIn("$_.Exception", code)
         self.assertNotIn("ScriptStackTrace", code)
+        self.assertIn('Write-Output "FAILURE_STAGE=$Stage"', code)
+        for stage in ("INITIALIZATION", "REPOSITORY_CHECK", "PYTHON_RESOLUTION",
+                      "BUILD_PAIR_DISCOVERY", "BUILD_PAIR_CONTAINMENT",
+                      "MANUFACTURER_VALIDATION", "FINAL_REPORT"):
+            self.assertIn(f"$Stage = '{stage}'", code)
 
     def test_pass_returns_normally_to_operator_prompt(self):
         code = self.code
@@ -83,6 +95,53 @@ class PE3Action1RunbookGovernanceTests(unittest.TestCase):
         self.assertIn("selected_build_directory", action)
         self.assertNotIn("organization", action)
         self.assertNotIn("matched_prefix", action)
+
+    def test_extracted_block_has_no_delivery_corruption_signatures(self):
+        code = self.code
+        self.assertNotIn(r"\_", code)
+        self.assertNotIn(r"$env\:", code)
+        self.assertNotIn("sys.version\\_", code)
+        self.assertIn("$env:HIOC_HOME = $Repo", code)
+        self.assertIn("sys.version_info", code)
+
+    def test_block_integrity_failure_is_visible_and_returns(self):
+        code = self.code
+        self.assertIn("ERROR_CODE=ACTION1_BLOCK_INTEGRITY_FAILED", code)
+        self.assertIn("$ExpectedDatabaseSha256 -cnotmatch '^[0-9a-f]{64}$'", code)
+        self.assertIn("$ImplementationCommit -cnotmatch '^[0-9a-f]{40}$'", code)
+        self.assertRegex(code, r"ERROR_CODE=ACTION1_BLOCK_INTEGRITY_FAILED'\s+return")
+
+    def test_canonical_extracted_block_hash_matches_documented_digest(self):
+        normalized = self.code.replace("\r\n", "\n").replace("\r", "\n").rstrip("\n") + "\n"
+        digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+        documented = re.search(r"ACTION1_BLOCK_SHA256=([0-9a-f]{64})", self.action).group(1)
+        self.assertEqual(digest, documented)
+
+    def test_canonical_block_prompts_without_operator_specific_reconstruction(self):
+        code = self.code
+        self.assertIn("$Repo = Read-Host 'Enter the authoritative HIOC repository path'", code)
+        self.assertIn("$ExternalWorkspace = Read-Host 'Enter the retained PE-3 external workspace path'", code)
+        self.assertIn("$OperatorGovernanceCommit = Read-Host 'Enter the approved full 40-hex post-push governance commit'", code)
+        self.assertNotIn("C:\\path\\to", code)
+        self.assertNotIn("<approved-full-40-hex-post-push-commit>", code)
+
+    def test_extracted_block_parses_in_windows_powershell(self):
+        shell = shutil.which("powershell.exe") or shutil.which("powershell")
+        if not shell:
+            self.skipTest("Windows PowerShell unavailable")
+        command = (
+            "$t=Get-Content -Raw -LiteralPath $env:HIOC_TEST_RUNBOOK;"
+            "$a=($t -split '## Action 1',2)[1] -split '## Action 2',2|Select-Object -First 1;"
+            "$b=([regex]::Match($a,'(?s)```powershell\\s*(.*?)\\s*```')).Groups[1].Value;"
+            "$tokens=$null;$errors=$null;"
+            "[System.Management.Automation.Language.Parser]::ParseInput($b,[ref]$tokens,[ref]$errors)|Out-Null;"
+            "if($errors.Count){$errors.Message;exit 1}"
+        )
+        env = dict(__import__("os").environ)
+        env["HIOC_TEST_RUNBOOK"] = str(RUNBOOK)
+        result = subprocess.run([shell, "-NoProfile", "-Command", command], env=env,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":
