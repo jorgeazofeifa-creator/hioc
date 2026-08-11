@@ -1253,6 +1253,14 @@ and discovers an adjacent database/manifest pair only when both frozen hashes
 and sizes match. This correction performs no artifact validation run, transfer,
 production access, deployment, configuration change, or sidecar generation.
 
+The first operator attempt exposed a runbook-only control-flow defect: expected
+`exit 20` branches closed the interactive PowerShell host before evidence could
+be returned. Action 1 is now one function-scoped copy/paste block. Every expected
+failure reports a sanitized result/code and returns; unexpected exceptions map
+to `ACTION1_UNEXPECTED_ERROR`. No `exit` remains, so the operator prompt survives.
+The attempted action produced no accepted evidence and did not start transfer or
+production work.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

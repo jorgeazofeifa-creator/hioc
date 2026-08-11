@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Corrected the PE-3.3 Action 1 interactive-session defect. Expected Python,
+  build-pair, repository/Git, containment, and validator failures now print
+  sanitized result/error codes and return from a single function-scoped block;
+  unexpected exceptions return `ACTION1_UNEXPECTED_ERROR`. Action 1 contains no
+  `exit`, preserving the PowerShell prompt and evidence. No Action 1 validation
+  evidence was accepted, and no PI3/PI5 access, transfer, deployment, production
+  mutation, sidecar generation, or PE-4 work occurred.
+
 - Hardened the documentation-only PE-3.3 Action 1 operator procedure after
   pre-execution review. It now resolves an executable Python 3 in the frozen
   `py -3`, `python3`, `python` order with `PYTHON3_NOT_FOUND`, and discovers an

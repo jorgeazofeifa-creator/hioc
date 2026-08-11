@@ -30,6 +30,13 @@ are selected lexically only after validation; zero matches fail with
 `VALIDATED_BUILD_PAIR_NOT_FOUND`. No raw registry value or Windows user path is
 printed.
 
+Action 1 is wrapped in `Invoke-PE3ManufacturerAction1`. Expected precondition
+and validation failures print a sanitized `RESULT` and `ERROR_CODE`, then return
+from the function. Unexpected exceptions are caught as
+`ACTION1_UNEXPECTED_ERROR` without exception details. The block contains no
+`exit` command, so the interactive PowerShell prompt remains available for
+evidence capture.
+
 ## PE-3.1 manufacturer enrichment boundary
 
 PE-3.1 executable tooling is repository implemented but not deployed. A future operator

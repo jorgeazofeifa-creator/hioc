@@ -57,6 +57,8 @@ Artifact selection below is checksum-driven; directory name, timestamp, and
 enumeration order have no authority.
 
 ```powershell
+function Invoke-PE3ManufacturerAction1 {
+try {
 $ErrorActionPreference = 'Stop'
 $Repo = 'C:\path\to\authoritative\hioc'
 $ExternalWorkspace = 'C:\path\to\retained\hioc-pe3-external-workspace'
@@ -68,16 +70,22 @@ $ExpectedDatabaseBytes = 8652642
 $ExpectedManifestBytes = 1338
 $Git = 'git'
 
-if (-not (Test-Path -LiteralPath $Repo -PathType Container)) { throw 'repository missing' }
-if (-not (Test-Path -LiteralPath $ExternalWorkspace -PathType Container)) { throw 'external workspace missing' }
-if ((Get-Item -LiteralPath $ExternalWorkspace).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'external workspace is a reparse point' }
-if ((& $Git -C $Repo branch --show-current) -ne 'main') { throw 'wrong branch' }
-if (@(& $Git -C $Repo status --porcelain).Count -ne 0) { throw 'repository dirty' }
+if (-not (Test-Path -LiteralPath $Repo -PathType Container)) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=REPOSITORY_MISSING'; return }
+if (-not (Test-Path -LiteralPath $ExternalWorkspace -PathType Container)) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=EXTERNAL_WORKSPACE_MISSING'; return }
+if ((Get-Item -LiteralPath $ExternalWorkspace).Attributes -band [IO.FileAttributes]::ReparsePoint) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=EXTERNAL_WORKSPACE_REPARSE_POINT'; return }
+$Branch = & $Git -C $Repo branch --show-current
+if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=GIT_BRANCH_CHECK_FAILED'; return }
+if ($Branch -ne 'main') { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=WRONG_BRANCH'; return }
+$RepositoryStatus = @(& $Git -C $Repo status --porcelain)
+if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=GIT_STATUS_CHECK_FAILED'; return }
+if ($RepositoryStatus.Count -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=REPOSITORY_DIRTY'; return }
 $Head = & $Git -C $Repo rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=GIT_HEAD_CHECK_FAILED'; return }
 $Origin = & $Git -C $Repo rev-parse origin/main
-if ($Head -ne $OperatorGovernanceCommit -or $Origin -ne $OperatorGovernanceCommit) { throw 'governance commit mismatch' }
+if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=GIT_ORIGIN_CHECK_FAILED'; return }
+if ($Head -ne $OperatorGovernanceCommit -or $Origin -ne $OperatorGovernanceCommit) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=GOVERNANCE_COMMIT_MISMATCH'; return }
 & $Git -C $Repo merge-base --is-ancestor $ImplementationCommit $OperatorGovernanceCommit
-if ($LASTEXITCODE -ne 0) { throw 'implementation commit is not approved history' }
+if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=IMPLEMENTATION_ANCESTRY_FAILED'; return }
 
 $PythonExecutable = $null
 $PythonPrefix = @()
@@ -102,7 +110,7 @@ foreach ($Candidate in $PythonCandidates) {
 if ($null -eq $PythonExecutable) {
     Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
     Write-Output 'ERROR_CODE=PYTHON3_NOT_FOUND'
-    exit 20
+    return
 }
 
 $MatchingPairs = @(
@@ -123,21 +131,30 @@ $MatchingPairs = @(
 if ($MatchingPairs.Count -eq 0) {
     Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
     Write-Output 'ERROR_CODE=VALIDATED_BUILD_PAIR_NOT_FOUND'
-    exit 20
+    return
 }
 $SelectedPair = $MatchingPairs | Sort-Object -Property Database | Select-Object -First 1
 $Database = $SelectedPair.Database
 $Manifest = $SelectedPair.Manifest
 $WorkspacePrefix = [IO.Path]::GetFullPath($ExternalWorkspace).TrimEnd('\\') + '\\'
 $SelectedDirectory = [IO.Path]::GetFullPath((Split-Path -Parent $Database))
-if (-not $SelectedDirectory.StartsWith($WorkspacePrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'selected pair escaped external workspace' }
+if (-not $SelectedDirectory.StartsWith($WorkspacePrefix, [StringComparison]::OrdinalIgnoreCase)) { Write-Output 'RESULT=VALIDATION_FAIL'; Write-Output 'ERROR_CODE=SELECTED_PAIR_OUTSIDE_WORKSPACE'; return }
 $SelectedBuildDirectory = $SelectedDirectory.Substring($WorkspacePrefix.Length).Replace('\\', '/')
 if ([string]::IsNullOrWhiteSpace($SelectedBuildDirectory)) { $SelectedBuildDirectory = '.' }
 
 $env:HIOC_HOME = $Repo
 & $PythonExecutable @PythonPrefix (Join-Path $Repo 'pi4/bin/hioc-validate-manufacturer.py') database --database $Database --manifest $Manifest --json
-if ($LASTEXITCODE -ne 0) { throw 'local manufacturer validation failed' }
+if ($LASTEXITCODE -ne 0) { Write-Output 'RESULT=VALIDATION_FAIL'; Write-Output 'ERROR_CODE=MANUFACTURER_VALIDATION_FAILED'; return }
 [ordered]@{ result='PASS'; repository_head=$Head; implementation_commit=$ImplementationCommit; python_resolver=$PythonResolverName; selected_build_directory=$SelectedBuildDirectory; matching_pair_count=$MatchingPairs.Count; database_sha256=$ExpectedDatabaseSha256; manifest_sha256=$ExpectedManifestSha256; database_bytes=$ExpectedDatabaseBytes; manifest_bytes=$ExpectedManifestBytes } | ConvertTo-Json -Compress
+return
+}
+catch {
+    Write-Output 'RESULT=VALIDATION_FAIL'
+    Write-Output 'ERROR_CODE=ACTION1_UNEXPECTED_ERROR'
+    return
+}
+}
+Invoke-PE3ManufacturerAction1
 ```
 
 Expected output: validator PASS plus the final sanitized PASS object. The
@@ -149,8 +166,11 @@ choice deterministic. Zero exact pairs returns
 `RESULT=INPUT_OR_PRECONDITION_ERROR` and
 `ERROR_CODE=VALIDATED_BUILD_PAIR_NOT_FOUND`. No usable Python 3 returns
 `RESULT=INPUT_OR_PRECONDITION_ERROR` and `ERROR_CODE=PYTHON3_NOT_FOUND`.
-Stop on either result, any exception, or nonzero exit. Run Action 1 only; return
-output; do not proceed.
+Repository/Git, validator, and unexpected failures likewise emit only a
+sanitized `RESULT` and `ERROR_CODE`. Every expected or caught failure returns
+from `Invoke-PE3ManufacturerAction1`; Action 1 contains no `exit` command and
+therefore returns control to the interactive PowerShell prompt. Stop on any
+non-PASS result. Run Action 1 only; return output; do not proceed.
 
 ## Action 2 — Manual transfer to unique PI3 staging
 

@@ -1,4 +1,5 @@
 import pathlib
+import re
 import unittest
 
 
@@ -11,6 +12,7 @@ class PE3Action1RunbookGovernanceTests(unittest.TestCase):
     def setUpClass(cls):
         text = RUNBOOK.read_text(encoding="utf-8")
         cls.action = text.split("## Action 1", 1)[1].split("## Action 2", 1)[0]
+        cls.code = re.search(r"```powershell\s*(.*?)\s*```", cls.action, re.S).group(1)
 
     def test_python3_resolver_order_and_invocation_model(self):
         action = self.action
@@ -45,7 +47,31 @@ class PE3Action1RunbookGovernanceTests(unittest.TestCase):
         self.assertGreater(selection, verification)
         self.assertIn("matching_pair_count=$MatchingPairs.Count", action)
         self.assertNotIn("GetRelativePath", action)
-        self.assertIn("selected pair escaped external workspace", action)
+        self.assertIn("ERROR_CODE=SELECTED_PAIR_OUTSIDE_WORKSPACE", action)
+
+    def test_expected_failures_return_without_terminating_host(self):
+        code = self.code
+        self.assertIn("function Invoke-PE3ManufacturerAction1", code)
+        self.assertRegex(code, r"ERROR_CODE=PYTHON3_NOT_FOUND'\s+return")
+        self.assertRegex(code, r"ERROR_CODE=VALIDATED_BUILD_PAIR_NOT_FOUND'\s+return")
+        self.assertRegex(code, r"ERROR_CODE=MANUFACTURER_VALIDATION_FAILED'; return")
+        self.assertNotRegex(code, r"(?m)^\s*exit(?:\s|$)")
+
+    def test_unexpected_error_is_sanitized_and_returns(self):
+        code = self.code
+        self.assertRegex(code, r"catch\s*\{\s*Write-Output 'RESULT=VALIDATION_FAIL'\s*Write-Output 'ERROR_CODE=ACTION1_UNEXPECTED_ERROR'\s*return")
+        self.assertNotIn("$_.Exception", code)
+        self.assertNotIn("ScriptStackTrace", code)
+
+    def test_pass_returns_normally_to_operator_prompt(self):
+        code = self.code
+        pass_result = code.index("[ordered]@{ result='PASS'")
+        normal_return = code.index("return", pass_result)
+        catch_block = code.index("catch", normal_return)
+        invocation = code.index("Invoke-PE3ManufacturerAction1", catch_block)
+        self.assertLess(pass_result, normal_return)
+        self.assertLess(normal_return, catch_block)
+        self.assertLess(catch_block, invocation)
 
     def test_action_remains_read_only_private_and_windows_only(self):
         action = self.action.lower()

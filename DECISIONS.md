@@ -716,3 +716,11 @@ accepts an adjacent database/manifest pair only when both frozen hashes and
 sizes match. Multiple identical matches are selected deterministically only
 after verification; zero matches stop with `VALIDATED_BUILD_PAIR_NOT_FOUND`.
 Outputs remain sanitized and the action remains read-only and Windows-only.
+
+Interactive-host amendment: Action 1 is a single function-scoped PowerShell
+block. Expected precondition and validation outcomes print sanitized `RESULT`
+and `ERROR_CODE` values and return from the function; no branch invokes `exit`.
+Unexpected exceptions are caught and rendered only as `VALIDATION_FAIL` /
+`ACTION1_UNEXPECTED_ERROR`, without paths, stack traces, or data values. This
+preserves the operator prompt for evidence capture and changes no artifact,
+validation, transfer, or production contract.
