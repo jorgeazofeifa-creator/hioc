@@ -10,7 +10,7 @@ It is not the roadmap and should not track current phase, implementation status,
 
 ## Manufacturer reference enrichment boundary
 
-The PE-3 architecture defines a future offline manufacturer-reference adapter in
+The PE-3 architecture defines an implemented, repository-validated offline manufacturer-reference adapter in
 the private Enrichment layer. It consumes only an already-resolved MAC reference
 and a pinned, checksum-verified IEEE Registration Authority snapshot. It cannot
 feed identity, canonical address, liveness, health, incidents, Assets, topology
@@ -131,8 +131,7 @@ policy that interprets disappearance as failure. PE-0 is design approved; the
 PE-2.0 has approved the first Asset foundation architecture in
 [PE2_ASSET_FOUNDATION_SPEC.md](PE2_ASSET_FOUNDATION_SPEC.md): a separate,
 stable-device-ID-keyed, local-only operator store with no public projection or
-operational authority. PE-2.1 is implemented and repository validated but not
-deployed or production validated; its exact isolated
+operational authority. PE-2.1 is complete and production validated; its exact isolated
 CLI/service/store contract is approved in
 [PE2_ASSET_IMPLEMENTATION_DESIGN.md](PE2_ASSET_IMPLEMENTATION_DESIGN.md).
 

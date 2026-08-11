@@ -421,8 +421,9 @@ production validation are complete.
    The PE-3.1 module, normalized-dataset, separate-sidecar, lookup, privacy,
    failure, validation, and 92-test contracts are frozen in
    [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
-   Executable work is repository validated; dataset use, deployment, and
-   production validation are not started. Local acquisition and local
+   Executable work is repository validated and PE-3.2 externally validated the
+   production-intended dataset; deployment, generation, and production
+   validation are not started. Local acquisition and local
    transformation are approved; repository/release redistribution is prohibited.
 5. **PE-4 - Trusted integration association:** add a read-only Home Assistant
    registry adapter and declared field/association authority; do not infer
@@ -431,12 +432,14 @@ production validation are complete.
    relationships without making transport evidence an identity authority.
 7. **PE-6 - Classification suggestions and metadata-quality summaries:** expose
    explainable derived suggestions; operator role remains protected.
-8. **Expected-availability classification foundation:** design and approve only
-   after passive descriptive enrichment is stable.
-9. **Permanent IoT monitoring, Home Assistant availability correlation,
-   automation-impact mapping, and actionable IoT incidents:** separate ordered
-   checkpoints after expected-availability semantics are approved.
-10. **Retention/archival and maintenance workflows:** separately designed and
+8. **PE-7 - Expected Availability & Permanent IoT Monitoring:** Asset-layer
+   intent, network/HA availability correlation, actionable incidents,
+   notifications, affected-function identification, and recovery guidance.
+9. **PE-8 - Automation Correlation & Impact Analysis:** Home Assistant
+   automations, scripts, scenes, triggers, dependencies, and functional impact.
+10. **PE-9 - Service & Infrastructure Dependency Intelligence:** technical
+    service dependencies, failure propagation, cause, impact, and topology.
+11. **Retention/archival and maintenance workflows:** separately designed and
     approved; no lifecycle semantics are implied by this specification.
 
 Implementation packages PE-1 through PE-6 are bounded as follows:
@@ -526,5 +529,7 @@ commit rather than embedded self-referentially. PE-1 was later implemented and
 production validated without changing public inventory contracts. Evidence is
 in [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
 PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is complete and
-production validated. PE-3.0 architecture is approved and the PE-3.1 executable
-contract is frozen; PE-3.1 executable implementation is not started.
+production validated. PE-3.0 architecture is approved; PE-3.1 is implemented
+and repository validated; PE-3.2 external dataset validation is complete; and
+PE-3.3 deployment design is approved. Production deployment and PI3 validation
+remain pending.

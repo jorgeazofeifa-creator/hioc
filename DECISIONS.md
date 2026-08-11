@@ -564,7 +564,7 @@ remains in progress; PE-3 is not started.
 
 ## ADR-0020: Use pinned IEEE assignments for manufacturer reference enrichment
 
-Status: Accepted for PE-3.0 architecture; implementation gated
+Status: Accepted; PE-3.0 architecture complete and PE-3.1 repository implemented
 
 PE-3 manufacturer information is private descriptive Enrichment, never identity,
 Asset intent, device classification or operational evidence. The future
@@ -613,7 +613,7 @@ context for separation and offline injection, not an executable authority.
 
 ## ADR-0022: Freeze the PE-3.1 executable contract around a separate generator
 
-Status: Accepted; executable implementation not started
+Status: Accepted; executable implementation repository validated
 
 PE-3.1 uses a separate manually invoked generator that reads completed inventory
 and writes only private manufacturer sidecars. It never hooks the inventory

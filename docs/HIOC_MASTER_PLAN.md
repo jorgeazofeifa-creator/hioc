@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.0 COMPLETE - DESIGN APPROVED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE APPROVED; PE-3.1 REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PE-3 PRODUCTION DEPLOYMENT PENDING**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -677,8 +677,10 @@ operations, Asset facts or consumer contracts. The frozen PE-3.1 executable
 contract is [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md):
 an externally injected normalized database, separate manufacturer sidecar,
 O(1) longest-prefix lookup, closed provenance, fail-open isolation, exact APIs,
-commands, schemas, transactions, and a 92-test mapping. No executable or dataset
-exists. Local transformation is approved; commit and redistribution remain prohibited.
+commands, schemas, transactions, and a 92-test mapping. The executable is
+repository validated. PE-3.2 validated the production-intended database and
+manifest in the external operator workspace; neither artifact is committed or
+deployed. Local transformation is approved; commit and redistribution remain prohibited.
 
 ---
 
@@ -736,7 +738,34 @@ Validation must cover normal capacity, warning threshold, critical threshold, fu
 
 ## Future Enhancements
 
-Potential future work includes:
+The authoritative passive-enrichment roadmap is ordered and mandatory:
+
+1. **PE-1 - Hostname Enrichment** — complete, production validated.
+2. **PE-2 - Asset Foundation** — complete, production validated.
+3. **PE-3 - Manufacturer Reference Enrichment** — PE-3.0 through PE-3.3 have
+   reached their approved architecture, repository, external-data, and design
+   gates; production deployment, generation, PI3 validation, and final
+   governance closure remain open.
+4. **PE-4 - Home Assistant Association** — not started.
+5. **PE-5 - MQTT and Passive Service Association** — not started.
+6. **PE-6 - Classification & Metadata Quality** — not started.
+7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
+   models Asset-layer expected-online intent for wall switches, smart switches,
+   smart plugs, Sonoff devices, permanent lighting controls, and other
+   infrastructure devices; correlates network and Home Assistant availability;
+   detects failure to reconnect; and produces actionable incidents,
+   notifications, affected automation/function identification, and recovery
+   guidance.
+8. **PE-8 - Automation Correlation & Impact Analysis** — planned. It maps Home
+   Assistant automations, scripts, scenes, triggers, entities, and Assets to
+   functional impact.
+9. **PE-9 - Service & Infrastructure Dependency Intelligence** — planned. It
+   models MQTT, DNS, DHCP, Pi-hole, Home Assistant, NUT, cameras, switches, and
+   other services to explain technical cause, failure propagation, service
+   impact, and infrastructure topology. PE-8 owns functional impact; PE-9 owns
+   technical dependency and cause.
+
+Separate governed future checkpoints also preserve:
 
 - Dependency graph visualization
 - Infrastructure topology
@@ -745,9 +774,34 @@ Potential future work includes:
 - Historical infrastructure trends
 - Predictive recommendations
 - Expanded operational analytics
-- Backup and disaster recovery
+- Asset-aware configurable retention and archival for stale passive clients.
+- Incident-history validator hardening: stable incident identities, timestamp
+  `resolved`, legacy `end_time`, optional legacy lifecycle, and mixed schemas.
+- Notification semantics translating UPS/NUT states such as `OL LB` into cause,
+  severity, recommended action, line/on-battery/low-battery/driver distinctions,
+  and impact-aware internet latency severity.
+- Infrastructure Backup, Disaster Recovery, and Hardware Migration for both PI3
+  NUT&PIHOLE and PI5 HA, including services, configs, data, secrets, permissions,
+  ACLs, schedulers, networking, MQTT, off-device backups, restore validation,
+  hardware replacement, HA backup awareness, independent host recovery, and
+  full-machine migration.
 
 These items remain intentionally out of scope until the current roadmap reaches them.
+
+### Status Vocabulary
+
+- **COMPLETE - DESIGN APPROVED:** the design gate is closed; implementation is
+  not implied.
+- **IMPLEMENTED - REPOSITORY VALIDATED:** executable work and repository tests
+  pass; deployment is not implied.
+- **COMPLETE - EXTERNAL DATASET VALIDATED:** bounded external artifacts passed
+  validation without entering Git; deployment is not implied.
+- **COMPLETE - PRODUCTION VALIDATED:** governed deployment and production
+  evidence passed and the checkpoint is closed.
+- **IN PROGRESS:** authorized work has begun and closure criteria remain.
+- **PLANNED / NOT STARTED:** roadmap scope is preserved but work has not begun.
+- **OPEN / DEFERRED / POSTPONED:** preserved work is intentionally not current;
+  the owning section must state its future gate.
 
 ### Phase 7A Continuity and Deferred Hardening
 
@@ -1181,40 +1235,15 @@ organization variant enters Git.
 
 ## Next Planned Task
 
-PE-3.3 now defines but does not execute the production procedure. Its ten
+PE-3.3 defines but does not execute the production procedure. Its ten
 operator-gated actions cover Windows verification, explicit two-file transfer,
 PI3 staging validation, release-source fast-forward, supported code upgrade,
 immutable dataset installation, guarded configuration, manufacturer generation,
 production validation/evidence, and exact temporary cleanup. Only the normalized
-database and manifest transfer; raw IEEE source remains on Windows. The next
-gate is push approval for the PE-3.3 governance commit, followed by separate
-authorization to run Action 1 only.
-
-The corrected run completed Asset transactions and cleanup, then exposed a
-second validator-contract defect: live `active.json` was treated as immutable.
-History and summary digests were unchanged and sanitized comparison found zero
-changed nonvolatile fields. No PE-2 causal regression was demonstrated, so the
-rollback recommendation is withdrawn. Positive incident-contract governance is
-now repository validated. PE-2.1 remains **DEPLOYED - REPOSITORY VALIDATED -
-PRODUCTION REVALIDATION PENDING**. PE-3 remains **NOT STARTED**.
-
-The next attempt confirmed current production Asset state is valid and empty but
-stopped on six known synthetic-only backups left by the earlier cleanup ordering.
-No real Asset record or malformed backup was found; classification is
-**BACKUP_RESIDUE_ONLY**, not corruption or rollback. Exact-manifest cleanup and
-future pre-invariant current-run cleanup are repository implemented. PE-2.1
-remains deployed and open pending one-time cleanup and separate final
-revalidation. PE-3 remains not started.
-
-Final validation-only revalidation passed at validator-governance commit
-`6bb9e158f9d51d9e43b042950620e0c4aba03eb5`. Deployed implementation identity,
-restrictive permissions, Asset transactions, final-state equality, current-run
-backup cleanup, privacy, performance, and protected invariants passed. Incident
-movement was `INCIDENT_OPERATIONAL_DRIFT` with no causal PE-2 regression. No
-rollback occurred or was required. PE-2.1 is **COMPLETE - PRODUCTION
-VALIDATED**; PE-3 remains **NOT STARTED** and Phase 7A remains in progress.
-
-Remaining Phase 7A corrective work and passive enrichment follow in the documented sequence.
+database and manifest transfer; raw IEEE source remains on Windows. After this
+documentation-governance checkpoint is committed, the next gate is push
+approval for that commit. PE-3 production Action 1 requires a later, separate
+authorization. PE-4 through PE-9 remain not started.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

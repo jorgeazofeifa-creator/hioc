@@ -1,6 +1,6 @@
 # PE-1 Hostname Enrichment Evidence Envelope Specification
 
-Status: **IMPLEMENTED - REPOSITORY VALIDATED; PRODUCTION VALIDATION PENDING**
+Status: **COMPLETE - PRODUCTION VALIDATED**
 
 PE-1 is a bounded Phase 7A implementation package. It records hostname
 Observation evidence already acquired during an inventory cycle, evaluates it

@@ -163,10 +163,10 @@ HIOC engine outputs, MQTT contracts, installer/validator behavior, configuration
 
 External Pi4 toolkit script output contracts, log routing for every cron command, expected runtimes, log retention, broker placement and port, exact Pi-hole/Unbound/NUT configuration paths, and any HIOC dashboard endpoint.
 
-### Planned future state
+### Current enrichment and planned future state
 
-Passive Enrichment and the Observation -> Enrichment -> Asset information
-model beyond PE-1, DHCP Service Health & Capacity Monitoring, Safe Active
+The Observation -> Enrichment -> Asset information model is authoritative.
+PE-1 and PE-2.1 are production validated. DHCP Service Health & Capacity Monitoring, Safe Active
 Discovery,
 retention/archival policy, asset-centric digital twin, and later
 topology/dependency intelligence. Canonical-address hardening is complete and
@@ -181,8 +181,10 @@ production validated. Asset presentation/publication remains future work.
 
 PE-3.0 architecture is approved and the PE-3.1 executable contract is frozen in
 [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
-The future runtime uses a locally transformed, checksum-verified database and a
+The repository-implemented runtime uses a locally transformed, checksum-verified database and a
 manually invoked separate generator for private manufacturer sidecars. Local
 acquisition/transformation is approved; registry content cannot enter Git or
-releases. No dataset, executable parser/lookup, sidecar, schedule, or consumer
-exists; executable implementation is not started.
+releases. PE-3.2 externally validated the production-intended dataset and
+manifest; neither is committed or deployed. No production manufacturer sidecar,
+schedule, public projection, or consumer exists. PE-3.3 is design approved;
+production deployment and PI3 validation remain pending.

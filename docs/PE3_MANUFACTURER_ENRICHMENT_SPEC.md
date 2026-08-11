@@ -360,11 +360,14 @@ must not embed household data.
 
 ## Checkpoint decision
 
-PE-3.0 defines architecture and governance only. PE-3.1 executable contracts are
-frozen, but no dataset, executable, test, runtime, or production change is
-authorized. Local acquisition and transformation are approved without
-redistribution. Executable implementation is **REPOSITORY VALIDATED**; production
-dataset creation, deployment, and validation remain pending.
+PE-3.0 defines the binding architecture and governance. PE-3.1 executable
+contracts are frozen and the executable implementation is **REPOSITORY
+VALIDATED**. PE-3.2 completed external production-intended dataset validation;
+the database and manifest remain outside Git and are not deployed. PE-3.3 is
+**COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED**. Production deployment,
+manufacturer generation, PI3 validation, and final PE-3 governance closure
+remain pending. Local acquisition and transformation are approved without
+redistribution.
 
 The documentation-only lock-order correction confirms that the complete manual
 manufacturer-generation transaction is serialized by the dedicated manufacturer
