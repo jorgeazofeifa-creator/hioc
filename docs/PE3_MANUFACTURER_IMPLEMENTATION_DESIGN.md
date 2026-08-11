@@ -72,6 +72,15 @@ lock. The lock does not prevent external replacement of `inventory.json`; the
 generator completes from the validated in-memory snapshot it loaded under its
 own lock. The executable contract contains the sole normative transaction order.
 
+The documentation-only error-mapping correction adds explicit bounded causes for
+dataset conflict, deterministic-build mismatch, sidecar validation, and status
+validation while preserving the `(code, message)` exception interface. Builder
+owns the first two causes; validator and generator own the latter two. These are
+manufacturer build or validation failures only: invalid artifacts are not built,
+accepted, or published, inventory remains unaffected, and the errors alone do
+not imply production rollback. The executable contract contains the sole
+normative code-to-exit mapping.
+
 ## Validation and next gate
 
 The exact future file set and minimum 92-test mapping are frozen in the executable

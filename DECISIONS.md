@@ -643,3 +643,13 @@ generator uses the validated in-memory snapshot loaded under its lock. Any prior
 implementation instruction requiring content validation before lock acquisition
 is superseded only on this point. The executable contract contains the sole
 normative order, and all other PE-3.1 decisions remain unchanged.
+
+Error-mapping clarification: the frozen `(code, message)` exception interface
+now accepts four explicit first-class causes: dataset conflict at exit 10,
+deterministic-build mismatch at exit 11, sidecar validation at exit 15, and
+status validation at exit 16. Builder owns the first two; validator and generator
+own the latter two. Each prevents creating, accepting, or publishing its invalid
+manufacturer artifact. These bounded manufacturer-subsystem failures leave
+inventory and all protected systems unaffected and do not independently imply
+production rollback. The executable contract remains the sole normative mapping;
+all existing codes and exits, including unused 1 and 13, remain unchanged.

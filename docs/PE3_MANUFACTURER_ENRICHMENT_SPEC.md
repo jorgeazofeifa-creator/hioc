@@ -365,3 +365,10 @@ validated only after that lock is acquired; the loaded inventory document then
 serves as the in-memory snapshot for that generation. The lock does not block or
 mutate inventory generation. The executable contract remains the sole normative
 source for the exact transaction order; all other PE-3.1 contracts are unchanged.
+
+The documentation-only error-mapping correction makes dataset conflict,
+deterministic-build mismatch, sidecar validation, and status validation explicit
+first-class manufacturer error causes. They prevent creating, accepting, or
+publishing their invalid artifact, leave inventory and protected subsystems
+unchanged, and do not independently imply production rollback. Exact code and
+exit mappings remain solely normative in the executable contract.

@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Corrected the documentation-only PE-3.1 manufacturer error mappings by adding
+  first-class bounded codes for dataset conflict, deterministic-build mismatch,
+  sidecar validation, and status validation at the already frozen exits 10, 11,
+  15, and 16. The `(code, message)` interface and every existing mapping remain
+  unchanged. Builder owns conflict/determinism; validator and generator own
+  sidecar/status validation. These failures prevent invalid artifact creation or
+  publication, leave inventory and protected subsystems unaffected, and do not
+  independently imply rollback. No executable, test, dataset, deployment, or
+  production change occurred.
+
 - Corrected the documentation-only PE-3.1 manufacturer generator lock order.
   The dedicated manufacturer lock now unambiguously covers database, manifest,
   and completed-inventory snapshot loading and validation through sidecar/status

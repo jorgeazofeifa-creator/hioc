@@ -170,10 +170,14 @@ never recommend production rollback.
 
 Default subclass exit codes are: input 3, validation 6, unavailable 4,
 integrity 7, lock 17, write 12, and privacy 18. A specific error code overrides
-the default only for semantic mismatch 8, unsupported version 9, conflict 10,
-determinism 11, inventory 14, sidecar validation 15, status validation/write 16,
+the default only for semantic mismatch 8, unsupported version 9,
+`MANUFACTURER_DATASET_CONFLICT` 10, `MANUFACTURER_DETERMINISM_FAILED` 11,
+inventory 14, `MANUFACTURER_SIDECAR_INVALID` 15,
+`MANUFACTURER_STATUS_INVALID` and `MANUFACTURER_STATUS_WRITE_FAILED` 16,
 permission 5, and unexpected internal failure 70. `ManufacturerError` owns this
-single mapping for every CLI.
+single mapping for every CLI. The constructor remains exactly `(code, message)`;
+these four explicit codes are first-class members of `MANUFACTURER_ERROR_CODES`
+and never collapse to `MANUFACTURER_INTERNAL_ERROR`.
 
 ## 6. Normalized database closed schema
 
@@ -378,15 +382,33 @@ MANUFACTURER_DATABASE_CHECKSUM_MISMATCH
 MANUFACTURER_DATABASE_SEMANTIC_MISMATCH
 MANUFACTURER_VERSION_UNSUPPORTED
 MANUFACTURER_DATASET_EMPTY
+MANUFACTURER_DATASET_CONFLICT
+MANUFACTURER_DETERMINISM_FAILED
 MANUFACTURER_INVENTORY_MISSING
 MANUFACTURER_INVENTORY_INVALID
 MANUFACTURER_LOCK_TIMEOUT
+MANUFACTURER_SIDECAR_INVALID
 MANUFACTURER_SIDECAR_WRITE_FAILED
+MANUFACTURER_STATUS_INVALID
 MANUFACTURER_STATUS_WRITE_FAILED
 MANUFACTURER_PERMISSION_ERROR
 MANUFACTURER_PRIVACY_REFUSED
 MANUFACTURER_INTERNAL_ERROR
 ```
+
+The exact special ownership and mapping is:
+
+| Error code | Exit | Tools | Bounded meaning |
+| --- | ---: | --- | --- |
+| `MANUFACTURER_DATASET_CONFLICT` | 10 | builder | Conflicting normalized records prevent building a valid database. |
+| `MANUFACTURER_DETERMINISM_FAILED` | 11 | builder | The mandatory second build differs and no database/manifest pair is published. |
+| `MANUFACTURER_SIDECAR_INVALID` | 15 | validator, generator | Sidecar validation failed, so an invalid sidecar is neither accepted nor published. |
+| `MANUFACTURER_STATUS_INVALID` | 16 | validator, generator | Status validation failed, so an invalid status artifact is neither accepted nor published. |
+
+`MANUFACTURER_STATUS_WRITE_FAILED` continues to map to exit 16 for the already
+frozen status-write case. No existing exit or error code is renumbered or
+repurposed; exits 1 and 13 remain unused. The four new codes are limited to the
+causes above.
 
 Not configured/missing/unreadable produce `unavailable`; invalid schema,
 checksum, semantic, version, empty, or invalid inventory produce `error`; lock
@@ -491,6 +513,14 @@ record values or identifiers.
 Retry is safe for every row after the cause is corrected. Inventory and all
 public systems remain untouched. No fallback dataset is permitted. Rollback is
 irrelevant unless deployed PE-3 code caused a protected regression or corruption.
+Dataset conflict and determinism failure are manufacturer build failures;
+sidecar and status validation failures are manufacturer-subsystem validation
+failures. By themselves they never imply production rollback. A conflict
+prevents a valid database build, determinism failure prevents publication of the
+database/manifest pair, sidecar validation failure prevents accepting or
+publishing an invalid sidecar, and status validation failure prevents accepting
+or publishing an invalid status artifact. Inventory and every protected
+subsystem remain unaffected.
 
 ## 17. Configuration and paths
 
