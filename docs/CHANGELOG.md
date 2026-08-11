@@ -1,5 +1,14 @@
 # HIOC Changelog
 
+- Hardened the documentation-only PE-3.3 Action 1 operator procedure after
+  pre-execution review. It now resolves an executable Python 3 in the frozen
+  `py -3`, `python3`, `python` order with `PYTHON3_NOT_FOUND`, and discovers an
+  adjacent database/manifest pair only after both frozen hashes and sizes match,
+  with deterministic selection among identical matches and
+  `VALIDATED_BUILD_PAIR_NOT_FOUND` for zero matches. No Action 1 execution,
+  artifact change, transfer, PI3/PI5 access, deployment, production mutation, or
+  PE-4 work occurred.
+
 - Audited and synchronized repository-wide documentation governance against Git
   history through PE-3.3. Corrected stale PE-1, PE-2, and PE-3 implementation
   status statements; restored the explicit PE-1 through PE-9 roadmap; preserved

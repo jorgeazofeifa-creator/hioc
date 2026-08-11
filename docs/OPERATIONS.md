@@ -21,6 +21,15 @@ Never transfer IEEE source CSVs, copy code manually into the runtime, overwrite
 an immutable dataset version, silently replace a different configured path, or
 interpret conflict/unknown counts as operational failure.
 
+Action 1 accepts the retained external workspace only as an explicit Windows
+operator variable. It resolves Python 3 in the frozen order `py -3`, `python3`,
+then `python`, failing with `PYTHON3_NOT_FOUND` if none executes as Python 3.
+Database/manifest selection is based on both frozen SHA-256 values, adjacency,
+regular-file/reparse-point checks, and frozen sizes. Multiple identical matches
+are selected lexically only after validation; zero matches fail with
+`VALIDATED_BUILD_PAIR_NOT_FOUND`. No raw registry value or Windows user path is
+printed.
+
 ## PE-3.1 manufacturer enrichment boundary
 
 PE-3.1 executable tooling is repository implemented but not deployed. A future operator

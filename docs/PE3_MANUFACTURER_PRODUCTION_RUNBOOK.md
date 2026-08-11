@@ -51,13 +51,15 @@ Versions are never overwritten, merged, pruned, or replaced by release actions.
 
 Target: Windows operator workstation. Mutation: none. Rollback relevance: none.
 
-Set the four operator variables deliberately; do not use discovery globs:
+Set the two operator paths deliberately. `$ExternalWorkspace` is the retained
+PE-3 acquisition/build workspace root, not the repository or a raw-CSV path.
+Artifact selection below is checksum-driven; directory name, timestamp, and
+enumeration order have no authority.
 
 ```powershell
 $ErrorActionPreference = 'Stop'
 $Repo = 'C:\path\to\authoritative\hioc'
-$Database = 'C:\path\to\validated\build\manufacturer-db.json'
-$Manifest = 'C:\path\to\validated\build\manufacturer-db.manifest.json'
+$ExternalWorkspace = 'C:\path\to\retained\hioc-pe3-external-workspace'
 $ImplementationCommit = '157ae644dcedcbec7c69cb0d8b054e104335e024'
 $OperatorGovernanceCommit = '<approved-full-40-hex-post-push-commit>'
 $ExpectedDatabaseSha256 = '81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1'
@@ -65,17 +67,10 @@ $ExpectedManifestSha256 = '10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6d
 $ExpectedDatabaseBytes = 8652642
 $ExpectedManifestBytes = 1338
 $Git = 'git'
-$Python = 'python'
 
 if (-not (Test-Path -LiteralPath $Repo -PathType Container)) { throw 'repository missing' }
-foreach ($Path in @($Database, $Manifest)) {
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw 'artifact missing or not a regular file' }
-    if ((Get-Item -LiteralPath $Path).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'artifact is a reparse point' }
-}
-if ((Get-Item -LiteralPath $Database).Length -ne $ExpectedDatabaseBytes) { throw 'database size mismatch' }
-if ((Get-Item -LiteralPath $Manifest).Length -ne $ExpectedManifestBytes) { throw 'manifest size mismatch' }
-if ((Get-FileHash -Algorithm SHA256 -LiteralPath $Database).Hash.ToLowerInvariant() -ne $ExpectedDatabaseSha256) { throw 'database checksum mismatch' }
-if ((Get-FileHash -Algorithm SHA256 -LiteralPath $Manifest).Hash.ToLowerInvariant() -ne $ExpectedManifestSha256) { throw 'manifest checksum mismatch' }
+if (-not (Test-Path -LiteralPath $ExternalWorkspace -PathType Container)) { throw 'external workspace missing' }
+if ((Get-Item -LiteralPath $ExternalWorkspace).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'external workspace is a reparse point' }
 if ((& $Git -C $Repo branch --show-current) -ne 'main') { throw 'wrong branch' }
 if (@(& $Git -C $Repo status --porcelain).Count -ne 0) { throw 'repository dirty' }
 $Head = & $Git -C $Repo rev-parse HEAD
@@ -83,14 +78,79 @@ $Origin = & $Git -C $Repo rev-parse origin/main
 if ($Head -ne $OperatorGovernanceCommit -or $Origin -ne $OperatorGovernanceCommit) { throw 'governance commit mismatch' }
 & $Git -C $Repo merge-base --is-ancestor $ImplementationCommit $OperatorGovernanceCommit
 if ($LASTEXITCODE -ne 0) { throw 'implementation commit is not approved history' }
+
+$PythonExecutable = $null
+$PythonPrefix = @()
+$PythonResolverName = $null
+$PythonCandidates = @(
+    [ordered]@{ Name = 'py'; Prefix = @('-3') },
+    [ordered]@{ Name = 'python3'; Prefix = @() },
+    [ordered]@{ Name = 'python'; Prefix = @() }
+)
+foreach ($Candidate in $PythonCandidates) {
+    $Command = Get-Command -Name $Candidate.Name -CommandType Application -ErrorAction SilentlyContinue
+    if ($null -eq $Command) { continue }
+    $ProbePrefix = @($Candidate.Prefix)
+    $Probe = & $Command.Source @ProbePrefix -c 'import sys; print(sys.executable); raise SystemExit(0 if sys.version_info.major == 3 else 1)' 2>$null
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($Probe | Select-Object -First 1))) {
+        $PythonExecutable = $Command.Source
+        $PythonPrefix = @($Candidate.Prefix)
+        $PythonResolverName = if ($Candidate.Name -eq 'py') { 'py -3' } else { $Candidate.Name }
+        break
+    }
+}
+if ($null -eq $PythonExecutable) {
+    Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
+    Write-Output 'ERROR_CODE=PYTHON3_NOT_FOUND'
+    exit 20
+}
+
+$MatchingPairs = @(
+    foreach ($CandidateDatabase in Get-ChildItem -LiteralPath $ExternalWorkspace -Filter 'manufacturer-db.json' -File -Recurse) {
+        if ($CandidateDatabase.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
+        $CandidateManifestPath = Join-Path $CandidateDatabase.DirectoryName 'manufacturer-db.manifest.json'
+        if (-not (Test-Path -LiteralPath $CandidateManifestPath -PathType Leaf)) { continue }
+        $CandidateManifest = Get-Item -LiteralPath $CandidateManifestPath
+        if ($CandidateManifest.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
+        if ($CandidateDatabase.Length -ne $ExpectedDatabaseBytes -or $CandidateManifest.Length -ne $ExpectedManifestBytes) { continue }
+        $DatabaseHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $CandidateDatabase.FullName).Hash.ToLowerInvariant()
+        $ManifestHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $CandidateManifest.FullName).Hash.ToLowerInvariant()
+        if ($DatabaseHash -eq $ExpectedDatabaseSha256 -and $ManifestHash -eq $ExpectedManifestSha256) {
+            [pscustomobject]@{ Database = $CandidateDatabase.FullName; Manifest = $CandidateManifest.FullName }
+        }
+    }
+)
+if ($MatchingPairs.Count -eq 0) {
+    Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
+    Write-Output 'ERROR_CODE=VALIDATED_BUILD_PAIR_NOT_FOUND'
+    exit 20
+}
+$SelectedPair = $MatchingPairs | Sort-Object -Property Database | Select-Object -First 1
+$Database = $SelectedPair.Database
+$Manifest = $SelectedPair.Manifest
+$WorkspacePrefix = [IO.Path]::GetFullPath($ExternalWorkspace).TrimEnd('\\') + '\\'
+$SelectedDirectory = [IO.Path]::GetFullPath((Split-Path -Parent $Database))
+if (-not $SelectedDirectory.StartsWith($WorkspacePrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'selected pair escaped external workspace' }
+$SelectedBuildDirectory = $SelectedDirectory.Substring($WorkspacePrefix.Length).Replace('\\', '/')
+if ([string]::IsNullOrWhiteSpace($SelectedBuildDirectory)) { $SelectedBuildDirectory = '.' }
+
 $env:HIOC_HOME = $Repo
-& $Python (Join-Path $Repo 'pi4/bin/hioc-validate-manufacturer.py') database --database $Database --manifest $Manifest --json
+& $PythonExecutable @PythonPrefix (Join-Path $Repo 'pi4/bin/hioc-validate-manufacturer.py') database --database $Database --manifest $Manifest --json
 if ($LASTEXITCODE -ne 0) { throw 'local manufacturer validation failed' }
-[ordered]@{ result='PASS'; repository_head=$Head; implementation_commit=$ImplementationCommit; database_sha256=$ExpectedDatabaseSha256; manifest_sha256=$ExpectedManifestSha256; database_bytes=$ExpectedDatabaseBytes; manifest_bytes=$ExpectedManifestBytes } | ConvertTo-Json -Compress
+[ordered]@{ result='PASS'; repository_head=$Head; implementation_commit=$ImplementationCommit; python_resolver=$PythonResolverName; selected_build_directory=$SelectedBuildDirectory; matching_pair_count=$MatchingPairs.Count; database_sha256=$ExpectedDatabaseSha256; manifest_sha256=$ExpectedManifestSha256; database_bytes=$ExpectedDatabaseBytes; manifest_bytes=$ExpectedManifestBytes } | ConvertTo-Json -Compress
 ```
 
-Expected output: validator PASS plus the final sanitized PASS object. Stop on any
-exception or nonzero exit. Run Action 1 only; return output; do not proceed.
+Expected output: validator PASS plus the final sanitized PASS object. The
+selected interpreter is reported only as `py -3`, `python3`, or `python`; the
+selected build is relative to the supplied workspace, and no Windows user path
+or registry content is printed. Multiple exact matching pairs are accepted only
+after both hashes and sizes match; lexical absolute-path ordering then makes the
+choice deterministic. Zero exact pairs returns
+`RESULT=INPUT_OR_PRECONDITION_ERROR` and
+`ERROR_CODE=VALIDATED_BUILD_PAIR_NOT_FOUND`. No usable Python 3 returns
+`RESULT=INPUT_OR_PRECONDITION_ERROR` and `ERROR_CODE=PYTHON3_NOT_FOUND`.
+Stop on either result, any exception, or nonzero exit. Run Action 1 only; return
+output; do not proceed.
 
 ## Action 2 — Manual transfer to unique PI3 staging
 

@@ -1245,6 +1245,14 @@ documentation-governance checkpoint is committed, the next gate is push
 approval for that commit. PE-3 production Action 1 requires a later, separate
 authorization. PE-4 through PE-9 remain not started.
 
+Action 1 pre-execution review identified two operator-input defects without
+executing the action: a hard-coded `python` PATH assumption and ambiguous choice
+between two already-proven deterministic build directories. The corrected
+runbook resolves Python 3 explicitly in the order `py -3`, `python3`, `python`
+and discovers an adjacent database/manifest pair only when both frozen hashes
+and sizes match. This correction performs no artifact validation run, transfer,
+production access, deployment, configuration change, or sidecar generation.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

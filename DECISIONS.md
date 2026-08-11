@@ -707,3 +707,12 @@ dataset, configuration, and sidecar rollback domains remain separate. The
 authoritative commands and classifications are frozen in
 `docs/PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md`. This decision performs no
 production action and does not start PE-4.
+
+Action 1 operator-discovery amendment: Windows verification resolves Python 3
+without a user-specific path, in the strict order `py -3`, `python3`, then
+`python`, and stops with `PYTHON3_NOT_FOUND` if no candidate executes as Python
+3. The operator supplies only the external PE-3 workspace root; the procedure
+accepts an adjacent database/manifest pair only when both frozen hashes and
+sizes match. Multiple identical matches are selected deterministically only
+after verification; zero matches stop with `VALIDATED_BUILD_PAIR_NOT_FOUND`.
+Outputs remain sanitized and the action remains read-only and Windows-only.
