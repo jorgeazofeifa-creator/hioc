@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Gated the PE-3 Action 4 resume on target release-source synchronization after
+  PI3 was found at `653f887a643c877a8f611145c8b8e9f92a65b6cd`, before the resume
+  script existed. The bounded prerequisite permits only a clean exact
+  fast-forward, verifies script Git/worktree identity, and dispatches only after
+  availability passes. Existing staging was untouched and Action 5 remains not
+  started.
+
 - Completed the PE-3 Action 4 resume contract after finding that the inline
   procedure rechecked only modes and hashes after normalization and did not
   explicitly enforce validator JSON privacy/count fields. The exact operation

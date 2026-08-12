@@ -950,3 +950,13 @@ treats `0600` as an idempotent no-op, and emits separate sanitized barriers.
 Substantial production operator logic must be repository controlled; chat may
 deliver only the short invocation. Action 4 remains stopped and Action 5 is not
 started.
+
+PE-3 Action 4 target-availability amendment: repository-controlled operator
+scripts cannot be invoked merely because the governance repository contains
+them. The target release-source checkout must first be clean, free of active Git
+operations, fast-forwardable, synchronized to the exact governance commit, and
+must prove the script's commit blob and worktree identity. PI3 remained at
+`653f887a643c877a8f611145c8b8e9f92a65b6cd`, so the first resume invocation
+made no production mutation but could not find the later script. A small inline
+synchronization prerequisite is necessary because a wrapper stored only in the
+newer target commit would have the same bootstrap problem.

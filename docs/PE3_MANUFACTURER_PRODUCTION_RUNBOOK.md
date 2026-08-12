@@ -303,10 +303,12 @@ Run Action 4 only; return output.
 The synchronized Action 4 run reached the approved validator and stopped safely
 with `MANUFACTURER_PERMISSION_ERROR`: both correct, owner-matched staged files
 were mode `0644`. Transport success and digest identity did not establish
-permission safety. The source fast-forward and implementation checks already
-passed, so do not repeat synchronization. After the correction commit is pushed
-and PI3 source is fast-forwarded to it under separate authorization, resume at
-`STAGING_PERMISSION_NORMALIZATION` using the block prepared from that commit.
+permission safety. Source synchronization passed at commit
+`653f887a643c877a8f611145c8b8e9f92a65b6cd`, but later governance corrections
+introduced the resume script. Its first invocation failed before execution
+because PI3 release source was still at that older commit. No staging or
+production mutation occurred. The corrected resume must synchronize the target
+source to the exact approved commit before dispatching the script.
 
 The authoritative implementation is the repository-controlled
 `tools/hioc-pe3-action4-resume-permissions.sh`. Chat must provide only the short
@@ -324,13 +326,40 @@ read-only validator and accepts only JSON with `result:"PASS"`,
 `privacy_safe:true`, and `record_count:53581`.
 
 Target: **PI3 NUT&PIHOLE**, interactive Bash. Replace the placeholder only with
-the approved full 40-hex commit that contains this script, after that commit is
-pushed and the source repository is synchronized to it.
+the approved full 40-hex commit containing this prerequisite and the script.
+The bounded prerequisite permits only a clean fast-forward, verifies script
+availability and Git identity, then dispatches the script. It performs no reset,
+force, stash, local-change discard, merge commit, staging mutation, deployment,
+or Action 5 work.
 
 ```bash
 set +x
-bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action4-resume-permissions.sh \
-  --governance-commit '<approved-full-40-hex-action4-resume-commit>'
+hioc_pe3_action4_resume() {
+  SOURCE=/home/jazofv1/hioc-release-source
+  SCRIPT_REL=tools/hioc-pe3-action4-resume-permissions.sh
+  SCRIPT="$SOURCE/$SCRIPT_REL"
+  GOVERNANCE_COMMIT='<approved-full-40-hex-action4-resume-sync-commit>'
+  SCRIPT_BLOB=0602d9f460bf127bac4be953686fad1c0700c14e
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  [ -d "$SOURCE/.git" ] || { fail SOURCE_REPOSITORY_MISSING TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] || { fail WRONG_BRANCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }; done
+  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" fetch origin >/dev/null 2>&1 || { fail GIT_FETCH_FAILED TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail GOVERNANCE_COMMIT_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge-base --is-ancestor HEAD origin/main >/dev/null 2>&1 || { fail NON_FAST_FORWARD_SOURCE TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge --ff-only origin/main >/dev/null 2>&1 || { fail FAST_FORWARD_FAILED TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] && [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_IDENTITY_FAILED TARGET_SYNCHRONIZATION; return; }
+  [ -f "$SCRIPT" ] && [ ! -L "$SCRIPT" ] || { fail ACTION4_RESUME_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  [ "$(git -C "$SOURCE" rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL" 2>/dev/null)" = "$SCRIPT_BLOB" ] || { fail ACTION4_SCRIPT_GIT_IDENTITY_MISMATCH SCRIPT_AVAILABILITY; return; }
+  [ "$(git -C "$SOURCE" hash-object --path="$SCRIPT_REL" "$SCRIPT" 2>/dev/null)" = "$SCRIPT_BLOB" ] && git -C "$SOURCE" diff --quiet -- "$SCRIPT_REL" || { fail ACTION4_SCRIPT_WORKTREE_IDENTITY_MISMATCH SCRIPT_AVAILABILITY; return; }
+  printf 'TARGET_SYNCHRONIZATION=PASS\nACTION4_RESUME_SCRIPT_AVAILABILITY=PASS\n'
+  bash "$SCRIPT" --governance-commit "$GOVERNANCE_COMMIT"
+}
+hioc_pe3_action4_resume
 ```
 
 Canonical script identity (UTF-8, LF): SHA-256
@@ -348,6 +377,9 @@ owner/type/mode/size/hash drift, validator failure, privacy failure, and record
 count mismatch each stop before later stages. The script contains no shell-level
 `set -e`, no interactive-shell `exit`, and cannot terminate its parent Bash.
 Return its sanitized output and stop. Do not proceed to Action 5 automatically.
+If synchronization or script availability fails, the resume script is never
+invoked and the preserved staging path is never referenced or changed. The two
+new prerequisite PASS lines precede the existing script PASS contract.
 
 ## Action 5 — Supported code deployment and artifact identity
 

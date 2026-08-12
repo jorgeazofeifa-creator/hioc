@@ -1415,6 +1415,15 @@ barriers are mandatory. This repository correction does not execute the resume;
 Action 4 remains stopped at `STAGING_PERMISSION_NORMALIZATION`, existing staging
 evidence is preserved, and Action 5 remains not started.
 
+The first script invocation found PI3 release source still at
+`653f887a643c877a8f611145c8b8e9f92a65b6cd`; the later resume script was absent.
+This is **PE-3 ACTION 4 RESUME SCRIPT AVAILABILITY DEFECT — TARGET
+RELEASE-SOURCE STALE AFTER GOVERNANCE UPDATE**, not an operator, script,
+staging, dataset, manufacturer, or production failure. The corrected restart
+point is bounded target-source synchronization, script identity verification,
+then the existing permission-normalization resume in the same Action 4. Staging
+remains preserved and Action 5 remains not started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

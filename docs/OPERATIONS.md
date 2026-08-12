@@ -194,6 +194,13 @@ directory and file invariant after normalization, enforces the validator JSON
 result/privacy/count contract, and emits a distinct PASS barrier for source,
 staging, normalization, post-normalization identity, validator, and Action 4.
 
+The first invocation exposed a separate availability prerequisite: PI3 release
+source remained at `653f887a643c877a8f611145c8b8e9f92a65b6cd`, predating the
+script. A repository-controlled operator script must never be invoked until the
+target repository is fast-forwarded to the exact approved governance commit and
+the script's Git object and worktree identities are verified. Source repository
+synchronization and script availability are preconditions, not deployment.
+
 ## Known Dangerous Operator Patterns
 
 Operational instructions must state the exact target machine and shell and must

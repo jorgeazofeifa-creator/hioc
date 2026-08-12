@@ -20,6 +20,7 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
         cls.action3 = cls.runbook.split("## Action 3", 1)[1].split("## Action 4", 1)[0]
         cls.action4 = cls.runbook.split("## Action 4", 1)[1].split("## Action 5", 1)[0]
         cls.resume = cls.action4.split("### Action 4 resume", 1)[1]
+        cls.resume_block = re.search(r"```bash\n(.*?)```", cls.resume, re.DOTALL).group(1)
         cls.resume_script = ACTION4_SCRIPT.read_text(encoding="utf-8")
 
     def test_action3_is_staging_only(self):
@@ -109,8 +110,58 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
 
     def test_resume_is_repository_controlled(self):
         self.assertIn("tools/hioc-pe3-action4-resume-permissions.sh", self.resume)
-        self.assertIn("bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action4-resume-permissions.sh", self.resume)
+        self.assertIn('SCRIPT_REL=tools/hioc-pe3-action4-resume-permissions.sh', self.resume)
+        self.assertIn('bash "$SCRIPT" --governance-commit "$GOVERNANCE_COMMIT"', self.resume)
         self.assertNotIn("hioc_pe3_action4_resume_permissions()", self.resume)
+
+    def test_resume_synchronizes_before_script_availability_and_invocation(self):
+        action = self.resume_block
+        clean = action.index('status --porcelain')
+        fetch = action.index('fetch origin')
+        ancestry = action.index('merge-base --is-ancestor HEAD origin/main')
+        fast_forward = action.index('merge --ff-only origin/main')
+        post = action.index('POST_SYNC_IDENTITY_FAILED')
+        present = action.index('ACTION4_RESUME_SCRIPT_MISSING')
+        commit_blob = action.index('ACTION4_SCRIPT_GIT_IDENTITY_MISMATCH')
+        worktree_blob = action.index('ACTION4_SCRIPT_WORKTREE_IDENTITY_MISMATCH')
+        invoke = action.index('bash "$SCRIPT" --governance-commit')
+        self.assertLess(clean, fetch)
+        self.assertLess(fetch, ancestry)
+        self.assertLess(ancestry, fast_forward)
+        self.assertLess(fast_forward, post)
+        self.assertLess(post, present)
+        self.assertLess(present, commit_blob)
+        self.assertLess(commit_blob, worktree_blob)
+        self.assertLess(worktree_blob, invoke)
+
+    def test_resume_sync_fails_closed_and_preserves_staging(self):
+        action = self.resume_block
+        for code in (
+            "SOURCE_REPOSITORY_DIRTY", "ACTIVE_GIT_OPERATION",
+            "NON_FAST_FORWARD_SOURCE", "FAST_FORWARD_FAILED",
+            "ACTION4_RESUME_SCRIPT_MISSING", "ACTION4_SCRIPT_GIT_IDENTITY_MISMATCH",
+            "ACTION4_SCRIPT_WORKTREE_IDENTITY_MISMATCH",
+        ):
+            self.assertIn(code, action)
+        before_dispatch = action.split('bash "$SCRIPT" --governance-commit', 1)[0]
+        self.assertNotIn("/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS", before_dispatch)
+        self.assertNotIn("chmod", before_dispatch)
+        for forbidden in ("reset", "--force", "stash", "release/upgrade.sh", "Action 5"):
+            self.assertNotIn(forbidden, action)
+
+    def test_resume_prerequisite_preserves_parent_shell(self):
+        shell = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash")
+        if not shell:
+            self.skipTest("Bash is required")
+        result = subprocess.run(
+            [shell, "-c", self.resume_block + "\nprintf 'PARENT_SHELL_ALIVE=TRUE\\n'"],
+            text=True, capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("RESULT=INPUT_OR_PRECONDITION_ERROR", result.stdout)
+        self.assertIn("PARENT_SHELL_ALIVE=TRUE", result.stdout)
+        self.assertNotIn("TARGET_SYNCHRONIZATION=PASS", result.stdout)
+        self.assertNotRegex(action := self.resume_block, r"(?m)^\s*(?:set -e|exit(?:\s|$))")
 
     def test_action3_and_action4_bash_parse(self):
         shell = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash")
