@@ -968,3 +968,24 @@ after PASS. Action 4B is the separately authorized repository-controlled
 permission-normalization and validator resume. No command may auto-chain 4A to
 4B. Final `ACTION4=COMPLETE` is emitted only by 4B after reviewed 4A PASS;
 Action 5 remains the first deployment action.
+
+## Decision: PE-3 Action 5 is a repository-controlled deployment transaction
+
+**Date:** 2026-08-12
+**Status:** Accepted before Action 5 execution
+
+The former Action 5 runbook block was rejected before production use because it
+enabled interactive `set -euo pipefail`, piped deployment through `tee`, relied
+on bare assertions, retained an unresolved governance-commit placeholder, and
+lacked bounded evidence. This is classified as **PE-3 ACTION 5 OPERATOR-SAFETY
+CONTRACT DEFECT — INTERACTIVE ERREXIT / PIPEFAIL AND INCOMPLETE EVIDENCE**, not a
+deployment failure.
+
+Action 5 is now implemented by `tools/hioc-pe3-action5-deploy.sh`. The exact
+approved post-push commit is an operator input and gates source and script
+identity. Release validation must pass before mutation; deployment uses only
+`release/upgrade.sh`; backup, runtime validation, deployed Git-derived artifact
+identity, and unchanged dataset/configuration fingerprints are explicit
+barriers. Pre-mutation failures recommend no rollback. Failures during or after
+runtime mutation recommend rollback when a usable new backup exists; rollback
+is reported, never automatic. Action 6 remains separately authorized.

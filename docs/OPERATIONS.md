@@ -206,6 +206,26 @@ Action 4B requires reviewed Action 4A PASS and separate authorization. Bootstrap
 actions must remain runnable when the target predates the tool they make
 available.
 
+Action 5 is the first production mutation and is implemented only by
+`tools/hioc-pe3-action5-deploy.sh`. The operator passes the exact approved
+post-push governance commit; the script proves target, source, self, and governed
+artifact identity before running release validation. It then invokes only the
+supported `release/upgrade.sh` flow, proves the timestamped backup, validates the
+runtime and deployed artifact identities, and confirms configuration and the
+manufacturer dataset were untouched. Every barrier emits explicit sanitized
+PASS evidence. A bounded failure reports result, code, stage, and whether
+rollback is recommended without terminating the parent terminal or automatically
+running rollback. Action 6 always requires separate review and authorization.
+The governed script identity is SHA-256
+`f0d2395f5ccfbbf773da95e0fbb2ec18786e2aa03296f1085436025ace6d1b09`, Git blob
+`9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c`.
+
+Any production action containing multiple validations and mutations must be a
+repository-controlled operator script unless a smaller inline procedure has
+been explicitly validated for interactive use. Authoritative runbooks contain
+the exact production-validated command: no shorthand, unresolved placeholder,
+or reconstructed equivalent is permitted.
+
 ## Known Dangerous Operator Patterns
 
 Operational instructions must state the exact target machine and shell and must

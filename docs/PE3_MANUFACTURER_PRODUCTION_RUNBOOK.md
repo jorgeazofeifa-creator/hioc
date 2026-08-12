@@ -409,35 +409,36 @@ Target: PI3 runtime through the supported release workflow. Mutation: runtime
 code and timestamped release backup. Rollback relevance: code domain.
 
 ```bash
-set -euo pipefail
-SOURCE=/home/jazofv1/hioc-release-source
-RUNTIME=/home/jazofv1/hioc
-IMPLEMENTATION_COMMIT=157ae644dcedcbec7c69cb0d8b054e104335e024
-OPERATOR_GOVERNANCE_COMMIT='<approved-full-40-hex-post-push-commit>'
-EVIDENCE_DIR="$(mktemp -d /tmp/hioc-pe3-production-validation-XXXXXXXX)"
-chmod 0700 "$EVIDENCE_DIR"
-ARTIFACTS=(pi4/lib/hioc/manufacturer.py pi4/bin/hioc-build-manufacturer-db.py pi4/bin/hioc-validate-manufacturer.py pi4/bin/hioc-generate-manufacturer.py pi4/install_pi4.sh pi4/validate_pi4.sh pi4/config/hioc.conf.example release/upgrade.sh release/rollback.sh)
-python3 "$SOURCE/tools/git_artifact_manifest.py" "$OPERATOR_GOVERNANCE_COMMIT" "${ARTIFACTS[@]}" --repo "$SOURCE" --compare-worktree > "$EVIDENCE_DIR/git-artifacts.json"
-jq -e --arg c "$OPERATOR_GOVERNANCE_COMMIT" '.commit==$c and .generated_from_git_objects and all(.artifacts[];.working_tree_equal==true)' "$EVIDENCE_DIR/git-artifacts.json" >/dev/null
-git -C "$SOURCE" merge-base --is-ancestor "$IMPLEMENTATION_COMMIT" "$OPERATOR_GOVERNANCE_COMMIT"
-bash "$SOURCE/release/validate.sh"
-HIOC_INSTALL_DIR="$RUNTIME" bash "$SOURCE/release/upgrade.sh" | tee "$EVIDENCE_DIR/release-upgrade.sanitized.txt"
-RELEASE_BACKUP="$(cat "$RUNTIME/backups/last-upgrade-backup")"
-[ -d "$RELEASE_BACKUP/current" ]
-printf '%s\n' "$RELEASE_BACKUP" > "$EVIDENCE_DIR/release-backup-path.txt"
-printf 'NONE\n' > "$EVIDENCE_DIR/installer-backup-path.txt"
-bash "$RUNTIME/pi4/validate_pi4.sh"
-for rel in pi4/lib/hioc/manufacturer.py pi4/bin/hioc-build-manufacturer-db.py pi4/bin/hioc-validate-manufacturer.py pi4/bin/hioc-generate-manufacturer.py pi4/install_pi4.sh pi4/validate_pi4.sh pi4/config/hioc.conf.example release/upgrade.sh release/rollback.sh; do
-  expected="$(jq -r --arg p "$rel" '.artifacts[]|select(.path==$p)|.sha256' "$EVIDENCE_DIR/git-artifacts.json")"
-  [ -n "$expected" ] && [ "$(sha256sum "$RUNTIME/$rel" | awk '{print $1}')" = "$expected" ]
-done
-printf 'EVIDENCE_DIR=%s\nRELEASE_BACKUP=%s\nCODE_DEPLOYMENT=PASS\n' "$EVIDENCE_DIR" "$RELEASE_BACKUP"
+bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action5-deploy.sh \
+  --governance-commit '<approved-full-40-hex-action5-commit>'
 ```
 
-The upgrade must report its timestamped backup; installer backup paths, if any,
-are recorded from actual output rather than invented. Dataset state is excluded
-from release replacement. Stop on artifact, release, backup, or PI4 validation
-failure. Run Action 5 only; return sanitized output.
+The checked-in script is the sole executable Action 5 implementation. Before
+mutation it proves target identity, exact source/governance identity, its own
+Git-object/worktree identity, implementation ancestry, source artifact identity,
+and release validation. It then uses only `release/upgrade.sh`, proves the new
+timestamped rollback backup, validates the deployed runtime, verifies the nine
+governed runtime artifacts against Git-derived SHA-256 values, and proves the
+manufacturer dataset and configuration fingerprints are unchanged.
+
+Canonical Action 5 script identity for this correction:
+
+- SHA-256: `f0d2395f5ccfbbf773da95e0fbb2ec18786e2aa03296f1085436025ace6d1b09`
+- Git blob: `9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c`
+
+PASS requires, exactly once, `TARGET_IDENTITY=PASS`, `SOURCE_IDENTITY=PASS`,
+`RELEASE_VALIDATION=PASS`, `RELEASE_BACKUP=PASS`, `CODE_DEPLOYMENT=PASS`,
+`RUNTIME_VALIDATION=PASS`, `RUNTIME_ARTIFACT_IDENTITY=PASS`,
+`EVIDENCE_REPORT=PASS`, `ACTION5=COMPLETE`, `RESULT=PASS`, and
+`ROLLBACK_RECOMMENDED=FALSE`, plus the private `EVIDENCE_DIR` and validated
+`RELEASE_BACKUP_PATH`. Any failure emits bounded `RESULT`, `ERROR_CODE`,
+`FAILURE_STAGE`, and `ROLLBACK_RECOMMENDED` and stops later stages while leaving
+the parent shell alive. Failures before runtime mutation report rollback false;
+a failed upgrade with a newly created backup, an invalid new backup after a
+successful upgrade, or any post-deployment validation/identity failure reports
+rollback true. Rollback is never automatic. Do not authorize Action 6 without
+reviewing all PASS evidence. Dataset installation and configuration activation
+remain later actions.
 
 ## Action 6 — Immutable dataset installation
 

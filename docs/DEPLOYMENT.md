@@ -1,5 +1,11 @@
 # HIOC Deployment
 
+For PE-3 Production Action 5, the authoritative runbook invokes the checked-in
+`tools/hioc-pe3-action5-deploy.sh`; do not reconstruct its deployment logic in
+an interactive shell. The action changes only supported runtime code and release
+backup state, reports bounded sanitized evidence, and stops before dataset or
+configuration actions.
+
 ## Document Ownership
 
 This document owns the repository-to-production workflow, source and runtime boundaries, operator responsibilities, synchronization expectations, and production acceptance boundary. Detailed commands remain in [INSTALL.md](INSTALL.md) and packaging mechanics remain in [RELEASE.md](RELEASE.md).

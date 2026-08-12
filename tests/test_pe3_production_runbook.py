@@ -10,6 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 RUNBOOK = ROOT / "docs" / "PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md"
 MASTER = ROOT / "docs" / "HIOC_MASTER_PLAN.md"
 ACTION4_SCRIPT = ROOT / "tools" / "hioc-pe3-action4-resume-permissions.sh"
+ACTION5_SCRIPT = ROOT / "tools" / "hioc-pe3-action5-deploy.sh"
 
 
 class PE3ProductionRunbookSequencingTests(unittest.TestCase):
@@ -24,6 +25,8 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
         cls.resume_block = cls.resume_blocks[0]
         cls.action4b_block = cls.resume_blocks[1]
         cls.resume_script = ACTION4_SCRIPT.read_text(encoding="utf-8")
+        cls.action5 = cls.runbook.split("## Action 5", 1)[1].split("## Action 6", 1)[0]
+        cls.action5_script = ACTION5_SCRIPT.read_text(encoding="utf-8")
 
     def test_action3_is_staging_only(self):
         self.assertIn("STAGING_VERIFICATION=PASS", self.action3)
@@ -194,6 +197,20 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
         result = subprocess.run(
             [shell, "-n", str(ACTION4_SCRIPT)], text=True, capture_output=True
         )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_action5_is_governed_and_does_not_chain_action6(self):
+        self.assertIn("tools/hioc-pe3-action5-deploy.sh", self.action5)
+        self.assertNotIn("set -euo pipefail", self.action5)
+        self.assertIn("ACTION5=COMPLETE", self.action5_script)
+        self.assertNotIn("ACTION6", self.action5_script)
+        self.assertNotIn("manufacturer-db.json", self.action5_script)
+
+    def test_action5_bash_parses(self):
+        shell = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash")
+        if not shell:
+            self.skipTest("Bash is required")
+        result = subprocess.run([shell, "-n", str(ACTION5_SCRIPT)], text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
 
 

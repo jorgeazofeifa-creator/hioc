@@ -10,6 +10,12 @@ It should not contain roadmap or implementation status. For install and upgrade 
 
 ## Release Execution Context
 
+PE-3 Production Action 5 invokes the supported upgrade flow only through
+`tools/hioc-pe3-action5-deploy.sh`. That governed transaction proves source and
+script identity and release validation before mutation, captures and validates
+the resulting timestamped backup, and verifies deployed runtime artifacts. It
+does not install manufacturer data or activate configuration.
+
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 
 ```text

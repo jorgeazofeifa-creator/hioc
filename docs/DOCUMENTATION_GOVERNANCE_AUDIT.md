@@ -201,6 +201,21 @@ Open work is intentional roadmap scope: PE-3 production deployment, production
 manufacturer generation, PI3 validation, final PE-3 closure, PE-4 through PE-9,
 and the separately preserved future checkpoints above.
 
+Action 5 operator governance was corrected before execution. Its former inline
+strict-mode block could terminate the evidence-bearing shell and had incomplete
+barrier evidence plus an unresolved commit placeholder. The runbook now exposes
+only a short invocation of `tools/hioc-pe3-action5-deploy.sh`; the script owns
+the exact source/self/artifact identity, pre-mutation release validation,
+supported upgrade/backup, runtime validation, unchanged dataset/configuration,
+bounded failure, and rollback-recommendation contracts. Action 6 is absent and
+requires separate authorization.
+
+Correction validation passed 24 focused Action 5/runbook tests, 120 manufacturer
+tests, and the complete 555-test repository regression with 19 documented
+environment-dependent skips. Bash parsing, parent-shell survival, Python
+compilation, Markdown links, status consistency, secret-pattern review,
+`git diff --check`, repository hygiene, and complete-diff review also passed.
+
 ## Validation result
 
 Complete Markdown link validation passed with zero broken links. Roadmap,

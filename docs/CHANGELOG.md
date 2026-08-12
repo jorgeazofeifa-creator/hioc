@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Hardened PE-3 Production Action 5 before its first execution. Replaced the
+  unsafe interactive strict-mode/`tee` block and unresolved governance commit
+  placeholder with `tools/hioc-pe3-action5-deploy.sh`. The governed script
+  verifies target/source/self/artifact identity, performs pre-deployment release
+  validation, uses only the supported upgrade path, proves the new backup,
+  validates runtime identities, preserves dataset/configuration state, emits
+  bounded evidence and rollback guidance, and stops before Action 6.
+  Validation passed 24 focused tests, 120 manufacturer tests, and all 555
+  repository tests with 19 environment-dependent skips.
+
 - Split PE-3 Action 4 into separately authorized 4A synchronization/script
   identity and 4B permission-normalization/validator boundaries. Action 4A now
   emits eight explicit PASS barriers and stops without staging access or script

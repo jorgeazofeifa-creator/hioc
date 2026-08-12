@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-3 COMPLETE; ACTION 4 SYNCHRONIZED / STOPPED SAFELY ON STAGED PERMISSION CONTRACT; ACTION 5 NOT STARTED; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-4 COMPLETE; ACTION 5 NOT STARTED; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1238,13 +1238,10 @@ organization variant enters Git.
 Python compatibility governance is resolved under Model D in
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). Windows
 CPython 3.13.x is supported with validated patch evidence 3.13.15. PE-3 Actions
-1 and 2 are **PASS — COMPLETE**. The validated pair exists only in private PI3
-temporary staging. Action 3 staging checks passed, but repository validation
-stopped on a sequencing precondition because the clean PI3 source checkout did
-not yet contain the implementation commit that Action 4 owned fetching. The
-next operator checkpoint is corrected Action 4 after this correction is pushed.
-Production deployment and PI3 validation have not started; PE-4 through PE-9
-remain not started.
+1 through 4 are **PASS — COMPLETE** and the validated pair remains in private
+PI3 temporary staging. Action 5 is the next operator checkpoint and the first
+production deployment action; it has not been executed. PI3 production
+validation has not started; PE-4 through PE-9 remain not started.
 
 Action 1 pre-execution review identified two operator-input defects without
 executing the action: a hard-coded `python` PATH assumption and ambiguous choice
@@ -1430,6 +1427,17 @@ staging permission normalization and manufacturer validation). Action 4A must
 PASS and stop; Action 4B requires separate authorization. `ACTION4=COMPLETE`
 belongs only to Action 4B after reviewed Action 4A PASS. Action 5 remains the
 first deployment action and is not started.
+
+**PE-3 Action 5 governance correction (2026-08-12):** Actions 1 through 4 are
+complete; Action 5 and Action 6 remain not started. Pre-execution review found
+that the old Action 5 operator block used interactive `set -euo pipefail`, a
+`tee` pipeline, bare assertions, an unresolved commit placeholder, and no
+bounded result/error/stage contract. This is an operator-safety contract defect,
+not a deployment failure. Action 5 is now owned by the repository-controlled
+`tools/hioc-pe3-action5-deploy.sh`, with exact governance/self identity,
+pre-mutation release validation, supported upgrade and backup proof, runtime
+artifact verification, unchanged dataset/configuration evidence, explicit PASS
+barriers, and stage-aware rollback recommendation. It never chains Action 6.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 
