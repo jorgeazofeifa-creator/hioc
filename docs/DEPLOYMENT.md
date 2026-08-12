@@ -21,6 +21,12 @@ the existing deployment without repeating it. Its bootstrap boundary is Action
 mandatory stop. Action 5C-B is prepared only after reviewed Action 5C-A PASS and
 separate authorization.
 
+Action 6 uses a separately bootstrapped repository-controlled installer. Action
+6-A synchronizes and proves `tools/hioc-pe3-action6-install.sh`, then stops.
+Action 6-B alone may create the immutable dataset version through a private
+same-filesystem staging directory and no-replace atomic publication. It does
+not activate configuration, clean transport staging, or invoke Action 7.
+
 ## Document Ownership
 
 This document owns the repository-to-production workflow, source and runtime boundaries, operator responsibilities, synchronization expectations, and production acceptance boundary. Detailed commands remain in [INSTALL.md](INSTALL.md) and packaging mechanics remain in [RELEASE.md](RELEASE.md).

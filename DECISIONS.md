@@ -1038,3 +1038,15 @@ closure. No command may auto-chain them. Every newly introduced repository-
 controlled operator script requires this synchronization/identity boundary when
 the target may predate it, including scripts whose eventual operation is
 read-only.
+
+Action 6 operator-safety amendment: the historical inline immutable-install
+block is rejected as **PE-3 ACTION 6 OPERATOR-SAFETY AND EVIDENCE CONTRACT
+DEFECT — IMMUTABLE DATASET INSTALLATION PROCEDURE NOT PRODUCTION-SAFE**. Action
+6 had not executed, so this is not a production failure. Substantial mutating
+installation logic now belongs to `tools/hioc-pe3-action6-install.sh`. Action
+6-A separately synchronizes the target and proves script identity; reviewed
+PASS and separate authorization are mandatory before Action 6-B. Publication
+uses an invocation-owned hidden same-filesystem directory, complete revalidation
+and fsync, and no-replace atomic rename. Identical existing content is accepted;
+any differing invariant fails closed. Configuration activation remains Action
+7, which cannot be prepared or executed without reviewed full Action 6 PASS.

@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Replaced the unsafe PE-3 Action 6 inline immutable-install block with a
+  separately bootstrapped repository-controlled installer. The corrected
+  contract freezes the exact preserved staging path, full source/staging/
+  configuration barriers, privacy-safe validation, same-filesystem no-replace
+  atomic publication, bounded cleanup/failures, complete PASS evidence, and an
+  explicit Action 7 authorization barrier. No target or dataset action occurred.
+
 - Added the missing PE-3 Action 5C bootstrap contract. Inline Action 5C-A now
   performs only clean target synchronization and exact Action 5C script
   identity before stopping; separately authorized Action 5C-B remains the

@@ -1478,6 +1478,19 @@ read-only closure of the already-deployed runtime. Neither action has been
 executed; Action 5 remains incomplete, rollback is not recommended, and Action
 6 is not started.
 
+**PE-3 Action 6 operator-safety correction (2026-08-12):** Action 5 is complete
+after reviewed Action 5C-B PASS; Action 6 and Action 7 are not started. The old
+Action 6 inline block is classified as **PE-3 ACTION 6 OPERATOR-SAFETY AND
+EVIDENCE CONTRACT DEFECT — IMMUTABLE DATASET INSTALLATION PROCEDURE NOT
+PRODUCTION-SAFE**. It used an unresolved staging placeholder, interactive
+strict mode/exit, bare assertions, and incomplete evidence. The corrected
+architecture splits bootstrap-safe Action 6-A synchronization/script identity
+from separately authorized repository-controlled Action 6-B. Action 6-B
+installs only the validated immutable pair by same-filesystem no-replace atomic
+publication, accepts only an exactly identical existing version, fails closed
+on any conflict, preserves configuration, and cannot chain Action 7. No Action
+6 production mutation occurred.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

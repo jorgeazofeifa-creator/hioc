@@ -245,6 +245,22 @@ Both governed Action 5 scripts parsed successfully; parent-shell survival,
 Python compilation, documentation links/status, stale-contract and secret
 review, `git diff --check`, repository hygiene, and complete-diff review passed.
 
+The Action 6 pre-execution audit found an unresolved staging placeholder,
+interactive strict mode/exit, bare assertions, and no closed failure or PASS
+evidence in the historical inline installer. The corrected contract records the
+exact retained staging path, moves substantial mutation into a separately
+bootstrapped repository script, requires no-replace atomic publication and
+bounded invocation-owned cleanup, preserves configuration, and prohibits Action
+7 without reviewed full Action 6 PASS. No target execution occurred.
+
+Action 6 correction validation passed 28 focused bootstrap/install/runbook
+tests with the bundled shell selected explicitly, all 120 manufacturer tests,
+55 release/deployment/governance tests with 6 environment-dependent skips, and
+the complete 592-test repository regression with 23 documented environment-
+dependent skips. Bash syntax and parent-shell survival, Python compilation,
+documentation links/status, stale-placeholder and secret review,
+`git diff --check`, repository hygiene, and complete-diff review passed.
+
 Protection-correction validation passed 25 focused Action 5 tests, all 120
 manufacturer tests, and the complete 571-test repository regression with 8
 documented environment-dependent skips when Git Bash was selected explicitly.

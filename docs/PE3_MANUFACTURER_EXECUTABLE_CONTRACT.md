@@ -693,6 +693,17 @@ content and leave all existing version directories unchanged. Replacement is
 prohibited. Dataset activation is a later governed configuration/deployment
 change, never part of the builder.
 
+Production Action 6 follows the same immutable-directory publication boundary
+without rerunning the builder. It accepts only the exact preserved transport
+pair, copies it into one invocation-owned hidden directory under the runtime
+manufacturer data root, revalidates identity and privacy-safe database PASS,
+fsyncs both files and relevant directories, and atomically publishes with Linux
+no-replace rename semantics. An exactly identical existing version is an
+idempotent PASS; any differing invariant is an immutable-version conflict and
+must not modify, replace, merge, rename, or delete that version. Failure cleanup
+is confined to the exact hidden directory created by the current invocation.
+Transport staging, installed versions, and configuration remain untouched.
+
 PE-3.1 has exactly two manufacturer-specific locks. The builder alone owns the
 exclusive `/tmp/hioc-manufacturer-build.lock`, which serializes staging,
 immutable publication, collision handling, and builder transaction coordination;

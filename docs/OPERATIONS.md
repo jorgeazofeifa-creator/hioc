@@ -252,6 +252,16 @@ authorization boundaries. This applies equally to read-only closure and
 revalidation scripts: absence of production mutation does not collapse their
 synchronization, identity, review, or authorization boundaries.
 
+PE-3 Action 6 immutable dataset installation is owned exclusively by
+`tools/hioc-pe3-action6-install.sh`. The retired inline block was not
+production-safe: it contained an unresolved staging placeholder, interactive
+strict mode and exit, bare assertions, and incomplete evidence. Action 6-A is a
+separate bootstrap synchronization/script-identity gate and must stop after
+PASS. Action 6-B then verifies the exact preserved staging directory
+`/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS`, validates the pair, publishes only by
+same-filesystem no-replace atomic rename, and proves configuration unchanged.
+It never activates the dataset; Action 7 requires full reviewed Action 6 PASS.
+
 ## Known Dangerous Operator Patterns
 
 Operational instructions must state the exact target machine and shell and must

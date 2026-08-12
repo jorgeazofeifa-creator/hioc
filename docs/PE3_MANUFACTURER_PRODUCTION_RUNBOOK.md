@@ -173,7 +173,7 @@ On PI3, after the operator independently confirms the target terminal:
 ```bash
 set -euo pipefail
 umask 077
-PI3_STAGE="$(mktemp -d /tmp/hioc-pe3-dataset-transfer-XXXXXXXX)"
+PI3_STAGE="$(mktemp -d /tmp/hioc-pe3-dataset-transfer-XXXXXXXXXX)"
 chmod 0700 "$PI3_STAGE"
 chown jazofv1:jazofv1 "$PI3_STAGE"
 printf 'PI3_STAGE=%s\n' "$PI3_STAGE"
@@ -182,7 +182,7 @@ printf 'PI3_STAGE=%s\n' "$PI3_STAGE"
 On Windows, use the exact returned path and the two explicit Action 1 variables:
 
 ```powershell
-$Pi3Stage = '/tmp/hioc-pe3-dataset-transfer-XXXXXXXX' # replace with exact returned value
+$Pi3Stage = '/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS'
 scp -- $Database $Manifest "jazofv1@192.168.100.252:${Pi3Stage}/"
 if ($LASTEXITCODE -ne 0) { throw 'transfer failed' }
 Write-Output 'TRANSFER_RESULT=PASS'
@@ -617,48 +617,102 @@ dataset validation, immutable installation, configuration, final validation,
 generation, and sidecar validation. This guarantees an unvalidated dataset is
 never active and rollback-capable code exists before activation.
 
+The former inline Action 6 block is retired as **PE-3 ACTION 6 OPERATOR-SAFETY
+AND EVIDENCE CONTRACT DEFECT — IMMUTABLE DATASET INSTALLATION PROCEDURE NOT
+PRODUCTION-SAFE**. It contained an unresolved staging placeholder, enabled
+interactive `set -euo pipefail`, used `exit 0`, relied on bare assertions, and
+lacked bounded failure and complete PASS evidence. Action 6 was not executed;
+this is a governance/runbook defect, not a production failure.
+
+The exact preserved transport staging path is
+`/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS`. Action 6 is now split into two
+separately authorized boundaries because PI3 may predate the new governed
+installer.
+
+### Action 6-A — target synchronization and Action 6 script identity
+
+Action 6-A is bootstrap-safe and inline. It owns only clean fast-forward
+synchronization to the approved governance commit and exact Action 6 script
+Git/worktree identity, then stops. It never references transport staging or the
+runtime and never invokes Action 6-B or Action 7.
+
 ```bash
-set -euo pipefail
-umask 077
-RUNTIME=/home/jazofv1/hioc
-PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-XXXXXXXX'
-DATA_ROOT="$RUNTIME/data/manufacturer"
-VERSIONS="$DATA_ROOT/versions"
-FINAL_DIR="$VERSIONS/local-ieee-ra--2026-08-11-r1"
-FINAL_DB="$FINAL_DIR/manufacturer-db.json"
-FINAL_MF="$FINAL_DIR/manufacturer-db.manifest.json"
-install -d -o jazofv1 -g jazofv1 -m 0700 "$DATA_ROOT" "$VERSIONS"
-if [ -e "$FINAL_DIR" ]; then
-  [ -d "$FINAL_DIR" ] && [ ! -L "$FINAL_DIR" ]
-  [ "$(sha256sum "$FINAL_DB" | awk '{print $1}')" = 81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1 ]
-  [ "$(sha256sum "$FINAL_MF" | awk '{print $1}')" = 10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4 ]
-  HIOC_HOME="$RUNTIME" python3 "$RUNTIME/pi4/bin/hioc-validate-manufacturer.py" database --database "$FINAL_DB" --manifest "$FINAL_MF" --json
-  printf 'DATASET_INSTALL=PASS_ALREADY_IDENTICAL\n'
-  exit 0
-fi
-INSTALL_STAGE="$(mktemp -d "$DATA_ROOT/.staging-XXXXXXXX")"
-trap 'test -z "${INSTALL_STAGE:-}" || test ! -d "$INSTALL_STAGE" || rm -r -- "$INSTALL_STAGE"' EXIT
-chmod 0700 "$INSTALL_STAGE" && chown jazofv1:jazofv1 "$INSTALL_STAGE"
-install -o jazofv1 -g jazofv1 -m 0600 "$PI3_STAGE/manufacturer-db.json" "$INSTALL_STAGE/manufacturer-db.json"
-install -o jazofv1 -g jazofv1 -m 0600 "$PI3_STAGE/manufacturer-db.manifest.json" "$INSTALL_STAGE/manufacturer-db.manifest.json"
-[ "$(find "$INSTALL_STAGE" -mindepth 1 -maxdepth 1 -printf '%f\n' | sort | paste -sd, -)" = 'manufacturer-db.json,manufacturer-db.manifest.json' ]
-[ "$(sha256sum "$INSTALL_STAGE/manufacturer-db.json" | awk '{print $1}')" = 81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1 ]
-[ "$(sha256sum "$INSTALL_STAGE/manufacturer-db.manifest.json" | awk '{print $1}')" = 10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4 ]
-HIOC_HOME="$RUNTIME" python3 "$RUNTIME/pi4/bin/hioc-validate-manufacturer.py" database --database "$INSTALL_STAGE/manufacturer-db.json" --manifest "$INSTALL_STAGE/manufacturer-db.manifest.json" --json
-sync -f "$INSTALL_STAGE/manufacturer-db.json"; sync -f "$INSTALL_STAGE/manufacturer-db.manifest.json"; sync -f "$INSTALL_STAGE"; sync -f "$DATA_ROOT"
-mv -- "$INSTALL_STAGE" "$FINAL_DIR"
-INSTALL_STAGE=''
-sync -f "$VERSIONS"
-[ "$(stat -c %a "$FINAL_DIR")" = 700 ] && [ "$(stat -c %U:%G "$FINAL_DIR")" = jazofv1:jazofv1 ]
-for p in "$FINAL_DB" "$FINAL_MF"; do [ -f "$p" ] && [ ! -L "$p" ] && [ "$(stat -c %a "$p")" = 600 ] && [ "$(stat -c %U:%G "$p")" = jazofv1:jazofv1 ]; done
-! find "$FINAL_DIR" -type f -iname '*.csv' | grep -q .
-printf 'DATASET_INSTALL=PASS_NEW_IMMUTABLE_VERSION\n'
+set +x
+hioc_pe3_action6_a_sync() {
+  SOURCE=/home/jazofv1/hioc-release-source
+  SCRIPT_REL=tools/hioc-pe3-action6-install.sh
+  SCRIPT="$SOURCE/$SCRIPT_REL"
+  GOVERNANCE_COMMIT='<approved-full-40-hex-action6-bootstrap-commit>'
+  SCRIPT_BLOB=c8bd1e00a9113a67bf12c96b1e402f8380c7ede9
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  printf 'TARGET_IDENTITY=PASS\n'
+  [ -d "$SOURCE/.git" ] || { fail SOURCE_REPOSITORY_MISSING TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] || { fail WRONG_BRANCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }; done
+  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_PRECONDITION=PASS\n'
+  git -C "$SOURCE" fetch origin >/dev/null 2>&1 || { fail GIT_FETCH_FAILED TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail GOVERNANCE_COMMIT_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge-base --is-ancestor HEAD origin/main >/dev/null 2>&1 || { fail NON_FAST_FORWARD_SOURCE TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge --ff-only origin/main >/dev/null 2>&1 || { fail FAST_FORWARD_FAILED TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_SYNCHRONIZATION=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail POST_SYNC_HEAD_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  printf 'SYNCHRONIZED_HEAD_IDENTITY=PASS\n'
+  [ -e "$SCRIPT" ] || { fail ACTION6_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  [ -f "$SCRIPT" ] && [ ! -L "$SCRIPT" ] || { fail ACTION6_SCRIPT_NOT_REGULAR SCRIPT_AVAILABILITY; return; }
+  printf 'ACTION6_SCRIPT_AVAILABILITY=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL" 2>/dev/null)" = "$SCRIPT_BLOB" ] || { fail ACTION6_SCRIPT_GIT_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  [ "$(git -C "$SOURCE" hash-object --path="$SCRIPT_REL" "$SCRIPT" 2>/dev/null)" = "$SCRIPT_BLOB" ] && git -C "$SOURCE" diff --quiet -- "$SCRIPT_REL" || { fail ACTION6_SCRIPT_WORKTREE_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  printf 'ACTION6_SCRIPT_IDENTITY=PASS\nACTION6_A=COMPLETE\nRESULT=PASS\n'
+}
+hioc_pe3_action6_a_sync
 ```
 
-`/tmp` is not assumed to share a filesystem with `/home`; explicit files are
-copied into a same-filesystem hidden staging directory and atomically renamed.
-An identical existing final directory is accepted without replacement; any
-difference stops. Run Action 6 only; return output.
+Action 6-A must stop after its eight exact PASS lines. Any failure emits bounded
+`RESULT`, `ERROR_CODE`, and `FAILURE_STAGE`, returns control to the parent shell,
+and leaves Action 6 not started. Action 6-B requires reviewed Action 6-A PASS
+and separate authorization; no command may auto-chain them.
+
+### Action 6-B — governed immutable dataset installation
+
+The sole implementation is
+`tools/hioc-pe3-action6-install.sh` (SHA-256
+`ceb5e2e6f116b3726d4ea73886a4fe035a29931955408e5938f14bf642407895`,
+Git blob `c8bd1e00a9113a67bf12c96b1e402f8380c7ede9`). After reviewed Action 6-A
+PASS and separate authorization, the operator uses only:
+
+```bash
+bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action6-install.sh \
+  --governance-commit '<approved-full-40-hex-action6-bootstrap-commit>'
+```
+
+Before mutation the script proves target, source, script, validator, runtime,
+configuration, and exact transport-staging identity, including exact two-file
+contents, owner/mode, byte sizes, hashes, absence of CSV, and privacy-safe
+validator result `PASS` with 53,581 records. It creates only a unique hidden
+`.action6-install-*` directory under the runtime manufacturer data root, copies
+the two files at `0600`, revalidates them, fsyncs both files and relevant
+directories, and uses Linux `renameat2(..., RENAME_NOREPLACE)` for atomic
+publication. A
+byte-for-byte and invariant-identical existing final version is accepted
+without replacement; any difference is `IMMUTABLE_VERSION_CONFLICT` and leaves
+it untouched. Cleanup is limited to the exact invocation-owned hidden staging
+directory; transport staging and installed versions are never removed.
+
+New-install PASS requires, in order, `TARGET_IDENTITY=PASS`,
+`SOURCE_IDENTITY=PASS`, `STAGING_IDENTITY=PASS`, `STAGING_VALIDATION=PASS`,
+`IMMUTABLE_INSTALLATION=PASS_NEW`, `FINAL_DATASET_IDENTITY=PASS`,
+`FINAL_DATASET_VALIDATION=PASS`, `CONFIGURATION_UNTOUCHED=PASS`,
+`ACTION6=COMPLETE`, and `RESULT=PASS`. Idempotent PASS substitutes only
+`IMMUTABLE_INSTALLATION=PASS_ALREADY_IDENTICAL`. Any failure emits bounded
+`RESULT`, `ERROR_CODE`, `FAILURE_STAGE`, and `ROLLBACK_RECOMMENDED=FALSE`,
+returns control to the parent prompt, leaves Action 6 incomplete, and keeps
+Action 7 unauthorized. Action 6 never changes `MANUFACTURER_DB_PATH`, generates
+sidecars/status, cleans transport staging, or invokes Action 7.
 
 ## Action 7 — Configuration activation
 
@@ -836,7 +890,7 @@ files and their exact staging directory. Rollback relevance: none.
 
 ```bash
 set -euo pipefail
-PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-XXXXXXXX'
+PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS'
 EVIDENCE_DIR='/tmp/hioc-pe3-production-validation-XXXXXXXX'
 [ "$PI3_STAGE" != /tmp ] && [[ "$PI3_STAGE" == /tmp/hioc-pe3-dataset-transfer-* ]]
 [ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ]

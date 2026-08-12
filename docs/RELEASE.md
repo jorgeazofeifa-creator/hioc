@@ -31,6 +31,12 @@ checkout and proves the script's Git/worktree identity, then stops. The
 repository-controlled Action 5C-B remains a separate authorization and never
 invokes upgrade or creates another release backup.
 
+PE-3 Action 6 is not a release deployment and creates no release backup. Its
+repository-controlled installer verifies exact source/self/validator/runtime
+identity, then publishes only the frozen manufacturer database/manifest pair as
+one immutable version. Action 6-A bootstrap and Action 6-B installation are
+separate authorizations. Configuration activation remains Action 7.
+
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 
 ```text
