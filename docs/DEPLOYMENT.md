@@ -5,6 +5,10 @@ For PE-3 Production Action 5, the authoritative runbook invokes the checked-in
 an interactive shell. The action changes only supported runtime code and release
 backup state, reports bounded sanitized evidence, and stops before dataset or
 configuration actions.
+Before that invocation, separately authorized Action 5A must synchronize the
+clean PI3 release-source checkout to the exact approved commit and prove the
+script's Git/worktree identity. Action 5A stops without deployment; Action 5B
+owns the supported upgrade.
 
 ## Document Ownership
 
@@ -34,6 +38,8 @@ Codex operates only in the Windows repository. The operator performs PI3 synchro
 3. Commit related code and documentation together.
 4. Push `main` and verify a clean Windows working tree.
 5. Operator verifies a clean, non-divergent PI3 release-source checkout and fast-forwards it to `origin/main`.
+   When a governed production script may be absent or older on the target, this
+   synchronization and script-identity proof is a separate authorization gate.
 6. Operator runs `release/validate.sh` and the supported `release/upgrade.sh` when runtime files changed.
 7. Operator runs `/home/jazofv1/hioc/pi4/validate_pi4.sh` and any checkpoint-specific validation.
 8. Operator captures production evidence and commits required closeout documentation.

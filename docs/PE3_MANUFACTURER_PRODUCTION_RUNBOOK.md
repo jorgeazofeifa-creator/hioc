@@ -405,15 +405,73 @@ authorized Action 4B PASS. Action 4B must stop before Action 5.
 
 ## Action 5 — Supported code deployment and artifact identity
 
+### Action 5A — target repository synchronization and Action 5 script identity
+
+PI3 release source was last governed at
+`3ae13bf35db7cf133540a50d481a8de2e26b222d`, before the Action 5 deployment
+script existed. Action 5A is therefore a separate bootstrap-safe,
+non-deployment trust boundary. It synchronizes only a clean, fast-forwardable
+`main` checkout to the exact approved commit, proves the Action 5 script's Git
+and worktree identity, emits sanitized evidence, and stops. It never references
+staging, creates backup state, validates or changes runtime, invokes Action 5B,
+or prepares Action 6.
+
+Target: **PI3 NUT&PIHOLE**, interactive Bash. Replace the placeholder only with
+the approved full 40-hex commit containing this prerequisite and the Action 5
+script.
+
+```bash
+set +x
+hioc_pe3_action5a_sync() {
+  SOURCE=/home/jazofv1/hioc-release-source
+  SCRIPT_REL=tools/hioc-pe3-action5-deploy.sh
+  SCRIPT="$SOURCE/$SCRIPT_REL"
+  GOVERNANCE_COMMIT='<approved-full-40-hex-action5-bootstrap-commit>'
+  SCRIPT_BLOB=9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  printf 'TARGET_IDENTITY=PASS\n'
+  [ -d "$SOURCE/.git" ] || { fail SOURCE_REPOSITORY_MISSING TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] || { fail WRONG_BRANCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }; done
+  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_PRECONDITION=PASS\n'
+  git -C "$SOURCE" fetch origin >/dev/null 2>&1 || { fail GIT_FETCH_FAILED TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail GOVERNANCE_COMMIT_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge-base --is-ancestor HEAD origin/main >/dev/null 2>&1 || { fail NON_FAST_FORWARD_SOURCE TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge --ff-only origin/main >/dev/null 2>&1 || { fail FAST_FORWARD_FAILED TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_SYNCHRONIZATION=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail POST_SYNC_HEAD_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  printf 'SYNCHRONIZED_HEAD_IDENTITY=PASS\n'
+  [ -e "$SCRIPT" ] || { fail ACTION5_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  [ -f "$SCRIPT" ] && [ ! -L "$SCRIPT" ] || { fail ACTION5_SCRIPT_NOT_REGULAR SCRIPT_AVAILABILITY; return; }
+  printf 'ACTION5_SCRIPT_AVAILABILITY=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL" 2>/dev/null)" = "$SCRIPT_BLOB" ] || { fail ACTION5_SCRIPT_GIT_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  [ "$(git -C "$SOURCE" hash-object --path="$SCRIPT_REL" "$SCRIPT" 2>/dev/null)" = "$SCRIPT_BLOB" ] && git -C "$SOURCE" diff --quiet -- "$SCRIPT_REL" || { fail ACTION5_SCRIPT_WORKTREE_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  printf 'ACTION5_SCRIPT_IDENTITY=PASS\nACTION5A=COMPLETE\nRESULT=PASS\n'
+}
+hioc_pe3_action5a_sync
+```
+
+Action 5A must stop after its eight exact PASS lines. Any failure emits exact
+`RESULT`, `ERROR_CODE`, and `FAILURE_STAGE`, suppresses later checks, and returns
+control to the parent shell. Action 5A PASS must be reviewed and separately
+authorized before Action 5B. No procedure may auto-chain them.
+
+### Action 5B — supported code deployment
+
 Target: PI3 runtime through the supported release workflow. Mutation: runtime
 code and timestamped release backup. Rollback relevance: code domain.
 
 ```bash
 bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action5-deploy.sh \
-  --governance-commit '<approved-full-40-hex-action5-commit>'
+  --governance-commit '<approved-full-40-hex-action5-bootstrap-commit>'
 ```
 
-The checked-in script is the sole executable Action 5 implementation. Before
+The checked-in script is the sole executable Action 5B implementation. Before
 mutation it proves target identity, exact source/governance identity, its own
 Git-object/worktree identity, implementation ancestry, source artifact identity,
 and release validation. It then uses only `release/upgrade.sh`, proves the new

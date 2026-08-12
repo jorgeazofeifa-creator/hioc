@@ -15,6 +15,9 @@ PE-3 Production Action 5 invokes the supported upgrade flow only through
 script identity and release validation before mutation, captures and validates
 the resulting timestamped backup, and verifies deployed runtime artifacts. It
 does not install manufacturer data or activate configuration.
+The invocation is Action 5B and is forbidden until the separate bootstrap-safe
+Action 5A has synchronized the target source and proven the script's exact Git
+and worktree identity.
 
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 

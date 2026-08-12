@@ -210,6 +210,20 @@ supported upgrade/backup, runtime validation, unchanged dataset/configuration,
 bounded failure, and rollback-recommendation contracts. Action 6 is absent and
 requires separate authorization.
 
+The subsequent bootstrap audit found PI3 could still be synchronized to the
+prior Action 4 commit, before the Action 5 script existed. Action 5A now
+explicitly owns only clean exact fast-forward synchronization and deployment-
+script availability/Git/worktree identity proof, then stops. Action 5B remains
+separately authorized and is the first deployment mutation. Neither action has
+been executed.
+
+Bootstrap correction validation passed 29 focused Action 5A/5B and runbook
+tests, 17 release/governance tests with 3 environment-dependent skips, all 120
+manufacturer tests, and the complete 560-test repository regression with 20
+documented environment-dependent skips. Bash parsing, parent-shell survival,
+documentation links, status consistency, placeholder and secret review,
+`git diff --check`, repository hygiene, and complete-diff review passed.
+
 Correction validation passed 24 focused Action 5/runbook tests, 120 manufacturer
 tests, and the complete 555-test repository regression with 19 documented
 environment-dependent skips. Bash parsing, parent-shell survival, Python

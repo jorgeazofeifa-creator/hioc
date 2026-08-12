@@ -1439,6 +1439,15 @@ pre-mutation release validation, supported upgrade and backup proof, runtime
 artifact verification, unchanged dataset/configuration evidence, explicit PASS
 barriers, and stage-aware rollback recommendation. It never chains Action 6.
 
+**PE-3 Action 5 bootstrap correction (2026-08-12):** PI3 was last proven at the
+prior Action 4 governance commit, which predates the Action 5 deployment script.
+This is **PE-3 ACTION 5 BOOTSTRAP PREREQUISITE DEFECT — TARGET RELEASE-SOURCE
+MAY PREDATE DEPLOYMENT SCRIPT**, not a deployment, staging, manufacturer, or
+operator failure. Action 5A now owns only bootstrap-safe target synchronization
+and exact deployment-script identity, then stops. Separately authorized Action
+5B remains the first production deployment mutation. Neither has been executed;
+Action 6 remains not started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

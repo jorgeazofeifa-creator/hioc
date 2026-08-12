@@ -989,3 +989,20 @@ identity, and unchanged dataset/configuration fingerprints are explicit
 barriers. Pre-mutation failures recommend no rollback. Failures during or after
 runtime mutation recommend rollback when a usable new backup exists; rollback
 is reported, never automatic. Action 6 remains separately authorized.
+
+## Decision: PE-3 Action 5 synchronization and execution are separate gates
+
+**Date:** 2026-08-12
+**Status:** Accepted before Action 5 execution
+
+PI3 was last governed at the Action 4 commit, before the Action 5 deployment
+script existed. Invoking that unavailable script would repeat the previously
+observed bootstrap defect. This is classified as **PE-3 ACTION 5 BOOTSTRAP
+PREREQUISITE DEFECT — TARGET RELEASE-SOURCE MAY PREDATE DEPLOYMENT SCRIPT**.
+
+Action 5A is an inline, bootstrap-safe, non-deployment procedure that proves the
+PI3 target, clean fast-forward ancestry, exact approved synchronized commit, and
+the Action 5 script's regular/non-symlink Git and worktree identity. It then
+stops. Action 5B requires reviewed Action 5A PASS and separate authorization;
+only Action 5B may deploy or emit `ACTION5=COMPLETE`. This pattern is mandatory
+whenever a target may predate a repository-controlled production script.

@@ -220,11 +220,23 @@ The governed script identity is SHA-256
 `f0d2395f5ccfbbf773da95e0fbb2ec18786e2aa03296f1085436025ace6d1b09`, Git blob
 `9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c`.
 
+Because PI3 may predate the commit introducing or modifying that script, Action
+5 is split into two separately authorized trust boundaries. Bootstrap-safe
+Action 5A performs only target identity, clean exact fast-forward, synchronized
+HEAD, and Action 5 script Git/worktree identity proof, then stops. Only after
+reviewed Action 5A PASS may Action 5B invoke the governed deployment script.
+Action 5B remains the first production mutation and alone may emit
+`ACTION5=COMPLETE`.
+
 Any production action containing multiple validations and mutations must be a
 repository-controlled operator script unless a smaller inline procedure has
 been explicitly validated for interactive use. Authoritative runbooks contain
 the exact production-validated command: no shorthand, unresolved placeholder,
 or reconstructed equivalent is permitted.
+Every repository-controlled production operator script requires a target-side
+bootstrap prerequisite whenever the target may predate the commit that added or
+changed it. Synchronization proof and script execution are always separate
+authorization boundaries.
 
 ## Known Dangerous Operator Patterns
 

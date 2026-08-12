@@ -18,14 +18,89 @@ class PE3Action5DeploymentContractTests(unittest.TestCase):
         cls.script = SCRIPT.read_text(encoding="utf-8")
         cls.runbook = RUNBOOK.read_text(encoding="utf-8")
         cls.action5 = cls.runbook.split("## Action 5", 1)[1].split("## Action 6", 1)[0]
+        cls.action5a = cls.action5.split("### Action 5A", 1)[1].split("### Action 5B", 1)[0]
+        cls.action5a_block = re.search(r"```bash\n(.*?)```", cls.action5a, re.DOTALL).group(1)
+        cls.action5b = cls.action5.split("### Action 5B", 1)[1]
 
     def test_repository_script_is_the_only_runbook_implementation(self):
-        blocks = re.findall(r"```bash\n(.*?)```", self.action5, re.DOTALL)
+        blocks = re.findall(r"```bash\n(.*?)```", self.action5b, re.DOTALL)
         self.assertEqual(len(blocks), 1)
         self.assertIn("tools/hioc-pe3-action5-deploy.sh", blocks[0])
         self.assertIn("--governance-commit", blocks[0])
         self.assertNotIn("release/upgrade.sh", blocks[0])
         self.assertNotIn("set -e", blocks[0])
+
+    def test_action5a_is_bootstrap_safe_and_stops_before_deployment(self):
+        action = self.action5a_block
+        self.assertIn("hioc_pe3_action5a_sync()", action)
+        self.assertIn("fetch origin", action)
+        self.assertIn("merge --ff-only origin/main", action)
+        self.assertIn("tools/hioc-pe3-action5-deploy.sh", action)
+        self.assertNotIn('bash "$SCRIPT"', action)
+        for forbidden in (
+            "release/upgrade.sh", "release/validate.sh", "backups", "HIOC_INSTALL_DIR",
+            "/tmp/hioc-pe3-dataset-transfer", "manufacturer-db.json", "ACTION6",
+        ):
+            self.assertNotIn(forbidden, action)
+
+    def test_action5a_order_and_exact_identity(self):
+        action = self.action5a_block
+        clean = action.index("status --porcelain")
+        fetch = action.index("fetch origin")
+        ancestry = action.index("merge-base --is-ancestor HEAD origin/main")
+        merge = action.index("merge --ff-only origin/main")
+        head = action.index("POST_SYNC_HEAD_MISMATCH")
+        available = action.index("ACTION5_SCRIPT_MISSING")
+        git_blob = action.index("ACTION5_SCRIPT_GIT_IDENTITY_MISMATCH")
+        worktree = action.index("ACTION5_SCRIPT_WORKTREE_IDENTITY_MISMATCH")
+        self.assertLess(clean, fetch)
+        self.assertLess(fetch, ancestry)
+        self.assertLess(ancestry, merge)
+        self.assertLess(merge, head)
+        self.assertLess(head, available)
+        self.assertLess(available, git_blob)
+        self.assertLess(git_blob, worktree)
+        self.assertIn("9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c", action)
+
+    def test_action5a_failure_contract_is_complete(self):
+        for code in (
+            "WRONG_TARGET", "SOURCE_REPOSITORY_MISSING", "WRONG_BRANCH",
+            "SOURCE_REPOSITORY_DIRTY", "ACTIVE_GIT_OPERATION", "GIT_FETCH_FAILED",
+            "GOVERNANCE_COMMIT_MISMATCH", "NON_FAST_FORWARD_SOURCE",
+            "FAST_FORWARD_FAILED", "POST_SYNC_HEAD_MISMATCH",
+            "POST_SYNC_REPOSITORY_DIRTY", "ACTION5_SCRIPT_MISSING",
+            "ACTION5_SCRIPT_NOT_REGULAR",
+            "ACTION5_SCRIPT_GIT_IDENTITY_MISMATCH",
+            "ACTION5_SCRIPT_WORKTREE_IDENTITY_MISMATCH",
+        ):
+            self.assertIn(code, self.action5a_block)
+        for stage in ("TARGET_SYNCHRONIZATION", "SCRIPT_AVAILABILITY", "SCRIPT_IDENTITY"):
+            self.assertIn(stage, self.action5a_block)
+
+    def test_action5a_pass_contract_and_authorization_barrier(self):
+        for marker in (
+            "TARGET_IDENTITY=PASS", "REPOSITORY_PRECONDITION=PASS",
+            "REPOSITORY_SYNCHRONIZATION=PASS", "SYNCHRONIZED_HEAD_IDENTITY=PASS",
+            "ACTION5_SCRIPT_AVAILABILITY=PASS", "ACTION5_SCRIPT_IDENTITY=PASS",
+            "ACTION5A=COMPLETE", "RESULT=PASS",
+        ):
+            self.assertEqual(self.action5a_block.count(marker), 1)
+        self.assertIn("separately\nauthorized before Action 5B", self.action5a)
+        self.assertNotIn("ACTION5=COMPLETE", self.action5a_block)
+
+    def test_action5a_parent_shell_survives_failure(self):
+        shell = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash")
+        if not shell:
+            self.skipTest("Bash is required")
+        result = subprocess.run(
+            [shell, "-c", self.action5a_block + "\nprintf 'PARENT_SHELL_ALIVE=TRUE\\n'"],
+            text=True, capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("RESULT=INPUT_OR_PRECONDITION_ERROR", result.stdout)
+        self.assertIn("PARENT_SHELL_ALIVE=TRUE", result.stdout)
+        self.assertNotIn("REPOSITORY_SYNCHRONIZATION=PASS", result.stdout)
+        self.assertNotRegex(self.action5a_block, r"(?m)^\s*(?:set -e|exit(?:\s|$))")
 
     def test_documented_script_identities_match(self):
         sha256 = hashlib.sha256(SCRIPT.read_bytes()).hexdigest()

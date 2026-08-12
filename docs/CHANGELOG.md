@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Added an explicit PE-3 Action 5A bootstrap gate because PI3 may remain at the
+  prior Action 4 commit that predates the Action 5 deployment script. Action 5A
+  performs only a clean exact fast-forward and proves the deployment script's
+  availability and Git/worktree identity before stopping. Action 5B requires
+  separate authorization and remains the first production mutation.
+  Validation passed 29 focused tests, 17 release/governance tests, 120
+  manufacturer tests, and all 560 repository tests.
+
 - Hardened PE-3 Production Action 5 before its first execution. Replaced the
   unsafe interactive strict-mode/`tee` block and unresolved governance commit
   placeholder with `tools/hioc-pe3-action5-deploy.sh`. The governed script
