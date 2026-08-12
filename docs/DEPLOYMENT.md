@@ -16,7 +16,10 @@ payload, sidecar/status, symlink, unexpected-entry, and configuration changes
 are prohibited. The initial Action 5B deployment passed runtime validation but
 hit the former scaffolding false positive. It remains deployed; rollback is not
 recommended. A separately bootstrapped read-only Action 5C validates and closes
-the existing deployment without repeating it.
+the existing deployment without repeating it. Its bootstrap boundary is Action
+5C-A: clean exact target synchronization plus Action 5C script identity, then a
+mandatory stop. Action 5C-B is prepared only after reviewed Action 5C-A PASS and
+separate authorization.
 
 ## Document Ownership
 

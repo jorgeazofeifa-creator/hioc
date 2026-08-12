@@ -20,7 +20,7 @@ class PE3Action5DeploymentContractTests(unittest.TestCase):
         cls.action5 = cls.runbook.split("## Action 5", 1)[1].split("## Action 6", 1)[0]
         cls.action5a = cls.action5.split("### Action 5A", 1)[1].split("### Action 5B", 1)[0]
         cls.action5a_block = re.search(r"```bash\n(.*?)```", cls.action5a, re.DOTALL).group(1)
-        cls.action5b = cls.action5.split("### Action 5B", 1)[1]
+        cls.action5b = cls.action5.split("### Action 5B", 1)[1].split("### Action 5C", 1)[0]
 
     def test_repository_script_is_the_only_runbook_implementation(self):
         blocks = re.findall(r"```bash\n(.*?)```", self.action5b, re.DOTALL)

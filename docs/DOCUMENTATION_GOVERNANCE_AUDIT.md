@@ -227,6 +227,24 @@ separately bootstrapped read-only Action 5C closure. Historical pre-execution
 statements above remain chronology and are not rewritten to imply the corrected
 contract existed earlier.
 
+The subsequent Action 5C bootstrap audit found that the target may predate the
+new revalidation script while the runbook required, but did not define, its
+synchronization and identity gate. The correction freezes inline Action 5C-A as
+clean exact fast-forward synchronization plus Action 5C script Git/worktree
+identity, followed by a mandatory stop. Action 5C-B remains a separate,
+read-only authorization. This is a governance/runbook deficiency, not a
+production failure; no target action or Action 6 preparation occurred.
+
+Action 5C bootstrap validation passed 22 focused bootstrap/deployment tests
+with the bundled shell selected explicitly, 33 focused Action 5C/protection/
+deployment tests with 3 environment-dependent Bash skips under the default
+Windows environment, all 120 manufacturer tests, 37 production-runbook/
+release/governance tests with 6 environment-dependent skips, and the complete
+579-test repository regression with 21 documented environment-dependent skips.
+Both governed Action 5 scripts parsed successfully; parent-shell survival,
+Python compilation, documentation links/status, stale-contract and secret
+review, `git diff --check`, repository hygiene, and complete-diff review passed.
+
 Protection-correction validation passed 25 focused Action 5 tests, all 120
 manufacturer tests, and the complete 571-test repository regression with 8
 documented environment-dependent skips when Git Bash was selected explicitly.

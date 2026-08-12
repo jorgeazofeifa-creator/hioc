@@ -235,7 +235,10 @@ sidecar/status, symlink, unexpected-entry, payload identity, or configuration
 change remains a failure. The first Action 5B run exposed the former recursive-
 fingerprint false positive after deployment/runtime validation passed; rollback
 is not recommended. Closure uses the separately bootstrapped, read-only
-`tools/hioc-pe3-action5c-revalidate.sh`, not a repeat deployment.
+`tools/hioc-pe3-action5c-revalidate.sh`, not a repeat deployment. Action 5C-A
+is the inline target synchronization and exact script-identity gate; it stops
+after PASS. Action 5C-B is the separately authorized read-only closure and may
+not be prepared or invoked until that PASS is reviewed.
 
 Any production action containing multiple validations and mutations must be a
 repository-controlled operator script unless a smaller inline procedure has
@@ -245,7 +248,9 @@ or reconstructed equivalent is permitted.
 Every repository-controlled production operator script requires a target-side
 bootstrap prerequisite whenever the target may predate the commit that added or
 changed it. Synchronization proof and script execution are always separate
-authorization boundaries.
+authorization boundaries. This applies equally to read-only closure and
+revalidation scripts: absence of production mutation does not collapse their
+synchronization, identity, review, or authorization boundaries.
 
 ## Known Dangerous Operator Patterns
 

@@ -1027,3 +1027,14 @@ database, manifest, sidecar, status, symlink, unexpected entry, payload identity
 or configuration change. A separately bootstrapped, read-only Action 5C closes
 the deployed runtime; deployment is not repeated and Action 6 remains a
 separate authorization.
+
+Action 5C bootstrap amendment: the new revalidation script may not yet exist on
+the target. This is classified as **PE-3 ACTION 5C BOOTSTRAP CONTRACT MISSING —
+TARGET MAY PREDATE REVALIDATION SCRIPT**, a governance/runbook deficiency and
+not a production failure. Action 5C-A is the inline, bootstrap-safe target
+synchronization and exact script Git/worktree identity gate and must stop after
+PASS. Action 5C-B is the separately authorized read-only revalidation and
+closure. No command may auto-chain them. Every newly introduced repository-
+controlled operator script requires this synchronization/identity boundary when
+the target may predate it, including scripts whose eventual operation is
+read-only.

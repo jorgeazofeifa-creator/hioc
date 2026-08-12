@@ -25,7 +25,11 @@ versions, database/manifest bytes, sidecar/status artifacts, unexpected entries,
 symlinks, and configuration remain protected. Release backup intentionally
 excludes persistent manufacturer data, so rollback does not correct a
 scaffolding-only observation. The read-only Action 5C closes the deployed
-runtime after exact semantic revalidation.
+runtime after exact semantic revalidation. Because the target may predate that
+new script, inline Action 5C-A first synchronizes the clean release-source
+checkout and proves the script's Git/worktree identity, then stops. The
+repository-controlled Action 5C-B remains a separate authorization and never
+invokes upgrade or creates another release backup.
 
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 

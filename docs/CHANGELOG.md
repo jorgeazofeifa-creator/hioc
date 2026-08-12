@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Added the missing PE-3 Action 5C bootstrap contract. Inline Action 5C-A now
+  performs only clean target synchronization and exact Action 5C script
+  identity before stopping; separately authorized Action 5C-B remains the
+  read-only closure. No target access, synchronization, revalidation,
+  deployment, rollback, manufacturer mutation, or Action 6 work occurred.
+
 - Corrected PE-3 Action 5 manufacturer protection after the first Action 5B
   deployment passed code/runtime validation but a raw recursive fingerprint
   misclassified release-managed empty `0700` scaffolding as dataset mutation.

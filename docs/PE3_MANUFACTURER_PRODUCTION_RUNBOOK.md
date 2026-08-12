@@ -528,10 +528,77 @@ Canonical Action 5C script identity:
 - SHA-256: `f58346ac943c56e74fd5235fae7f02a1519337cb3eca1be90ca1d6312093e55a`
 - Git blob: `da47aa4a3d0346432332fc42f4111a956fd8e1bd`
 
-Because this script is new, a separately authorized bootstrap-safe
-synchronization and Action 5C script-identity gate must run and stop after this
-correction is approved and pushed. A later authorization may invoke Action 5C;
-neither command is prepared here. PASS requires `TARGET_IDENTITY=PASS`,
+Because this script is new, the target may predate it. This is **PE-3 ACTION 5C
+BOOTSTRAP CONTRACT MISSING — TARGET MAY PREDATE REVALIDATION SCRIPT**, a
+governance/runbook deficiency rather than a production failure. Action 5C is
+therefore split into two separately authorized boundaries.
+
+#### Action 5C-A — Target Repository Synchronization & Action 5C Script Identity
+
+Action 5C-A is an inline, bootstrap-safe, non-deployment procedure because the
+stale target cannot be assumed to contain a new repository-controlled script.
+It owns only target identity, clean fast-forward synchronization of the
+release-source `main` checkout to the exact approved governance commit, and the
+Action 5C script's availability plus Git/worktree identity. It does not inspect
+or change the runtime, manufacturer payload, staging, configuration, backups,
+or sidecars; it does not invoke Action 5C-B, rollback, deployment, or Action 6.
+
+Target: **PI3 NUT&PIHOLE**, interactive Bash. Replace the governance placeholder
+only with the approved full 40-hex commit containing this gate and the canonical
+Action 5C script.
+
+```bash
+set +x
+hioc_pe3_action5c_a_sync() {
+  SOURCE=/home/jazofv1/hioc-release-source
+  SCRIPT_REL=tools/hioc-pe3-action5c-revalidate.sh
+  SCRIPT="$SOURCE/$SCRIPT_REL"
+  GOVERNANCE_COMMIT='<approved-full-40-hex-action5c-bootstrap-commit>'
+  SCRIPT_BLOB=da47aa4a3d0346432332fc42f4111a956fd8e1bd
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  printf 'TARGET_IDENTITY=PASS\n'
+  [ -d "$SOURCE/.git" ] || { fail SOURCE_REPOSITORY_MISSING TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] || { fail WRONG_BRANCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }; done
+  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_PRECONDITION=PASS\n'
+  git -C "$SOURCE" fetch origin >/dev/null 2>&1 || { fail GIT_FETCH_FAILED TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail GOVERNANCE_COMMIT_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge-base --is-ancestor HEAD origin/main >/dev/null 2>&1 || { fail NON_FAST_FORWARD_SOURCE TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge --ff-only origin/main >/dev/null 2>&1 || { fail FAST_FORWARD_FAILED TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_SYNCHRONIZATION=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail POST_SYNC_HEAD_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  printf 'SYNCHRONIZED_HEAD_IDENTITY=PASS\n'
+  [ -e "$SCRIPT" ] || { fail ACTION5C_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  [ -f "$SCRIPT" ] && [ ! -L "$SCRIPT" ] || { fail ACTION5C_SCRIPT_NOT_REGULAR SCRIPT_AVAILABILITY; return; }
+  printf 'ACTION5C_SCRIPT_AVAILABILITY=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL" 2>/dev/null)" = "$SCRIPT_BLOB" ] || { fail ACTION5C_SCRIPT_GIT_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  [ "$(git -C "$SOURCE" hash-object --path="$SCRIPT_REL" "$SCRIPT" 2>/dev/null)" = "$SCRIPT_BLOB" ] && git -C "$SOURCE" diff --quiet -- "$SCRIPT_REL" || { fail ACTION5C_SCRIPT_WORKTREE_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  printf 'ACTION5C_SCRIPT_IDENTITY=PASS\nACTION5C_A=COMPLETE\nRESULT=PASS\n'
+}
+hioc_pe3_action5c_a_sync
+```
+
+Action 5C-A stops after its eight exact PASS lines. Any failure emits exact
+`RESULT`, `ERROR_CODE`, and `FAILURE_STAGE`, suppresses later checks, returns
+control to the parent shell, and leaves Action 5 incomplete. No command may
+auto-chain Action 5C-A into Action 5C-B.
+
+#### Action 5C-B — Read-only Action 5 Revalidation & Closure
+
+Only after reviewed Action 5C-A PASS and separate authorization may Action 5C-B
+be prepared and invoked. It requires `--governance-commit <full-40-hex>` and
+`--release-backup </home/jazofv1/hioc/backups/release-upgrade-*>`. The preserved
+Action 5B backup for that later authorization is exactly
+`/home/jazofv1/hioc/backups/release-upgrade-20260812-133550`; no other path may
+be inferred or substituted. No Action 5C-B invocation is prepared by this
+checkpoint.
+
+Action 5C-B PASS requires `TARGET_IDENTITY=PASS`,
 `SOURCE_IDENTITY=PASS`, `RELEASE_BACKUP_IDENTITY=PASS`,
 `RELEASE_VALIDATION=PASS`, `RUNTIME_VALIDATION=PASS`,
 `RUNTIME_ARTIFACT_IDENTITY=PASS`, `MANUFACTURER_PAYLOAD_UNTOUCHED=PASS`,

@@ -1468,6 +1468,16 @@ scaffolding creation/normalization. Action 5 remains incomplete pending a new,
 separately bootstrapped, read-only Action 5C revalidation; Action 6 is not
 started.
 
+**PE-3 Action 5C bootstrap-contract correction (2026-08-12):** The target may
+predate the new Action 5C script. This is **PE-3 ACTION 5C BOOTSTRAP CONTRACT
+MISSING — TARGET MAY PREDATE REVALIDATION SCRIPT**, a governance/runbook
+deficiency rather than a production failure. Action 5C-A now owns only inline,
+bootstrap-safe clean fast-forward synchronization and exact Action 5C script
+Git/worktree identity, then stops. Action 5C-B remains a separately authorized,
+read-only closure of the already-deployed runtime. Neither action has been
+executed; Action 5 remains incomplete, rollback is not recommended, and Action
+6 is not started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---
