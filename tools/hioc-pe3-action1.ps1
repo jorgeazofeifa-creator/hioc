@@ -23,7 +23,7 @@ $ExpectedPythonImplementation = 'CPython'
 $ExpectedPythonMajorMinor = '3.13'
 $PythonSupportPath = 'governance/python-runtime-support.json'
 $Git = 'git'
-$PythonProbeCode = 'import platform,sys; print(platform.python_implementation()+" "+str(sys.version_info.major)+"."+str(sys.version_info.minor))'
+$PythonProbeCode = 'import platform,sys;print(platform.python_implementation(),str(sys.version_info.major)+chr(46)+str(sys.version_info.minor),sep=chr(32))'
 $PriorHiocHome = [Environment]::GetEnvironmentVariable('HIOC_HOME', 'Process')
 $PriorAutomaticInstall = [Environment]::GetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'Process')
 $PriorLauncherAllowInstall = [Environment]::GetEnvironmentVariable('PYLAUNCHER_ALLOW_INSTALL', 'Process')
@@ -96,36 +96,38 @@ if ($PythonSupport.windows_operator.status -cne 'supported' -or
 }
 
 $Stage = 'PYTHON_RESOLUTION'
-$PythonExecutable = $null
+$ManagerCommand = Get-Command -Name 'pymanager' -CommandType Application -ErrorAction SilentlyContinue
+if ($null -eq $ManagerCommand) { Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=PYTHON_INSTALL_MANAGER_NOT_RESOLVABLE'; return }
+$PythonExecutable = ''
 $PythonPrefix = @()
-$PythonResolverName = $null
-$UsablePythonFound = $false
-$PythonCandidates = @(
-    [ordered]@{ Name = 'py'; Prefix = @('-3.13') },
-    [ordered]@{ Name = 'python3'; Prefix = @() },
-    [ordered]@{ Name = 'python'; Prefix = @() }
-)
-foreach ($Candidate in $PythonCandidates) {
-    $Command = Get-Command -Name $Candidate.Name -CommandType Application -ErrorAction SilentlyContinue
-    if ($null -eq $Command) { continue }
-    $ProbePrefix = @($Candidate.Prefix)
-    [Environment]::SetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'false', 'Process')
-    [Environment]::SetEnvironmentVariable('PYLAUNCHER_ALLOW_INSTALL', $null, 'Process')
-    $Probe = & $Command.Source @ProbePrefix -c $PythonProbeCode 2>$null
-    $ProbeLine = $Probe | Select-Object -First 1
-    if ($LASTEXITCODE -eq 0 -and $ProbeLine -match '^[A-Za-z]+ [0-9]+\.[0-9]+$') { $UsablePythonFound = $true }
-    if ($LASTEXITCODE -eq 0 -and $ProbeLine -ceq "$ExpectedPythonImplementation $ExpectedPythonMajorMinor") {
-        $PythonExecutable = $Command.Source
-        $PythonPrefix = @($Candidate.Prefix)
-        $PythonResolverName = if ($Candidate.Name -eq 'py') { 'py -3.13' } else { $Candidate.Name }
-        break
-    }
+[Environment]::SetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'false', 'Process')
+[Environment]::SetEnvironmentVariable('PYLAUNCHER_ALLOW_INSTALL', $null, 'Process')
+$PriorResolutionPreference = $ErrorActionPreference
+try {
+    $ErrorActionPreference = 'Continue'
+    $PythonExecutableOutput = @(& $ManagerCommand.Source list --one --format=exe --only-managed $ExpectedPythonMajorMinor 2>$null)
+    $PythonManagerExitCode = $LASTEXITCODE
+} finally {
+    $ErrorActionPreference = $PriorResolutionPreference
 }
-if ($null -eq $PythonExecutable) {
-    Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'
-    if ($UsablePythonFound) { Write-Output 'ERROR_CODE=PYTHON_VERSION_UNSUPPORTED' } else { Write-Output 'ERROR_CODE=PYTHON3_NOT_FOUND' }
-    return
+$PythonExecutable = [string]($PythonExecutableOutput | Select-Object -First 1)
+$PythonExecutable = $PythonExecutable.Trim()
+if ($PythonManagerExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($PythonExecutable) -or -not [IO.Path]::IsPathRooted($PythonExecutable) -or -not (Test-Path -LiteralPath $PythonExecutable -PathType Leaf)) {
+    Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=PYTHON313_MANAGED_RUNTIME_NOT_FOUND'; return
 }
+$PriorProbePreference = $ErrorActionPreference
+try {
+    $ErrorActionPreference = 'Continue'
+    $Probe = & $PythonExecutable -c $PythonProbeCode 2>$null
+    $PythonProbeExitCode = $LASTEXITCODE
+} finally {
+    $ErrorActionPreference = $PriorProbePreference
+}
+$ProbeLine = $Probe | Select-Object -First 1
+if ($PythonProbeExitCode -ne 0 -or $ProbeLine -cne "$ExpectedPythonImplementation $ExpectedPythonMajorMinor") {
+    Write-Output 'RESULT=INPUT_OR_PRECONDITION_ERROR'; Write-Output 'ERROR_CODE=PYTHON_VERSION_UNSUPPORTED'; return
+}
+$PythonResolverName = 'pymanager list --one --format=exe --only-managed 3.13'
 
 $Stage = 'BUILD_PAIR_DISCOVERY'
 $MatchingPairs = @(

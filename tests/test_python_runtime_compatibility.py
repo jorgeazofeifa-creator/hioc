@@ -41,7 +41,7 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "LANGUAGE-COMPATIBLE FLOOR; NOT CLAIMED TESTED/SUPPORTED",
             "NOT YET REPOSITORY-VALIDATED AS A GOVERNED LINE",
             "TESTED — FULL SUITE PASS",
-            "PROPOSED WINDOWS OPERATOR LINE — VALIDATION PENDING",
+            "SUPPORTED WINDOWS OPERATOR LINE — VALIDATED 3.13.15",
             "PRESENT FROM OPERATOR-DIAGNOSTIC SIDE EFFECT; NOT HIOC-SUPPORTED",
             "EXACT VERSION UNVERIFIED",
         )
@@ -54,24 +54,25 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
         self.assertEqual(self.support["production"]["status"], "exact_version_unverified")
         self.assertRegex(self.policy, r"Do not replace the\s+system interpreter")
 
-    def test_windows_313_is_pending_not_supported(self):
+    def test_windows_313_is_supported_with_validated_patch(self):
         windows = self.support["windows_operator"]
         self.assertEqual(windows["major_minor"], "3.13")
-        self.assertEqual(windows["status"], "validation_pending")
-        self.assertIsNone(windows["validated_patch"])
-        self.assertNotIn("SUPPORTED — WINDOWS OPERATOR", self.policy.split("## Current status", 1)[1].split("## Windows", 1)[0])
+        self.assertEqual(windows["status"], "supported")
+        self.assertEqual(windows["validated_patch"], "3.13.15")
+        self.assertIn("SUPPORTED WINDOWS OPERATOR LINE — VALIDATED 3.13.15", self.policy.split("## Current status", 1)[1].split("## Windows", 1)[0])
 
     def test_action1_rejects_every_other_minor(self):
         self.assertIn("$ExpectedPythonMajorMinor = '3.13'", self.action1)
-        self.assertIn('$ProbeLine -ceq "$ExpectedPythonImplementation $ExpectedPythonMajorMinor"', self.action1)
+        self.assertIn('$ProbeLine -cne "$ExpectedPythonImplementation $ExpectedPythonMajorMinor"', self.action1)
         self.assertIn("ERROR_CODE=PYTHON_VERSION_UNSUPPORTED", self.action1)
         for version in ("3.10", "3.11", "3.12", "3.14"):
             self.assertNotIn(f"$ExpectedPythonMajorMinor = '{version}'", self.action1)
 
-    def test_failed_alias_execution_is_not_accepted(self):
-        self.assertIn("if ($LASTEXITCODE -eq 0 -and $ProbeLine -match", self.action1)
-        self.assertIn("if ($LASTEXITCODE -eq 0 -and $ProbeLine -ceq", self.action1)
-        self.assertIn("ERROR_CODE=PYTHON3_NOT_FOUND", self.action1)
+    def test_action1_uses_exact_managed_interpreter_not_aliases(self):
+        self.assertIn("list --one --format=exe --only-managed $ExpectedPythonMajorMinor", self.action1)
+        self.assertIn('$ProbeLine -cne "$ExpectedPythonImplementation $ExpectedPythonMajorMinor"', self.action1)
+        self.assertIn("ERROR_CODE=PYTHON313_MANAGED_RUNTIME_NOT_FOUND", self.action1)
+        self.assertNotIn("Get-Command -Name 'py'", self.action1)
         self.assertNotIn("9009", self.action1)
 
     def test_action1_requires_repository_support_promotion(self):
@@ -99,7 +100,7 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "Diagnostic commands must themselves be assessed for side effects",
             "RUNTIME INVOCATION PATH",
             "stopped at `PYTHON_PROBE`",
-            "Every native executable in the checkpoint now uses one process wrapper",
+            "WINDOWS PYTHON CHECKPOINT\nPROCESSSTARTINFO EXECUTION DEFECT",
             "may already be installed",
             "CROSS-PLATFORM TEST PREREQUISITE CONTRACT DEFECT",
             "MISSING BASH REPORTED AS ERROR",
@@ -117,15 +118,14 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED",
             "PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED",
             "PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED",
-            "PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE",
+            "PE-3 PRODUCTION ACTION 1 READY TO RESUME - NOT EXECUTED",
             "PYTHON INSTALL MANAGER PRESENT",
             "CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED",
-            "CPYTHON 3.13.X INSTALLATION LIKELY COMPLETE / VALIDATION NOT ESTABLISHED",
-            "SUPPORT STATE VALIDATION_PENDING",
+            "WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15",
             "PRODUCTION DEPLOYMENT NOT STARTED",
             "PI3 VALIDATION NOT STARTED",
             "PE-4 NOT STARTED",
-            "Windows Python 3.13 Installation & Compatibility",
+            "PE-3 Action 1",
         ):
             self.assertIn(status, self.master)
 

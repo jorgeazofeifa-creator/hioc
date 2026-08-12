@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Promoted Windows CPython 3.13.x to supported after the first trustworthy
+  governed checkpoint PASS on 3.13.15: full suite 520 with 13 skips, policy 10,
+  Action 1 governance 13, manufacturer 119, compilation PASS, and clean tree.
+  Action 1 now resolves only the exact manager-owned 3.13 interpreter. The
+  validation checkpoint is explicitly one-time and refuses after promotion.
+  CPython 3.14.7 remains an unsupported diagnostic side effect pending separate
+  disposition. No PE-3 or production action occurred.
+
 - Removed `ProcessStartInfo` from all governed Python runtime execution after
   final operator isolation proved the exact managed interpreter passes directly
   both normally and with the checkpoint pycache prefix, but fails through that

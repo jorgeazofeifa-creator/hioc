@@ -41,8 +41,8 @@ Phase 7A is **IN PROGRESS**. PE-0 is **COMPLETE - DESIGN APPROVED**. PE-1 and
 PE-2 are **COMPLETE - PRODUCTION VALIDATED**. PE-3.0 is complete; PE-3.1 is
 **IMPLEMENTED - REPOSITORY VALIDATED**; PE-3.2 is **COMPLETE - EXTERNAL DATASET
 VALIDATED**; PE-3.3 is **COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED**.
-PE-3 Production Action 1 is blocked on Windows Python 3.13 installation,
-validation, and support promotion. PE-3 production deployment, manufacturer generation, PI3 production validation,
+Windows CPython 3.13.x is operator-supported with validated patch 3.13.15.
+PE-3 Production Action 1 is ready to resume but remains unexecuted. PE-3 production deployment, manufacturer generation, PI3 production validation,
 and final governance closure remain open. PE-4 through PE-9 are not started.
 
 The Master Plan now defines the controlled vocabulary for design-complete,
@@ -183,9 +183,10 @@ with those milestones; no executable/repository defect was discovered.
 
 ## Corrections, unresolved items, and final result
 
-Corrections were limited to status, roadmap, authority, future-scope, and
-cross-reference governance plus this audit and changelog entry. No executable or
-test file changed. No unresolved authoritative contradiction remains.
+The original audit's corrections were limited to documentation. This later
+Python reconciliation also updates governed operator code and tests: it promotes
+3.13.x support, records 3.13.15 evidence, and aligns Action 1 with exact managed-
+interpreter selection. No unresolved authoritative contradiction remains.
 
 Open work is intentional roadmap scope: PE-3 production deployment, production
 manufacturer generation, PI3 validation, final PE-3 closure, PE-4 through PE-9,

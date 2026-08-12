@@ -21,8 +21,10 @@ but neither deployed nor production validated.
 ## Python runtime boundary
 
 The Python language floor is CPython 3.10, while tested and supported claims are
-separate. CPython 3.12.13 has full-suite evidence. Windows CPython 3.13.x is
-proposed with validation pending and is not yet supported. Production uses the
+separate. CPython 3.12.13 has historical full-suite evidence. Windows CPython
+3.13.x is supported for the operator workstation, with validated patch evidence
+3.13.15. The exact managed interpreter is resolved through `pymanager` and
+executed directly by PowerShell. Production uses the
 distribution-managed `python3`, but its exact version remains unverified. The
 authoritative policy and machine-readable support-state relationship are in
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md).
@@ -196,6 +198,6 @@ acquisition/transformation is approved; registry content cannot enter Git or
 releases. PE-3.2 externally validated the production-intended dataset and
 manifest; neither is committed or deployed. No production manufacturer sidecar,
 schedule, public projection, or consumer exists. PE-3.3 is design approved;
-Production Action 1 is blocked on the Windows Python prerequisite and support
-promotion. Production deployment has not started and PI3 validation has not
-started.
+Production Action 1 is ready to resume because the Windows Python prerequisite
+and support promotion are complete. Production deployment has not started and
+PI3 validation has not started.

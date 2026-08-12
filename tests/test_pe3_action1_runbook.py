@@ -36,16 +36,20 @@ class PE3Action1RepositoryScriptGovernanceTests(unittest.TestCase):
         self.assertIn("$env:HIOC_HOME = $Repo", script)
         self.assertIn("sys.version_info", script)
 
-    def test_python_resolver_order(self):
+    def test_python_resolver_uses_exact_managed_313(self):
         script = self.script
-        self.assertLess(script.index("Name = 'py'"), script.index("Name = 'python3'"))
-        self.assertLess(script.index("Name = 'python3'"), script.index("Name = 'python'"))
-        self.assertIn("Prefix = @('-3.13')", script)
-        self.assertNotIn("Prefix = @('-3')", script)
+        self.assertIn("Get-Command -Name 'pymanager'", script)
+        self.assertIn("list --one --format=exe --only-managed $ExpectedPythonMajorMinor", script)
+        self.assertIn("[IO.Path]::IsPathRooted($PythonExecutable)", script)
+        self.assertIn("Test-Path -LiteralPath $PythonExecutable -PathType Leaf", script)
         self.assertIn("$ExpectedPythonMajorMinor = '3.13'", script)
         self.assertIn("$ExpectedPythonImplementation = 'CPython'", script)
-        self.assertIn("ERROR_CODE=PYTHON3_NOT_FOUND", script)
+        self.assertIn("ERROR_CODE=PYTHON313_MANAGED_RUNTIME_NOT_FOUND", script)
         self.assertIn("ERROR_CODE=PYTHON_VERSION_UNSUPPORTED", script)
+        self.assertNotIn("Get-Command -Name 'py'", script)
+        self.assertNotIn("Get-Command -Name 'python3'", script)
+        self.assertNotIn("Get-Command -Name 'python'", script)
+        self.assertNotIn("pymanager exec", script.lower())
 
     def test_python_probe_requires_execution_and_disables_automatic_install(self):
         script = self.script
@@ -57,7 +61,7 @@ class PE3Action1RepositoryScriptGovernanceTests(unittest.TestCase):
         self.assertIn("'false', 'Process'", script)
         self.assertNotRegex(script.lower(), r"\b(py|python|winget)\s+install\b")
 
-    def test_python_support_state_blocks_until_promotion(self):
+    def test_python_support_state_accepts_promotion(self):
         script = self.script
         self.assertIn("governance/python-runtime-support.json", script)
         self.assertIn("$PythonSupport.windows_operator.status -cne 'supported'", script)
@@ -65,8 +69,8 @@ class PE3Action1RepositoryScriptGovernanceTests(unittest.TestCase):
         self.assertIn("$PythonSupport.windows_operator.validated_patch -cnotmatch '^3\\.13\\.[0-9]+$'", script)
         state = __import__("json").loads(SUPPORT.read_text(encoding="utf-8"))
         self.assertEqual(state["windows_operator"]["major_minor"], "3.13")
-        self.assertEqual(state["windows_operator"]["status"], "validation_pending")
-        self.assertIsNone(state["windows_operator"]["validated_patch"])
+        self.assertEqual(state["windows_operator"]["status"], "supported")
+        self.assertEqual(state["windows_operator"]["validated_patch"], "3.13.15")
 
     def test_expected_and_unexpected_failures_preserve_host(self):
         script = self.script

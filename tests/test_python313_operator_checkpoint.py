@@ -31,9 +31,9 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
         self.assertIn("$Head -ne $GovernanceCommit -or $Origin -ne $GovernanceCommit", self.script)
         self.assertNotIn("C:\\Users\\", self.script)
 
-    def test_pending_support_state_is_required_and_not_modified(self):
-        self.assertEqual(self.support["windows_operator"]["status"], "validation_pending")
-        self.assertIsNone(self.support["windows_operator"]["validated_patch"])
+    def test_one_time_checkpoint_refuses_after_support_promotion(self):
+        self.assertEqual(self.support["windows_operator"]["status"], "supported")
+        self.assertEqual(self.support["windows_operator"]["validated_patch"], "3.13.15")
         self.assertIn("$Support.windows_operator.status -cne 'validation_pending'", self.script)
         self.assertIn("PYTHON_SUPPORT_STATE_NOT_PENDING", self.script)
         self.assertNotIn("Set-Content", self.script)

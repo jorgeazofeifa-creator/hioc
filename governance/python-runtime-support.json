@@ -4,8 +4,8 @@
   "language_floor": "3.10",
   "windows_operator": {
     "major_minor": "3.13",
-    "status": "validation_pending",
-    "validated_patch": null
+    "status": "supported",
+    "validated_patch": "3.13.15"
   },
   "production": {
     "runtime_source": "distribution_managed",

@@ -47,27 +47,28 @@ Production uses the distribution-managed CPython `python3`; do not replace the
 system interpreter to match Windows. Its exact production major/minor remains
 unverified and must be recorded during governed PI validation.
 
-For Windows operator checkpoints, official CPython 3.13.x is the proposed line,
-not yet supported. The approved future mechanism is the current official Python
+For Windows operator checkpoints, official CPython 3.13.x is the supported line,
+with validated patch evidence 3.13.15. The approved mechanism is the official Python
 Install Manager through the official Windows/WinGet path. WindowsApps aliases
 are not installation evidence. Installation and compatibility validation are a
-separate checkpoint; do not install Python as part of PE-3 Action 1.
+separate one-time checkpoint; do not install Python as part of PE-3 Action 1.
 The installation/validation checkpoint is implemented only by the governed
 `tools/hioc-python313-validate.ps1` script documented in
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). Operator
 guidance invokes that file after its commit is pushed; it must not reproduce the
-installation program through chat. The script produces evidence only and does
-not promote support state.
+installation program through chat. The script produced promotion evidence and
+now intentionally refuses because support is already promoted; it does not edit
+support state itself.
 
 For scripted management, the checkpoint uses `pymanager`, never plain `py`:
 `pymanager` lists managed runtimes and explicitly installs the floating 3.13
-line, while `py -3.13` executes the already-installed governed runtime.
+line, while PowerShell directly executes the exact path returned by `--format=exe`.
 `PYTHON_MANAGER_AUTOMATIC_INSTALL=false` is set before any runtime-launch
 probe. The official manager is currently present; CPython 3.14.7 is present only
 because an operator diagnostic triggered default-runtime installation and is
 not HIOC-supported. It is preserved pending a separate cleanup decision and
 does not prevent explicit 3.13 installation. The currently observed dry-run
-candidate is 3.13.15, but no patch is pinned before successful validation.
+validated patch is 3.13.15; patch policy remains floating 3.13.x.
 
 The latest direct CPython 3.13 evidence passed 506 tests with 13 skips and exit
 code 0, but it does not promote support. It exposed a checkpoint-only false
@@ -103,8 +104,7 @@ before stopping at the wrapped-runtime gap in `PYTHON_PROBE`. The checkpoint
 therefore inventories managed 3.13 runtimes first and reuses the manager's one
 authoritative selection without reinstalling. It installs only when no 3.13 is
 present and fails safely on malformed or ambiguous inventory. Exact patch and
-compatibility remain unknown until the wrapped `py -3.13` probe and complete
-matrix pass.
+compatibility were established by the governed PASS.
 
 Bash is not a prerequisite for the Windows CPython 3.13 runtime itself. Three
 network-probe governance tests exercise Linux/Bash artifacts and now report an

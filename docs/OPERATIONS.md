@@ -22,35 +22,34 @@ an immutable dataset version, silently replace a different configured path, or
 interpret conflict/unknown counts as operational failure.
 
 Action 1 accepts the retained external workspace only as an explicit Windows
-operator variable. After repository support promotion, it resolves the governed
-Windows line in the order `py -3.13`, `python3`, then `python`; fallbacks must
-execute as CPython 3.13. No usable interpreter yields `PYTHON3_NOT_FOUND`; a
-usable incompatible interpreter yields `PYTHON_VERSION_UNSUPPORTED`.
+operator variable. It resolves the exact manager-owned CPython 3.13 interpreter
+through `pymanager list --one --format=exe --only-managed 3.13`, validates its
+implementation/minor, and never uses default aliases or automatic installation.
 Database/manifest selection is based on both frozen SHA-256 values, adjacency,
 regular-file/reparse-point checks, and frozen sizes. Multiple identical matches
 are selected lexically only after validation; zero matches fail with
 `VALIDATED_BUILD_PAIR_NOT_FOUND`. No raw registry value or Windows user path is
 printed.
 
-The current support state is `validation_pending`, so Action 1 stops with
-`PYTHON_RUNTIME_SUPPORT_PENDING` before discovery. The separate Windows Python
-3.13 Installation & Compatibility Validation checkpoint must install an
-official runtime, record its patch, run the full suite and focused tests, and
-commit the support promotion. Action 1 disables Python Install Manager automatic
-installation during probes. See
+The support state is `supported` with validated patch `3.13.15`; Action 1 is
+ready to resume under separate authorization. It still fails closed with
+`PYTHON_RUNTIME_SUPPORT_PENDING` if repository governance is not supported.
+Action 1 disables Python Install Manager automatic installation. See
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md).
 
 The separate installation/validation action is the repository-controlled
 `tools/hioc-python313-validate.ps1`. It verifies its own approved Git identity,
 installs through the official WinGet Python Install Manager package, uses
 `pymanager` for non-launching management/list operations and the sole explicit
-`pymanager install 3.13` mutation, then runs the governed validation matrix with
-`py -3.13`. Automatic runtime installation is disabled before any launcher
+`pymanager install 3.13` mutation, then resolves and directly invokes the exact
+managed 3.13 interpreter for the governed validation matrix. Automatic runtime
+installation is disabled before any runtime
 probe. Native manager stderr is captured and judged with its actual exit code,
 so informational stderr with exit zero is not a failure and nonzero exit is.
 An existing 3.14 runtime neither satisfies nor blocks the 3.13 checkpoint. It
 returns sanitized evidence. It does not execute Action 1 or modify the support
-manifest. Evidence review and support promotion remain a later checkpoint.
+manifest. The checkpoint is one-time evidence tooling and now refuses to run
+because support has been promoted; it is not a recurring compatibility test.
 
 The subsequent corrected run passed installation but stopped at
 `PYTHON_PROBE`; this is a remaining runtime-invocation stderr-handling defect,
@@ -98,6 +97,13 @@ and without the checkpoint pycache prefix. Governed Python stages now use a
 scoped PowerShell-native helper with temporary stream files, immediate
 `$LASTEXITCODE` capture, restored error preference, bounded tails, and cleanup.
 The process wrapper remains only for non-Python utilities.
+
+Closure evidence: the corrected checkpoint passed on CPython 3.13.15 at commit
+`6b622280a6f414d14ca3060da349423d92d664cb`, including 520 full-suite tests with
+13 skips, 10 policy tests, 13 Action 1 tests, 119 manufacturer tests, compilation,
+and repository cleanliness. Windows CPython 3.13.x is supported. The checkpoint
+is one-time and intentionally refuses after promotion. CPython 3.14.7 remains
+installed but unsupported pending a separate future disposition review.
 
 For Windows PowerShell 5.1 operator tooling, informational native stderr is not
 a failure criterion. Validation-critical native programs must run through the

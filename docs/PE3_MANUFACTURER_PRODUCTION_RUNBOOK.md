@@ -56,8 +56,8 @@ The canonical executable implementation is the checked-in script
 through chat. The approved script identities are:
 
 ```text
-ACTION1_SCRIPT_SHA256=cd4aa7afe845fbf8a76e6736d956dc1d4818ef87084eeacc0220b980cf5e567c
-ACTION1_SCRIPT_GIT_BLOB=02a89b37eb5458b15a6b037941e023c0911df0b3
+ACTION1_SCRIPT_SHA256=f2788c6517bae6aa0fc8394f523576e6f702371cba8d8751d6c76e0d4bd8b5bb
+ACTION1_SCRIPT_GIT_BLOB=da9a0f8acaa86f4bfeb5c30490a8d3212e0c2b0e
 ```
 
 The governance commit supplied by the operator must contain that exact blob.
@@ -68,11 +68,10 @@ ancestry. Script-identity failure returns
 `ERROR_CODE=ACTION1_SCRIPT_IDENTITY_MISMATCH` without closing PowerShell.
 
 Action 1 also reads the approved commit's explicit
-`governance/python-runtime-support.json`. The current Windows CPython 3.13 line
-is `validation_pending`, so Action 1 returns
-`ERROR_CODE=PYTHON_RUNTIME_SUPPORT_PENDING` before interpreter discovery. It may
-proceed only after a separate support-promotion commit records the exact passing
-3.13 patch and changes the state to `supported`. See
+`governance/python-runtime-support.json`. Windows CPython 3.13.x is `supported`
+with validated patch evidence 3.13.15, so the support gate permits interpreter
+discovery. It still returns `PYTHON_RUNTIME_SUPPORT_PENDING` for any repository
+state that is not supported. See
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md).
 
 Use this invocation block only; enter the two Windows paths and the approved
@@ -86,9 +85,9 @@ $Action1Script = Join-Path $Repo 'tools/hioc-pe3-action1.ps1'
 & $Action1Script -Repo $Repo -ExternalWorkspace $ExternalWorkspace -GovernanceCommit $GovernanceCommit
 ```
 
-Expected output after support promotion: validator PASS plus the final sanitized
-PASS object. The selected interpreter is reported only as `py -3.13`,
-`python3`, or `python`, with major/minor `3.13`;
+Expected output: validator PASS plus the final sanitized PASS object. The
+resolver is reported only as
+`pymanager list --one --format=exe --only-managed 3.13`, with major/minor `3.13`;
 the selected build is relative to the supplied workspace, and no Windows user
 path or registry content is printed. Multiple exact matching pairs are accepted
 only after both hashes and sizes match; lexical absolute-path ordering then makes
@@ -97,18 +96,17 @@ the choice deterministic. Expected failures emit sanitized `RESULT` and
 failures additionally report only the approved bounded `FAILURE_STAGE`, never
 exception text, command text, stack traces, absolute paths, or registry content.
 
-`py -3.13` has priority. `python3` and `python` are accepted only when execution
-proves CPython 3.13. A usable other runtime returns
-`PYTHON_VERSION_UNSUPPORTED`; no usable runtime returns `PYTHON3_NOT_FOUND`.
-WindowsApps aliases that fail execution are not runtimes. Automatic Python
-Install Manager installation is disabled during probes. Action 1 never installs
-Python.
+Action 1 resolves only the exact managed 3.13 interpreter through `pymanager`
+machine-oriented output, requires an absolute regular file, and probes CPython
+3.13. It does not use `py`, `python3`, `python`, or `pymanager exec`. Automatic
+installation is disabled and Action 1 never installs Python.
 
-The prerequisite checkpoint uses `pymanager` for management and `py -3.13`
-only for execution after explicit 3.13 installation. The operator workstation's
+The prerequisite checkpoint used `pymanager` for management and ultimately
+resolved the exact manager-owned interpreter for execution after explicit 3.13
+installation. The operator workstation's
 unintended CPython 3.14.7 does not satisfy Action 1 and does not change its
-resolver or support-state gate. Action 1 remains blocked until the separate
-3.13 validation passes and a later commit promotes support.
+resolver or support-state gate. The following paragraphs preserve the historical
+blocked stages that preceded the successful validation and support promotion.
 
 The prerequisite checkpoint's post-install `PYTHON_PROBE` failure is classified
 as native runtime-invocation handling, not Python compatibility or PE-3
@@ -154,6 +152,12 @@ with the same pycache environment. The corrected checkpoint retains exact 3.13
 selection and invokes every Python stage through scoped PowerShell-native
 execution. Action 1 remains blocked until that checkpoint returns PASS and
 support is promoted separately.
+
+Closure: the corrected governed checkpoint passed on CPython 3.13.15 at commit
+`6b622280a6f414d14ca3060da349423d92d664cb`, including full regression 520/13
+skips, policy 10, Action 1 governance 13, manufacturer 119, compilation, and a
+clean repository. Support is promoted and Action 1 is ready to resume, but was
+not executed by the promotion checkpoint.
 
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 

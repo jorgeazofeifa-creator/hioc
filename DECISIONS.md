@@ -739,15 +739,14 @@ or changed production.
 
 ## ADR-0024: Separate Python language floor, tested evidence, and operational support
 
-Status: Accepted governance; Windows support validation pending
+Status: Accepted governance; Windows CPython 3.13.x support validated and promoted
 
 HIOC adopts Model D. CPython 3.10 is the repository language floor because
 production source uses PEP 604 union syntax. This is not a blanket support claim.
-CPython 3.12.13 is the only exact runtime with complete-suite evidence. CPython
-3.13.x is the proposed Windows operator line, with patch releases allowed to
-float, but remains unsupported until an official installation's exact patch,
-execution probe, full suite, and Action 1 tests pass and an approved repository
-commit promotes `governance/python-runtime-support.json`. Production continues
+CPython 3.12.13 has complete-suite evidence. CPython 3.13.x is the supported
+Windows operator line, with patch releases allowed to float; the governed
+checkpoint passed on 3.13.15 and this approved repository change promotes
+`governance/python-runtime-support.json`. Production continues
 using distribution-managed CPython `python3`; its exact version is unverified
 and must be independently validated. Other Python implementations are not
 supported.
@@ -899,3 +898,15 @@ tail reads, restoration, and cleanup. `ProcessStartInfo` remains acceptable for
 the separately validated Git, WinGet, and manager paths only. A wrapper that
 repeatedly disagrees with the exact governed runtime must be removed rather than
 continually patched.
+
+Support-closure amendment: the corrected governed checkpoint passed on exact
+CPython 3.13.15 at commit `6b622280a6f414d14ca3060da349423d92d664cb`:
+full suite 520 with 13 skips, Python policy 10, Action 1 governance 13,
+manufacturer 119, compilation PASS, and clean repository. Windows CPython
+3.13.x is supported; 3.13.15 is validation evidence, not a permanent patch pin.
+
+Action 1 now uses the same exact managed-interpreter contract and remains
+read-only. The checkpoint is a one-time promotion validator and intentionally
+refuses once support is `supported`; no revalidation mode is implied. CPython
+3.14.7 remains an unsupported diagnostic side effect. A future independent
+checkpoint must decide retain-versus-remove without affecting PE-3 deployment.

@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PE-3 PRODUCTION ACTION 1 BLOCKED - WINDOWS PYTHON PREREQUISITE; WINDOWS PYTHON COMPATIBILITY GOVERNANCE COMPLETE; PYTHON INSTALL MANAGER PRESENT; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; CPYTHON 3.13.X INSTALLATION LIKELY COMPLETE / VALIDATION NOT ESTABLISHED; SUPPORT STATE VALIDATION_PENDING; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 PRODUCTION ACTION 1 READY TO RESUME - NOT EXECUTED; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1236,31 +1236,13 @@ organization variant enters Git.
 ## Next Planned Task
 
 Python compatibility governance is resolved under Model D in
-[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). The exact
-next operator checkpoint is **Windows Python 3.13 Installation & Compatibility
-Validation**. It is separate from Action 1 and requires separate authorization.
-It will install official CPython 3.13.x, record the exact patch, verify actual
-`py -3.13` execution, run the complete repository suite and Action 1-focused
-tests with that interpreter, and promote the repository support state only on
-PASS. Its governed operator implementation is
-`tools/hioc-python313-validate.ps1`. The first execution stopped at
-`PYTHON_INSTALLATION` because native informational stderr was promoted to a
-PowerShell exception before exit-code handling. The corrected script uses
-`pymanager` for management, disables automatic runtime installation before any
-launcher probe, and captures native stderr with its exit code. After this
-corrective commit is pushed, the next authorization is execution of that script
-on the Windows workstation.
-
-That corrected execution passed the explicit installation stage and stopped at
-`PYTHON_PROBE`. Forensic review found that runtime probe, tests, and compilation
-still used direct native invocation and therefore retained the same PowerShell
-5.1 stderr-promotion defect. The script now routes every native executable
-through one exit-code-based wrapper and inventories managed 3.13 first so a
-possibly installed runtime is reused rather than reinstalled. The exact patch
-and compatibility remain unestablished pending the next governed execution.
-Until evidence review and a separate promotion commit, Action 1 is blocked and Action 2 must not be
-prepared. Production deployment and PI3 validation have not started; PE-4
-through PE-9 remain not started.
+[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). Windows
+CPython 3.13.x is supported with validated patch evidence 3.13.15. The next
+operator checkpoint is **PE-3 Production Action 1**, separately authorized and
+executed from the repository-controlled `tools/hioc-pe3-action1.ps1`. Action 1
+is ready to resume but has not been executed. Action 2 must not be prepared
+before Action 1 evidence review. Production deployment and PI3 validation have
+not started; PE-4 through PE-9 remain not started.
 
 Action 1 pre-execution review identified two operator-input defects without
 executing the action: a hard-coded `python` PATH assumption and ambiguous choice
@@ -1378,6 +1360,14 @@ architecture retains exact manager-owned 3.13 selection but runs every Python
 stage through scoped PowerShell-native invocation with immediate exit capture,
 bounded temporary-file streams, and cleanup. Support remains pending and no
 PE-3 or production action has started.
+
+The corrected governed checkpoint then returned PASS on CPython 3.13.15 at
+commit `6b622280a6f414d14ca3060da349423d92d664cb`: full regression 520 tests with
+13 skips, policy tests 10, Action 1 tests 13, manufacturer tests 119, compilation
+PASS, and clean repository. Windows CPython 3.13.x is now supported for the
+operator workstation, with 3.13.15 recorded as validated patch evidence. PE-3
+Action 1 is ready to resume under separate authorization but was not executed in
+this checkpoint. PE-3 deployment and PI3 validation remain not started.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

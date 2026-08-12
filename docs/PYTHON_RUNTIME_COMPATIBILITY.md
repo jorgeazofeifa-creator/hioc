@@ -49,14 +49,14 @@ implementation is separately tested and governed.
 | CPython 3.10 | LANGUAGE-COMPATIBLE FLOOR; NOT CLAIMED TESTED/SUPPORTED |
 | CPython 3.11 | NOT YET REPOSITORY-VALIDATED AS A GOVERNED LINE |
 | CPython 3.12.13 | TESTED — FULL SUITE PASS |
-| CPython 3.13.x | PROPOSED WINDOWS OPERATOR LINE — VALIDATION PENDING |
+| CPython 3.13.x | SUPPORTED WINDOWS OPERATOR LINE — VALIDATED 3.13.15 |
 | CPython 3.14.7 | PRESENT FROM OPERATOR-DIAGNOSTIC SIDE EFFECT; NOT HIOC-SUPPORTED |
 | Production Python | EXACT VERSION UNVERIFIED |
 
 The machine-readable support state is
 `governance/python-runtime-support.json`. It is explicit repository state, not
-chat state. Its Windows status remains `validation_pending`; therefore PE-3
-Production Action 1 remains blocked even if a Python 3.13 interpreter appears.
+chat state. Its Windows status is `supported`, with validated patch evidence
+`3.13.15`; PE-3 Production Action 1 is ready to resume under separate authority.
 The official Python Install Manager is present on the operator workstation.
 CPython 3.14.7 is also present because an informal `py --help` diagnostic
 triggered the manager's default-runtime automatic installation. Its presence
@@ -64,17 +64,16 @@ does not satisfy, block, or change the governed 3.13.x contract.
 
 ## Windows operator runtime
 
-The proposed Windows operational line is official CPython 3.13.x. Patch
-versions may float within the line. It becomes **SUPPORTED — WINDOWS OPERATOR**
-only after a separate governed checkpoint:
+The supported Windows operational line is official CPython 3.13.x. Patch
+versions may float within the line. Support was promoted after the governed
+checkpoint:
 
 1. installs an official CPython 3.13 runtime;
 2. records its exact patch version;
-3. verifies `py -3.13` by actual execution and implementation/version probe;
+3. verifies the exact managed interpreter by execution and implementation/version probe;
 4. runs the complete repository suite with that interpreter;
 5. runs the Action 1-focused tests and prerequisite probes; and
-6. commits a support-state promotion setting `windows_operator.status` to
-   `supported` and `validated_patch` to the exact passing `3.13.x` version.
+6. records `windows_operator.status=supported` and validated patch `3.13.15`.
 
 The installation and compatibility action is the repository-controlled script
 `tools/hioc-python313-validate.ps1`. Never reproduce its source through chat.
@@ -95,7 +94,8 @@ $CheckpointScript = Join-Path $Repo 'tools/hioc-python313-validate.ps1'
 ```
 
 The script verifies its own Git identity and the synchronized clean repository,
-requires support state `validation_pending`, installs only through the official
+is a one-time promotion checkpoint: it requires pre-promotion state
+`validation_pending` and intentionally refuses after promotion. It installs only through the official
 WinGet Python Install Manager package, and uses the unambiguous `pymanager`
 command for scripted list/install operations. It disables automatic runtime
 installation before any runtime launcher can execute, explicitly runs
@@ -123,12 +123,10 @@ not CPython compatibility, HIOC test, manufacturer, version-rejection, PE-3, or
 production failure. CPython 3.13.x may already be installed, but its exact patch
 and compatibility are not established until governed evidence passes.
 
-Every native executable in the checkpoint now uses one process wrapper with a
-deterministically quoted argument list, space-safe paths, bounded stdout/stderr
-capture, and actual native exit status. This includes Git, WinGet, `pymanager`,
-`py -3.13`, every test stage, and `compileall`. Informational stderr with exit
-zero succeeds; nonzero exit fails at the bounded current stage. No routine
-evidence prints executable paths or captured command output.
+At that historical stage, every native executable used one process wrapper.
+Later evidence removed Python runtime execution from that wrapper; Git, WinGet,
+and `pymanager` retain it, while Python uses direct PowerShell invocation. No
+routine evidence prints executable paths or captured command output.
 
 Before installation, `pymanager list --one --format=json --only-managed 3.13`
 provides the manager's deterministic authoritative selection. One valid entry
@@ -154,10 +152,10 @@ External lifecycle and installer authority:
 - [Official Python on Windows and Python Install Manager](https://docs.python.org/3/using/windows.html)
 - [Official Python Windows downloads](https://www.python.org/downloads/windows/)
 
-Action 1 disables Python Install Manager automatic installation while probing.
-Its resolver order is `py -3.13`, `python3`, then `python`; either fallback is
-accepted only when it executes as CPython 3.13. A usable incompatible runtime is
-`PYTHON_VERSION_UNSUPPORTED`; no usable runtime is `PYTHON3_NOT_FOUND`.
+Action 1 disables automatic installation and resolves only the exact managed
+3.13 interpreter through
+`pymanager list --one --format=exe --only-managed 3.13`. It does not use
+`py`, `python3`, `python`, or `pymanager exec` for governed execution.
 
 ## Production and Raspberry Pi runtime
 
@@ -382,6 +380,20 @@ runtime must be removed from the validation path rather than continually
 patched. For this Windows checkpoint, the exact governed CPython interpreter is
 executed through PowerShell native invocation; `ProcessStartInfo` is not an
 approved Python-runtime execution mechanism.
+
+The corrected governed checkpoint passed on CPython 3.13.15 at repository
+`6b622280a6f414d14ca3060da349423d92d664cb`: full suite 520 tests with 13 skips,
+Python policy tests 10, Action 1 governance tests 13, manufacturer tests 119,
+and compilation PASS. The repository remained clean. This is the first trusted
+governed Windows PASS and authorizes the recorded support promotion. Counts are
+evidence only; native exit status was the acceptance criterion.
+
+CPython 3.14.7 remains installed solely as
+`PYTHON_OPERATOR_DIAGNOSTIC_SIDE_EFFECT — UNINTENDED_DEFAULT_RUNTIME_INSTALL`.
+It is not supported or selectable for HIOC. A separate future disposition
+checkpoint will decide whether to retain it harmlessly or remove it only after
+proving the validated 3.13 environment is unaffected; that work is independent
+of PE-3 deployment.
 
 ## Future validation matrix
 
