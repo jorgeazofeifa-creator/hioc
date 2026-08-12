@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Corrected the PE-3 Action 3/4 sequencing contradiction discovered on PI3.
+  Action 3 now verifies staging only; Action 4 synchronizes the clean source,
+  proves implementation/validator identity, rechecks staged identity, and runs
+  the read-only validator before Action 5 can deploy. Function-scoped operator
+  failures now preserve the interactive shell and emit sanitized codes. The
+  already-passed staging evidence is retained; no production action occurred.
+
 - Promoted Windows CPython 3.13.x to supported after the first trustworthy
   governed checkpoint PASS on 3.13.15: full suite 520 with 13 skips, policy 10,
   Action 1 governance 13, manufacturer 119, compilation PASS, and clean tree.

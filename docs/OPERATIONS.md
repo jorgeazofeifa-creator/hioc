@@ -153,6 +153,24 @@ atomically publishes a complete immutable directory. Runtime sidecar validation
 observes independently loaded files and reports inconsistencies without repair.
 Only the offline builder and manual generator own manufacturer-specific locks.
 
+PE-3 production sequencing separates transferred-artifact staging from source
+identity. Action 3 verifies only PI3 identity and the exact private staging pair.
+Action 4 owns the clean release-source fetch/fast-forward and, only afterward,
+proves implementation ancestry and protected validator identity, rechecks the
+staged hashes and sizes, and invokes the read-only validator. This ordering
+allows a stale clean checkout to synchronize without permitting an unverified
+validator or any deployment. Action 5 remains the first code-deployment action.
+
+The first Action 3 attempt stopped because its historical block required the
+implementation commit before the synchronization action could fetch it. Its
+bare assertions under interactive `set -euo pipefail` also terminated the
+operator shell. Recovery confirmed the PI3 target and staging directory were
+intact and that owner, mode, exact contents, regular-file status, sizes, and
+hashes passed. The corrected Action 3/4 function blocks emit bounded
+`RESULT`, `ERROR_CODE`, and `FAILURE_STAGE` evidence and return control without
+shell-level `errexit`. The accepted staging evidence is preserved; the restart
+point is Action 4 after the sequencing-correction commit is approved and pushed.
+
 ## Document Ownership
 
 This is the authoritative operational and runtime reference. It defines how current components run, what they produce, and how operators validate and recover them. The current deployed-system overview is in [SYSTEM_REFERENCE.md](SYSTEM_REFERENCE.md); deployment mechanics are in [DEPLOYMENT.md](DEPLOYMENT.md).

@@ -194,69 +194,101 @@ only; return output; do not proceed.
 
 ## Action 3 — PI3 staging verification
 
-Target: PI3. Mutation: none. Rollback relevance: none.
+Target: PI3. Mutation: none. Rollback relevance: none. This action verifies only
+the target and transferred staging artifacts. Repository synchronization,
+implementation identity, and validator execution belong to Action 4 because a
+stale clean source checkout may not yet contain the implementation commit.
+
+The original Action 3 incorrectly required that commit before Action 4 fetched
+it and used `set -euo pipefail` with bare assertions in an interactive shell.
+The failed history check terminated the operator session. Read-only recovery
+proved that staging remained intact and established the following accepted
+Action 3 evidence for `/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS`: target identity
+PASS; owner/mode PASS; exact two-file contents PASS; regular/non-symlink checks
+PASS; byte sizes PASS; and both frozen SHA-256 identities PASS. Action 3 is
+**STOPPED — REPOSITORY-SEQUENCING PRECONDITION**, with its staging-only scope
+complete. Do not repeat it for this deployment unless staging changes.
+
+For any required future staging revalidation, use the function-scoped block
+below. It does not enable shell-level `errexit`; every failure emits a sanitized
+result, code, and stage, returns from the function, and leaves the prompt alive.
 
 ```bash
-set -euo pipefail
 set +x
-EXPECTED_HOST=nutandpihole
-EXPECTED_IP=192.168.100.252
-IMPLEMENTATION_COMMIT=157ae644dcedcbec7c69cb0d8b054e104335e024
-SOURCE=/home/jazofv1/hioc-release-source
-PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-XXXXXXXX' # exact Action 2 value
-DB="$PI3_STAGE/manufacturer-db.json"
-MF="$PI3_STAGE/manufacturer-db.manifest.json"
-[ "$(hostname -s)" = "$EXPECTED_HOST" ]
-ip -o -4 addr show scope global | awk '{print $4}' | cut -d/ -f1 | grep -Fxq "$EXPECTED_IP"
-read -r -p 'Type nutandpihole to confirm the production target: ' CONFIRM_TARGET
-[ "$CONFIRM_TARGET" = nutandpihole ]
-printf 'CONFIRM_TARGET=nutandpihole@192.168.100.252\n'
-[ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ] && [ "$(stat -c %U:%G "$PI3_STAGE")" = jazofv1:jazofv1 ] && [ "$(stat -c %a "$PI3_STAGE")" = 700 ]
-[ "$(find "$PI3_STAGE" -mindepth 1 -maxdepth 1 -printf '%f\n' | sort | paste -sd, -)" = 'manufacturer-db.json,manufacturer-db.manifest.json' ]
-for p in "$DB" "$MF"; do [ -f "$p" ] && [ ! -L "$p" ]; done
-[ "$(stat -c %s "$DB")" = 8652642 ] && [ "$(stat -c %s "$MF")" = 1338 ]
-[ "$(sha256sum "$DB" | awk '{print $1}')" = 81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1 ]
-[ "$(sha256sum "$MF" | awk '{print $1}')" = 10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4 ]
-git -C "$SOURCE" cat-file -e "$IMPLEMENTATION_COMMIT^{commit}"
-git -C "$SOURCE" merge-base --is-ancestor "$IMPLEMENTATION_COMMIT" HEAD
-[ "$(git -C "$SOURCE" branch --show-current)" = main ]
-[ -z "$(git -C "$SOURCE" status --porcelain)" ]
-git -C "$SOURCE" diff --quiet "$IMPLEMENTATION_COMMIT" -- pi4/lib/hioc/manufacturer.py pi4/bin/hioc-validate-manufacturer.py
-HIOC_HOME="$SOURCE" python3 "$SOURCE/pi4/bin/hioc-validate-manufacturer.py" database --database "$DB" --manifest "$MF" --json
-printf 'STAGING_VERIFICATION=PASS\n'
+hioc_pe3_action3() {
+  PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS'
+  DB="$PI3_STAGE/manufacturer-db.json"
+  MF="$PI3_STAGE/manufacturer-db.manifest.json"
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_IDENTITY; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_IDENTITY; return; }
+  read -r -p 'Type nutandpihole to confirm the production target: ' CONFIRM_TARGET
+  [ "$CONFIRM_TARGET" = nutandpihole ] || { fail TARGET_CONFIRMATION_FAILED TARGET_IDENTITY; return; }
+  [ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ] || { fail STAGING_DIRECTORY_INVALID STAGING_IDENTITY; return; }
+  [ "$(stat -c %U:%G "$PI3_STAGE" 2>/dev/null)" = jazofv1:jazofv1 ] && [ "$(stat -c %a "$PI3_STAGE" 2>/dev/null)" = 700 ] || { fail STAGING_PERMISSIONS_INVALID STAGING_IDENTITY; return; }
+  [ "$(find "$PI3_STAGE" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null | sort | paste -sd, -)" = 'manufacturer-db.json,manufacturer-db.manifest.json' ] || { fail STAGING_CONTENTS_INVALID STAGING_CONTENTS; return; }
+  for p in "$DB" "$MF"; do [ -f "$p" ] && [ ! -L "$p" ] || { fail STAGING_FILE_INVALID STAGING_CONTENTS; return; }; done
+  [ "$(stat -c %s "$DB" 2>/dev/null)" = 8652642 ] && [ "$(stat -c %s "$MF" 2>/dev/null)" = 1338 ] || { fail ARTIFACT_SIZE_MISMATCH ARTIFACT_IDENTITY; return; }
+  [ "$(sha256sum "$DB" 2>/dev/null | awk '{print $1}')" = 81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1 ] || { fail DATABASE_HASH_MISMATCH ARTIFACT_IDENTITY; return; }
+  [ "$(sha256sum "$MF" 2>/dev/null | awk '{print $1}')" = 10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4 ] || { fail MANIFEST_HASH_MISMATCH ARTIFACT_IDENTITY; return; }
+  printf 'RESULT=PASS\nSTAGING_VERIFICATION=PASS\n'
+}
+hioc_pe3_action3
 ```
 
-The validator is permitted only after the local source proves approved
-implementation ancestry. Stop on wrong target, unexpected file, checksum, size,
-symlink, source identity, or validator failure. Run Action 3 only; return output.
+Stop on any non-PASS result. Run Action 3 only; return output; do not proceed.
 
-## Action 4 — PI3 release-source synchronization
+## Action 4 — PI3 release-source synchronization and implementation validation
 
-Target: PI3 release-source repository. Mutation: Git fast-forward only. Rollback
-relevance: source synchronization is not runtime rollback.
+Target: PI3 release-source repository and transferred staging pair. Mutation:
+Git fast-forward only; all post-sync implementation and dataset validation is
+read-only. Rollback relevance: source synchronization is not runtime rollback.
+
+Action 4 first synchronizes the clean source checkout. Only after HEAD equals
+the approved governance commit does it prove implementation ancestry, protected
+implementation/validator identity, recheck the staged artifact identity at the
+point of validator use, and run the read-only validator. This is the required
+barrier before Action 5 can deploy code.
 
 ```bash
-set -euo pipefail
-SOURCE=/home/jazofv1/hioc-release-source
-IMPLEMENTATION_COMMIT=157ae644dcedcbec7c69cb0d8b054e104335e024
-OPERATOR_GOVERNANCE_COMMIT='<approved-full-40-hex-post-push-commit>'
-[ "$(hostname -s)" = nutandpihole ]
-ip -o -4 addr show scope global | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252
-[ "$(git -C "$SOURCE" branch --show-current)" = main ]
-[ -z "$(git -C "$SOURCE" status --porcelain)" ]
-for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ]; done
-[ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ]
-git -C "$SOURCE" fetch origin
-[ "$(git -C "$SOURCE" rev-parse origin/main)" = "$OPERATOR_GOVERNANCE_COMMIT" ]
-git -C "$SOURCE" merge-base --is-ancestor "$IMPLEMENTATION_COMMIT" "$OPERATOR_GOVERNANCE_COMMIT"
-git -C "$SOURCE" merge --ff-only origin/main
-[ "$(git -C "$SOURCE" rev-parse HEAD)" = "$OPERATOR_GOVERNANCE_COMMIT" ]
-[ -z "$(git -C "$SOURCE" status --porcelain)" ]
-printf 'REPOSITORY_SYNCHRONIZATION=PASS\n'
+set +x
+hioc_pe3_action4() {
+  SOURCE=/home/jazofv1/hioc-release-source
+  PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS'
+  DB="$PI3_STAGE/manufacturer-db.json"
+  MF="$PI3_STAGE/manufacturer-db.manifest.json"
+  IMPLEMENTATION_COMMIT=157ae644dcedcbec7c69cb0d8b054e104335e024
+  OPERATOR_GOVERNANCE_COMMIT='<approved-full-40-hex-post-push-commit>'
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  validation_fail() { printf 'RESULT=VALIDATION_FAIL\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_IDENTITY; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_IDENTITY; return; }
+  [ -d "$SOURCE/.git" ] || { fail SOURCE_REPOSITORY_MISSING REPOSITORY_PRECONDITION; return; }
+  [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] || { fail WRONG_BRANCH REPOSITORY_PRECONDITION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY REPOSITORY_PRECONDITION; return; }
+  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION REPOSITORY_PRECONDITION; return; }; done
+  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION REPOSITORY_PRECONDITION; return; }
+  git -C "$SOURCE" fetch origin >/dev/null 2>&1 || { fail GIT_FETCH_FAILED REPOSITORY_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$OPERATOR_GOVERNANCE_COMMIT" ] || { fail GOVERNANCE_COMMIT_MISMATCH REPOSITORY_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge-base --is-ancestor HEAD origin/main >/dev/null 2>&1 || { fail NON_FAST_FORWARD_SOURCE REPOSITORY_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge --ff-only origin/main >/dev/null 2>&1 || { fail FAST_FORWARD_FAILED REPOSITORY_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$OPERATOR_GOVERNANCE_COMMIT" ] && [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_IDENTITY_FAILED REPOSITORY_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" cat-file -e "$IMPLEMENTATION_COMMIT^{commit}" 2>/dev/null || { fail IMPLEMENTATION_COMMIT_MISSING IMPLEMENTATION_IDENTITY; return; }
+  git -C "$SOURCE" merge-base --is-ancestor "$IMPLEMENTATION_COMMIT" HEAD >/dev/null 2>&1 || { fail IMPLEMENTATION_ANCESTRY_FAILED IMPLEMENTATION_IDENTITY; return; }
+  git -C "$SOURCE" diff --quiet "$IMPLEMENTATION_COMMIT" -- pi4/lib/hioc/manufacturer.py pi4/bin/hioc-validate-manufacturer.py || { fail MANUFACTURER_IMPLEMENTATION_IDENTITY_FAILED IMPLEMENTATION_IDENTITY; return; }
+  [ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ] && [ -f "$DB" ] && [ ! -L "$DB" ] && [ -f "$MF" ] && [ ! -L "$MF" ] || { fail STAGING_IDENTITY_CHANGED STAGING_REVALIDATION; return; }
+  [ "$(stat -c %s "$DB" 2>/dev/null)" = 8652642 ] && [ "$(stat -c %s "$MF" 2>/dev/null)" = 1338 ] || { fail ARTIFACT_SIZE_MISMATCH STAGING_REVALIDATION; return; }
+  [ "$(sha256sum "$DB" 2>/dev/null | awk '{print $1}')" = 81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1 ] && [ "$(sha256sum "$MF" 2>/dev/null | awk '{print $1}')" = 10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4 ] || { fail ARTIFACT_HASH_MISMATCH STAGING_REVALIDATION; return; }
+  HIOC_HOME="$SOURCE" python3 "$SOURCE/pi4/bin/hioc-validate-manufacturer.py" database --database "$DB" --manifest "$MF" --json || { validation_fail MANUFACTURER_VALIDATION_FAILED MANUFACTURER_VALIDATION; return; }
+  printf 'RESULT=PASS\nREPOSITORY_SYNCHRONIZATION=PASS\nIMPLEMENTATION_VALIDATION=PASS\nSTAGING_REVALIDATION=PASS\n'
+}
+hioc_pe3_action4
 ```
 
-Stop on any divergence, dirty state, active operation, ancestry failure, or
-non-fast-forward. Run Action 4 only; return output.
+Stop on any non-PASS result. The Git fast-forward may remain after a later
+validation stop; it does not change production runtime. Do not deploy or proceed
+to Action 5 without all four final PASS lines and the validator PASS object.
+Run Action 4 only; return output.
 
 ## Action 5 — Supported code deployment and artifact identity
 
@@ -576,8 +608,8 @@ measurement are never rollback reasons by themselves.
 | --- | --- | --- | --- | --- | --- |
 | 1 | Windows | local validator and artifact PASS | No | Any identity/hash/validation error | None |
 | 2 | PI3 + Windows | transfer PASS and exact stage path | Temporary files | Any transfer/path error | None |
-| 3 | PI3 | staging verification PASS | No | Host/file/hash/validator error | None |
-| 4 | PI3 source | synchronization PASS | Git fast-forward | Dirty/diverged/wrong commit | Source only |
+| 3 | PI3 | staging verification PASS | No | Host/file/hash/symlink error | None |
+| 4 | PI3 source + staging | synchronization, implementation, staged identity, and validator PASS | Git fast-forward only | Dirty/diverged/wrong commit/identity/validator error | Source only |
 | 5 | PI3 runtime | code deployment PASS and backup path | Runtime code/backup | Release/artifact/PI4 failure | Code |
 | 6 | PI3 runtime | new or identical immutable dataset PASS | New version only | Existing difference/install failure | Dataset |
 | 7 | PI3 runtime | config active/no-op PASS and backup if changed | Config/backup | Different value/config failure | Config |

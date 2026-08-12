@@ -910,3 +910,17 @@ read-only. The checkpoint is a one-time promotion validator and intentionally
 refuses once support is `supported`; no revalidation mode is implied. CPython
 3.14.7 remains an unsupported diagnostic side effect. A future independent
 checkpoint must decide retain-versus-remove without affecting PE-3 deployment.
+
+PE-3 production-sequencing amendment: Action 3 verifies only the transferred
+PI3 staging pair. A clean but stale source checkout cannot prove an
+implementation commit before the action assigned to fetch it. Action 4 therefore
+owns the clean fast-forward and, after synchronization, the implementation and
+validator identity checks, point-of-use staged hash/size revalidation, and
+read-only database validation. Action 5 remains the first deployment action.
+
+The original Action 3 stopped after all target and staging checks passed because
+the implementation commit was absent locally. This is a sequencing precondition,
+not artifact or repository corruption. Interactive production verification must
+not enable unbounded shell-level `errexit`; function-scoped checks emit bounded
+failure evidence and return control. Accepted staging evidence is retained unless
+the staging state changes.

@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 PRODUCTION ACTION 1 READY TO RESUME - NOT EXECUTED; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-2 PASS; ACTION 3 STAGING PASS / STOPPED ON REPOSITORY-SEQUENCING PRECONDITION; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1237,12 +1237,14 @@ organization variant enters Git.
 
 Python compatibility governance is resolved under Model D in
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). Windows
-CPython 3.13.x is supported with validated patch evidence 3.13.15. The next
-operator checkpoint is **PE-3 Production Action 1**, separately authorized and
-executed from the repository-controlled `tools/hioc-pe3-action1.ps1`. Action 1
-is ready to resume but has not been executed. Action 2 must not be prepared
-before Action 1 evidence review. Production deployment and PI3 validation have
-not started; PE-4 through PE-9 remain not started.
+CPython 3.13.x is supported with validated patch evidence 3.13.15. PE-3 Actions
+1 and 2 are **PASS — COMPLETE**. The validated pair exists only in private PI3
+temporary staging. Action 3 staging checks passed, but repository validation
+stopped on a sequencing precondition because the clean PI3 source checkout did
+not yet contain the implementation commit that Action 4 owned fetching. The
+next operator checkpoint is corrected Action 4 after this correction is pushed.
+Production deployment and PI3 validation have not started; PE-4 through PE-9
+remain not started.
 
 Action 1 pre-execution review identified two operator-input defects without
 executing the action: a hard-coded `python` PATH assumption and ambiguous choice
@@ -1368,6 +1370,25 @@ PASS, and clean repository. Windows CPython 3.13.x is now supported for the
 operator workstation, with 3.13.15 recorded as validated patch evidence. PE-3
 Action 1 is ready to resume under separate authorization but was not executed in
 this checkpoint. PE-3 deployment and PI3 validation remain not started.
+
+The first PI3 Action 3 attempt established target identity and complete staging
+identity: private owner/mode, exact two regular non-symlink files, frozen byte
+sizes, and frozen SHA-256 values all passed. The subsequent implementation
+history check failed because the clean `main` release-source checkout did not
+yet contain implementation commit `157ae644dcedcbec7c69cb0d8b054e104335e024`.
+This is **PE-3 ACTION 3 / ACTION 4 REPOSITORY-SEQUENCING CONTRADICTION**, not a
+dataset, repository-corruption, manufacturer, or production failure. The
+historical interactive block also closed the operator shell through unbounded
+`set -euo pipefail`; staging remained intact and was recovered read-only.
+
+The corrected immediate sequence is frozen: Action 3 is staging-only; Action 4
+first performs the governed clean fast-forward, then proves implementation and
+validator identity, revalidates the staged pair at point of use, and runs the
+read-only validator; Action 5 remains the first deployment action. Operator
+verification functions return sanitized failure evidence without terminating
+the shell. Accepted staging evidence is preserved, so the exact restart point
+is preparation of corrected Action 4 after this correction is approved and
+pushed. No Action 3 rerun is required unless staging changes.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 
