@@ -247,8 +247,9 @@ read-only. Rollback relevance: source synchronization is not runtime rollback.
 Action 4 first synchronizes the clean source checkout. Only after HEAD equals
 the approved governance commit does it prove implementation ancestry, protected
 implementation/validator identity, recheck the staged artifact identity at the
-point of validator use, and run the read-only validator. This is the required
-barrier before Action 5 can deploy code.
+point of validator use, normalize only the two identity-proven staged files to
+the frozen `0600` mode, recheck mode and content identity, and run the read-only
+validator. This is the required barrier before Action 5 can deploy code.
 
 ```bash
 set +x
@@ -276,19 +277,83 @@ hioc_pe3_action4() {
   git -C "$SOURCE" cat-file -e "$IMPLEMENTATION_COMMIT^{commit}" 2>/dev/null || { fail IMPLEMENTATION_COMMIT_MISSING IMPLEMENTATION_IDENTITY; return; }
   git -C "$SOURCE" merge-base --is-ancestor "$IMPLEMENTATION_COMMIT" HEAD >/dev/null 2>&1 || { fail IMPLEMENTATION_ANCESTRY_FAILED IMPLEMENTATION_IDENTITY; return; }
   git -C "$SOURCE" diff --quiet "$IMPLEMENTATION_COMMIT" -- pi4/lib/hioc/manufacturer.py pi4/bin/hioc-validate-manufacturer.py || { fail MANUFACTURER_IMPLEMENTATION_IDENTITY_FAILED IMPLEMENTATION_IDENTITY; return; }
-  [ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ] && [ -f "$DB" ] && [ ! -L "$DB" ] && [ -f "$MF" ] && [ ! -L "$MF" ] || { fail STAGING_IDENTITY_CHANGED STAGING_REVALIDATION; return; }
+  [ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ] && [ "$(stat -c %U:%G "$PI3_STAGE" 2>/dev/null)" = jazofv1:jazofv1 ] && [ "$(stat -c %a "$PI3_STAGE" 2>/dev/null)" = 700 ] || { fail STAGING_IDENTITY_CHANGED STAGING_REVALIDATION; return; }
+  [ "$(find "$PI3_STAGE" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null | sort | paste -sd, -)" = 'manufacturer-db.json,manufacturer-db.manifest.json' ] || { fail STAGING_CONTENTS_CHANGED STAGING_REVALIDATION; return; }
+  for p in "$DB" "$MF"; do [ -f "$p" ] && [ ! -L "$p" ] && [ "$(stat -c %U:%G "$p" 2>/dev/null)" = jazofv1:jazofv1 ] || { fail STAGING_FILE_IDENTITY_CHANGED STAGING_REVALIDATION; return; }; done
   [ "$(stat -c %s "$DB" 2>/dev/null)" = 8652642 ] && [ "$(stat -c %s "$MF" 2>/dev/null)" = 1338 ] || { fail ARTIFACT_SIZE_MISMATCH STAGING_REVALIDATION; return; }
   [ "$(sha256sum "$DB" 2>/dev/null | awk '{print $1}')" = 81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1 ] && [ "$(sha256sum "$MF" 2>/dev/null | awk '{print $1}')" = 10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4 ] || { fail ARTIFACT_HASH_MISMATCH STAGING_REVALIDATION; return; }
+  DB_HASH_BEFORE="$(sha256sum "$DB" | awk '{print $1}')"; MF_HASH_BEFORE="$(sha256sum "$MF" | awk '{print $1}')"
+  for p in "$DB" "$MF"; do mode="$(stat -c %a "$p" 2>/dev/null)"; [ "$mode" = 600 ] || [ "$mode" = 644 ] || { fail STAGING_MODE_NOT_NORMALIZABLE STAGING_PERMISSION_NORMALIZATION; return; }; done
+  chmod 0600 -- "$DB" "$MF" || { fail STAGING_CHMOD_FAILED STAGING_PERMISSION_NORMALIZATION; return; }
+  [ "$(stat -c %a "$DB")" = 600 ] && [ "$(stat -c %a "$MF")" = 600 ] || { fail STAGING_MODE_NORMALIZATION_FAILED STAGING_PERMISSION_NORMALIZATION; return; }
+  [ "$(sha256sum "$DB" | awk '{print $1}')" = "$DB_HASH_BEFORE" ] && [ "$(sha256sum "$MF" | awk '{print $1}')" = "$MF_HASH_BEFORE" ] || { fail CONTENT_CHANGED_DURING_CHMOD STAGING_PERMISSION_NORMALIZATION; return; }
   HIOC_HOME="$SOURCE" python3 "$SOURCE/pi4/bin/hioc-validate-manufacturer.py" database --database "$DB" --manifest "$MF" --json || { validation_fail MANUFACTURER_VALIDATION_FAILED MANUFACTURER_VALIDATION; return; }
-  printf 'RESULT=PASS\nREPOSITORY_SYNCHRONIZATION=PASS\nIMPLEMENTATION_VALIDATION=PASS\nSTAGING_REVALIDATION=PASS\n'
+  printf 'RESULT=PASS\nREPOSITORY_SYNCHRONIZATION=PASS\nIMPLEMENTATION_VALIDATION=PASS\nSTAGING_REVALIDATION=PASS\nSTAGING_PERMISSION_NORMALIZATION=PASS\n'
 }
 hioc_pe3_action4
 ```
 
 Stop on any non-PASS result. The Git fast-forward may remain after a later
 validation stop; it does not change production runtime. Do not deploy or proceed
-to Action 5 without all four final PASS lines and the validator PASS object.
+to Action 5 without all five final PASS lines and the validator PASS object.
 Run Action 4 only; return output.
+
+### Action 4 resume after the observed `0644` validator stop
+
+The synchronized Action 4 run reached the approved validator and stopped safely
+with `MANUFACTURER_PERMISSION_ERROR`: both correct, owner-matched staged files
+were mode `0644`. Transport success and digest identity did not establish
+permission safety. The source fast-forward and implementation checks already
+passed, so do not repeat synchronization. After the correction commit is pushed
+and PI3 source is fast-forwarded to it under separate authorization, resume at
+`STAGING_PERMISSION_NORMALIZATION` using the block prepared from that commit.
+
+The resume block must first require exact synchronized HEAD, clean `main`, no
+active Git operation, implementation ancestry/identity, exact staging directory,
+exact two-file contents, regular non-symlink owner identity, frozen sizes, and
+frozen hashes. Only mode `0600` or the observed transport-created `0644` is
+eligible. It then applies `chmod 0600` only to the two exact files, verifies both
+modes and unchanged hashes, and retries the read-only validator. Any other state
+stops without chmod. Action 5 remains not started.
+
+```bash
+set +x
+hioc_pe3_action4_resume_permissions() {
+  SOURCE=/home/jazofv1/hioc-release-source
+  PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS'
+  DB="$PI3_STAGE/manufacturer-db.json"
+  MF="$PI3_STAGE/manufacturer-db.manifest.json"
+  IMPLEMENTATION_COMMIT=157ae644dcedcbec7c69cb0d8b054e104335e024
+  OPERATOR_GOVERNANCE_COMMIT='<approved-full-40-hex-permission-correction-commit>'
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  validation_fail() { printf 'RESULT=VALIDATION_FAIL\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_IDENTITY; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_IDENTITY; return; }
+  [ -d "$SOURCE/.git" ] && [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] && [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$OPERATOR_GOVERNANCE_COMMIT" ] && [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$OPERATOR_GOVERNANCE_COMMIT" ] || { fail SOURCE_IDENTITY_MISMATCH SOURCE_REVALIDATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY SOURCE_REVALIDATION; return; }
+  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION SOURCE_REVALIDATION; return; }; done
+  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION SOURCE_REVALIDATION; return; }
+  git -C "$SOURCE" cat-file -e "$IMPLEMENTATION_COMMIT^{commit}" 2>/dev/null && git -C "$SOURCE" merge-base --is-ancestor "$IMPLEMENTATION_COMMIT" HEAD >/dev/null 2>&1 || { fail IMPLEMENTATION_ANCESTRY_FAILED IMPLEMENTATION_IDENTITY; return; }
+  git -C "$SOURCE" diff --quiet "$IMPLEMENTATION_COMMIT" -- pi4/lib/hioc/manufacturer.py pi4/bin/hioc-validate-manufacturer.py || { fail MANUFACTURER_IMPLEMENTATION_IDENTITY_FAILED IMPLEMENTATION_IDENTITY; return; }
+  [ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ] && [ "$(stat -c %U:%G "$PI3_STAGE" 2>/dev/null)" = jazofv1:jazofv1 ] && [ "$(stat -c %a "$PI3_STAGE" 2>/dev/null)" = 700 ] || { fail STAGING_DIRECTORY_INVALID STAGING_PERMISSION_NORMALIZATION; return; }
+  [ "$(find "$PI3_STAGE" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null | sort | paste -sd, -)" = 'manufacturer-db.json,manufacturer-db.manifest.json' ] || { fail STAGING_CONTENTS_INVALID STAGING_PERMISSION_NORMALIZATION; return; }
+  for p in "$DB" "$MF"; do [ -f "$p" ] && [ ! -L "$p" ] && [ "$(stat -c %U:%G "$p" 2>/dev/null)" = jazofv1:jazofv1 ] || { fail STAGING_FILE_IDENTITY_INVALID STAGING_PERMISSION_NORMALIZATION; return; }; done
+  [ "$(stat -c %s "$DB" 2>/dev/null)" = 8652642 ] && [ "$(stat -c %s "$MF" 2>/dev/null)" = 1338 ] || { fail ARTIFACT_SIZE_MISMATCH STAGING_PERMISSION_NORMALIZATION; return; }
+  DB_HASH_BEFORE="$(sha256sum "$DB" 2>/dev/null | awk '{print $1}')"; MF_HASH_BEFORE="$(sha256sum "$MF" 2>/dev/null | awk '{print $1}')"
+  [ "$DB_HASH_BEFORE" = 81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1 ] && [ "$MF_HASH_BEFORE" = 10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4 ] || { fail ARTIFACT_HASH_MISMATCH STAGING_PERMISSION_NORMALIZATION; return; }
+  for p in "$DB" "$MF"; do mode="$(stat -c %a "$p" 2>/dev/null)"; [ "$mode" = 600 ] || [ "$mode" = 644 ] || { fail STAGING_MODE_NOT_NORMALIZABLE STAGING_PERMISSION_NORMALIZATION; return; }; done
+  chmod 0600 -- "$DB" "$MF" || { fail STAGING_CHMOD_FAILED STAGING_PERMISSION_NORMALIZATION; return; }
+  [ "$(stat -c %a "$DB")" = 600 ] && [ "$(stat -c %a "$MF")" = 600 ] || { fail STAGING_MODE_NORMALIZATION_FAILED STAGING_PERMISSION_NORMALIZATION; return; }
+  [ "$(sha256sum "$DB" | awk '{print $1}')" = "$DB_HASH_BEFORE" ] && [ "$(sha256sum "$MF" | awk '{print $1}')" = "$MF_HASH_BEFORE" ] || { fail CONTENT_CHANGED_DURING_CHMOD STAGING_PERMISSION_NORMALIZATION; return; }
+  HIOC_HOME="$SOURCE" python3 "$SOURCE/pi4/bin/hioc-validate-manufacturer.py" database --database "$DB" --manifest "$MF" --json || { validation_fail MANUFACTURER_VALIDATION_FAILED MANUFACTURER_VALIDATION; return; }
+  printf 'RESULT=PASS\nACTION4_RESUME=PASS\nSTAGING_PERMISSION_NORMALIZATION=PASS\nMANUFACTURER_VALIDATION=PASS\n'
+}
+hioc_pe3_action4_resume_permissions
+```
+
+Run only this resume checkpoint after its governance commit is synchronized.
+Stop on any non-PASS result and return the sanitized output. Do not proceed to
+Action 5 automatically.
 
 ## Action 5 — Supported code deployment and artifact identity
 

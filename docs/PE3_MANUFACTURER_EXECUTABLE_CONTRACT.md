@@ -333,6 +333,16 @@ no `.manufacturer*.tmp` siblings, schemas, ordering, counts, hashes, and
 coherence. It performs no writes, repair, chmod, timestamp update, or lock-file
 mutation. It acquires no lock.
 
+Production transport staging is not an immutable published version directory.
+Transport success, a private directory, and matching content digests do not
+establish file permission safety. Before invoking the validator, the governed
+production transaction may normalize only the exact authorized database and
+manifest to `0600`, and only after separately proving exact staging containment,
+no unexpected entries, regular non-symlink type, runtime owner/group, frozen
+sizes, and frozen hashes. It must recheck mode and unchanged hashes afterward.
+This bounded transaction is external to the validator; the validator remains
+strictly read-only and continues rejecting any mode broader than `0600`.
+
 For `database`, the validator parses CLI arguments, resolves both supplied paths,
 performs nonmutating path checks, requires both files to belong to the same
 immutable published version directory, then opens both read-only and validates

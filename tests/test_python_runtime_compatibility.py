@@ -118,15 +118,16 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED",
             "PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED",
             "PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED",
-            "PE-3 ACTIONS 1-2 PASS",
-            "ACTION 3 STAGING PASS / STOPPED ON REPOSITORY-SEQUENCING PRECONDITION",
+            "PE-3 ACTIONS 1-3 COMPLETE",
+            "ACTION 4 SYNCHRONIZED / STOPPED SAFELY ON STAGED PERMISSION CONTRACT",
+            "ACTION 5 NOT STARTED",
             "PYTHON INSTALL MANAGER PRESENT",
             "CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED",
             "WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15",
             "PRODUCTION DEPLOYMENT NOT STARTED",
             "PI3 VALIDATION NOT STARTED",
             "PE-4 NOT STARTED",
-            "corrected Action 4",
+            "STAGING_PERMISSION_NORMALIZATION",
         ):
             self.assertIn(status, self.master)
 

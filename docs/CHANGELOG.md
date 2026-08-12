@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Corrected the PE-3 staged-artifact permission contract after synchronized
+  Action 4 safely stopped on validator rejection of transport-created `0644`
+  files. Action 4 now identity-gates normalization of only the exact database
+  and manifest to frozen mode `0600`, then rechecks mode and hashes before the
+  read-only validator. Existing staging and completed synchronization evidence
+  are preserved; Action 5 and production remain untouched.
+
 - Corrected the PE-3 Action 3/4 sequencing contradiction discovered on PI3.
   Action 3 now verifies staging only; Action 4 synchronizes the clean source,
   proves implementation/validator identity, rechecks staged identity, and runs

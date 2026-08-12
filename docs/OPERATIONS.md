@@ -171,6 +171,23 @@ hashes passed. The corrected Action 3/4 function blocks emit bounded
 shell-level `errexit`. The accepted staging evidence is preserved; the restart
 point is Action 4 after the sequencing-correction commit is approved and pushed.
 
+The first corrected Action 4 synchronized the source and passed implementation
+identity, staging type, size, and digest checks, then the approved validator
+correctly rejected both staged files at mode `0644`. The frozen database,
+manifest, sidecar, and status mode is `0600`; a private `0700` directory alone
+does not make permissive files acceptable. Action 4 owns bounded pre-validation
+normalization because it is the first point where synchronized implementation
+identity and staged content identity are jointly proven.
+
+Permission repair is allowed only for the exact two regular non-symlink files,
+owned by `jazofv1:jazofv1`, inside the exact `0700` staging directory containing
+no other entries, after frozen sizes and hashes pass. Only `0600` or observed
+transport mode `0644` is eligible. After `chmod 0600`, modes and hashes must be
+rechecked before validator retry. Transport success and checksums do not imply
+permission safety; type, symlink status, ownership, size, digest, and mode are
+separate staging invariants. Normalization is allowed only inside an explicitly
+governed staging/install transaction after identity proof.
+
 ## Document Ownership
 
 This is the authoritative operational and runtime reference. It defines how current components run, what they produce, and how operators validate and recover them. The current deployed-system overview is in [SYSTEM_REFERENCE.md](SYSTEM_REFERENCE.md); deployment mechanics are in [DEPLOYMENT.md](DEPLOYMENT.md).

@@ -924,3 +924,18 @@ not artifact or repository corruption. Interactive production verification must
 not enable unbounded shell-level `errexit`; function-scoped checks emit bounded
 failure evidence and return control. Accepted staging evidence is retained unless
 the staging state changes.
+
+PE-3 staged-permission amendment: Model C is adopted. Action 4 owns bounded
+pre-validator permission normalization because synchronized implementation
+identity and staged artifact identity are both available there. Action 2 remains
+transport-only and Action 3 remains read-only staging evidence. Database,
+manifest, sidecar, and status files require `0600`; version directories require
+`0700`.
+
+Transport success and checksum identity do not imply permission safety. Type,
+symlink status, ownership, size, digest, and mode are independent invariants.
+Only exact authorized staging files with proven owner, size, and digest and no
+unexpected siblings may be normalized, only from `0600` or the observed `0644`
+to `0600`, followed by mode and digest revalidation. The stopped Action 4 may
+resume at permission normalization after exact synchronized source state is
+re-established; Action 5 remains the first deployment action.

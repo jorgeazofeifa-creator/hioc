@@ -625,7 +625,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-2 PASS; ACTION 3 STAGING PASS / STOPPED ON REPOSITORY-SEQUENCING PRECONDITION; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-3 COMPLETE; ACTION 4 SYNCHRONIZED / STOPPED SAFELY ON STAGED PERMISSION CONTRACT; ACTION 5 NOT STARTED; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -1389,6 +1389,23 @@ verification functions return sanitized failure evidence without terminating
 the shell. Accepted staging evidence is preserved, so the exact restart point
 is preparation of corrected Action 4 after this correction is approved and
 pushed. No Action 3 rerun is required unless staging changes.
+
+Corrected Action 4 synchronized PI3 release source and passed implementation
+identity and staged size/hash checks, then the approved validator returned
+`MANUFACTURER_PERMISSION_ERROR` because both staged files were mode `0644`.
+This is **PE-3 STAGED ARTIFACT PERMISSION CONTRACT DEFECT**, not dataset
+corruption, transfer-integrity failure, validator defect, or production failure.
+The shell-safe failure contract worked and returned control to the operator.
+
+The executable contract requires database and manifest mode `0600` (and
+sidecar/status `0600`; version directories `0700`). Model C is adopted: Action 4
+owns bounded permission normalization after exact directory contents, regular
+non-symlink type, owner, sizes, and hashes are proven. Only the exact two files
+at `0600` or observed `0644` may be normalized to `0600`; modes and hashes are
+then revalidated before validator retry. Existing staging and completed source
+synchronization are preserved. The restart point is Action 4
+`STAGING_PERMISSION_NORMALIZATION` after this correction is pushed and PI3
+source is synchronized to it. Action 5 remains not started.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

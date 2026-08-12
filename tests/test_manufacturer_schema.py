@@ -1,7 +1,9 @@
 """synthetic fixture; not sourced from IEEE"""
-import copy, hashlib, json, pathlib, sys, tempfile, unittest
+import copy, hashlib, json, os, pathlib, sys, tempfile, unittest
+from unittest import mock
 ROOT=pathlib.Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"pi4"/"lib"))
 from hioc.manufacturer import *
+import hioc.manufacturer as manufacturer_module
 STAMP="2026-08-10T12:00:00.000000Z"
 def database():
     records={"24:A0B1C2":{"prefix":"A0B1C2","prefix_length":24,"assignment_class":"MA-L","organization":"Fictional Lantern Works"},"28:A0B1C2D":{"prefix":"A0B1C2D","prefix_length":28,"assignment_class":"MA-M","organization":"Synthetic Meadow Labs"},"36:A0B1C2D3E":{"prefix":"A0B1C2D3E","prefix_length":36,"assignment_class":"MA-S","organization":"Imaginary Harbor Systems"}}
@@ -68,6 +70,13 @@ class ManufacturerSchemaTests(unittest.TestCase):
     def test_load_pair(self):
         with tempfile.TemporaryDirectory() as td:
             root=pathlib.Path(td); write_pair(root); self.assertEqual(load_database(root/"manufacturer-db.json",root/"manufacturer-db.manifest.json").document["record_count"],3)
+    def test_posix_staged_0644_is_rejected_as_unsafe(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=pathlib.Path(td); write_pair(root); os.chmod(root,0o700)
+            for name in ("manufacturer-db.json","manufacturer-db.manifest.json"): os.chmod(root/name,0o644)
+            with mock.patch.object(manufacturer_module.os,"name","posix"), self.assertRaises(ManufacturerUnavailableError) as cm:
+                load_database(root/"manufacturer-db.json",root/"manufacturer-db.manifest.json")
+            self.assertEqual(cm.exception.code,"MANUFACTURER_PERMISSION_ERROR")
     def test_complete_checksum(self):
         with tempfile.TemporaryDirectory() as td:
             root=pathlib.Path(td); write_pair(root); (root/"manufacturer-db.json").write_bytes((root/"manufacturer-db.json").read_bytes()+b" ")
