@@ -76,6 +76,14 @@ the trailing unittest summary. The corrected script uses native exit status as
 the acceptance authority and retains counts only for reporting. Do not promote
 support until that corrected checkpoint itself passes.
 
+The checkpoint still returned the same failure after that correction, while a
+direct 508-test run and a direct run with the checkpoint pycache-prefix both
+passed with 13 skips and exit code 0. The execution-wrapper mechanism therefore
+remains under governed forensic investigation. Do not rerun the checkpoint.
+After its commit is synchronized, run only the repository-controlled
+`tools/hioc-python313-process-diagnostic.ps1` when separately authorized. It
+compares direct and `ProcessStartInfo` behavior and never prints raw test output.
+
 For Windows PowerShell 5.1 operator tooling, informational native stderr is not
 a failure criterion. Validation-critical native programs must run through the
 governed wrapper and be judged by their actual exit code.

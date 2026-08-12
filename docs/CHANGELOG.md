@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Added a repository-controlled Windows process-wrapper forensic diagnostic
+  after the governed checkpoint continued to report `FULL_REGRESSION_FAILED`
+  while direct CPython 3.13 runs passed 508 tests with 13 skips and exit code 0,
+  including with the checkpoint pycache prefix. The diagnostic compares direct
+  PowerShell and current `ProcessStartInfo` execution using identical launcher,
+  argv, environment, working directory, and suite, emitting only sanitized
+  process metadata. Portable Windows tests cover large/simultaneous streams,
+  nonzero exits, argv fidelity, spaced executable paths, repetition, and
+  cleanup. The checkpoint and support state are unchanged pending evidence.
+
 - Corrected a false `FULL_REGRESSION_FAILED` classification after an immediate
   direct governed CPython 3.13 run passed 506 tests with 13 skips and exit code
   0. The checkpoint had used a parsed `Ran` count as an extra acceptance gate

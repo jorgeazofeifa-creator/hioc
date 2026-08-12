@@ -1,3 +1,4 @@
 tools/hioc-pe3-action1.ps1 text eol=lf
 tools/hioc-python313-validate.ps1 text eol=lf
+tools/hioc-python313-process-diagnostic.ps1 text eol=lf
 governance/python-runtime-support.json text eol=lf

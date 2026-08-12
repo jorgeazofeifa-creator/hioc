@@ -848,3 +848,24 @@ test/skip counts are informational only. No count is pinned, and genuine
 nonzero exits remain failures. Support stays `validation_pending` with no
 validated patch until the corrected governed checkpoint passes and a separate
 support-promotion commit is approved.
+
+Further forensic amendment: the governed checkpoint still reported
+`FULL_REGRESSION_FAILED` after the summary-gate correction. Direct CPython 3.13
+then passed 508 tests with 13 skips and exit code 0, both normally and with the
+checkpoint's temporary `PYTHONPYCACHEPREFIX`. This rules out runtime
+compatibility, the underlying suite, expected-count logic, Bash handling,
+legitimate PyYAML skips, pycache placement, and chat delivery. The remaining
+meaningful difference is the Windows `ProcessStartInfo` wrapper path.
+
+The exact same-launcher mechanism cannot be established in Codex because its
+process cannot resolve the operator's `py` launcher. Governance therefore
+requires one checked-in diagnostic execution after commit and push; no
+speculative checkpoint alteration is authorized before that evidence. The
+diagnostic compares direct and wrapper execution using the same executable,
+arguments, environment, working directory, and regression workload, while
+reporting only sanitized process metadata.
+
+Durable rule: validation wrappers require production-grade tests. A wrapper
+that disagrees with the native process is defective and cannot establish
+product incompatibility. Diagnostic equivalence must cover executable, argv,
+environment, working directory, and execution wrapper before attribution.

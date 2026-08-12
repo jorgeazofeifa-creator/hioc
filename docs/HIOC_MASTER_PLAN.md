@@ -1349,6 +1349,17 @@ tails for sanitized count reporting, and never makes test or skip totals gates.
 Support remains `validation_pending` with `validated_patch: null`; Action 1,
 deployment, PI3 validation, and PE-4 remain not started.
 
+That result-classification correction did not resolve the real operator result:
+the governed checkpoint again returned `FULL_REGRESSION_FAILED`, while direct
+CPython 3.13 runs passed 508 tests with 13 skips and exit code 0 both normally
+and under the checkpoint's temporary `PYTHONPYCACHEPREFIX`. The remaining
+behavioral difference is the Windows PowerShell 5.1 `ProcessStartInfo` wrapper.
+Because the Codex repository process cannot resolve the operator's `py`
+launcher, the exact same-launcher mechanism remains unproven. A checked-in,
+sanitized direct-versus-wrapper diagnostic is prepared for one separately
+authorized operator execution after push. Support stays `validation_pending`
+with `validated_patch: null`; no PE-3 or production action has started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

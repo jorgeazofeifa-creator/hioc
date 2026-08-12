@@ -77,6 +77,13 @@ script now accepts test stages strictly by native exit status, retains the
 trailing summary for sanitized count reporting, and still fails on every
 nonzero exit. A fresh governed checkpoint PASS remains mandatory.
 
+The checkpoint continued to report `FULL_REGRESSION_FAILED` despite a direct
+508-test pass and an equivalent pass using its temporary pycache prefix. This
+is now a process-wrapper forensic checkpoint, not an installation task. Do not
+install, uninstall, or select another runtime. The checked-in
+`tools/hioc-python313-process-diagnostic.ps1` is the sole future diagnostic and
+may run only after its commit is approved and synchronized.
+
 The first corrected install attempt may already have installed a 3.13 runtime
 before stopping at the wrapped-runtime gap in `PYTHON_PROBE`. The checkpoint
 therefore inventories managed 3.13 runtimes first and reuses the manager's one

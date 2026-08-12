@@ -134,6 +134,13 @@ This is not Python, manufacturer, PE-3, or production failure. Action 1 remains
 blocked until a corrected governed checkpoint PASS and separate support-state
 promotion.
 
+The governed checkpoint still returned `FULL_REGRESSION_FAILED` after that
+correction. Direct CPython 3.13 runs then passed 508 tests with 13 skips and exit
+code 0 both normally and with the checkpoint's `PYTHONPYCACHEPREFIX`. The exact
+Windows `ProcessStartInfo` mismatch is pending one separately governed,
+repository-controlled diagnostic execution. Do not interpret this as PE-3
+evidence, rerun Action 1, or prepare Action 2.
+
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 
 

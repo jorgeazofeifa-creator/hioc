@@ -295,6 +295,39 @@ fail closed, and no test/skip total is hard-coded. Support remains
 `validation_pending` with `validated_patch: null` until a fresh execution of the
 corrected governed checkpoint passes and a separate commit promotes support.
 
+The corrected governed checkpoint nevertheless returned
+`FULL_REGRESSION_FAILED` again. Direct `py -3.13` execution then passed 508 tests
+with 13 skips and exit code 0, including an equivalent run with the checkpoint's
+temporary `PYTHONPYCACHEPREFIX`. This rules out CPython 3.13 compatibility, the
+repository suite, Bash prerequisite handling, PyYAML skips, the pycache prefix,
+and short-invocation delivery as explanations. The remaining unreplicated
+difference is the Windows PowerShell 5.1 `ProcessStartInfo` execution/capture
+path.
+
+Codex's repository process cannot resolve the operator's `py` launcher, so an
+exact same-launcher reproduction is not possible in that environment. The
+repository-controlled diagnostic `tools/hioc-python313-process-diagnostic.ps1`
+must be committed and pushed before one operator execution. It compares direct
+PowerShell and current `ProcessStartInfo` semantics using the same launcher,
+arguments, environment, working directory, and test suite, and emits only exit
+codes, lengths, task/completion states, parsed counts, and equality flags.
+
+```text
+PYTHON313_PROCESS_DIAGNOSTIC_SHA256=ed8c2b57091bc6a0ec705bc57278ddf6e1b384e7d18f99b07f5d632737e05a85
+PYTHON313_PROCESS_DIAGNOSTIC_GIT_BLOB=70518fdc8a4ef0cd5898336943791258c3fc8971
+```
+
+Future preparation must provide only a short invocation of that checked-in
+file with `-Repo` and `-GovernanceCommit`; its source must not be transported
+through chat. Until its governed evidence establishes the exact mechanism, no
+further speculative checkpoint change or support promotion is permitted.
+
+A validation wrapper must itself be production-grade tested. Any wrapper result
+that differs from the native process result is a validator defect and never
+product incompatibility. Diagnostic equivalence requires the same executable,
+arguments, environment, working directory, and execution wrapper before a
+failure is attributed to the product.
+
 ## Future validation matrix
 
 Continuous validation should eventually run the complete suite on every
