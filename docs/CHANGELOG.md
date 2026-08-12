@@ -1,5 +1,16 @@
 # HIOC Changelog
 
+- Corrected PE-3 Action 5 manufacturer protection after the first Action 5B
+  deployment passed code/runtime validation but a raw recursive fingerprint
+  misclassified release-managed empty `0700` scaffolding as dataset mutation.
+  Read-only forensics proved no manufacturer payload or configuration activation
+  existed, so rollback is not recommended. Added semantic payload protection,
+  explicit payload/scaffolding/configuration evidence, and a separately
+  bootstrapped read-only Action 5C closure. Added the future PI3 + PI5 abrupt
+  power-loss/cold-boot recovery checkpoint; Action 6 remains not started.
+  Validation passed 25 focused Action 5 tests, 120 manufacturer tests, and all
+  571 repository tests with 8 environment-dependent skips.
+
 - Added an explicit PE-3 Action 5A bootstrap gate because PI3 may remain at the
   prior Action 4 commit that predates the Action 5 deployment script. Action 5A
   performs only a clean exact fast-forward and proves the deployment script's

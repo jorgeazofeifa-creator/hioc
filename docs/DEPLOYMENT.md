@@ -10,6 +10,14 @@ clean PI3 release-source checkout to the exact approved commit and prove the
 script's Git/worktree identity. Action 5A stops without deployment; Action 5B
 owns the supported upgrade.
 
+Manufacturer protection across that upgrade is semantic: empty, private,
+correctly owned installer scaffolding may be created or mode-normalized, but
+payload, sidecar/status, symlink, unexpected-entry, and configuration changes
+are prohibited. The initial Action 5B deployment passed runtime validation but
+hit the former scaffolding false positive. It remains deployed; rollback is not
+recommended. A separately bootstrapped read-only Action 5C validates and closes
+the existing deployment without repeating it.
+
 ## Document Ownership
 
 This document owns the repository-to-production workflow, source and runtime boundaries, operator responsibilities, synchronization expectations, and production acceptance boundary. Detailed commands remain in [INSTALL.md](INSTALL.md) and packaging mechanics remain in [RELEASE.md](RELEASE.md).

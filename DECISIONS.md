@@ -1006,3 +1006,24 @@ the Action 5 script's regular/non-symlink Git and worktree identity. It then
 stops. Action 5B requires reviewed Action 5A PASS and separate authorization;
 only Action 5B may deploy or emit `ACTION5=COMPLETE`. This pattern is mandatory
 whenever a target may predate a repository-controlled production script.
+
+## Decision: Action 5 protects payload semantics, not empty scaffolding identity
+
+**Date:** 2026-08-12
+**Status:** Accepted after Action 5B forensic review
+
+The first Action 5B deployment passed release backup, code deployment, and
+runtime validation, then the raw recursive fingerprint reported
+`MANUFACTURER_DATASET_CHANGED`. Read-only evidence proved only installer-managed
+empty, owned, private manufacturer directories existed. No payload or
+configuration activation occurred. The authoritative classification is
+**ACTION 5 PROTECTION SNAPSHOT FALSE POSITIVE — RELEASE-MANAGED EMPTY
+MANUFACTURER SCAFFOLDING**. Rollback is not recommended because it reruns the
+same installer logic.
+
+Action 5 permits only creation or `0700` normalization of real, correctly owned
+empty scaffold directories. It continues to fail closed on any version,
+database, manifest, sidecar, status, symlink, unexpected entry, payload identity,
+or configuration change. A separately bootstrapped, read-only Action 5C closes
+the deployed runtime; deployment is not repeated and Action 6 remains a
+separate authorization.

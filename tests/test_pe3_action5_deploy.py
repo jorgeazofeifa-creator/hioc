@@ -60,7 +60,7 @@ class PE3Action5DeploymentContractTests(unittest.TestCase):
         self.assertLess(head, available)
         self.assertLess(available, git_blob)
         self.assertLess(git_blob, worktree)
-        self.assertIn("9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c", action)
+        self.assertIn("b493be45d42c7732f353519beec23fa62d45a942", action)
 
     def test_action5a_failure_contract_is_complete(self):
         for code in (
@@ -104,13 +104,13 @@ class PE3Action5DeploymentContractTests(unittest.TestCase):
 
     def test_documented_script_identities_match(self):
         sha256 = hashlib.sha256(SCRIPT.read_bytes()).hexdigest()
-        self.assertEqual(sha256, "f0d2395f5ccfbbf773da95e0fbb2ec18786e2aa03296f1085436025ace6d1b09")
+        self.assertEqual(sha256, "7cc9e0b7a0c3b06055b329cafdf71fe55ae362a8c1e67b870d8c04655771c690")
         self.assertIn(sha256, self.action5)
         result = subprocess.run(
             ["git", "hash-object", "--path=tools/hioc-pe3-action5-deploy.sh", str(SCRIPT)],
             cwd=ROOT, text=True, capture_output=True, check=True,
         )
-        self.assertEqual(result.stdout.strip(), "9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c")
+        self.assertEqual(result.stdout.strip(), "b493be45d42c7732f353519beec23fa62d45a942")
         self.assertIn(result.stdout.strip(), self.action5)
 
     def test_parent_shell_survives_harmless_failure(self):
@@ -160,8 +160,10 @@ class PE3Action5DeploymentContractTests(unittest.TestCase):
         self.assertIn("ROLLBACK_RECOMMENDED=%s", self.script)
 
     def test_dataset_configuration_and_action6_are_out_of_scope(self):
-        self.assertIn('fingerprint_path "$RUNTIME/config/hioc.conf"', self.script)
-        self.assertIn('fingerprint_path "$RUNTIME/data/manufacturer"', self.script)
+        self.assertIn('snapshot --runtime "$RUNTIME"', self.script)
+        self.assertIn("validate-predeploy", self.script)
+        self.assertIn("manufacturer-before.json", self.script)
+        self.assertIn("manufacturer-after.json", self.script)
         self.assertNotIn("manufacturer-db.json", self.script)
         self.assertNotIn("MANUFACTURER_DB_PATH=", self.script)
         self.assertNotRegex(self.script, r"(?:bash|python3) .*hioc-generate-manufacturer")

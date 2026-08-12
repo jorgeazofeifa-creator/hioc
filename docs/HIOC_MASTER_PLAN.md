@@ -785,6 +785,14 @@ Separate governed future checkpoints also preserve:
   ACLs, schedulers, networking, MQTT, off-device backups, restore validation,
   hardware replacement, HA backup awareness, independent host recovery, and
   full-machine migration.
+- PI3 + PI5 Abrupt Power-Loss / Cold-Boot Recovery Validation, as a separate
+  operational-hardening checkpoint: actual abrupt power loss; filesystem and
+  storage integrity; automatic boot; systemd/Docker and HIOC recovery; PI3
+  Pi-hole/DHCP/NUT recovery; PI5 Home Assistant dependency recovery; MQTT and,
+  where applicable, go2rtc/camera recovery; simultaneous-boot network retry;
+  HIOC database/state and manufacturer dataset/config persistence; no `/tmp`
+  dependency or manual intervention; correct incident/state semantics; logs
+  free of corruption indicators; and a final Evidence Report PASS.
 
 These items remain intentionally out of scope until the current roadmap reaches them.
 
@@ -1447,6 +1455,18 @@ operator failure. Action 5A now owns only bootstrap-safe target synchronization
 and exact deployment-script identity, then stops. Separately authorized Action
 5B remains the first production deployment mutation. Neither has been executed;
 Action 6 remains not started.
+
+**PE-3 Action 5 protection correction (2026-08-12):** Action 5A passed. Action
+5B deployed and validated supported runtime code, then falsely classified
+installer-created empty private manufacturer scaffolding as a dataset change.
+Read-only PI3 evidence proved there was no version, database, manifest, sidecar,
+status artifact, or configuration activation. The condition is **ACTION 5
+PROTECTION SNAPSHOT FALSE POSITIVE — RELEASE-MANAGED EMPTY MANUFACTURER
+SCAFFOLDING**; rollback is not recommended. Action 5 protection now compares
+payload and configuration semantics while permitting only empty owned `0700`
+scaffolding creation/normalization. Action 5 remains incomplete pending a new,
+separately bootstrapped, read-only Action 5C revalidation; Action 6 is not
+started.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

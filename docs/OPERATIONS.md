@@ -217,8 +217,8 @@ PASS evidence. A bounded failure reports result, code, stage, and whether
 rollback is recommended without terminating the parent terminal or automatically
 running rollback. Action 6 always requires separate review and authorization.
 The governed script identity is SHA-256
-`f0d2395f5ccfbbf773da95e0fbb2ec18786e2aa03296f1085436025ace6d1b09`, Git blob
-`9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c`.
+`7cc9e0b7a0c3b06055b329cafdf71fe55ae362a8c1e67b870d8c04655771c690`, Git blob
+`b493be45d42c7732f353519beec23fa62d45a942`.
 
 Because PI3 may predate the commit introducing or modifying that script, Action
 5 is split into two separately authorized trust boundaries. Bootstrap-safe
@@ -227,6 +227,15 @@ HEAD, and Action 5 script Git/worktree identity proof, then stops. Only after
 reviewed Action 5A PASS may Action 5B invoke the governed deployment script.
 Action 5B remains the first production mutation and alone may emit
 `ACTION5=COMPLETE`.
+
+Action 5 protection is semantic. Installer-managed creation or `0700`
+normalization of empty, real, correctly owned manufacturer scaffolding is
+permitted before Action 6. Any installed-version, database, manifest,
+sidecar/status, symlink, unexpected-entry, payload identity, or configuration
+change remains a failure. The first Action 5B run exposed the former recursive-
+fingerprint false positive after deployment/runtime validation passed; rollback
+is not recommended. Closure uses the separately bootstrapped, read-only
+`tools/hioc-pe3-action5c-revalidate.sh`, not a repeat deployment.
 
 Any production action containing multiple validations and mutations must be a
 repository-controlled operator script unless a smaller inline procedure has

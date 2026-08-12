@@ -427,7 +427,7 @@ hioc_pe3_action5a_sync() {
   SCRIPT_REL=tools/hioc-pe3-action5-deploy.sh
   SCRIPT="$SOURCE/$SCRIPT_REL"
   GOVERNANCE_COMMIT='<approved-full-40-hex-action5-bootstrap-commit>'
-  SCRIPT_BLOB=9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c
+  SCRIPT_BLOB=b493be45d42c7732f353519beec23fa62d45a942
   fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
   [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
   ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
@@ -475,18 +475,22 @@ The checked-in script is the sole executable Action 5B implementation. Before
 mutation it proves target identity, exact source/governance identity, its own
 Git-object/worktree identity, implementation ancestry, source artifact identity,
 and release validation. It then uses only `release/upgrade.sh`, proves the new
-timestamped rollback backup, validates the deployed runtime, verifies the nine
-governed runtime artifacts against Git-derived SHA-256 values, and proves the
-manufacturer dataset and configuration fingerprints are unchanged.
+timestamped rollback backup, validates the deployed runtime, verifies the ten
+governed runtime artifacts against Git-derived SHA-256 values, and applies a
+semantic manufacturer-protection comparison. It protects installed versions,
+database, manifest, sidecar, status, and configuration state while allowing
+only installer-managed creation or `0700` normalization of empty scaffolding.
 
 Canonical Action 5 script identity for this correction:
 
-- SHA-256: `f0d2395f5ccfbbf773da95e0fbb2ec18786e2aa03296f1085436025ace6d1b09`
-- Git blob: `9dc26c01cd1f9b1bdbce057313d2b2ca0b92cd4c`
+- SHA-256: `7cc9e0b7a0c3b06055b329cafdf71fe55ae362a8c1e67b870d8c04655771c690`
+- Git blob: `b493be45d42c7732f353519beec23fa62d45a942`
 
 PASS requires, exactly once, `TARGET_IDENTITY=PASS`, `SOURCE_IDENTITY=PASS`,
 `RELEASE_VALIDATION=PASS`, `RELEASE_BACKUP=PASS`, `CODE_DEPLOYMENT=PASS`,
-`RUNTIME_VALIDATION=PASS`, `RUNTIME_ARTIFACT_IDENTITY=PASS`,
+`RUNTIME_VALIDATION=PASS`, `MANUFACTURER_PAYLOAD_UNTOUCHED=PASS`,
+`MANUFACTURER_SCAFFOLDING_STATE=PASS`, `CONFIGURATION_UNTOUCHED=PASS`,
+`RUNTIME_ARTIFACT_IDENTITY=PASS`,
 `EVIDENCE_REPORT=PASS`, `ACTION5=COMPLETE`, `RESULT=PASS`, and
 `ROLLBACK_RECOMMENDED=FALSE`, plus the private `EVIDENCE_DIR` and validated
 `RELEASE_BACKUP_PATH`. Any failure emits bounded `RESULT`, `ERROR_CODE`,
@@ -497,6 +501,44 @@ successful upgrade, or any post-deployment validation/identity failure reports
 rollback true. Rollback is never automatic. Do not authorize Action 6 without
 reviewing all PASS evidence. Dataset installation and configuration activation
 remain later actions.
+
+The first Action 5B execution reached successful code deployment and runtime
+validation but the former raw recursive fingerprint treated installer-created,
+empty private scaffolding as `MANUFACTURER_DATASET_CHANGED`. Read-only forensics
+proved the manufacturer root contained only an empty `versions` directory;
+both directories were real, owned by `jazofv1:jazofv1`, and mode `0700`. No
+version, database, manifest, sidecar, status artifact, or configuration
+activation existed. This is **ACTION 5 PROTECTION SNAPSHOT FALSE POSITIVE —
+RELEASE-MANAGED EMPTY MANUFACTURER SCAFFOLDING**. Rollback is not recommended:
+it would rerun the same installer scaffolding logic. Genuine payload or
+configuration mutation remains a post-deployment failure with
+rollback/investigation recommended.
+
+### Action 5C — read-only post-deployment protection revalidation and closure
+
+Action 5C is the smallest safe closure for that already-deployed runtime and
+does not repeat deployment. It rechecks source/script identity, implementation
+ancestry, the preserved release-backup pointer, release/runtime validation,
+runtime artifact identities, exact empty/private manufacturer scaffolding,
+absence of payload/sidecar/status artifacts, and inactive configuration.
+
+Canonical Action 5C script identity:
+
+- path: `tools/hioc-pe3-action5c-revalidate.sh`
+- SHA-256: `f58346ac943c56e74fd5235fae7f02a1519337cb3eca1be90ca1d6312093e55a`
+- Git blob: `da47aa4a3d0346432332fc42f4111a956fd8e1bd`
+
+Because this script is new, a separately authorized bootstrap-safe
+synchronization and Action 5C script-identity gate must run and stop after this
+correction is approved and pushed. A later authorization may invoke Action 5C;
+neither command is prepared here. PASS requires `TARGET_IDENTITY=PASS`,
+`SOURCE_IDENTITY=PASS`, `RELEASE_BACKUP_IDENTITY=PASS`,
+`RELEASE_VALIDATION=PASS`, `RUNTIME_VALIDATION=PASS`,
+`RUNTIME_ARTIFACT_IDENTITY=PASS`, `MANUFACTURER_PAYLOAD_UNTOUCHED=PASS`,
+`MANUFACTURER_SCAFFOLDING_STATE=PASS`, `CONFIGURATION_UNTOUCHED=PASS`,
+`ACTION5B_DEPLOYMENT_EVIDENCE=PRESERVED`, `EVIDENCE_REPORT=PASS`,
+`ACTION5=COMPLETE`, `RESULT=PASS`, and `ROLLBACK_RECOMMENDED=FALSE`.
+Any failure leaves Action 5 incomplete and Action 6 unauthorized.
 
 ## Action 6 — Immutable dataset installation
 

@@ -217,6 +217,23 @@ script availability/Git/worktree identity proof, then stops. Action 5B remains
 separately authorized and is the first deployment mutation. Neither action has
 been executed.
 
+The first Action 5B execution later passed release backup, supported deployment,
+and runtime validation, then exposed a protection-model false positive.
+Read-only PI3 forensics established that installer-managed empty private
+scaffolding was the only difference and no manufacturer payload or configuration
+activation existed. Governance records rollback as not recommended, replaces
+raw recursive identity with semantic payload protection, and defines a
+separately bootstrapped read-only Action 5C closure. Historical pre-execution
+statements above remain chronology and are not rewritten to imply the corrected
+contract existed earlier.
+
+Protection-correction validation passed 25 focused Action 5 tests, all 120
+manufacturer tests, and the complete 571-test repository regression with 8
+documented environment-dependent skips when Git Bash was selected explicitly.
+Both governed Bash scripts parsed successfully; Python compilation,
+documentation links/status, secret review, `git diff --check`, repository
+hygiene, and complete-diff review passed.
+
 Bootstrap correction validation passed 29 focused Action 5A/5B and runbook
 tests, 17 release/governance tests with 3 environment-dependent skips, all 120
 manufacturer tests, and the complete 560-test repository regression with 20

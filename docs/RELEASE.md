@@ -19,6 +19,14 @@ The invocation is Action 5B and is forbidden until the separate bootstrap-safe
 Action 5A has synchronized the target source and proven the script's exact Git
 and worktree identity.
 
+The installer owns creation and `0700` normalization of empty manufacturer
+scaffolding. Release protection distinguishes that scaffolding from payload:
+versions, database/manifest bytes, sidecar/status artifacts, unexpected entries,
+symlinks, and configuration remain protected. Release backup intentionally
+excludes persistent manufacturer data, so rollback does not correct a
+scaffolding-only observation. The read-only Action 5C closes the deployed
+runtime after exact semantic revalidation.
+
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 
 ```text

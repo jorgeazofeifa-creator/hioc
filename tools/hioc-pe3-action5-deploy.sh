@@ -6,7 +6,8 @@ SOURCE=/home/jazofv1/hioc-release-source
 RUNTIME=/home/jazofv1/hioc
 SCRIPT_PATH=tools/hioc-pe3-action5-deploy.sh
 IMPLEMENTATION_COMMIT=157ae644dcedcbec7c69cb0d8b054e104335e024
-ARTIFACTS='pi4/lib/hioc/manufacturer.py pi4/bin/hioc-build-manufacturer-db.py pi4/bin/hioc-validate-manufacturer.py pi4/bin/hioc-generate-manufacturer.py pi4/install_pi4.sh pi4/validate_pi4.sh pi4/config/hioc.conf.example release/upgrade.sh release/rollback.sh'
+PROTECTION_TOOL=tools/hioc_manufacturer_protection.py
+ARTIFACTS='pi4/lib/hioc/manufacturer.py pi4/bin/hioc-build-manufacturer-db.py pi4/bin/hioc-validate-manufacturer.py pi4/bin/hioc-generate-manufacturer.py pi4/install_pi4.sh pi4/validate_pi4.sh pi4/config/hioc.conf.example release/upgrade.sh release/rollback.sh tools/hioc_manufacturer_protection.py'
 
 fail_action5() {
   FAILURE_REPORTED=1
@@ -22,18 +23,6 @@ active_git_operation() {
   done
   [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || return 0
   return 1
-}
-
-fingerprint_path() {
-  python3 -c 'import hashlib,os,pathlib,stat,sys
-p=pathlib.Path(sys.argv[1]); h=hashlib.sha256()
-if not p.exists(): h.update(b"MISSING")
-else:
- for q in sorted([p,*p.rglob("*")],key=lambda x:x.as_posix()):
-  s=q.lstat(); rel="." if q==p else q.relative_to(p).as_posix(); h.update(f"{rel}|{stat.S_IFMT(s.st_mode)}|{stat.S_IMODE(s.st_mode)}|".encode())
-  if q.is_symlink(): h.update(os.readlink(q).encode())
-  elif q.is_file(): h.update(hashlib.sha256(q.read_bytes()).digest())
-print(h.hexdigest())' "$1" 2>/dev/null
 }
 
 verify_target_and_source() {
@@ -63,6 +52,10 @@ prepare_evidence_and_manifest() {
   jq -e --arg c "$GOVERNANCE_COMMIT" '.commit==$c and .generated_from_git_objects and all(.artifacts[];.working_tree_equal==true)' "$EVIDENCE_DIR/git-artifacts.json" >/dev/null 2>&1 || { fail_action5 INPUT_OR_PRECONDITION_ERROR SOURCE_ARTIFACT_IDENTITY_FAILED SOURCE_IDENTITY FALSE; return 1; }
 }
 
+snapshot_manufacturer_state() {
+  python3 "$SOURCE/$PROTECTION_TOOL" snapshot --runtime "$RUNTIME" > "$1" 2>/dev/null || { fail_action5 INPUT_OR_PRECONDITION_ERROR MANUFACTURER_SNAPSHOT_FAILED MANUFACTURER_PROTECTION FALSE; return 1; }
+}
+
 validate_release() {
   bash "$SOURCE/release/validate.sh" > "$EVIDENCE_DIR/release-validation.sanitized.txt" 2>&1 || { fail_action5 VALIDATION_FAIL RELEASE_VALIDATION_FAILED RELEASE_VALIDATION FALSE; return 1; }
   grep -Fxq 'HIOC release validation passed.' "$EVIDENCE_DIR/release-validation.sanitized.txt" || { fail_action5 VALIDATION_FAIL RELEASE_VALIDATION_FAILED RELEASE_VALIDATION FALSE; return 1; }
@@ -85,8 +78,8 @@ deploy_supported_release() {
   [ -d "$RUNTIME/backups" ] && [ ! -L "$RUNTIME/backups" ] && [ -w "$RUNTIME/backups" ] || { fail_action5 INPUT_OR_PRECONDITION_ERROR BACKUP_PRECONDITION_FAILED RELEASE_BACKUP FALSE; return 1; }
   find "$RUNTIME/backups" -mindepth 1 -maxdepth 1 -type d -name 'release-upgrade-*' -printf '%p\n' > "$EVIDENCE_DIR/backups-before.unsorted.txt" 2>/dev/null || { fail_action5 INPUT_OR_PRECONDITION_ERROR BACKUP_PRECONDITION_FAILED RELEASE_BACKUP FALSE; return 1; }
   sort "$EVIDENCE_DIR/backups-before.unsorted.txt" > "$EVIDENCE_DIR/backups-before.txt" || { fail_action5 INPUT_OR_PRECONDITION_ERROR EVIDENCE_PATH_FAILED EVIDENCE_PREPARATION FALSE; return 1; }
-  CONFIG_BEFORE="$(fingerprint_path "$RUNTIME/config/hioc.conf")" || { fail_action5 INPUT_OR_PRECONDITION_ERROR EVIDENCE_PATH_FAILED EVIDENCE_PREPARATION FALSE; return 1; }
-  DATASET_BEFORE="$(fingerprint_path "$RUNTIME/data/manufacturer")" || { fail_action5 INPUT_OR_PRECONDITION_ERROR EVIDENCE_PATH_FAILED EVIDENCE_PREPARATION FALSE; return 1; }
+  snapshot_manufacturer_state "$EVIDENCE_DIR/manufacturer-before.json" || return 1
+  python3 "$SOURCE/$PROTECTION_TOOL" validate-predeploy --snapshot "$EVIDENCE_DIR/manufacturer-before.json" >/dev/null 2>&1 || { fail_action5 INPUT_OR_PRECONDITION_ERROR MANUFACTURER_PREDEPLOY_STATE_INVALID MANUFACTURER_PROTECTION FALSE; return 1; }
   HIOC_INSTALL_DIR="$RUNTIME" bash "$SOURCE/release/upgrade.sh" > "$EVIDENCE_DIR/release-upgrade.sanitized.txt" 2>&1
   upgrade_status=$?
   find "$RUNTIME/backups" -mindepth 1 -maxdepth 1 -type d -name 'release-upgrade-*' -printf '%p\n' > "$EVIDENCE_DIR/backups-after.unsorted.txt" 2>/dev/null || { fail_action5 VALIDATION_FAIL EVIDENCE_PATH_FAILED EVIDENCE_REPORT TRUE; return 1; }
@@ -116,15 +109,23 @@ validate_runtime_and_artifacts() {
     expected="$(jq -r --arg p "$rel" '.artifacts[]|select(.path==$p)|.sha256' "$EVIDENCE_DIR/git-artifacts.json" 2>/dev/null)"
     [ -n "$expected" ] && [ -f "$RUNTIME/$rel" ] && [ ! -L "$RUNTIME/$rel" ] && [ "$(sha256sum "$RUNTIME/$rel" 2>/dev/null | awk '{print $1}')" = "$expected" ] || { fail_action5 VALIDATION_FAIL RUNTIME_ARTIFACT_IDENTITY_MISMATCH RUNTIME_ARTIFACT_IDENTITY TRUE; return 1; }
   done
-  CONFIG_AFTER="$(fingerprint_path "$RUNTIME/config/hioc.conf")" || { fail_action5 VALIDATION_FAIL EVIDENCE_PATH_FAILED EVIDENCE_REPORT TRUE; return 1; }
-  DATASET_AFTER="$(fingerprint_path "$RUNTIME/data/manufacturer")" || { fail_action5 VALIDATION_FAIL EVIDENCE_PATH_FAILED EVIDENCE_REPORT TRUE; return 1; }
-  [ "$CONFIG_AFTER" = "$CONFIG_BEFORE" ] || { fail_action5 VALIDATION_FAIL CONFIGURATION_CHANGED CODE_DEPLOYMENT TRUE; return 1; }
-  [ "$DATASET_AFTER" = "$DATASET_BEFORE" ] || { fail_action5 VALIDATION_FAIL MANUFACTURER_DATASET_CHANGED CODE_DEPLOYMENT TRUE; return 1; }
+  python3 "$SOURCE/$PROTECTION_TOOL" snapshot --runtime "$RUNTIME" > "$EVIDENCE_DIR/manufacturer-after.json" 2>/dev/null || { fail_action5 VALIDATION_FAIL MANUFACTURER_SNAPSHOT_FAILED MANUFACTURER_PROTECTION TRUE; return 1; }
+  protection_result="$(python3 "$SOURCE/$PROTECTION_TOOL" compare --before "$EVIDENCE_DIR/manufacturer-before.json" --after "$EVIDENCE_DIR/manufacturer-after.json" 2>/dev/null)"
+  protection_status=$?
+  if [ "$protection_status" -ne 0 ]; then
+    protection_code="$(printf '%s' "$protection_result" | jq -r '.code // "MANUFACTURER_PROTECTION_FAILED"' 2>/dev/null)"
+    case "$protection_code" in
+      CONFIGURATION_CHANGED) fail_action5 VALIDATION_FAIL CONFIGURATION_CHANGED MANUFACTURER_PROTECTION TRUE ;;
+      *) fail_action5 VALIDATION_FAIL MANUFACTURER_PAYLOAD_CHANGED MANUFACTURER_PROTECTION TRUE ;;
+    esac
+    return 1
+  fi
+  printf 'MANUFACTURER_PAYLOAD_UNTOUCHED=PASS\nMANUFACTURER_SCAFFOLDING_STATE=PASS\nCONFIGURATION_UNTOUCHED=PASS\n'
   printf 'RUNTIME_ARTIFACT_IDENTITY=PASS\n'
 }
 
 write_evidence_report() {
-  jq -n --arg commit "$GOVERNANCE_COMMIT" --arg script_blob "$expected_script_blob" --arg backup "$RELEASE_BACKUP" '{schema_version:1,result:"PASS",target:"nutandpihole",source_commit:$commit,action5_script_blob:$script_blob,release_validation:"PASS",release_backup:$backup,code_deployment:"PASS",runtime_validation:"PASS",runtime_artifact_identity:"PASS",dataset_untouched:true,configuration_untouched:true,rollback_recommended:false}' > "$EVIDENCE_DIR/action5-evidence.json" 2>/dev/null || { fail_action5 VALIDATION_FAIL EVIDENCE_PATH_FAILED EVIDENCE_REPORT TRUE; return 1; }
+  jq -n --arg commit "$GOVERNANCE_COMMIT" --arg script_blob "$expected_script_blob" --arg backup "$RELEASE_BACKUP" '{schema_version:1,result:"PASS",target:"nutandpihole",source_commit:$commit,action5_script_blob:$script_blob,release_validation:"PASS",release_backup:$backup,code_deployment:"PASS",runtime_validation:"PASS",runtime_artifact_identity:"PASS",manufacturer_payload_untouched:true,manufacturer_scaffolding_state:"PRIVATE_EMPTY_OR_PAYLOAD_PRESERVED",configuration_untouched:true,rollback_recommended:false}' > "$EVIDENCE_DIR/action5-evidence.json" 2>/dev/null || { fail_action5 VALIDATION_FAIL EVIDENCE_PATH_FAILED EVIDENCE_REPORT TRUE; return 1; }
   printf 'EVIDENCE_REPORT=PASS\nEVIDENCE_DIR=%s\nRELEASE_BACKUP_PATH=%s\n' "$EVIDENCE_DIR" "$RELEASE_BACKUP"
 }
 
