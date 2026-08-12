@@ -298,7 +298,7 @@ validation stop; it does not change production runtime. Do not deploy or proceed
 to Action 5 without all five final PASS lines and the validator PASS object.
 Run Action 4 only; return output.
 
-### Action 4 resume after the observed `0644` validator stop
+### Action 4A — target synchronization and resume-script identity
 
 The synchronized Action 4 run reached the approved validator and stopped safely
 with `MANUFACTURER_PERMISSION_ERROR`: both correct, owner-matched staged files
@@ -307,8 +307,10 @@ permission safety. Source synchronization passed at commit
 `653f887a643c877a8f611145c8b8e9f92a65b6cd`, but later governance corrections
 introduced the resume script. Its first invocation failed before execution
 because PI3 release source was still at that older commit. No staging or
-production mutation occurred. The corrected resume must synchronize the target
-source to the exact approved commit before dispatching the script.
+production mutation occurred. Action 4A synchronizes the target source to the
+exact approved commit, proves script identity, and then stops for evidence
+review. It is inline because the stale target cannot contain a new bootstrap
+tool.
 
 The authoritative implementation is the repository-controlled
 `tools/hioc-pe3-action4-resume-permissions.sh`. Chat must provide only the short
@@ -327,14 +329,14 @@ read-only validator and accepts only JSON with `result:"PASS"`,
 
 Target: **PI3 NUT&PIHOLE**, interactive Bash. Replace the placeholder only with
 the approved full 40-hex commit containing this prerequisite and the script.
-The bounded prerequisite permits only a clean fast-forward, verifies script
-availability and Git identity, then dispatches the script. It performs no reset,
-force, stash, local-change discard, merge commit, staging mutation, deployment,
-or Action 5 work.
+The bounded prerequisite permits only a clean fast-forward and verifies script
+availability and Git identity. It performs no reset, force, stash, local-change
+discard, merge commit, staging reference or mutation, validator execution,
+deployment, or Action 5 work. It returns PASS and stops.
 
 ```bash
 set +x
-hioc_pe3_action4_resume() {
+hioc_pe3_action4a_sync() {
   SOURCE=/home/jazofv1/hioc-release-source
   SCRIPT_REL=tools/hioc-pe3-action4-resume-permissions.sh
   SCRIPT="$SOURCE/$SCRIPT_REL"
@@ -343,23 +345,42 @@ hioc_pe3_action4_resume() {
   fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
   [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
   ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  printf 'TARGET_IDENTITY=PASS\n'
   [ -d "$SOURCE/.git" ] || { fail SOURCE_REPOSITORY_MISSING TARGET_SYNCHRONIZATION; return; }
   [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] || { fail WRONG_BRANCH TARGET_SYNCHRONIZATION; return; }
   [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
   for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }; done
   [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_PRECONDITION=PASS\n'
   git -C "$SOURCE" fetch origin >/dev/null 2>&1 || { fail GIT_FETCH_FAILED TARGET_SYNCHRONIZATION; return; }
   [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail GOVERNANCE_COMMIT_MISMATCH TARGET_SYNCHRONIZATION; return; }
   git -C "$SOURCE" merge-base --is-ancestor HEAD origin/main >/dev/null 2>&1 || { fail NON_FAST_FORWARD_SOURCE TARGET_SYNCHRONIZATION; return; }
   git -C "$SOURCE" merge --ff-only origin/main >/dev/null 2>&1 || { fail FAST_FORWARD_FAILED TARGET_SYNCHRONIZATION; return; }
-  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] && [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_IDENTITY_FAILED TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_SYNCHRONIZATION=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail POST_SYNC_HEAD_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  printf 'SYNCHRONIZED_HEAD_IDENTITY=PASS\n'
   [ -f "$SCRIPT" ] && [ ! -L "$SCRIPT" ] || { fail ACTION4_RESUME_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  printf 'ACTION4_RESUME_SCRIPT_AVAILABILITY=PASS\n'
   [ "$(git -C "$SOURCE" rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL" 2>/dev/null)" = "$SCRIPT_BLOB" ] || { fail ACTION4_SCRIPT_GIT_IDENTITY_MISMATCH SCRIPT_AVAILABILITY; return; }
   [ "$(git -C "$SOURCE" hash-object --path="$SCRIPT_REL" "$SCRIPT" 2>/dev/null)" = "$SCRIPT_BLOB" ] && git -C "$SOURCE" diff --quiet -- "$SCRIPT_REL" || { fail ACTION4_SCRIPT_WORKTREE_IDENTITY_MISMATCH SCRIPT_AVAILABILITY; return; }
-  printf 'TARGET_SYNCHRONIZATION=PASS\nACTION4_RESUME_SCRIPT_AVAILABILITY=PASS\n'
-  bash "$SCRIPT" --governance-commit "$GOVERNANCE_COMMIT"
+  printf 'ACTION4_RESUME_SCRIPT_IDENTITY=PASS\nACTION4A=COMPLETE\nRESULT=PASS\n'
 }
-hioc_pe3_action4_resume
+hioc_pe3_action4a_sync
+```
+
+Action 4A must stop after its eight exact PASS lines. Return the output for
+review. No shell block or script may chain Action 4A into Action 4B.
+
+### Action 4B — staging permission normalization and manufacturer validation
+
+Action 4B requires separate authorization after reviewed Action 4A PASS. It is
+the unchanged repository-controlled resume script:
+
+```bash
+set +x
+bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action4-resume-permissions.sh \
+  --governance-commit '<approved-full-40-hex-action4a-sync-commit>'
 ```
 
 Canonical script identity (UTF-8, LF): SHA-256
@@ -377,9 +398,10 @@ owner/type/mode/size/hash drift, validator failure, privacy failure, and record
 count mismatch each stop before later stages. The script contains no shell-level
 `set -e`, no interactive-shell `exit`, and cannot terminate its parent Bash.
 Return its sanitized output and stop. Do not proceed to Action 5 automatically.
-If synchronization or script availability fails, the resume script is never
-invoked and the preserved staging path is never referenced or changed. The two
-new prerequisite PASS lines precede the existing script PASS contract.
+If Action 4A fails, Action 4B is never invoked and the preserved staging path is
+never referenced or changed. Action 4B owns the existing script PASS contract.
+Its final `ACTION4=COMPLETE` means both reviewed Action 4A PASS and separately
+authorized Action 4B PASS. Action 4B must stop before Action 5.
 
 ## Action 5 — Supported code deployment and artifact identity
 

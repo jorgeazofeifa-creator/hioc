@@ -50,6 +50,9 @@ and final governance closure remain open. PE-4 through PE-9 are not started.
 The exact restart point includes bounded target-source synchronization because
 PI3 remained at `653f887a643c877a8f611145c8b8e9f92a65b6cd`, where the resume
 script did not yet exist. Existing Action 3 staging evidence remains valid.
+The corrected restart is explicitly split: Action 4A synchronization and script
+identity must PASS and stop; Action 4B requires separate authorization and owns
+permission normalization, validator retry, and final Action 4 completion.
 
 The Master Plan now defines the controlled vocabulary for design-complete,
 repository-validated, external-data-validated, production-validated, in-progress,

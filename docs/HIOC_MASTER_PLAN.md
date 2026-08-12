@@ -1424,6 +1424,13 @@ point is bounded target-source synchronization, script identity verification,
 then the existing permission-normalization resume in the same Action 4. Staging
 remains preserved and Action 5 remains not started.
 
+The execution-boundary correction splits the restart into Action 4A (target
+repository synchronization and resume-script identity) and Action 4B (bounded
+staging permission normalization and manufacturer validation). Action 4A must
+PASS and stop; Action 4B requires separate authorization. `ACTION4=COMPLETE`
+belongs only to Action 4B after reviewed Action 4A PASS. Action 5 remains the
+first deployment action and is not started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

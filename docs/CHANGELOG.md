@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Split PE-3 Action 4 into separately authorized 4A synchronization/script
+  identity and 4B permission-normalization/validator boundaries. Action 4A now
+  emits eight explicit PASS barriers and stops without staging access or script
+  execution. Action 4B remains the unchanged repository script and alone may
+  complete Action 4 after separate authorization. No production action occurred.
+
 - Gated the PE-3 Action 4 resume on target release-source synchronization after
   PI3 was found at `653f887a643c877a8f611145c8b8e9f92a65b6cd`, before the resume
   script existed. The bounded prerequisite permits only a clean exact

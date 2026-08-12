@@ -960,3 +960,11 @@ must prove the script's commit blob and worktree identity. PI3 remained at
 made no production mutation but could not find the later script. A small inline
 synchronization prerequisite is necessary because a wrapper stored only in the
 newer target commit would have the same bootstrap problem.
+
+PE-3 Action 4 execution-boundary amendment: repository synchronization, script
+availability proof, and mutating script execution are distinct trust boundaries.
+Action 4A is the bootstrap-safe synchronization and identity proof and must stop
+after PASS. Action 4B is the separately authorized repository-controlled
+permission-normalization and validator resume. No command may auto-chain 4A to
+4B. Final `ACTION4=COMPLETE` is emitted only by 4B after reviewed 4A PASS;
+Action 5 remains the first deployment action.

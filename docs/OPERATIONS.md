@@ -200,6 +200,11 @@ script. A repository-controlled operator script must never be invoked until the
 target repository is fast-forwarded to the exact approved governance commit and
 the script's Git object and worktree identities are verified. Source repository
 synchronization and script availability are preconditions, not deployment.
+They are also a separate trust boundary from execution: Action 4A proves the
+script is available and stops; it must never auto-chain into mutating Action 4B.
+Action 4B requires reviewed Action 4A PASS and separate authorization. Bootstrap
+actions must remain runnable when the target predates the tool they make
+available.
 
 ## Known Dangerous Operator Patterns
 

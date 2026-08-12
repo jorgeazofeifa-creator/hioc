@@ -19,8 +19,10 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
         cls.master = MASTER.read_text(encoding="utf-8")
         cls.action3 = cls.runbook.split("## Action 3", 1)[1].split("## Action 4", 1)[0]
         cls.action4 = cls.runbook.split("## Action 4", 1)[1].split("## Action 5", 1)[0]
-        cls.resume = cls.action4.split("### Action 4 resume", 1)[1]
-        cls.resume_block = re.search(r"```bash\n(.*?)```", cls.resume, re.DOTALL).group(1)
+        cls.resume = cls.action4.split("### Action 4A", 1)[1]
+        cls.resume_blocks = re.findall(r"```bash\n(.*?)```", cls.resume, re.DOTALL)
+        cls.resume_block = cls.resume_blocks[0]
+        cls.action4b_block = cls.resume_blocks[1]
         cls.resume_script = ACTION4_SCRIPT.read_text(encoding="utf-8")
 
     def test_action3_is_staging_only(self):
@@ -111,20 +113,20 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
     def test_resume_is_repository_controlled(self):
         self.assertIn("tools/hioc-pe3-action4-resume-permissions.sh", self.resume)
         self.assertIn('SCRIPT_REL=tools/hioc-pe3-action4-resume-permissions.sh', self.resume)
-        self.assertIn('bash "$SCRIPT" --governance-commit "$GOVERNANCE_COMMIT"', self.resume)
+        self.assertIn('bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action4-resume-permissions.sh', self.action4b_block)
         self.assertNotIn("hioc_pe3_action4_resume_permissions()", self.resume)
 
-    def test_resume_synchronizes_before_script_availability_and_invocation(self):
+    def test_action4a_synchronizes_and_stops_after_identity(self):
         action = self.resume_block
         clean = action.index('status --porcelain')
         fetch = action.index('fetch origin')
         ancestry = action.index('merge-base --is-ancestor HEAD origin/main')
         fast_forward = action.index('merge --ff-only origin/main')
-        post = action.index('POST_SYNC_IDENTITY_FAILED')
+        post = action.index('POST_SYNC_HEAD_MISMATCH')
         present = action.index('ACTION4_RESUME_SCRIPT_MISSING')
         commit_blob = action.index('ACTION4_SCRIPT_GIT_IDENTITY_MISMATCH')
         worktree_blob = action.index('ACTION4_SCRIPT_WORKTREE_IDENTITY_MISMATCH')
-        invoke = action.index('bash "$SCRIPT" --governance-commit')
+        complete = action.index('ACTION4A=COMPLETE')
         self.assertLess(clean, fetch)
         self.assertLess(fetch, ancestry)
         self.assertLess(ancestry, fast_forward)
@@ -132,7 +134,10 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
         self.assertLess(post, present)
         self.assertLess(present, commit_blob)
         self.assertLess(commit_blob, worktree_blob)
-        self.assertLess(worktree_blob, invoke)
+        self.assertLess(worktree_blob, complete)
+        self.assertNotIn('bash "$SCRIPT"', action)
+        self.assertNotIn("hioc-validate-manufacturer.py", action)
+        self.assertNotIn("chmod", action)
 
     def test_resume_sync_fails_closed_and_preserves_staging(self):
         action = self.resume_block
@@ -143,9 +148,8 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
             "ACTION4_SCRIPT_WORKTREE_IDENTITY_MISMATCH",
         ):
             self.assertIn(code, action)
-        before_dispatch = action.split('bash "$SCRIPT" --governance-commit', 1)[0]
-        self.assertNotIn("/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS", before_dispatch)
-        self.assertNotIn("chmod", before_dispatch)
+        self.assertNotIn("/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS", action)
+        self.assertNotIn("chmod", action)
         for forbidden in ("reset", "--force", "stash", "release/upgrade.sh", "Action 5"):
             self.assertNotIn(forbidden, action)
 
@@ -162,6 +166,20 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
         self.assertIn("PARENT_SHELL_ALIVE=TRUE", result.stdout)
         self.assertNotIn("TARGET_SYNCHRONIZATION=PASS", result.stdout)
         self.assertNotRegex(action := self.resume_block, r"(?m)^\s*(?:set -e|exit(?:\s|$))")
+
+    def test_action4a_pass_contract_is_closed_and_action4b_is_separate(self):
+        for marker in (
+            "TARGET_IDENTITY=PASS", "REPOSITORY_PRECONDITION=PASS",
+            "REPOSITORY_SYNCHRONIZATION=PASS", "SYNCHRONIZED_HEAD_IDENTITY=PASS",
+            "ACTION4_RESUME_SCRIPT_AVAILABILITY=PASS",
+            "ACTION4_RESUME_SCRIPT_IDENTITY=PASS", "ACTION4A=COMPLETE",
+            "RESULT=PASS",
+        ):
+            self.assertEqual(self.resume_block.count(marker), 1)
+        self.assertIn("requires separate authorization", self.resume)
+        self.assertIn("ACTION4=COMPLETE", self.resume_script)
+        self.assertNotIn("ACTION4=COMPLETE", self.resume_block)
+        self.assertNotIn("release/upgrade.sh", self.action4b_block)
 
     def test_action3_and_action4_bash_parse(self):
         shell = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash")
