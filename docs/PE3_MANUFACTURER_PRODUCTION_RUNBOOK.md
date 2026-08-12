@@ -308,52 +308,46 @@ passed, so do not repeat synchronization. After the correction commit is pushed
 and PI3 source is fast-forwarded to it under separate authorization, resume at
 `STAGING_PERMISSION_NORMALIZATION` using the block prepared from that commit.
 
-The resume block must first require exact synchronized HEAD, clean `main`, no
-active Git operation, implementation ancestry/identity, exact staging directory,
-exact two-file contents, regular non-symlink owner identity, frozen sizes, and
-frozen hashes. Only mode `0600` or the observed transport-created `0644` is
-eligible. It then applies `chmod 0600` only to the two exact files, verifies both
-modes and unchanged hashes, and retries the read-only validator. Any other state
-stops without chmod. Action 5 remains not started.
+The authoritative implementation is the repository-controlled
+`tools/hioc-pe3-action4-resume-permissions.sh`. Chat must provide only the short
+invocation below, never reproduce the script source. The script first verifies
+its own Git object from the approved governance commit, exact synchronized
+source identity, implementation ancestry/identity, and the complete staging
+identity. Only mode `0600` or the observed transport-created `0644` is eligible.
+Files already at `0600` are an idempotent no-op; `chmod 0600` receives only the
+exact database and/or manifest still at `0644`.
+
+After normalization, the script rechecks the directory type, owner, and mode;
+the exact two-entry set; both files' regular/non-symlink type, owner/group,
+`0600` mode, frozen byte size, and frozen SHA-256. It then runs only the approved
+read-only validator and accepts only JSON with `result:"PASS"`,
+`privacy_safe:true`, and `record_count:53581`.
+
+Target: **PI3 NUT&PIHOLE**, interactive Bash. Replace the placeholder only with
+the approved full 40-hex commit that contains this script, after that commit is
+pushed and the source repository is synchronized to it.
 
 ```bash
 set +x
-hioc_pe3_action4_resume_permissions() {
-  SOURCE=/home/jazofv1/hioc-release-source
-  PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS'
-  DB="$PI3_STAGE/manufacturer-db.json"
-  MF="$PI3_STAGE/manufacturer-db.manifest.json"
-  IMPLEMENTATION_COMMIT=157ae644dcedcbec7c69cb0d8b054e104335e024
-  OPERATOR_GOVERNANCE_COMMIT='<approved-full-40-hex-permission-correction-commit>'
-  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
-  validation_fail() { printf 'RESULT=VALIDATION_FAIL\nERROR_CODE=%s\nFAILURE_STAGE=%s\n' "$1" "$2"; return 1; }
-  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_IDENTITY; return; }
-  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_IDENTITY; return; }
-  [ -d "$SOURCE/.git" ] && [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] && [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$OPERATOR_GOVERNANCE_COMMIT" ] && [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$OPERATOR_GOVERNANCE_COMMIT" ] || { fail SOURCE_IDENTITY_MISMATCH SOURCE_REVALIDATION; return; }
-  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY SOURCE_REVALIDATION; return; }
-  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION SOURCE_REVALIDATION; return; }; done
-  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION SOURCE_REVALIDATION; return; }
-  git -C "$SOURCE" cat-file -e "$IMPLEMENTATION_COMMIT^{commit}" 2>/dev/null && git -C "$SOURCE" merge-base --is-ancestor "$IMPLEMENTATION_COMMIT" HEAD >/dev/null 2>&1 || { fail IMPLEMENTATION_ANCESTRY_FAILED IMPLEMENTATION_IDENTITY; return; }
-  git -C "$SOURCE" diff --quiet "$IMPLEMENTATION_COMMIT" -- pi4/lib/hioc/manufacturer.py pi4/bin/hioc-validate-manufacturer.py || { fail MANUFACTURER_IMPLEMENTATION_IDENTITY_FAILED IMPLEMENTATION_IDENTITY; return; }
-  [ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ] && [ "$(stat -c %U:%G "$PI3_STAGE" 2>/dev/null)" = jazofv1:jazofv1 ] && [ "$(stat -c %a "$PI3_STAGE" 2>/dev/null)" = 700 ] || { fail STAGING_DIRECTORY_INVALID STAGING_PERMISSION_NORMALIZATION; return; }
-  [ "$(find "$PI3_STAGE" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null | sort | paste -sd, -)" = 'manufacturer-db.json,manufacturer-db.manifest.json' ] || { fail STAGING_CONTENTS_INVALID STAGING_PERMISSION_NORMALIZATION; return; }
-  for p in "$DB" "$MF"; do [ -f "$p" ] && [ ! -L "$p" ] && [ "$(stat -c %U:%G "$p" 2>/dev/null)" = jazofv1:jazofv1 ] || { fail STAGING_FILE_IDENTITY_INVALID STAGING_PERMISSION_NORMALIZATION; return; }; done
-  [ "$(stat -c %s "$DB" 2>/dev/null)" = 8652642 ] && [ "$(stat -c %s "$MF" 2>/dev/null)" = 1338 ] || { fail ARTIFACT_SIZE_MISMATCH STAGING_PERMISSION_NORMALIZATION; return; }
-  DB_HASH_BEFORE="$(sha256sum "$DB" 2>/dev/null | awk '{print $1}')"; MF_HASH_BEFORE="$(sha256sum "$MF" 2>/dev/null | awk '{print $1}')"
-  [ "$DB_HASH_BEFORE" = 81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1 ] && [ "$MF_HASH_BEFORE" = 10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4 ] || { fail ARTIFACT_HASH_MISMATCH STAGING_PERMISSION_NORMALIZATION; return; }
-  for p in "$DB" "$MF"; do mode="$(stat -c %a "$p" 2>/dev/null)"; [ "$mode" = 600 ] || [ "$mode" = 644 ] || { fail STAGING_MODE_NOT_NORMALIZABLE STAGING_PERMISSION_NORMALIZATION; return; }; done
-  chmod 0600 -- "$DB" "$MF" || { fail STAGING_CHMOD_FAILED STAGING_PERMISSION_NORMALIZATION; return; }
-  [ "$(stat -c %a "$DB")" = 600 ] && [ "$(stat -c %a "$MF")" = 600 ] || { fail STAGING_MODE_NORMALIZATION_FAILED STAGING_PERMISSION_NORMALIZATION; return; }
-  [ "$(sha256sum "$DB" | awk '{print $1}')" = "$DB_HASH_BEFORE" ] && [ "$(sha256sum "$MF" | awk '{print $1}')" = "$MF_HASH_BEFORE" ] || { fail CONTENT_CHANGED_DURING_CHMOD STAGING_PERMISSION_NORMALIZATION; return; }
-  HIOC_HOME="$SOURCE" python3 "$SOURCE/pi4/bin/hioc-validate-manufacturer.py" database --database "$DB" --manifest "$MF" --json || { validation_fail MANUFACTURER_VALIDATION_FAILED MANUFACTURER_VALIDATION; return; }
-  printf 'RESULT=PASS\nACTION4_RESUME=PASS\nSTAGING_PERMISSION_NORMALIZATION=PASS\nMANUFACTURER_VALIDATION=PASS\n'
-}
-hioc_pe3_action4_resume_permissions
+bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action4-resume-permissions.sh \
+  --governance-commit '<approved-full-40-hex-action4-resume-commit>'
 ```
 
-Run only this resume checkpoint after its governance commit is synchronized.
-Stop on any non-PASS result and return the sanitized output. Do not proceed to
-Action 5 automatically.
+Canonical script identity (UTF-8, LF): SHA-256
+`31561b166d9d272c18767789e56dc126a107f7ce42b21ac93f81d37737e003a6`; Git blob
+`0602d9f460bf127bac4be953686fad1c0700c14e`. Success evidence is exactly the
+validator's privacy-safe JSON plus these separate barriers: `SOURCE_IDENTITY_RECHECK=PASS`,
+`STAGING_IDENTITY_RECHECK=PASS`, `STAGING_PERMISSION_NORMALIZATION=PASS`,
+`POST_NORMALIZATION_IDENTITY=PASS`, `MANUFACTURER_VALIDATION=PASS`,
+`ACTION4=COMPLETE`, and final `RESULT=PASS`.
+
+Every failure emits exact `RESULT`, `ERROR_CODE`, and `FAILURE_STAGE` fields and
+returns from the governed script process. Source drift, staging drift,
+unsupported initial mode, chmod failure, post-normalization directory/content/
+owner/type/mode/size/hash drift, validator failure, privacy failure, and record
+count mismatch each stop before later stages. The script contains no shell-level
+`set -e`, no interactive-shell `exit`, and cannot terminate its parent Bash.
+Return its sanitized output and stop. Do not proceed to Action 5 automatically.
 
 ## Action 5 — Supported code deployment and artifact identity
 

@@ -56,7 +56,8 @@ implementation is separately tested and governed.
 The machine-readable support state is
 `governance/python-runtime-support.json`. It is explicit repository state, not
 chat state. Its Windows status is `supported`, with validated patch evidence
-`3.13.15`; PE-3 Production Action 1 is ready to resume under separate authority.
+`3.13.15`; PE-3 Production Action 1 subsequently completed under separate
+authority. The runtime support decision remains unchanged.
 The official Python Install Manager is present on the operator workstation.
 CPython 3.14.7 is also present because an informal `py --help` diagnostic
 triggered the manager's default-runtime automatic installation. Its presence

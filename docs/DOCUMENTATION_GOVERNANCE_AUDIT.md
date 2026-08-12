@@ -42,7 +42,10 @@ PE-2 are **COMPLETE - PRODUCTION VALIDATED**. PE-3.0 is complete; PE-3.1 is
 **IMPLEMENTED - REPOSITORY VALIDATED**; PE-3.2 is **COMPLETE - EXTERNAL DATASET
 VALIDATED**; PE-3.3 is **COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED**.
 Windows CPython 3.13.x is operator-supported with validated patch 3.13.15.
-PE-3 Production Action 1 is ready to resume but remains unexecuted. PE-3 production deployment, manufacturer generation, PI3 production validation,
+PE-3 Production Actions 1 and 2 are complete; Action 3 staging evidence is
+preserved. Action 4 remains stopped at `STAGING_PERMISSION_NORMALIZATION` while
+its completed repository-controlled resume contract awaits approval and
+synchronization. Action 5, manufacturer generation, PI3 production validation,
 and final governance closure remain open. PE-4 through PE-9 are not started.
 
 The Master Plan now defines the controlled vocabulary for design-complete,

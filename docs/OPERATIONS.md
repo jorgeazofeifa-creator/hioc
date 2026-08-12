@@ -188,6 +188,41 @@ permission safety; type, symlink status, ownership, size, digest, and mode are
 separate staging invariants. Normalization is allowed only inside an explicitly
 governed staging/install transaction after identity proof.
 
+The Action 4 resume implementation is now owned by
+`tools/hioc-pe3-action4-resume-permissions.sh`, not chat. It revalidates every
+directory and file invariant after normalization, enforces the validator JSON
+result/privacy/count contract, and emits a distinct PASS barrier for source,
+staging, normalization, post-normalization identity, validator, and Action 4.
+
+## Known Dangerous Operator Patterns
+
+Operational instructions must state the exact target machine and shell and must
+contain the exact validated command. Substantial programs belong in versioned,
+repository-controlled scripts; chat is never their sole authoritative copy.
+Copy/paste behavior is part of validation, including an intentional harmless
+failure proving sanitized evidence, suppression of later stages, survival of
+the parent terminal, and return of its prompt.
+
+- Interactive `set -e` or `set -euo pipefail` can close the evidence-bearing
+  shell. Do not enable either at interactive scope. `pipefail` is allowed only
+  inside a tested controlled process that cannot terminate its parent.
+- `grep -q` and pipelines under `pipefail` can report failure because an
+  upstream writer receives SIGPIPE after a match. Use an explicitly tested
+  bounded check whose authoritative status is unambiguous.
+- Shell-level `exit` closes the operator session. Governed scripts may return a
+  process status; pasted functions must `return` and preserve the prompt.
+- Large pasted implementation blocks are vulnerable to formatting and partial
+  delivery. Invoke the checked-in script by its short frozen command instead.
+- PowerShell `if`/`else` fragments pasted separately can execute incompletely.
+  Use one repository script or one syntactically complete bounded invocation.
+- Windows App Execution Aliases are not proof of an installed runtime and may
+  return `9009`. Resolve only the governed managed interpreter.
+- Windows PowerShell 5.1 can turn native stderr into error records. Governed
+  wrappers must use the actual native exit status and tested stderr handling.
+- `ProcessStartInfo` can disagree with direct governed Python execution because
+  of environment, stream, or argument behavior. HIOC uses the validated direct
+  launcher model for governed Python checks.
+
 ## Document Ownership
 
 This is the authoritative operational and runtime reference. It defines how current components run, what they produce, and how operators validate and recover them. The current deployed-system overview is in [SYSTEM_REFERENCE.md](SYSTEM_REFERENCE.md); deployment mechanics are in [DEPLOYMENT.md](DEPLOYMENT.md).

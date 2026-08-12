@@ -939,3 +939,14 @@ unexpected siblings may be normalized, only from `0600` or the observed `0644`
 to `0600`, followed by mode and digest revalidation. The stopped Action 4 may
 resume at permission normalization after exact synchronized source state is
 re-established; Action 5 remains the first deployment action.
+
+PE-3 Action 4 resume completion amendment: the original resume block was
+insufficient because its post-`chmod` barrier covered only mode and digest and
+its validator acceptance relied on process success without independently
+requiring PASS, privacy safety, and the frozen record count. The exact operation
+is therefore moved to `tools/hioc-pe3-action4-resume-permissions.sh`. It owns
+complete pre/post staging identity, changes only proven `0644` target files,
+treats `0600` as an idempotent no-op, and emits separate sanitized barriers.
+Substantial production operator logic must be repository controlled; chat may
+deliver only the short invocation. Action 4 remains stopped and Action 5 is not
+started.

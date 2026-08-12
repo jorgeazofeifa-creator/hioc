@@ -343,6 +343,14 @@ sizes, and frozen hashes. It must recheck mode and unchanged hashes afterward.
 This bounded transaction is external to the validator; the validator remains
 strictly read-only and continues rejecting any mode broader than `0600`.
 
+For the stopped PE-3 Action 4 transaction, the runbook-owned repository script
+must recheck the full staging identity after permission normalization, not only
+mode and digest. Directory type/ownership/mode, exact entries, file type and
+symlink status, owner/group, sizes, modes, and hashes remain independent
+post-normalization barriers. Validator acceptance additionally requires the
+sanitized JSON fields `result:"PASS"`, `privacy_safe:true`, and the frozen
+record count. These operator transaction checks do not change validator logic.
+
 For `database`, the validator parses CLI arguments, resolves both supplied paths,
 performs nonmutating path checks, requires both files to belong to the same
 immutable published version directory, then opens both read-only and validates

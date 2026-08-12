@@ -198,6 +198,7 @@ acquisition/transformation is approved; registry content cannot enter Git or
 releases. PE-3.2 externally validated the production-intended dataset and
 manifest; neither is committed or deployed. No production manufacturer sidecar,
 schedule, public projection, or consumer exists. PE-3.3 is design approved;
-Production Action 1 is ready to resume because the Windows Python prerequisite
-and support promotion are complete. Production deployment has not started and
-PI3 validation has not started.
+Production Actions 1 and 2 completed and Action 3 staging evidence is preserved.
+Action 4 is stopped at bounded staged-file permission normalization pending the
+approved repository-controlled resume. No dataset installation, sidecar
+generation, deployment, or PI3 production validation has occurred.

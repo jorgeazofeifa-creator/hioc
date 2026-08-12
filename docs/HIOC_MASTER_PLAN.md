@@ -1407,6 +1407,14 @@ synchronization are preserved. The restart point is Action 4
 `STAGING_PERMISSION_NORMALIZATION` after this correction is pushed and PI3
 source is synchronized to it. Action 5 remains not started.
 
+The resume contract gap is corrected in a repository-controlled Bash script.
+The script rechecks all staging invariants after normalization and requires the
+validator's PASS, privacy-safe, and 53,581-record fields explicitly. Separate
+source, staging, permission, post-normalization, validator, and Action 4 PASS
+barriers are mandatory. This repository correction does not execute the resume;
+Action 4 remains stopped at `STAGING_PERMISSION_NORMALIZATION`, existing staging
+evidence is preserved, and Action 5 remains not started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

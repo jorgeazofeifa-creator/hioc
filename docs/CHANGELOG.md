@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Completed the PE-3 Action 4 resume contract after finding that the inline
+  procedure rechecked only modes and hashes after normalization and did not
+  explicitly enforce validator JSON privacy/count fields. The exact operation
+  now lives in a repository-controlled Bash script with full pre/post identity
+  barriers, bounded chmod targets, explicit sanitized evidence, failure-path
+  terminal safety, and permanent dangerous-operator-pattern guidance. Action 4
+  remains stopped; no PI, staging, deployment, or production action occurred.
+
 - Corrected the PE-3 staged-artifact permission contract after synchronized
   Action 4 safely stopped on validator rejection of transport-created `0644`
   files. Action 4 now identity-gates normalization of only the exact database
