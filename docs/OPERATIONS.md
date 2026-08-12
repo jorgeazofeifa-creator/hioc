@@ -72,6 +72,14 @@ For Windows PowerShell 5.1 operator tooling, informational native stderr is not
 a failure criterion. Validation-critical native programs must run through the
 governed wrapper and be judged by their actual exit code.
 
+The hardened checkpoint subsequently reached the full regression. Its only
+errors were three Bash-dependent network-probe governance tests attempting to
+execute an unavailable fallback shell on Windows. They now skip individually
+and visibly when Bash is absent, consistent with existing optional-tool tests;
+the three platform-neutral checks still run, and all six original assertions
+run when Bash is available. This correction does not weaken full-regression
+failure handling or prescribe installing Bash on the operator workstation.
+
 Action 1 is implemented only by the repository-controlled Windows PowerShell
 script `tools/hioc-pe3-action1.ps1`; its source must never be reproduced through
 chat. The runbook freezes the script SHA-256 and Git blob identity and provides

@@ -77,6 +77,13 @@ present and fails safely on malformed or ambiguous inventory. Exact patch and
 compatibility remain unknown until the wrapped `py -3.13` probe and complete
 matrix pass.
 
+Bash is not a prerequisite for the Windows CPython 3.13 runtime itself. Three
+network-probe governance tests exercise Linux/Bash artifacts and now report an
+explicit `Bash is required` skip when Bash is unavailable; their platform-
+neutral companion checks continue to run. Do not install Bash, WSL, Git Bash,
+rsync, or PyYAML merely to alter checkpoint skip counts. Where Bash exists, the
+complete original network-probe assertions remain mandatory.
+
 Verify the non-Git runtime boundary without using Git status:
 
 ```bash

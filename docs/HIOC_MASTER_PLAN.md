@@ -1324,6 +1324,18 @@ The next retry must not infer a patch from the completed install stage. It must
 use the hardened manager inventory and wrapped `py -3.13` probe, then complete
 the full wrapped validation matrix. PE-3 Action 1 remains blocked throughout.
 
+The hardened retry successfully passed repository, script, support, manager,
+managed-runtime selection, and CPython 3.13 execution checks before stopping at
+`FULL_REGRESSION`. A direct verbose run executed 504 tests and isolated all
+three errors to Bash-dependent network-probe governance tests raising Windows
+`FileNotFoundError` / `WinError 2` for an unavailable shell. This is
+**CROSS-PLATFORM TEST PREREQUISITE CONTRACT DEFECT — MISSING BASH REPORTED AS
+ERROR**, not Python 3.13 incompatibility. The three Bash-only tests now skip
+explicitly when Bash is unavailable; three platform-neutral checks continue to
+run, and all six original assertions run when Bash exists. Support remains
+`validation_pending`; Action 1, deployment, PI3 validation, and PE-4 remain not
+started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

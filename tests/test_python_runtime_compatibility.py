@@ -101,6 +101,10 @@ class PythonRuntimeCompatibilityGovernanceTests(unittest.TestCase):
             "stopped at `PYTHON_PROBE`",
             "Every native executable in the checkpoint now uses one process wrapper",
             "may already be installed",
+            "CROSS-PLATFORM TEST PREREQUISITE CONTRACT DEFECT",
+            "MISSING BASH REPORTED AS ERROR",
+            "ran 504 tests",
+            "Bash is required",
         ):
             self.assertIn(marker, self.policy)
 

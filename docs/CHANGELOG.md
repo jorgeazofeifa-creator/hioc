@@ -1,5 +1,14 @@
 # HIOC Changelog
 
+- Corrected the network-probe governance module's cross-platform prerequisite
+  contract after the Windows CPython 3.13 checkpoint reached full regression.
+  Three Bash-dependent tests had attempted an unresolved fallback executable
+  and raised `WinError 2`; they now skip individually and visibly only when
+  Bash is unavailable, while three platform-neutral checks always run and all
+  six original assertions run where Bash exists. Full-regression failure/error
+  handling and actual test/skip reporting remain unchanged. No runtime,
+  support-state, PI, deployment, or production mutation occurred.
+
 - Hardened every native execution path in the Windows CPython 3.13 checkpoint
   after the corrected operator run passed installation and failed at
   `PYTHON_PROBE`. Git, WinGet, `pymanager`, the exact 3.13 probe, all test

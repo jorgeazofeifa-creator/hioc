@@ -818,3 +818,17 @@ non-authoritative multiple output fails closed. A 3.13 runtime may now exist,
 but exact patch and compatibility are established only by a successful wrapped
 probe and validation matrix. Support remains `validation_pending`; the script
 does not promote itself.
+
+Cross-platform full-regression amendment: the next governed run reached
+`FULL_REGRESSION`, and a verbose CPython 3.13 execution ran 504 tests with only
+three errors. Each error came from a Bash-dependent network-probe governance
+test invoking an unresolved shell fallback on Windows and raising
+`FileNotFoundError` / `WinError 2`. This is **CROSS-PLATFORM TEST PREREQUISITE
+CONTRACT DEFECT — MISSING BASH REPORTED AS ERROR**, not Python incompatibility,
+HIOC/manufacturer failure, or PE-3/production failure.
+
+The accepted contract follows existing repository practice: only the three
+Bash-executing tests skip explicitly with `Bash is required` when the tool is
+unavailable; platform-neutral checks remain active. Where Bash is available,
+all original assertions execute unchanged. The full suite continues to fail on
+real errors and reports actual test/skip counts without pinning a skip total.

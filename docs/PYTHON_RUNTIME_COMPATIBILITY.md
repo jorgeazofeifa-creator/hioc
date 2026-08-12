@@ -203,6 +203,11 @@ evaluated by native exit code through a governed process-execution wrapper.
 Informational stderr alone never determines success or failure. Operator tools
 must not mix wrapped management calls with direct runtime or validation calls.
 
+Cross-platform regression tests must distinguish a missing optional platform
+tool from a failed assertion. Tool-dependent tests skip explicitly and visibly
+only when the prerequisite is unavailable; platform-neutral assertions remain
+active, and the complete original semantics must run wherever the tool exists.
+
 ## Repository-controlled operator programs
 
 Validation-critical or production-capable multi-line operator programs should
@@ -249,6 +254,23 @@ traced the stop to the remaining direct runtime invocation path, extending the
 same native-stderr defect already found in manager calls. The hardened retry
 must safely inspect and reuse a managed 3.13 entry before considering install,
 then establish its exact patch only through the wrapped `py -3.13` probe.
+
+The next governed execution reached `FULL_REGRESSION`. A direct verbose rerun
+proved CPython 3.13 launched and ran 504 tests; only three errors occurred, all
+in `test_network_probe_governance.py`, where Bash-specific scripts were invoked
+through an unresolved fallback command and raised Windows `FileNotFoundError`
+(`WinError 2`). This is **CROSS-PLATFORM TEST PREREQUISITE CONTRACT DEFECT —
+MISSING BASH REPORTED AS ERROR**, not Python 3.13 incompatibility or an HIOC,
+manufacturer, PE-3, or production failure.
+
+Those three tests exercise Bash-only syntax and behavior. They now follow the
+repository's existing per-test prerequisite contract: each visibly skips with
+`Bash is required` when neither the governed `HIOC_TEST_SHELL` nor `bash`/`sh`
+is resolvable. The module's three platform-neutral governance tests still run.
+When Bash is available, all six original assertions execute unchanged. The
+full regression continues to fail on real failures/errors, reports actual test
+and skip counts, and permits explicit tool/platform skips without hard-coded
+counts.
 
 ## Future validation matrix
 

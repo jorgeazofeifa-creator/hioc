@@ -8,10 +8,11 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "pi4-tools" / "scripts" / "hioc-network-probe.sh"
 DEPLOY = ROOT / "pi4-tools" / "deploy-network-probe.sh"
-SHELL = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash") or shutil.which("sh") or "bash"
+SHELL = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash") or shutil.which("sh")
 
 
 class NetworkProbeGovernanceTests(unittest.TestCase):
+    @unittest.skipUnless(SHELL, "Bash is required")
     def test_shell_sources_parse(self):
         for source in (SCRIPT, DEPLOY):
             result = subprocess.run([SHELL, "-n", str(source)], capture_output=True, text=True)
@@ -61,6 +62,7 @@ class NetworkProbeGovernanceTests(unittest.TestCase):
         self.assertIn("state_topic: home/infrastructure/hioc/incidents/active", package)
         self.assertIn("states('sensor.hioc_incident_active')", dashboard)
 
+    @unittest.skipUnless(SHELL, "Bash is required")
     def test_missing_home_assistant_ip_fails_without_exposing_credentials(self):
         with tempfile.TemporaryDirectory() as td:
             base = pathlib.Path(td)
@@ -79,6 +81,7 @@ class NetworkProbeGovernanceTests(unittest.TestCase):
             self.assertIn("HOME_ASSISTANT_IP", result.stderr)
             self.assertNotIn(secret, result.stdout + result.stderr)
 
+    @unittest.skipUnless(SHELL, "Bash is required")
     def test_configured_pi5_reaches_probe_and_inventory_arguments(self):
         with tempfile.TemporaryDirectory() as td:
             base = pathlib.Path(td)

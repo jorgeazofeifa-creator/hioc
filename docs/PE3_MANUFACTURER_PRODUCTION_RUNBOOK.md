@@ -116,6 +116,13 @@ evidence. A 3.13 runtime may exist but remains unvalidated. Action 1 stays
 blocked until the hardened checkpoint reuses or installs 3.13, completes all
 wrapped validation stages, and a separate commit promotes support.
 
+The later `FULL_REGRESSION_FAILED` result was isolated to three Bash-dependent
+network-probe governance tests raising Windows `WinError 2` because no shell was
+resolvable. This is a cross-platform test-prerequisite defect, not CPython 3.13
+or PE-3 evidence. The tests now skip explicitly only when Bash is absent and
+retain full semantics when it is present. Action 1 remains blocked pending a
+fresh governed checkpoint PASS and separate support promotion.
+
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 
 
