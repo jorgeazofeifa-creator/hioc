@@ -123,6 +123,17 @@ or PE-3 evidence. The tests now skip explicitly only when Bash is absent and
 retain full semantics when it is present. Action 1 remains blocked pending a
 fresh governed checkpoint PASS and separate support promotion.
 
+The following governed retry also reported `FULL_REGRESSION_FAILED`, but an
+immediate direct `py -3.13` full regression in the same repository passed 506
+tests with 13 skips and exit code 0. Forensics established a checkpoint result-
+classification defect: an optionally parsed test count was incorrectly used as
+an acceptance gate, and head-only bounded capture could omit the trailing
+unittest summary. The corrected checkpoint uses native exit code exclusively
+for pass/fail and reports parsed counts without treating them as criteria.
+This is not Python, manufacturer, PE-3, or production failure. Action 1 remains
+blocked until a corrected governed checkpoint PASS and separate support-state
+promotion.
+
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 
 

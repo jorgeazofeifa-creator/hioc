@@ -69,6 +69,14 @@ not HIOC-supported. It is preserved pending a separate cleanup decision and
 does not prevent explicit 3.13 installation. The currently observed dry-run
 candidate is 3.13.15, but no patch is pinned before successful validation.
 
+The latest direct CPython 3.13 evidence passed 506 tests with 13 skips and exit
+code 0, but it does not promote support. It exposed a checkpoint-only false
+failure: parsed unittest counts had been used as an additional acceptance gate
+and could be lost when bounded output retained the stream head. The governed
+script now accepts test stages strictly by native exit status, retains the
+trailing summary for sanitized count reporting, and still fails on every
+nonzero exit. A fresh governed checkpoint PASS remains mandatory.
+
 The first corrected install attempt may already have installed a 3.13 runtime
 before stopping at the wrapped-runtime gap in `PYTHON_PROBE`. The checkpoint
 therefore inventories managed 3.13 runtimes first and reuses the manager's one

@@ -59,7 +59,7 @@ function ConvertTo-NativeArgument([string]$Value) {
 function Limit-NativeOutput([string]$Value) {
     if ($null -eq $Value) { return '' }
     if ($Value.Length -le $MaxNativeCaptureChars) { return $Value }
-    return $Value.Substring(0, $MaxNativeCaptureChars)
+    return $Value.Substring($Value.Length - $MaxNativeCaptureChars)
 }
 
 function Invoke-NativeProcess([string]$FilePath, [string[]]$ArgumentList) {
@@ -227,19 +227,19 @@ Set-Location -LiteralPath $Repo
 
 $Stage = 'FULL_REGRESSION'
 $Full = Invoke-PythonCheck @('-m', 'unittest', 'discover', '-s', 'tests')
-if (-not $Full.Passed -or $Full.Ran -le 0) { Write-CheckpointFailure 'VALIDATION_FAIL' 'FULL_REGRESSION_FAILED'; return }
+if (-not $Full.Passed) { Write-CheckpointFailure 'VALIDATION_FAIL' 'FULL_REGRESSION_FAILED'; return }
 
 $Stage = 'PYTHON_POLICY_TESTS'
 $Policy = Invoke-PythonCheck @('-m', 'unittest', 'tests.test_python_runtime_compatibility')
-if (-not $Policy.Passed -or $Policy.Ran -le 0) { Write-CheckpointFailure 'VALIDATION_FAIL' 'PYTHON_POLICY_TESTS_FAILED'; return }
+if (-not $Policy.Passed) { Write-CheckpointFailure 'VALIDATION_FAIL' 'PYTHON_POLICY_TESTS_FAILED'; return }
 
 $Stage = 'ACTION1_GOVERNANCE_TESTS'
 $Action1 = Invoke-PythonCheck @('-m', 'unittest', 'tests.test_pe3_action1_runbook')
-if (-not $Action1.Passed -or $Action1.Ran -le 0) { Write-CheckpointFailure 'VALIDATION_FAIL' 'ACTION1_GOVERNANCE_TESTS_FAILED'; return }
+if (-not $Action1.Passed) { Write-CheckpointFailure 'VALIDATION_FAIL' 'ACTION1_GOVERNANCE_TESTS_FAILED'; return }
 
 $Stage = 'MANUFACTURER_TESTS'
 $Manufacturer = Invoke-PythonCheck @('-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_manufacturer_*.py')
-if (-not $Manufacturer.Passed -or $Manufacturer.Ran -le 0) { Write-CheckpointFailure 'VALIDATION_FAIL' 'MANUFACTURER_TESTS_FAILED'; return }
+if (-not $Manufacturer.Passed) { Write-CheckpointFailure 'VALIDATION_FAIL' 'MANUFACTURER_TESTS_FAILED'; return }
 
 $Stage = 'PYTHON_COMPILATION'
 $Compilation = Invoke-NativeProcess $PythonCommand.Source (@($PythonPrefix) + @('-m', 'compileall', '-q', (Join-Path $Repo 'pi4'), (Join-Path $Repo 'tools'), (Join-Path $Repo 'tests')))

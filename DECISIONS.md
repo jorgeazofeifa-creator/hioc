@@ -832,3 +832,19 @@ Bash-executing tests skip explicitly with `Bash is required` when the tool is
 unavailable; platform-neutral checks remain active. Where Bash is available,
 all original assertions execute unchanged. The full suite continues to fail on
 real errors and reports actual test/skip counts without pinning a skip total.
+
+Checkpoint-result amendment: after the Bash prerequisite correction, another
+governed execution reported `FULL_REGRESSION_FAILED`, but the immediate direct
+governed CPython 3.13 run passed 506 tests with 13 skips and native exit code 0.
+This is **CHECKPOINT FULL-REGRESSION RESULT-CLASSIFICATION DEFECT —
+NON-AUTHORITATIVE SUMMARY PARSE USED AS ACCEPTANCE GATE**, not Python, test,
+manufacturer, PE-3, or production failure. The wrapper had captured the correct
+exit code, but stage logic also required a parsed `Ran` count; head-only bounded
+capture could discard the trailing unittest summary and leave that count zero.
+
+Test-stage acceptance is now determined exclusively by the authoritative native
+exit code. Capture retains the tail for result-summary reporting, and parsed
+test/skip counts are informational only. No count is pinned, and genuine
+nonzero exits remain failures. Support stays `validation_pending` with no
+validated patch until the corrected governed checkpoint passes and a separate
+support-promotion commit is approved.

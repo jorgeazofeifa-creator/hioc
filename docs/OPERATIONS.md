@@ -68,6 +68,14 @@ safe manager dry run observed CPython 3.13.15 as the current candidate, while
 the governed line remains floating 3.13.x and installation/validation remains
 pending.
 
+The most recent governed checkpoint result `FULL_REGRESSION_FAILED` is invalid
+as compatibility evidence. An immediate direct governed-runtime run completed
+506 tests with 13 skips and native exit code 0. The checkpoint had incorrectly
+made a parsed `Ran` summary an acceptance gate while bounded capture could omit
+the trailing unittest summary. The corrected script uses native exit status as
+the acceptance authority and retains counts only for reporting. Do not promote
+support until that corrected checkpoint itself passes.
+
 For Windows PowerShell 5.1 operator tooling, informational native stderr is not
 a failure criterion. Validation-critical native programs must run through the
 governed wrapper and be judged by their actual exit code.

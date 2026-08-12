@@ -60,6 +60,8 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
         self.assertIn("[string[]]$ArgumentList", helper)
         self.assertIn("ConvertTo-NativeArgument", helper)
         self.assertIn("Limit-NativeOutput", helper)
+        self.assertIn("$Value.Length - $MaxNativeCaptureChars", self.script)
+        self.assertNotIn("Substring(0, $MaxNativeCaptureChars)", self.script)
         self.assertNotIn("throw", helper.lower())
         self.assertIn("if ($Install313.ExitCode -ne 0)", self.script)
         self.assertNotIn("if (-not [string]::IsNullOrWhiteSpace($Install313.Stderr))", self.script)
@@ -125,9 +127,40 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
             self.assertIn(marker, self.script)
         self.assertIn("PYTHONPYCACHEPREFIX", self.script)
         self.assertIn("FINAL_REPOSITORY_STATE_FAILED", self.script)
-        self.assertGreaterEqual(self.script.count(".Ran -le 0"), 4)
+        self.assertNotIn(".Ran -le 0", self.script)
         self.assertIn("$Result = Invoke-NativeProcess $PythonCommand.Source", self.script)
         self.assertIn("$Compilation = Invoke-NativeProcess $PythonCommand.Source", self.script)
+
+    def test_native_exit_code_is_acceptance_and_counts_are_reporting_only(self):
+        for result in ("Full", "Policy", "Action1", "Manufacturer"):
+            self.assertIn(f"if (-not ${result}.Passed)", self.script)
+            self.assertNotRegex(self.script, rf"if \([^\n]*\${result}\.Ran")
+        self.assertIn("Passed = ($Result.ExitCode -eq 0)", self.script)
+        self.assertIn("FULL_SUITE_TESTS=$($Full.Ran)", self.script)
+        self.assertIn("FULL_SUITE_SKIPS=$($Full.Skipped)", self.script)
+
+    def test_bounded_capture_preserves_success_summary_at_stream_tail(self):
+        shell = shutil.which("powershell.exe") or shutil.which("powershell")
+        if not shell:
+            self.skipTest("Windows PowerShell unavailable")
+        command = (
+            "$text=Get-Content -Raw -LiteralPath $env:HIOC_TEST_PY313_SCRIPT;"
+            "$tokens=$null;$errors=$null;"
+            "$ast=[System.Management.Automation.Language.Parser]::ParseInput($text,[ref]$tokens,[ref]$errors);"
+            "$names=@('Limit-NativeOutput','Get-NativeText','Invoke-PythonCheck');"
+            "$ast.FindAll({param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] "
+            "-and $names -contains $n.Name},$true) | ForEach-Object {Invoke-Expression $_.Extent.Text};"
+            "$MaxNativeCaptureChars=1024;"
+            "$raw=('x'*2048)+\"`nRan 506 tests in 14.889s`n`nOK (skipped=13)`n\";"
+            "$limited=Limit-NativeOutput $raw;"
+            "if($limited -notmatch 'Ran 506 tests'){exit 1};"
+            "if($limited -notmatch 'OK \\(skipped=13\\)'){exit 2}"
+        )
+        env = dict(os.environ)
+        env["HIOC_TEST_PY313_SCRIPT"] = str(SCRIPT)
+        result = subprocess.run([shell, "-NoProfile", "-Command", command], env=env,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_evidence_is_sanitized_and_complete(self):
         for field in (

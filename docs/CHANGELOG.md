@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Corrected a false `FULL_REGRESSION_FAILED` classification after an immediate
+  direct governed CPython 3.13 run passed 506 tests with 13 skips and exit code
+  0. The checkpoint had used a parsed `Ran` count as an extra acceptance gate
+  while bounded capture retained the stream head and could omit unittest's
+  trailing summary. Test stages now accept only authoritative native exit zero,
+  preserve stream tails for sanitized count reporting, and retain every real
+  nonzero failure. Focused regression coverage reproduces summary truncation.
+  Support remains pending with no validated patch; no checkpoint, PE-3, PI, or
+  production action was executed.
+
 - Corrected the network-probe governance module's cross-platform prerequisite
   contract after the Windows CPython 3.13 checkpoint reached full regression.
   Three Bash-dependent tests had attempted an unresolved fallback executable

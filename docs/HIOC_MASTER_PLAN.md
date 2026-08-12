@@ -1336,6 +1336,19 @@ run, and all six original assertions run when Bash exists. Support remains
 `validation_pending`; Action 1, deployment, PI3 validation, and PE-4 remain not
 started.
 
+A subsequent governed retry again reported `FULL_REGRESSION_FAILED`. Immediate
+direct execution on the same Windows workstation, repository, and governed
+CPython 3.13 runtime ran 506 tests in 14.889 seconds, returned
+`OK (skipped=13)`, and exited 0. Forensic review established **CHECKPOINT
+FULL-REGRESSION RESULT-CLASSIFICATION DEFECT — NON-AUTHORITATIVE SUMMARY PARSE
+USED AS ACCEPTANCE GATE**: the checkpoint had the correct native exit result
+but additionally rejected a missing parsed `Ran` count, while head-only bounded
+capture could omit unittest's trailing summary. The corrected checkpoint uses
+native exit status as the sole test-stage acceptance criterion, retains output
+tails for sanitized count reporting, and never makes test or skip totals gates.
+Support remains `validation_pending` with `validated_patch: null`; Action 1,
+deployment, PI3 validation, and PE-4 remain not started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

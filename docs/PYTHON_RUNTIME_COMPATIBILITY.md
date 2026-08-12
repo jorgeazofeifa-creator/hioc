@@ -81,8 +81,8 @@ The installation and compatibility action is the repository-controlled script
 Its governed identities are:
 
 ```text
-PYTHON313_CHECKPOINT_SHA256=b12d11738862ea7d89a75c7241e3b693d23ecf148b01a2548ade0a5cbc5fd760
-PYTHON313_CHECKPOINT_GIT_BLOB=4971c61bfd1fdbbde3bce2fbada7732d21a167ca
+PYTHON313_CHECKPOINT_SHA256=2de813c0f85b21e2d4f4d021b56eff84af23a46434d48dfc653ef32b6cd2c96c
+PYTHON313_CHECKPOINT_GIT_BLOB=8b9b432d2a5382da85b52431e60ecb538a24b4d7
 ```
 
 After its commit is approved and pushed, prepare only this short invocation:
@@ -271,6 +271,29 @@ When Bash is available, all six original assertions execute unchanged. The
 full regression continues to fail on real failures/errors, reports actual test
 and skip counts, and permits explicit tool/platform skips without hard-coded
 counts.
+
+After that correction, the governed checkpoint again reported
+`FULL_REGRESSION_FAILED`. An immediate direct execution on the same workstation,
+repository, and governed CPython 3.13 runtime ran 506 tests in 14.889 seconds and
+returned `OK (skipped=13)` with native exit code 0. This is authoritative proof
+that the full regression passed and that the checkpoint result was false.
+
+Forensic review found **CHECKPOINT FULL-REGRESSION RESULT-CLASSIFICATION DEFECT —
+NON-AUTHORITATIVE SUMMARY PARSE USED AS ACCEPTANCE GATE**. The wrapper correctly
+derived `Passed` from the native process exit code, but the stage separately
+required a parsed `Ran` count greater than zero. Its bounded capture retained
+the beginning of each stream, while `unittest` writes its result summary at the
+end. A successful run whose summary was outside the retained window therefore
+produced `Passed=True`, `Ran=0`, and the false failure. `OK (skipped=13)` was not
+rejected as a skip-count mismatch; no test or skip count was governed as an
+acceptance threshold.
+
+The corrected checkpoint preserves the end of bounded native output and bases
+test-stage acceptance only on the actual native exit status. Parsed test and
+skip counts remain sanitized reporting fields only. Genuine nonzero exits still
+fail closed, and no test/skip total is hard-coded. Support remains
+`validation_pending` with `validated_patch: null` until a fresh execution of the
+corrected governed checkpoint passes and a separate commit promotes support.
 
 ## Future validation matrix
 
