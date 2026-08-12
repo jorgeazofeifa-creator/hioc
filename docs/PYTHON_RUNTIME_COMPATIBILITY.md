@@ -81,8 +81,8 @@ The installation and compatibility action is the repository-controlled script
 Its governed identities are:
 
 ```text
-PYTHON313_CHECKPOINT_SHA256=a26fea5033d2bb499a69c0c604f5989c06243275ceb5b64c2bb54cc004faa938
-PYTHON313_CHECKPOINT_GIT_BLOB=f43b75573d7f58c1fbbae35a9d0c298687f88169
+PYTHON313_CHECKPOINT_SHA256=63a4e63691e6c4a3da5490d595035e8623ffa47d4b81a4eecc78f4085a3220e0
+PYTHON313_CHECKPOINT_GIT_BLOB=a0ff6a7e3e15f9514d755aa15fa27b8ded85b653
 ```
 
 After its commit is approved and pushed, prepare only this short invocation:
@@ -358,6 +358,30 @@ ordinary executable paths for `ProcessStartInfo` automation. Their behavior
 must be validated for the exact invocation model, or an underlying governed
 runtime must be resolved through an officially supported scripted interface.
 A diagnostic's execution success is distinct from the state it diagnoses.
+
+Final isolation showed Model C selection alone did not cure the checkpoint:
+the exact interpreter path was valid, direct execution through it passed, and
+direct execution with the checkpoint's `PYTHONPYCACHEPREFIX` passed 518 tests
+with 13 skips and exit code 0. The same exact interpreter, arguments, working
+directory, and environment still failed only through `ProcessStartInfo`.
+Therefore the final classification is **WINDOWS PYTHON CHECKPOINT
+PROCESSSTARTINFO EXECUTION DEFECT**.
+
+The checkpoint preserves Model C interpreter selection but uses a dedicated
+PowerShell-native Python helper for the probe, full regression, focused tests,
+manufacturer tests, and compilation. The helper temporarily sets
+`$ErrorActionPreference='Continue'` only around `& $PythonExecutable
+@ArgumentList`, redirects both streams to unique OS-temporary files, captures
+`$LASTEXITCODE` immediately, restores the prior preference, applies bounded
+tail capture, and deletes the files in `finally`. Native exit status remains
+authoritative; counts remain reporting-only. `ProcessStartInfo` remains only
+for Git, WinGet, and `pymanager`.
+
+A wrapper that repeatedly disagrees with direct execution of the exact governed
+runtime must be removed from the validation path rather than continually
+patched. For this Windows checkpoint, the exact governed CPython interpreter is
+executed through PowerShell native invocation; `ProcessStartInfo` is not an
+approved Python-runtime execution mechanism.
 
 ## Future validation matrix
 

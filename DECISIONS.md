@@ -885,3 +885,17 @@ the disproven alias; Model B retains a manager execution layer and its automatic
 install surface. Model C has fewer layers, excludes 3.14/default selection, and
 preserves authoritative child exit status. Diagnostic execution and diagnosed
 equivalence are separate result dimensions.
+
+Final runtime-execution amendment: resolving the exact managed interpreter did
+not make `ProcessStartInfo` reliable. The exact path validated, direct execution
+passed, and direct execution with the checkpoint's pycache prefix passed 518
+tests with 13 skips and exit code 0. Only `ProcessStartInfo` execution failed.
+This is **WINDOWS PYTHON CHECKPOINT PROCESSSTARTINFO EXECUTION DEFECT**.
+
+Model C selection remains, but all Python stages now invoke the exact interpreter
+through PowerShell's native operator with narrowly scoped `Continue` error
+handling, immediate `$LASTEXITCODE` capture, OS-temporary stream files, bounded
+tail reads, restoration, and cleanup. `ProcessStartInfo` remains acceptable for
+the separately validated Git, WinGet, and manager paths only. A wrapper that
+repeatedly disagrees with the exact governed runtime must be removed rather than
+continually patched.

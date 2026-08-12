@@ -92,6 +92,13 @@ Checkpoint runtime execution now bypasses App Execution Aliases. It asks
 that interpreter directly. Diagnostic completion and equivalence are reported
 as separate results.
 
+Final exact-interpreter isolation proved the remaining defect was
+`ProcessStartInfo` itself: direct exact-interpreter execution passed both with
+and without the checkpoint pycache prefix. Governed Python stages now use a
+scoped PowerShell-native helper with temporary stream files, immediate
+`$LASTEXITCODE` capture, restored error preference, bounded tails, and cleanup.
+The process wrapper remains only for non-Python utilities.
+
 For Windows PowerShell 5.1 operator tooling, informational native stderr is not
 a failure criterion. Validation-critical native programs must run through the
 governed wrapper and be judged by their actual exit code.

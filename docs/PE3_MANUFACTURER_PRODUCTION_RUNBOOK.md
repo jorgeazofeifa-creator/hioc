@@ -148,6 +148,13 @@ The Python checkpoint now resolves and directly invokes the exact managed
 CPython 3.13 interpreter. Action 1 remains blocked pending a trustworthy
 checkpoint PASS and separate support promotion.
 
+Final isolation proved even the exact managed interpreter failed only when the
+checkpoint executed Python through `ProcessStartInfo`; direct execution passed
+with the same pycache environment. The corrected checkpoint retains exact 3.13
+selection and invokes every Python stage through scoped PowerShell-native
+execution. Action 1 remains blocked until that checkpoint returns PASS and
+support is promoted separately.
+
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 
 

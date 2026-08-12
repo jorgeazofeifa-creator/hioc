@@ -1370,6 +1370,15 @@ compatibility evidence. The checkpoint now resolves the exact manager-owned
 invokes it directly, bypassing App Execution Aliases and excluding 3.14.7.
 Support remains pending; no PE-3 or production action has started.
 
+Final operator isolation resolved the remaining ambiguity. The exact managed
+interpreter path was valid and passed directly; it also passed 518 tests with
+13 skips and exit code 0 under the checkpoint's pycache environment. It failed
+only when Python was executed via `ProcessStartInfo`. The final checkpoint
+architecture retains exact manager-owned 3.13 selection but runs every Python
+stage through scoped PowerShell-native invocation with immediate exit capture,
+bounded temporary-file streams, and cleanup. Support remains pending and no
+PE-3 or production action has started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

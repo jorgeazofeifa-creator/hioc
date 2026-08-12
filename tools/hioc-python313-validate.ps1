@@ -98,8 +98,35 @@ function Get-NativeText($Result) {
     return (($Result.Stdout + "`n" + $Result.Stderr).Trim())
 }
 
+function Invoke-GovernedPython([string[]]$ArgumentList) {
+    $StdoutPath = Join-Path $TempRoot ([guid]::NewGuid().ToString('N') + '.stdout')
+    $StderrPath = Join-Path $TempRoot ([guid]::NewGuid().ToString('N') + '.stderr')
+    $PriorPreference = $ErrorActionPreference
+    $NativeExitCode = -1
+    try {
+        try {
+            $ErrorActionPreference = 'Continue'
+            & $PythonExecutable @ArgumentList 1> $StdoutPath 2> $StderrPath
+            $NativeExitCode = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $PriorPreference
+        }
+        $Stdout = if (Test-Path -LiteralPath $StdoutPath) { [IO.File]::ReadAllText($StdoutPath) } else { '' }
+        $Stderr = if (Test-Path -LiteralPath $StderrPath) { [IO.File]::ReadAllText($StderrPath) } else { '' }
+        return [pscustomobject]@{
+            ExitCode = $NativeExitCode
+            Stdout = Limit-NativeOutput $Stdout
+            Stderr = Limit-NativeOutput $Stderr
+        }
+    }
+    finally {
+        Remove-Item -LiteralPath $StdoutPath,$StderrPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Invoke-PythonCheck([string[]]$Arguments) {
-    $Result = Invoke-NativeProcess $PythonExecutable $Arguments
+    $Result = Invoke-GovernedPython $Arguments
     $Text = Get-NativeText $Result
     $Ran = 0
     $Skipped = 0
@@ -221,14 +248,14 @@ if ($Managed313.Count -eq 0) {
 $Stage = 'PYTHON_PROBE'
 $PythonExecutable = $Managed313.Executable
 if ([string]::IsNullOrWhiteSpace($PythonExecutable)) { Write-CheckpointFailure 'VALIDATION_FAIL' 'CPYTHON_313_EXECUTABLE_NOT_RESOLVABLE'; return }
-$ProbeCode = 'import platform,sys; print(platform.python_implementation()+"|"+platform.python_version())'
-$Probe = Invoke-NativeProcess $PythonExecutable @('-c', $ProbeCode)
+$TempRoot = Join-Path ([IO.Path]::GetTempPath()) ('hioc-python313-' + [guid]::NewGuid().ToString('N'))
+[IO.Directory]::CreateDirectory($TempRoot) | Out-Null
+$ProbeCode = 'import platform;print(platform.python_implementation(),platform.python_version(),sep=chr(124))'
+$Probe = Invoke-GovernedPython @('-c', $ProbeCode)
 $ProbeLine = ($Probe.Stdout -split "`r?`n" | Select-Object -First 1).Trim()
 if ($Probe.ExitCode -ne 0 -or $ProbeLine -cnotmatch '^CPython\|3\.13\.[0-9]+$') { Write-CheckpointFailure 'VALIDATION_FAIL' 'CPYTHON_313_PROBE_FAILED'; return }
 $ExactVersion = $ProbeLine.Substring('CPython|'.Length)
 
-$TempRoot = Join-Path ([IO.Path]::GetTempPath()) ('hioc-python313-' + [guid]::NewGuid().ToString('N'))
-[IO.Directory]::CreateDirectory($TempRoot) | Out-Null
 [Environment]::SetEnvironmentVariable('PYTHONPYCACHEPREFIX', (Join-Path $TempRoot 'pycache'), 'Process')
 Set-Location -LiteralPath $Repo
 
@@ -249,7 +276,7 @@ $Manufacturer = Invoke-PythonCheck @('-m', 'unittest', 'discover', '-s', 'tests'
 if (-not $Manufacturer.Passed) { Write-CheckpointFailure 'VALIDATION_FAIL' 'MANUFACTURER_TESTS_FAILED'; return }
 
 $Stage = 'PYTHON_COMPILATION'
-$Compilation = Invoke-NativeProcess $PythonExecutable @('-m', 'compileall', '-q', (Join-Path $Repo 'pi4'), (Join-Path $Repo 'tools'), (Join-Path $Repo 'tests'))
+$Compilation = Invoke-GovernedPython @('-m', 'compileall', '-q', (Join-Path $Repo 'pi4'), (Join-Path $Repo 'tools'), (Join-Path $Repo 'tests'))
 if ($Compilation.ExitCode -ne 0) { Write-CheckpointFailure 'VALIDATION_FAIL' 'PYTHON_COMPILATION_FAILED'; return }
 
 $Stage = 'FINAL_REPOSITORY_CHECK'

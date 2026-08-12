@@ -5,6 +5,7 @@ import pathlib
 import re
 import shutil
 import subprocess
+import sys
 import unittest
 
 
@@ -116,17 +117,19 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
             self.script.index("Get-Command -Name 'pymanager'"),
         )
         self.assertIn("$ExactVersion = $ProbeLine.Substring('CPython|'.Length)", self.script)
-        self.assertIn("$Probe = Invoke-NativeProcess $PythonExecutable", self.script)
+        self.assertIn("$Probe = Invoke-GovernedPython", self.script)
         self.assertNotIn("Get-Command -Name 'py'", self.script)
         self.assertNotIn("pymanager exec", self.script.lower())
 
     def test_every_external_executable_uses_native_wrapper(self):
-        self.assertNotRegex(self.script, r"(?m)^\s*&\s+\$")
         self.assertIn("function Invoke-Git", self.script)
         self.assertIn("Invoke-NativeProcess $GitCommand.Source", self.script)
         self.assertIn("Invoke-NativeProcess $Winget.Source", self.script)
         self.assertIn("Invoke-NativeProcess $ManagerCommand.Source", self.script)
-        self.assertIn("Invoke-NativeProcess $PythonExecutable", self.script)
+        self.assertIn("function Invoke-GovernedPython", self.script)
+        self.assertIn("& $PythonExecutable @ArgumentList", self.script)
+        self.assertNotIn("Invoke-NativeProcess $PythonExecutable", self.script)
+        self.assertNotIn("Start-Process", self.script)
 
     def test_required_validation_matrix_is_run_with_governed_runtime(self):
         for marker in (
@@ -140,8 +143,48 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
         self.assertIn("PYTHONPYCACHEPREFIX", self.script)
         self.assertIn("FINAL_REPOSITORY_STATE_FAILED", self.script)
         self.assertNotIn(".Ran -le 0", self.script)
-        self.assertIn("$Result = Invoke-NativeProcess $PythonExecutable", self.script)
-        self.assertIn("$Compilation = Invoke-NativeProcess $PythonExecutable", self.script)
+        self.assertIn("$Result = Invoke-GovernedPython $Arguments", self.script)
+        self.assertIn("$Compilation = Invoke-GovernedPython", self.script)
+
+    def test_direct_python_helper_has_scoped_stderr_and_cleanup(self):
+        helper = self.script.split("function Invoke-GovernedPython", 1)[1].split("function Invoke-PythonCheck", 1)[0]
+        self.assertIn("$PriorPreference = $ErrorActionPreference", helper)
+        self.assertIn("$ErrorActionPreference = 'Continue'", helper)
+        self.assertRegex(helper, r"& \$PythonExecutable @ArgumentList[^\n]*\n\s*\$NativeExitCode = \$LASTEXITCODE")
+        self.assertIn("$ErrorActionPreference = $PriorPreference", helper)
+        self.assertIn("Limit-NativeOutput $Stdout", helper)
+        self.assertIn("Limit-NativeOutput $Stderr", helper)
+        self.assertIn("Remove-Item -LiteralPath $StdoutPath,$StderrPath", helper)
+        self.assertNotIn("ProcessStartInfo", helper)
+        self.assertNotIn("Start-Process", helper)
+
+    def test_direct_python_helper_real_exit_stream_bounds_and_cleanup(self):
+        shell = shutil.which("powershell.exe") or shutil.which("powershell")
+        if not shell:
+            self.skipTest("Windows PowerShell unavailable")
+        command = (
+            "$text=Get-Content -Raw -LiteralPath $env:HIOC_TEST_PY313_SCRIPT;"
+            "$tokens=$null;$errors=$null;"
+            "$ast=[System.Management.Automation.Language.Parser]::ParseInput($text,[ref]$tokens,[ref]$errors);"
+            "$names=@('Limit-NativeOutput','Invoke-GovernedPython');"
+            "$ast.FindAll({param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $names -contains $n.Name},$true)|ForEach-Object{Invoke-Expression $_.Extent.Text};"
+            "$MaxNativeCaptureChars=4096;$PythonExecutable=$env:HIOC_TEST_PYTHON;"
+            "$TempRoot=Join-Path ([IO.Path]::GetTempPath()) ('hioc-direct-python-test-'+[guid]::NewGuid().ToString('N'));[IO.Directory]::CreateDirectory($TempRoot)|Out-Null;"
+            "try{"
+            "$ok=Invoke-GovernedPython @('-c','import sys;print(chr(111)+chr(107));sys.stderr.write(chr(105)+chr(110)+chr(102)+chr(111))');"
+            "$fail=Invoke-GovernedPython @('-c','import sys;sys.stderr.write(chr(102)+chr(97)+chr(105)+chr(108));raise SystemExit(7)');"
+            "$large=Invoke-GovernedPython @('-c','import sys;sys.stdout.write(chr(120)*9000+chr(84)+chr(65)+chr(73)+chr(76));sys.stderr.write(chr(121)*9000+chr(69)+chr(82)+chr(82)+chr(84)+chr(65)+chr(73)+chr(76))');"
+            "if($ok.ExitCode-ne 0-or $ok.Stderr-notmatch'info'){exit 1};if($fail.ExitCode-ne 7){exit 2};"
+            "if($large.Stdout.Length-ne 4096-or $large.Stdout-notmatch'TAIL'){exit 3};if($large.Stderr.Length-ne 4096-or $large.Stderr-notmatch'ERRTAIL'){exit 4};"
+            "if((Get-ChildItem -LiteralPath $TempRoot -File).Count-ne 0){exit 5}"
+            "}finally{Remove-Item -LiteralPath $TempRoot -Recurse -Force -ErrorAction SilentlyContinue}"
+        )
+        env = dict(os.environ)
+        env["HIOC_TEST_PY313_SCRIPT"] = str(SCRIPT)
+        env["HIOC_TEST_PYTHON"] = sys.executable
+        result = subprocess.run([shell, "-NoProfile", "-Command", command], env=env,
+                                capture_output=True, text=True, timeout=60)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_native_exit_code_is_acceptance_and_counts_are_reporting_only(self):
         for result in ("Full", "Policy", "Action1", "Manufacturer"):

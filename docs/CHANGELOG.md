@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Removed `ProcessStartInfo` from all governed Python runtime execution after
+  final operator isolation proved the exact managed interpreter passes directly
+  both normally and with the checkpoint pycache prefix, but fails through that
+  wrapper. The checkpoint now uses scoped PowerShell-native invocation with
+  immediate exit-code capture, temporary redirected streams, bounded tails,
+  restored error policy, and cleanup for every Python stage. Non-Python utility
+  execution is unchanged; support remains pending.
+
 - Corrected Windows CPython checkpoint execution after governed evidence proved
   direct `py -3.13` passed while `ProcessStartInfo` launching the resolved App
   Execution Alias exited 1 despite completed stream tasks. Runtime execution now

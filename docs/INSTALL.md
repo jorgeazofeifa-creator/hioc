@@ -91,6 +91,13 @@ launches `py`. It uses the non-installing, machine-oriented
 exact interpreter as CPython 3.13 before tests. CPython 3.14.7 cannot satisfy
 that filtered selection.
 
+After selecting that exact interpreter, the checkpoint executes Python only via
+PowerShell's native invocation operator. `ProcessStartInfo` is prohibited for
+the governed Python probe and validation stages because final operator evidence
+proved the exact interpreter passes directly—including with the checkpoint
+pycache prefix—but fails through that wrapper. This does not change installation
+or support state.
+
 The first corrected install attempt may already have installed a 3.13 runtime
 before stopping at the wrapped-runtime gap in `PYTHON_PROBE`. The checkpoint
 therefore inventories managed 3.13 runtimes first and reuses the manager's one
