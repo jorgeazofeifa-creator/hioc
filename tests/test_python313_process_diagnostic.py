@@ -48,6 +48,9 @@ class Python313ProcessDiagnosticTests(unittest.TestCase):
         self.assertIn("Set-Location -LiteralPath $Repo", self.script)
 
     def test_reports_bounded_wrapper_internals_without_raw_test_output(self):
+        self.assertIn("DIAGNOSTIC_EXECUTION=PASS", self.script)
+        self.assertIn("EQUIVALENCE_RESULT=", self.script)
+        self.assertNotIn("Write-Output 'RESULT=PASS'", self.script)
         for marker in (
             "WRAPPER_FULL_STARTED=", "WRAPPER_FULL_COMPLETED=", "WRAPPER_FULL_EXIT=",
             "WRAPPER_FULL_STDOUT_LENGTH=", "WRAPPER_FULL_STDERR_LENGTH=",
@@ -58,6 +61,27 @@ class Python313ProcessDiagnosticTests(unittest.TestCase):
             self.assertIn(marker, self.script)
         self.assertNotIn("Write-Output $WrapperFull.Stdout", self.script)
         self.assertNotIn("Write-Output $WrapperFull.Stderr", self.script)
+
+    def test_equivalence_result_passes_and_fails_closed(self):
+        shell = shutil.which("powershell.exe") or shutil.which("powershell")
+        if not shell:
+            self.skipTest("Windows PowerShell unavailable")
+        command = (
+            "$text=Get-Content -Raw -LiteralPath $env:HIOC_TEST_DIAGNOSTIC;"
+            "$tokens=$null;$errors=$null;"
+            "$ast=[System.Management.Automation.Language.Parser]::ParseInput($text,[ref]$tokens,[ref]$errors);"
+            "$fn=$ast.Find({param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Test-ExecutionEquivalence'},$true);"
+            "Invoke-Expression $fn.Extent.Text;"
+            "$ok=[pscustomobject]@{ExitCode=0;Stdout='argv'};$summary=[pscustomobject]@{Success=$true};"
+            "$bad=[pscustomobject]@{ExitCode=1;Stdout='argv'};"
+            "if(-not(Test-ExecutionEquivalence $ok $ok $ok $ok 'argv' $ok $ok $summary $summary)){exit 1};"
+            "if(Test-ExecutionEquivalence $ok $ok $ok $ok 'argv' $ok $bad $summary $summary){exit 2}"
+        )
+        env = dict(os.environ)
+        env["HIOC_TEST_DIAGNOSTIC"] = str(SCRIPT)
+        result = subprocess.run([shell, "-NoProfile", "-Command", command], env=env,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_argv_fidelity_matrix_is_present(self):
         for value in ("path with spaces", "quote\"inside", "backslash\\before\"quote", "trailing\\", "''"):

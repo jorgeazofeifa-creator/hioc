@@ -84,6 +84,14 @@ After its commit is synchronized, run only the repository-controlled
 `tools/hioc-python313-process-diagnostic.ps1` when separately authorized. It
 compares direct and `ProcessStartInfo` behavior and never prints raw test output.
 
+The diagnostic completed but equivalence failed: direct regression exited 0;
+the same resolved `py` App Execution Alias launched by `ProcessStartInfo`
+exited 1 after both stream tasks completed and before any unittest summary.
+Checkpoint runtime execution now bypasses App Execution Aliases. It asks
+`pymanager` for the exact managed 3.13 executable in `exe` format and invokes
+that interpreter directly. Diagnostic completion and equivalence are reported
+as separate results.
+
 For Windows PowerShell 5.1 operator tooling, informational native stderr is not
 a failure criterion. Validation-critical native programs must run through the
 governed wrapper and be judged by their actual exit code.

@@ -68,6 +68,7 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
 
     def test_manager_inspection_is_non_launching_and_existing_other_runtime_is_allowed(self):
         self.assertIn("@('list', '--one', '--format=json', '--only-managed', $ExpectedMajorMinor)", self.script)
+        self.assertIn("@('list', '--one', '--format=exe', '--only-managed', $ExpectedMajorMinor)", self.script)
         self.assertNotIn("py --help", self.script.lower())
         self.assertNotIn("pymanager --help", self.script.lower())
         self.assertNotIn("3.14", self.script)
@@ -89,24 +90,35 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
         self.assertIn("CPYTHON_313_INSTALL_VERIFICATION_FAILED", self.script)
         self.assertNotIn("uninstall", self.script.lower())
 
+    def test_exact_interpreter_model_excludes_default_and_other_runtime(self):
+        self.assertEqual(
+            self.script.count("@('list', '--one', '--format=exe', '--only-managed', $ExpectedMajorMinor)"),
+            1,
+        )
+        self.assertIn("$ExpectedMajorMinor = '3.13'", self.script)
+        self.assertNotIn("Get-Command -Name 'python'", self.script)
+        self.assertNotIn("Get-Command -Name 'python3'", self.script)
+        self.assertNotIn("Get-Command -Name 'py'", self.script)
+        self.assertNotIn("3.14", self.script)
+        self.assertNotIn("@('exec'", self.script.lower())
+
     def test_runtime_probe_is_execution_based_and_cpython_exact(self):
         self.assertIn("platform.python_implementation()", self.script)
         self.assertIn("platform.python_version()", self.script)
         self.assertIn("^CPython\\|3\\.13\\.[0-9]+$", self.script)
-        self.assertIn("$PythonPrefix = @('-3.13')", self.script)
+        self.assertIn("$PythonExecutable = $Managed313.Executable", self.script)
+        self.assertIn("[IO.Path]::IsPathRooted($Executable)", self.script)
+        self.assertIn("Test-Path -LiteralPath $Executable -PathType Leaf", self.script)
         self.assertIn("PYTHON_MANAGER_AUTOMATIC_INSTALL", self.script)
         self.assertIn("PYLAUNCHER_ALLOW_INSTALL", self.script)
         self.assertLess(
             self.script.index("SetEnvironmentVariable('PYTHON_MANAGER_AUTOMATIC_INSTALL', 'false'"),
             self.script.index("Get-Command -Name 'pymanager'"),
         )
-        self.assertLess(
-            self.script.index("Get-Managed313Inventory"),
-            self.script.index("Get-Command -Name 'py'"),
-        )
         self.assertIn("$ExactVersion = $ProbeLine.Substring('CPython|'.Length)", self.script)
-        self.assertIn("$Probe = Invoke-NativeProcess $PythonCommand.Source", self.script)
-        self.assertNotIn("& $PythonCommand.Source", self.script)
+        self.assertIn("$Probe = Invoke-NativeProcess $PythonExecutable", self.script)
+        self.assertNotIn("Get-Command -Name 'py'", self.script)
+        self.assertNotIn("pymanager exec", self.script.lower())
 
     def test_every_external_executable_uses_native_wrapper(self):
         self.assertNotRegex(self.script, r"(?m)^\s*&\s+\$")
@@ -114,7 +126,7 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
         self.assertIn("Invoke-NativeProcess $GitCommand.Source", self.script)
         self.assertIn("Invoke-NativeProcess $Winget.Source", self.script)
         self.assertIn("Invoke-NativeProcess $ManagerCommand.Source", self.script)
-        self.assertIn("Invoke-NativeProcess $PythonCommand.Source", self.script)
+        self.assertIn("Invoke-NativeProcess $PythonExecutable", self.script)
 
     def test_required_validation_matrix_is_run_with_governed_runtime(self):
         for marker in (
@@ -128,8 +140,8 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
         self.assertIn("PYTHONPYCACHEPREFIX", self.script)
         self.assertIn("FINAL_REPOSITORY_STATE_FAILED", self.script)
         self.assertNotIn(".Ran -le 0", self.script)
-        self.assertIn("$Result = Invoke-NativeProcess $PythonCommand.Source", self.script)
-        self.assertIn("$Compilation = Invoke-NativeProcess $PythonCommand.Source", self.script)
+        self.assertIn("$Result = Invoke-NativeProcess $PythonExecutable", self.script)
+        self.assertIn("$Compilation = Invoke-NativeProcess $PythonExecutable", self.script)
 
     def test_native_exit_code_is_acceptance_and_counts_are_reporting_only(self):
         for result in ("Full", "Policy", "Action1", "Manufacturer"):
@@ -165,7 +177,7 @@ class Python313OperatorCheckpointTests(unittest.TestCase):
     def test_evidence_is_sanitized_and_complete(self):
         for field in (
             "RESULT=PASS", "PYTHON_IMPLEMENTATION=", "PYTHON_VERSION=",
-            "PYTHON_RESOLVER=py -3.13",
+            "PYTHON_RESOLVER=pymanager list --one --format=exe --only-managed 3.13",
             "SUPPORT_STATE_BEFORE_VALIDATION=validation_pending",
             "FULL_SUITE_TESTS=", "FULL_SUITE_SKIPS=",
             "PYTHON_POLICY_TESTS=PASS:", "ACTION1_GOVERNANCE_TESTS=PASS:",

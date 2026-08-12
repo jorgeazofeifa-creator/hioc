@@ -141,6 +141,13 @@ Windows `ProcessStartInfo` mismatch is pending one separately governed,
 repository-controlled diagnostic execution. Do not interpret this as PE-3
 evidence, rerun Action 1, or prepare Action 2.
 
+The diagnostic proved the resolved `py` App Execution Alias diverges when
+launched through `ProcessStartInfo`: direct regression exited 0, while the
+wrapper exited 1 after completed stream reads and produced no unittest summary.
+The Python checkpoint now resolves and directly invokes the exact managed
+CPython 3.13 interpreter. Action 1 remains blocked pending a trustworthy
+checkpoint PASS and separate support promotion.
+
 Stop on any non-PASS result. Run Action 1 only; return output; do not proceed.
 
 

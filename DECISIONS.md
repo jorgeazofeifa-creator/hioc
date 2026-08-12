@@ -869,3 +869,19 @@ Durable rule: validation wrappers require production-grade tests. A wrapper
 that disagrees with the native process is defective and cannot establish
 product incompatibility. Diagnostic equivalence must cover executable, argv,
 environment, working directory, and execution wrapper before attribution.
+
+The governed operator diagnostic then established the exact launch-layer
+divergence: direct `py -3.13` full regression exited 0 and produced a valid
+516-test, 13-skip summary; `ProcessStartInfo` launched the resolved `py` App
+Execution Alias, completed both redirected stream tasks, exited 1, and produced
+no unittest summary. This is **WINDOWS APP EXECUTION ALIAS / PROCESSSTARTINFO
+RUNTIME-LAUNCH DIVERGENCE**, not Python incompatibility or test failure. Raw
+stderr remains undisclosed, and no signature enum is invented without evidence.
+
+Model C is adopted. The manager's non-installing, machine-oriented
+`pymanager list --one --format=exe --only-managed 3.13` output resolves the exact
+governed interpreter, which the native wrapper invokes directly. Model A retains
+the disproven alias; Model B retains a manager execution layer and its automatic-
+install surface. Model C has fewer layers, excludes 3.14/default selection, and
+preserves authoritative child exit status. Diagnostic execution and diagnosed
+equivalence are separate result dimensions.

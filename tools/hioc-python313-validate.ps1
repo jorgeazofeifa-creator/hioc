@@ -99,7 +99,7 @@ function Get-NativeText($Result) {
 }
 
 function Invoke-PythonCheck([string[]]$Arguments) {
-    $Result = Invoke-NativeProcess $PythonCommand.Source (@($PythonPrefix) + $Arguments)
+    $Result = Invoke-NativeProcess $PythonExecutable $Arguments
     $Text = Get-NativeText $Result
     $Ran = 0
     $Skipped = 0
@@ -121,10 +121,18 @@ function Get-Managed313Inventory {
     catch {
         return [pscustomobject]@{ Valid = $false; Count = 0 }
     }
-    if ($null -eq $Parsed) { return [pscustomobject]@{ Valid = $true; Count = 0 } }
+    if ($null -eq $Parsed) { return [pscustomobject]@{ Valid = $true; Count = 0; Executable = '' } }
     $Entries = @($Parsed)
-    if ($Entries.Count -gt 1) { return [pscustomobject]@{ Valid = $false; Count = $Entries.Count } }
-    return [pscustomobject]@{ Valid = $true; Count = $Entries.Count }
+    if ($Entries.Count -gt 1) { return [pscustomobject]@{ Valid = $false; Count = $Entries.Count; Executable = '' } }
+    $Executable = ''
+    if ($Entries.Count -eq 1) {
+        $ExecutableResult = Invoke-NativeProcess $ManagerCommand.Source @('list', '--one', '--format=exe', '--only-managed', $ExpectedMajorMinor)
+        $Executable = $ExecutableResult.Stdout.Trim()
+        if ($ExecutableResult.ExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($Executable) -or -not [IO.Path]::IsPathRooted($Executable) -or -not (Test-Path -LiteralPath $Executable -PathType Leaf)) {
+            return [pscustomobject]@{ Valid = $false; Count = 1; Executable = '' }
+        }
+    }
+    return [pscustomobject]@{ Valid = $true; Count = $Entries.Count; Executable = $Executable }
 }
 
 if ([string]::IsNullOrWhiteSpace($Repo) -or
@@ -211,11 +219,10 @@ if ($Managed313.Count -eq 0) {
 }
 
 $Stage = 'PYTHON_PROBE'
-$PythonCommand = Get-Command -Name 'py' -CommandType Application -ErrorAction SilentlyContinue
-if ($null -eq $PythonCommand) { Write-CheckpointFailure 'VALIDATION_FAIL' 'CPYTHON_313_LAUNCHER_NOT_RESOLVABLE'; return }
-$PythonPrefix = @('-3.13')
+$PythonExecutable = $Managed313.Executable
+if ([string]::IsNullOrWhiteSpace($PythonExecutable)) { Write-CheckpointFailure 'VALIDATION_FAIL' 'CPYTHON_313_EXECUTABLE_NOT_RESOLVABLE'; return }
 $ProbeCode = 'import platform,sys; print(platform.python_implementation()+"|"+platform.python_version())'
-$Probe = Invoke-NativeProcess $PythonCommand.Source (@($PythonPrefix) + @('-c', $ProbeCode))
+$Probe = Invoke-NativeProcess $PythonExecutable @('-c', $ProbeCode)
 $ProbeLine = ($Probe.Stdout -split "`r?`n" | Select-Object -First 1).Trim()
 if ($Probe.ExitCode -ne 0 -or $ProbeLine -cnotmatch '^CPython\|3\.13\.[0-9]+$') { Write-CheckpointFailure 'VALIDATION_FAIL' 'CPYTHON_313_PROBE_FAILED'; return }
 $ExactVersion = $ProbeLine.Substring('CPython|'.Length)
@@ -242,7 +249,7 @@ $Manufacturer = Invoke-PythonCheck @('-m', 'unittest', 'discover', '-s', 'tests'
 if (-not $Manufacturer.Passed) { Write-CheckpointFailure 'VALIDATION_FAIL' 'MANUFACTURER_TESTS_FAILED'; return }
 
 $Stage = 'PYTHON_COMPILATION'
-$Compilation = Invoke-NativeProcess $PythonCommand.Source (@($PythonPrefix) + @('-m', 'compileall', '-q', (Join-Path $Repo 'pi4'), (Join-Path $Repo 'tools'), (Join-Path $Repo 'tests')))
+$Compilation = Invoke-NativeProcess $PythonExecutable @('-m', 'compileall', '-q', (Join-Path $Repo 'pi4'), (Join-Path $Repo 'tools'), (Join-Path $Repo 'tests'))
 if ($Compilation.ExitCode -ne 0) { Write-CheckpointFailure 'VALIDATION_FAIL' 'PYTHON_COMPILATION_FAILED'; return }
 
 $Stage = 'FINAL_REPOSITORY_CHECK'
@@ -257,7 +264,7 @@ Write-Output 'RESULT=PASS'
 Write-Output "PYTHON_IMPLEMENTATION=$ExpectedImplementation"
 Write-Output "PYTHON_VERSION=$ExactVersion"
 Write-Output 'PYTHON_MANAGER=pymanager'
-Write-Output 'PYTHON_RESOLVER=py -3.13'
+Write-Output 'PYTHON_RESOLVER=pymanager list --one --format=exe --only-managed 3.13'
 Write-Output 'SUPPORT_STATE_BEFORE_VALIDATION=validation_pending'
 Write-Output 'FULL_SUITE_RESULT=PASS'
 Write-Output "FULL_SUITE_TESTS=$($Full.Ran)"

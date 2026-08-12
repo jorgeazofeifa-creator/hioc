@@ -1360,6 +1360,16 @@ sanitized direct-versus-wrapper diagnostic is prepared for one separately
 authorized operator execution after push. Support stays `validation_pending`
 with `validated_patch: null`; no PE-3 or production action has started.
 
+The synchronized diagnostic completed successfully but reported execution
+equivalence failure. Direct `py -3.13` regression exited 0 with a valid
+516-test/13-skip summary; `ProcessStartInfo` launching the resolved `py` App
+Execution Alias exited 1 after both stream tasks completed and produced no
+unittest summary. This is a Windows runtime-launch layer defect, not Python
+compatibility evidence. The checkpoint now resolves the exact manager-owned
+3.13 interpreter via machine-oriented `pymanager list --format=exe` output and
+invokes it directly, bypassing App Execution Aliases and excluding 3.14.7.
+Support remains pending; no PE-3 or production action has started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

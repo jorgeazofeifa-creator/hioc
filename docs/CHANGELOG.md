@@ -1,5 +1,14 @@
 # HIOC Changelog
 
+- Corrected Windows CPython checkpoint execution after governed evidence proved
+  direct `py -3.13` passed while `ProcessStartInfo` launching the resolved App
+  Execution Alias exited 1 despite completed stream tasks. Runtime execution now
+  resolves the exact managed 3.13 interpreter with `pymanager list --format=exe`
+  and invokes it directly, excluding default/3.14 selection and automatic
+  installation. Diagnostic output now separates successful diagnostic execution
+  from failed equivalence. Support remains pending and no checkpoint or
+  production action was executed.
+
 - Added a repository-controlled Windows process-wrapper forensic diagnostic
   after the governed checkpoint continued to report `FULL_REGRESSION_FAILED`
   while direct CPython 3.13 runs passed 508 tests with 13 skips and exit code 0,

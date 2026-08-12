@@ -84,6 +84,13 @@ install, uninstall, or select another runtime. The checked-in
 `tools/hioc-python313-process-diagnostic.ps1` is the sole future diagnostic and
 may run only after its commit is approved and synchronized.
 
+That diagnostic proved direct `py -3.13` and `ProcessStartInfo` execution of the
+resolved App Execution Alias are not equivalent. The checkpoint no longer
+launches `py`. It uses the non-installing, machine-oriented
+`pymanager list --one --format=exe --only-managed 3.13` result and validates the
+exact interpreter as CPython 3.13 before tests. CPython 3.14.7 cannot satisfy
+that filtered selection.
+
 The first corrected install attempt may already have installed a 3.13 runtime
 before stopping at the wrapped-runtime gap in `PYTHON_PROBE`. The checkpoint
 therefore inventories managed 3.13 runtimes first and reuses the manager's one

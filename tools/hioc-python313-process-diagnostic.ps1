@@ -110,6 +110,13 @@ function Get-Summary([string]$Stdout, [string]$Stderr) {
     return [pscustomobject]@{ Ran=if($Ran.Success){$Ran.Groups[1].Value}else{'UNPARSED'}; Skipped=if($Skipped.Success){$Skipped.Groups[1].Value}else{'UNPARSED'}; Success=($Text -match '(?m)^OK(?: \(skipped=[0-9]+\))?\s*$') }
 }
 
+function Test-ExecutionEquivalence($DirectMinimal, $WrapperMinimal, $DirectArgv, $WrapperArgv, [string]$ExpectedArgv, $DirectFull, $WrapperFull, $DirectSummary, $WrapperSummary) {
+    return ($DirectMinimal.ExitCode -eq 0 -and $WrapperMinimal.ExitCode -eq 0 -and
+        $DirectArgv.Stdout.Trim() -eq $ExpectedArgv -and $WrapperArgv.Stdout.Trim() -eq $ExpectedArgv -and
+        $DirectFull.ExitCode -eq 0 -and $WrapperFull.ExitCode -eq 0 -and
+        $DirectSummary.Success -and $WrapperSummary.Success)
+}
+
 $Stage = 'REPOSITORY_CHECK'
 if (-not (Test-Path -LiteralPath $Repo -PathType Container)) { Write-DiagnosticFailure 'REPOSITORY_MISSING'; return }
 $Git = Get-Command git -CommandType Application -ErrorAction SilentlyContinue
@@ -154,7 +161,9 @@ $WrapperFull = Invoke-ProcessStartInfo $Python.Source $RegressionArgs
 $DirectSummary = Get-Summary $DirectFull.Stdout $DirectFull.Stderr
 $WrapperSummary = Get-Summary $WrapperFull.Stdout $WrapperFull.Stderr
 
-Write-Output 'RESULT=PASS'
+$EquivalencePassed = Test-ExecutionEquivalence $DirectMinimal $WrapperMinimal $DirectArgv $WrapperArgv $ExpectedArgv $DirectFull $WrapperFull $DirectSummary $WrapperSummary
+Write-Output 'DIAGNOSTIC_EXECUTION=PASS'
+Write-Output "EQUIVALENCE_RESULT=$($(if($EquivalencePassed){'PASS'}else{'FAIL'}))"
 Write-Output "DIRECT_MINIMAL_EXIT=$($DirectMinimal.ExitCode)"
 Write-Output "WRAPPER_MINIMAL_STARTED=$($WrapperMinimal.Started.ToString().ToUpperInvariant())"
 Write-Output "WRAPPER_MINIMAL_COMPLETED=$($WrapperMinimal.Completed.ToString().ToUpperInvariant())"

@@ -81,8 +81,8 @@ The installation and compatibility action is the repository-controlled script
 Its governed identities are:
 
 ```text
-PYTHON313_CHECKPOINT_SHA256=2de813c0f85b21e2d4f4d021b56eff84af23a46434d48dfc653ef32b6cd2c96c
-PYTHON313_CHECKPOINT_GIT_BLOB=8b9b432d2a5382da85b52431e60ecb538a24b4d7
+PYTHON313_CHECKPOINT_SHA256=a26fea5033d2bb499a69c0c604f5989c06243275ceb5b64c2bb54cc004faa938
+PYTHON313_CHECKPOINT_GIT_BLOB=f43b75573d7f58c1fbbae35a9d0c298687f88169
 ```
 
 After its commit is approved and pushed, prepare only this short invocation:
@@ -99,8 +99,9 @@ requires support state `validation_pending`, installs only through the official
 WinGet Python Install Manager package, and uses the unambiguous `pymanager`
 command for scripted list/install operations. It disables automatic runtime
 installation before any runtime launcher can execute, explicitly runs
-`pymanager install 3.13`, and uses `py -3.13` only after installation for the
-governed execution probe and validation matrix. It emits sanitized evidence and
+`pymanager install 3.13`, resolves the exact managed 3.13 interpreter through
+`pymanager list --one --format=exe --only-managed 3.13`, and invokes that real
+interpreter for the governed execution probe and validation matrix. It emits sanitized evidence and
 does not edit support state. Promotion is a separate repository checkpoint
 after evidence review.
 
@@ -313,8 +314,8 @@ arguments, environment, working directory, and test suite, and emits only exit
 codes, lengths, task/completion states, parsed counts, and equality flags.
 
 ```text
-PYTHON313_PROCESS_DIAGNOSTIC_SHA256=ed8c2b57091bc6a0ec705bc57278ddf6e1b384e7d18f99b07f5d632737e05a85
-PYTHON313_PROCESS_DIAGNOSTIC_GIT_BLOB=70518fdc8a4ef0cd5898336943791258c3fc8971
+PYTHON313_PROCESS_DIAGNOSTIC_SHA256=e77e1c1f948a7a62dac7d3eb971e181e3fd2baf65dd08f45980554adcbf397d3
+PYTHON313_PROCESS_DIAGNOSTIC_GIT_BLOB=d5ad172e5f0d98c76ad68d357424716c859331d4
 ```
 
 Future preparation must provide only a short invocation of that checked-in
@@ -327,6 +328,36 @@ that differs from the native process result is a validator defect and never
 product incompatibility. Diagnostic equivalence requires the same executable,
 arguments, environment, working directory, and execution wrapper before a
 failure is attributed to the product.
+
+The governed diagnostic completed and proved execution equivalence failed. Its
+direct full regression exited 0, ran 516 tests with 13 skips, and produced a
+valid summary. `ProcessStartInfo` launched the same resolved `py` App Execution
+Alias, both redirected stream tasks completed, but the process exited 1 with no
+stdout or unittest summary and 1454 bytes of stderr. The minimal and argv probes
+also diverged. The earlier top-level `RESULT=PASS` meant only that the diagnostic
+completed; it did not mean equivalence passed. The corrected contract emits
+`DIAGNOSTIC_EXECUTION=PASS` separately from `EQUIVALENCE_RESULT=PASS|FAIL`.
+
+This establishes **WINDOWS APP EXECUTION ALIAS / PROCESSSTARTINFO RUNTIME-LAUNCH
+DIVERGENCE**. It does not establish Python incompatibility or a regression
+failure. The raw stderr was not exposed and no evidence-supported narrow error
+signature is yet available, so no speculative stderr enum is frozen.
+
+The official Python documentation says `pymanager exec` is equivalent to `py`,
+and also provides machine-oriented `list` formats including `exe`. Three models
+were evaluated: Model A retains the disproven Alias path; Model B uses the
+manager's `exec` layer and may automatically install unless separately disabled;
+Model C resolves the selected managed runtime with
+`pymanager list --one --format=exe --only-managed 3.13` and invokes the exact
+interpreter. Model C is adopted because it has the fewest launcher layers,
+cannot select the installed 3.14 runtime, avoids default selection and automatic
+installation, and retains the existing tested native wrapper.
+
+Windows App Execution Alias commands must not automatically be treated as
+ordinary executable paths for `ProcessStartInfo` automation. Their behavior
+must be validated for the exact invocation model, or an underlying governed
+runtime must be resolved through an officially supported scripted interface.
+A diagnostic's execution success is distinct from the state it diagnoses.
 
 ## Future validation matrix
 
