@@ -764,6 +764,12 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
    other services to explain technical cause, failure propagation, service
    impact, and infrastructure topology. PE-8 owns functional impact; PE-9 owns
    technical dependency and cause.
+10. **PE-10 - Application, Integration & Service Assurance** — planned / not
+    started. After PE-8 maps operator-visible impact and PE-9 establishes the
+    technical dependency model, PE-10 will determine whether an application-
+    level function is actually usable, isolate the failing layer, and design
+    evidence-based controlled recovery. It is future architecture work and is
+    separate from the current PE-3 execution sequence.
 
 Separate governed future checkpoints also preserve:
 
@@ -795,6 +801,113 @@ Separate governed future checkpoints also preserve:
   free of corruption indicators; and a final Evidence Report PASS.
 
 These items remain intentionally out of scope until the current roadmap reaches them.
+
+### PE-10 - Application, Integration & Service Assurance
+
+Status: **PLANNED / NOT STARTED — FUTURE ARCHITECTURE**
+
+Architectural principle: **Infrastructure health is not the same as service
+health.** Ping, neighbor/ARP presence, or an `online` device state does not prove
+that the application-level function an operator depends on is usable. HIOC must
+eventually answer, "Will this function work when the operator tries to use it?"
+as well as, "Is this device online?"
+
+This phase complements rather than replaces PE-7 expected availability, PE-8
+functional-impact correlation, PE-9 dependency intelligence, the asset-centric
+Living Digital Twin, retention/archival, backup/DR/hardware migration, and the
+separate abrupt-power-loss/cold-boot checkpoint. PE-7 asks whether an asset
+should be online and is online. PE-10 asks whether the capabilities and services
+provided by the asset and its dependency chain are usable.
+
+#### Home Assistant integration health and state freshness
+
+The motivating incident is an intermittent real Tuya / Smart Life failure: a
+presence sensor reported correctly in Smart Life while Home Assistant continued
+to show occupancy clear because its Tuya integration had stopped refreshing.
+Reloading the integration restored the presence state and caused other stale
+Tuya-backed states to update, revealing that failures such as outdoor lighting
+remaining on during daylight could otherwise go unnoticed. The operator had
+usually discovered the condition only after an expected automation failed.
+
+Future design must keep these evidence layers distinct:
+
+1. physical/device availability;
+2. local network availability;
+3. applicable Internet/cloud dependency availability;
+4. vendor service availability;
+5. Home Assistant integration health;
+6. Home Assistant entity availability;
+7. state freshness;
+8. state consistency or corroboration;
+9. automation dependency; and
+10. operator-visible functional impact.
+
+An available entity is not sufficient evidence of a healthy integration.
+Investigation must consider, without prematurely selecting one mechanism,
+entity `last_updated`/`last_changed` behavior, integration update activity,
+expected event cadence, independent observations, correlated staleness across
+entities in one integration, network/cloud/device reachability, Home Assistant
+config-entry state, automation behavior, and historical state patterns.
+
+#### Dependency, impact, and asset-capability model
+
+PE-10 consumes and extends the existing graph work rather than inventing a
+parallel model. A representative functional chain is:
+
+```text
+Office Presence Function
+  -> Tuya presence sensor
+  -> network/cloud connectivity
+  -> Tuya vendor service and Home Assistant integration
+  -> Home Assistant entity and office-presence automation
+  -> Hue lighting service
+  -> Office Hue lights
+```
+
+HIOC should progressively isolate the failed domain and identify the affected
+operator-visible function, using PE-8 impact relationships and PE-9 automatic
+service relationships, dependency graphs, failure propagation, and topology.
+The asset model must expose independently monitored capabilities rather than a
+single online/offline flag. An Office Speaker can separately expose network
+presence, IP/MAC identity, DNS/Internet connectivity, mDNS advertisement, Cast
+service, Home Assistant representation, and dependent automations. An Office
+Presence Sensor can separately expose network/cloud reachability, vendor
+service, HA integration, entity freshness, automation, and downstream lighting.
+
+#### Safe automated recovery
+
+Future remediation is evidence-based, bounded, and policy controlled. If device,
+network, external connectivity, and Home Assistant evidence are healthy while
+multiple Tuya-backed states are stale and evidence isolates the HA Tuya
+integration, an operator policy may eventually allow a controlled integration
+reload. The design must require bounded retries, cooldown/backoff, loop
+prevention, pre-remediation evidence, post-remediation functional validation,
+incident history, operator notification, escalation on failure, configurable
+automation policy, and manual approval for risky actions. A successful API or
+service call alone does not prove recovery.
+
+#### Casting and media service assurance
+
+Google Cast and similar services are explicit PE-10 use cases. Design must
+separately test device availability; LAN/subnet/VLAN/routing/firewall/Wi-Fi path;
+mDNS/DNS-SD advertisement and discovery; application-level Cast response; Home
+Assistant visibility and state freshness; harmless functional capability; and
+Internet, firmware, API, protocol, or manufacturer dependencies. Synthetic
+checks must be non-disruptive and must never play random audio or video merely
+to establish health.
+
+#### Incident and notification experience
+
+Service-assurance notifications must identify the affected function/service,
+severity, affected assets, tests performed, healthy and failed evidence, likely
+failure domain, operator impact, recommended action, any automated recovery,
+and its result. Recommendations must be the narrowest evidence-supported action.
+Design targets include a multi-endpoint Cast failure where speakers remain
+online but mDNS discovery and Home Assistant discovery fail, leading HIOC to
+recommend multicast/discovery investigation rather than device reboot; and an
+isolated Office Speaker failure where network, DNS, Internet, mDNS, and other
+Cast devices are healthy but that endpoint does not respond, leading HIOC to
+recommend restarting only that speaker.
 
 ### Status Vocabulary
 
@@ -1247,9 +1360,10 @@ Python compatibility governance is resolved under Model D in
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). Windows
 CPython 3.13.x is supported with validated patch evidence 3.13.15. PE-3 Actions
 1 through 4 are **PASS — COMPLETE** and the validated pair remains in private
-PI3 temporary staging. Action 5 is the next operator checkpoint and the first
-production deployment action; it has not been executed. PI3 production
-validation has not started; PE-4 through PE-9 remain not started.
+PI3 transport staging. Actions 5, 6-A, and 6-B are **PASS — COMPLETE** and
+Action 6 is **COMPLETE**. Action 7 is **NOT STARTED**. No rollback is
+recommended; the current deployed runtime remains in place and PE-3 transport
+staging remains preserved. PE-4 through PE-10 remain not started.
 
 Action 1 pre-execution review identified two operator-input defects without
 executing the action: a hard-coded `python` PATH assumption and ambiguous choice

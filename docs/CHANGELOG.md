@@ -1,5 +1,18 @@
 # HIOC Changelog
 
+- Added the future PE-10 Application, Integration & Service Assurance roadmap
+  phase. It distinguishes infrastructure availability from functional service
+  health; preserves PE-7 expected availability and the existing PE-8/PE-9 Asset,
+  impact, dependency, topology, and propagation work; records Tuya/Smart Life
+  stale-state and Google Cast use cases; and defines evidence-based, bounded,
+  functionally validated recovery and operator-focused notification targets.
+  No implementation or production behavior changed.
+
+- Synchronized the authoritative PE-3 status after reviewed production evidence:
+  Actions 1-5, 6-A, and 6-B are complete; Action 6 is complete; Action 7 is not
+  started; no rollback is recommended; the deployed runtime and transport
+  staging remain preserved. This checkpoint did not prepare or execute Action 7.
+
 - Replaced the unsafe PE-3 Action 6 inline immutable-install block with a
   separately bootstrapped repository-controlled installer. The corrected
   contract freezes the exact preserved staging path, full source/staging/

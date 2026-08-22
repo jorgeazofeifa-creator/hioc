@@ -42,17 +42,12 @@ PE-2 are **COMPLETE - PRODUCTION VALIDATED**. PE-3.0 is complete; PE-3.1 is
 **IMPLEMENTED - REPOSITORY VALIDATED**; PE-3.2 is **COMPLETE - EXTERNAL DATASET
 VALIDATED**; PE-3.3 is **COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED**.
 Windows CPython 3.13.x is operator-supported with validated patch 3.13.15.
-PE-3 Production Actions 1 and 2 are complete; Action 3 staging evidence is
-preserved. Action 4 remains stopped at `STAGING_PERMISSION_NORMALIZATION` while
-its completed repository-controlled resume contract awaits approval and
-synchronization. Action 5, manufacturer generation, PI3 production validation,
-and final governance closure remain open. PE-4 through PE-9 are not started.
-The exact restart point includes bounded target-source synchronization because
-PI3 remained at `653f887a643c877a8f611145c8b8e9f92a65b6cd`, where the resume
-script did not yet exist. Existing Action 3 staging evidence remains valid.
-The corrected restart is explicitly split: Action 4A synchronization and script
-identity must PASS and stop; Action 4B requires separate authorization and owns
-permission normalization, validator retry, and final Action 4 completion.
+PE-3 Actions 1-5 are complete. Action 6-A and Action 6-B each passed and are
+complete; Action 6 is complete. Action 7 is not started. No rollback is
+recommended, the current deployed runtime remains in place, and PE-3 transport
+staging remains preserved. PE-4 through PE-10 are not started. Historical
+pre-execution and corrective records remain chronology rather than current
+status and must not be read as reopening completed actions.
 
 The Master Plan now defines the controlled vocabulary for design-complete,
 repository-validated, external-data-validated, production-validated, in-progress,
@@ -67,7 +62,9 @@ MQTT and Passive Service Association; PE-6 Classification & Metadata Quality;
 PE-7 Expected Availability & Permanent IoT Monitoring; PE-8 Automation
 Correlation & Impact Analysis; and PE-9 Service & Infrastructure Dependency
 Intelligence. PE-8 functional impact remains distinct from PE-9 technical
-dependency/cause.
+dependency/cause. PE-10 Application, Integration & Service Assurance follows
+those layers and asks whether the operator-visible capability is usable; it is
+planned future architecture and not current functionality.
 
 The audit preserved separate future checkpoints for Asset-aware retention and
 archival; canonical-address evidence hardening; DHCP service health/capacity;
@@ -197,9 +194,10 @@ Python reconciliation also updates governed operator code and tests: it promotes
 3.13.x support, records 3.13.15 evidence, and aligns Action 1 with exact managed-
 interpreter selection. No unresolved authoritative contradiction remains.
 
-Open work is intentional roadmap scope: PE-3 production deployment, production
-manufacturer generation, PI3 validation, final PE-3 closure, PE-4 through PE-9,
-and the separately preserved future checkpoints above.
+Open work is intentional roadmap scope: PE-3 Action 7, PE-4 through PE-10, and
+the separately preserved future checkpoints above. Actions 1-6 are complete;
+the deployed runtime and transport staging remain preserved with no rollback
+recommended. Action 7 is not started.
 
 Action 5 operator governance was corrected before execution. Its former inline
 strict-mode block could terminate the evidence-bearing shell and had incomplete

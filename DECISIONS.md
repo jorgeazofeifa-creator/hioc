@@ -1050,3 +1050,30 @@ uses an invocation-owned hidden same-filesystem directory, complete revalidation
 and fsync, and no-replace atomic rename. Identical existing content is accepted;
 any differing invariant fails closed. Configuration activation remains Action
 7, which cannot be prepared or executed without reviewed full Action 6 PASS.
+
+## ADR-0025: Separate infrastructure availability from application and service assurance
+
+**Date:** 2026-08-22
+**Status:** Accepted roadmap architecture; PE-10 planned / not started
+
+HIOC adopts a separate future **PE-10 - Application, Integration & Service
+Assurance** phase after PE-8 functional-impact correlation and PE-9 technical
+dependency intelligence. A reachable host, available Home Assistant entity, or
+successful recovery API call is not sufficient evidence that an operator-visible
+function is usable or recovered.
+
+PE-10 will correlate layered device, network, cloud/vendor, integration, entity,
+freshness, corroboration, automation, protocol/service, and functional evidence.
+It will use the existing Asset, dependency, topology, incident-propagation, and
+impact models rather than replace them. PE-7 remains the owner of expected-online
+intent; PE-10 owns capability/service usability across a dependency chain.
+
+Any future automated remediation must be evidence-based, bounded, backoff-
+controlled, loop-safe, recorded, operator-policy controlled, and followed by
+functional validation. Risky actions may require manual approval. Synthetic
+service checks, including Google Cast checks, must be harmless and non-disruptive.
+
+Infrastructure backup/DR/hardware migration and PI3 + PI5 Abrupt Power-Loss /
+Cold-Boot Recovery Validation remain separate checkpoints: the former protects
+restoration and migration, the latter proves uncontrolled-interruption recovery,
+and neither establishes steady-state application/service assurance.
