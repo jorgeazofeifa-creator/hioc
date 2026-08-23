@@ -1120,8 +1120,8 @@ for production. No Action 8 mutation occurred.
 Action 8 is owned by `tools/hioc-pe3-action8-generate.sh`, which coordinates the
 existing manual generator without changing its lock, atomic-write, no-op, or
 failure contracts. The wrapper proves target/source/runtime, activated
-configuration, exact dataset, inventory, output preconditions, transport
-staging, and evidence state; validates the resulting private sidecar/status and
+configuration, exact installed dataset, inventory, output preconditions, and
+evidence state; validates the resulting private sidecar/status and
 protected domains; and publishes aggregate private evidence. It cannot deploy,
 reload, reschedule, clean staging, or chain Action 9. Since PI3 predates the new
 wrapper, a future separately authorized bootstrap synchronization/identity gate
@@ -1180,3 +1180,28 @@ the result last, and reports the exact path. The path is temporary operator
 evidence for reviewed Action 8 and later separate validation; loss blocks later
 authorization and never permits reconstruction or substitution. The script blob
 change requires a new post-push bootstrap identity gate before Action 8.
+
+## Decision: Action 8 does not depend on post-install transport staging
+
+**Date:** 2026-08-22
+**Status:** Corrected after pre-generation staging-loss stop; Action 8 incomplete
+
+The stopped Action 8 attempt proved target, source, runtime, configuration,
+installed immutable dataset, dataset validation, and inventory, then reported
+`TRANSPORT_STAGING_INVALID` before generation because the historical `/tmp`
+transfer directory was absent. This is classified as **PE-3 ACTION 8
+TRANSPORT-STAGING LIFETIME CONTRACT DEFECT — EPHEMERAL TRANSFER STATE
+INCORRECTLY REQUIRED AFTER IMMUTABLE INSTALLATION**. It is not dataset loss, an
+Action 6 or Action 7 failure, or a manufacturer-generation failure.
+
+Action 6 consumes, validates, and atomically publishes the transferred pair.
+Action 7 selects that installed immutable database. Action 8 reads only the
+installed pair through the active configuration and already freezes its type,
+owner, mode, size, hashes, validation result, privacy result, and record count.
+The former staging fingerprint added no provenance, security, privacy, or
+rollback authority. Action 8 now accepts staging absence and neither reads,
+recreates, retransmits, nor cleans it. Cleanup belongs after reviewed Action 6
+publication as a separate authorization; an already absent directory needs no
+cleanup action. The stopped attempt caused no generation mutation and recommends
+no rollback. The changed wrapper requires a new post-push bootstrap identity gate
+before any separately authorized Action 8 retry.

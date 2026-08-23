@@ -16,7 +16,6 @@ STATUS="$STATE_DIR/manufacturer_status.json"
 FINAL_DIR="$RUNTIME/data/manufacturer/versions/local-ieee-ra--2026-08-11-r1"
 DB="$FINAL_DIR/manufacturer-db.json"
 MF="$FINAL_DIR/manufacturer-db.manifest.json"
-TRANSPORT_STAGE=/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS
 DB_BYTES=8652642
 MF_BYTES=1338
 DB_SHA256=81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1
@@ -162,10 +161,7 @@ verify_configuration_dataset_inventory() {
   printf 'INVENTORY_IDENTITY=PASS\n'
 }
 
-verify_transport_and_output_prestate() {
-  owned_mode_directory "$TRANSPORT_STAGE" 700 || { fail_action8 INPUT_OR_PRECONDITION_ERROR TRANSPORT_STAGING_INVALID PROTECTED_PRE_STATE FALSE; return 1; }
-  [ "$(find "$TRANSPORT_STAGE" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null | sort | paste -sd, -)" = manufacturer-db.json,manufacturer-db.manifest.json ] || { fail_action8 INPUT_OR_PRECONDITION_ERROR TRANSPORT_STAGING_INVALID PROTECTED_PRE_STATE FALSE; return 1; }
-  TRANSPORT_SHA_BEFORE="$(sha256sum "$TRANSPORT_STAGE/manufacturer-db.json" "$TRANSPORT_STAGE/manufacturer-db.manifest.json" 2>/dev/null | sha256sum | awk '{print $1}')"
+verify_output_prestate() {
   side_exists=FALSE
   if [ -e "$SIDE" ] || [ -L "$SIDE" ] || [ -e "$STATUS" ] || [ -L "$STATUS" ]; then
     owned_mode_file "$SIDE" 600 && owned_mode_file "$STATUS" 600 || { fail_action8 INPUT_OR_PRECONDITION_ERROR MANUFACTURER_OUTPUT_PRECONDITION_INVALID OUTPUT_PRECONDITION FALSE; return 1; }
@@ -230,7 +226,6 @@ validate_and_publish_evidence() {
   printf 'MANUFACTURER_ARTIFACT_VALIDATION=PASS\n'
   [ "$(sha256sum "$CONFIG" | awk '{print $1}')" = "$CONFIG_SHA_BEFORE" ] || { fail_action8 VALIDATION_FAIL CONFIGURATION_CHANGED PROTECTED_POST_GENERATION TRUE; return 1; }
   [ "$(sha256sum "$DB" | awk '{print $1}')" = "$DB_SHA256" ] && [ "$(sha256sum "$MF" | awk '{print $1}')" = "$MF_SHA256" ] || { fail_action8 VALIDATION_FAIL DATASET_CHANGED PROTECTED_POST_GENERATION TRUE; return 1; }
-  [ "$(sha256sum "$TRANSPORT_STAGE/manufacturer-db.json" "$TRANSPORT_STAGE/manufacturer-db.manifest.json" 2>/dev/null | sha256sum | awk '{print $1}')" = "$TRANSPORT_SHA_BEFORE" ] || { fail_action8 VALIDATION_FAIL TRANSPORT_STAGING_CHANGED PROTECTED_POST_GENERATION TRUE; return 1; }
   printf 'PROTECTED_POST_GENERATION=PASS\n'
   sync -f "$TEMP_RESULT" && sync -f "$TEMP_PERFORMANCE" || { fail_action8 VALIDATION_FAIL EVIDENCE_FSYNC_FAILED EVIDENCE_PUBLICATION TRUE; return 1; }
   mv -fT -- "$TEMP_PERFORMANCE" "$EVIDENCE_DIR/generation-performance.txt" || { fail_action8 VALIDATION_FAIL EVIDENCE_PUBLICATION_FAILED EVIDENCE_PUBLICATION TRUE; return 1; }
@@ -251,7 +246,7 @@ main() {
   printf '%s' "$GOVERNANCE_COMMIT" | grep -Eq '^[0-9a-f]{40}$' || { fail_action8 INPUT_OR_PRECONDITION_ERROR INVALID_GOVERNANCE_COMMIT INPUT_VALIDATION FALSE; return 1; }
   verify_target_source_runtime || return 1
   verify_configuration_dataset_inventory || return 1
-  verify_transport_and_output_prestate || return 1
+  verify_output_prestate || return 1
   prepare_evidence_directory || return 1
   write_protected_snapshot || return 1
   run_generation || return 1

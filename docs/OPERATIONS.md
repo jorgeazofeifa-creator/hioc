@@ -283,7 +283,7 @@ pipeline, an unresolved evidence path, bare assertions, and incomplete identity,
 publication, failure, and rollback evidence. The governed wrapper invokes only
 the established manual generator after proving target/source/runtime identity,
 the Action 7 configuration selection, exact immutable dataset, inventory,
-output preconditions, transport-staging preservation, and private evidence
+output preconditions, and private evidence
 state. It validates both generated private artifacts and protected domains after
 generation, publishes only aggregate private evidence, and never deploys,
 reloads services, changes schedules, cleans staging, or chains Action 9. A
@@ -301,6 +301,12 @@ pass. The directory path is emitted on PASS and on later failures where it was
 safely created. Operators must return that exact path and preserve it for the
 next authorized boundary; arbitrary discovery, substitution, recreation, and
 wildcard cleanup are prohibited.
+
+Transport staging is transient transfer state required through Action 6
+installation, not an Action 8 input. After reviewed immutable publication and
+Action 7 activation, Action 8 relies on the exact installed database/manifest and
+configuration selection. It accepts staging absence, never reads or recreates
+staging, and retains fail-closed configuration and installed-dataset drift checks.
 
 ## Known Dangerous Operator Patterns
 

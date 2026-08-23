@@ -973,7 +973,7 @@ evidence: `pre/protected.json`, `generation-performance.txt`, and
 `generation-result.json` plus invocation-owned temporary files while running.
 
 Action 8 must not alter configuration, the immutable database/manifest,
-inventory or other protected runtime state, transport staging, services,
+inventory or other protected runtime state, services,
 schedules, environment configuration, or deployment state. It cannot clean
 staging or chain Action 9. The sidecar generator's frozen two-artifact failure
 semantics remain authoritative: prior valid state is preserved where specified;
@@ -995,6 +995,16 @@ generation result, which is the result-last marker. Every failure emits
 directory creation it also emits the exact `EVIDENCE_DIR`. Failures return
 control to the parent prompt, suppress later stages, and never perform automatic
 rollback or later-action chaining.
+
+The original Action 8 staging barrier is retired as **PE-3 ACTION 8
+TRANSPORT-STAGING LIFETIME CONTRACT DEFECT — EPHEMERAL TRANSFER STATE
+INCORRECTLY REQUIRED AFTER IMMUTABLE INSTALLATION**. Action 6 already consumed,
+validated, and atomically published the transferred pair; Action 7 selected the
+installed immutable database. Action 8 consumes no staging bytes and derives no
+security, provenance, privacy, or rollback evidence from the transfer copy. It
+accepts staging absence and does not read, fingerprint, recreate, retransmit, or
+clean staging. Exact installed dataset and active configuration identity remain
+mandatory before generation and are rechecked afterward.
 
 The earlier dependency on an operator-supplied
 `/tmp/hioc-pe3-production-validation-*` path is rejected as **PE-3 ACTION 8
@@ -1106,30 +1116,18 @@ review, not automatic invariant failure. A single performance miss is
 stable-input runs above 150% of a hard bound with demonstrated PE-3 causality.
 Run Action 9 only; return the sanitized report and checksums.
 
-## Action 10 — Temporary transfer cleanup
+## Action 10 — Historical temporary transfer cleanup boundary
 
-Target: PI3 temporary staging only. Mutation: deletion of two verified staging
-files and their exact staging directory. Rollback relevance: none.
+Transport staging is transient Action 6 input and ceases to be authoritative
+after reviewed immutable publication. If it still exists, cleanup requires a
+separate future authorization and a current governed procedure. If it is already
+absent, as confirmed at the Action 8 pre-generation stop, no cleanup action is
+required or permitted. Action 8 and Action 9 do not depend on this boundary.
 
-```bash
-set -euo pipefail
-PI3_STAGE='/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS'
-EVIDENCE_DIR='/tmp/hioc-pe3-production-validation-XXXXXXXX'
-[ "$PI3_STAGE" != /tmp ] && [[ "$PI3_STAGE" == /tmp/hioc-pe3-dataset-transfer-* ]]
-[ -d "$PI3_STAGE" ] && [ ! -L "$PI3_STAGE" ]
-[ "$(find "$PI3_STAGE" -mindepth 1 -maxdepth 1 -printf '%f\n' | sort | paste -sd, -)" = 'manufacturer-db.json,manufacturer-db.manifest.json' ]
-rm -- "$PI3_STAGE/manufacturer-db.json"
-rm -- "$PI3_STAGE/manufacturer-db.manifest.json"
-rmdir -- "$PI3_STAGE"
-jq '.cleanup="PASS"' "$EVIDENCE_DIR/PE3_MANUFACTURER_PRODUCTION_EVIDENCE.json" > "$EVIDENCE_DIR/.evidence.tmp"
-chmod 0600 "$EVIDENCE_DIR/.evidence.tmp"
-mv -- "$EVIDENCE_DIR/.evidence.tmp" "$EVIDENCE_DIR/PE3_MANUFACTURER_PRODUCTION_EVIDENCE.json"
-(cd "$EVIDENCE_DIR" && find . -type f ! -name EVIDENCE_CHECKSUMS.sha256 -print0 | sort -z | xargs -0 sha256sum > EVIDENCE_CHECKSUMS.sha256)
-printf 'TRANSFER_CLEANUP=PASS\n'
-```
-
-Do not remove the final version, Windows sources/build, release backup,
-configuration backup, or validation evidence. Run Action 10 only; return output.
+The earlier inline deletion block is not an active operator instruction. Do not
+recreate staging to satisfy cleanup and do not remove the installed immutable
+version, Windows sources/build, release backup, configuration backup, or Action 8
+evidence.
 
 ## Result taxonomy and rollback domains
 

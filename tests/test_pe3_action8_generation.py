@@ -126,7 +126,7 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
             "local-ieee-ra--2026-08-11-r1", "8652642", "1338",
             "81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1",
             "10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4",
-            "53581", "/tmp/hioc-pe3-dataset-transfer-PJ5qPbRS",
+            "53581",
         ):
             self.assertIn(value, self.script)
         for rel in (
@@ -167,7 +167,7 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         main_body = self.script.split("main() {", 1)[1].split("action8_entry() {", 1)[0]
         phases = (
             "verify_target_source_runtime", "verify_configuration_dataset_inventory",
-            "verify_transport_and_output_prestate", "prepare_evidence_directory",
+            "verify_output_prestate", "prepare_evidence_directory",
             "write_protected_snapshot", "run_generation", "validate_and_publish_evidence",
         )
         positions = [main_body.index(phase) for phase in phases]
@@ -185,7 +185,9 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertIn("generation-result.json", self.script)
         self.assertIn("generation-performance.txt", self.script)
         self.assertIn("CONFIG_SHA_BEFORE", self.script)
-        self.assertIn("TRANSPORT_SHA_BEFORE", self.script)
+        self.assertNotIn("TRANSPORT_SHA_BEFORE", self.script)
+        self.assertNotIn("TRANSPORT_STAGING_INVALID", self.script)
+        self.assertNotIn("TRANSPORT_STAGING_CHANGED", self.script)
         for forbidden in ("systemctl", "crontab", "release/upgrade.sh", "ACTION9", "rm -r"):
             self.assertNotIn(forbidden, self.script)
 
@@ -201,7 +203,7 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertIn("EVIDENCE_PRE_DIRECTORY_CREATE_FAILED EVIDENCE_PREPARATION FALSE", self.script)
         self.assertIn('EVIDENCE_DIR=%s\\n\' "$EVIDENCE_DIR"', self.script)
         self.assertLess(
-            self.script.index("verify_transport_and_output_prestate || return 1"),
+            self.script.index("verify_output_prestate || return 1"),
             self.script.index("prepare_evidence_directory || return 1"),
         )
         self.assertLess(
@@ -220,6 +222,17 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertIn("validate_sidecar", self.script)
         self.assertIn("MANUFACTURER_TEMP_ARTIFACT_PRESENT", self.script)
         self.assertNotIn("| tee", self.script)
+
+    def test_transport_staging_absence_is_accepted_after_installation_and_activation(self):
+        self.assertNotIn("/tmp/hioc-pe3-dataset-transfer-", self.script)
+        self.assertNotIn("TRANSPORT_STAGE", self.script)
+        self.assertIn("CONFIGURATION_IDENTITY=PASS", self.script)
+        self.assertIn("DATASET_IDENTITY=PASS", self.script)
+
+    def test_present_transport_staging_is_not_consumed_recreated_or_cleaned(self):
+        for forbidden in ("TRANSPORT_STAGE", "dataset-transfer", "scp ", "rsync ", "mkdir", "rmdir"):
+            self.assertNotIn(forbidden, self.script)
+        self.assertNotRegex(self.script, r"(?m)^\s*rm\s+-r")
 
     def test_child_script_failure_preserves_parent_shell(self):
         shell = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash")

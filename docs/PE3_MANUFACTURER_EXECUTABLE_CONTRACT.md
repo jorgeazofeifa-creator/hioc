@@ -738,13 +738,13 @@ Production Action 8 is the first governed invocation of the manual generator.
 Its repository-controlled wrapper does not replace the generator transaction or
 introduce another lock. Before invocation it proves the exact Action 7
 configuration selection, immutable dataset identity and validation, current
-inventory, output preconditions, protected-state snapshot, transport-staging
-preservation, and private evidence directory. After invocation it validates the
-sidecar/status pair against inventory and database, rejects leftover temporary
-artifacts, rechecks protected configuration/dataset/staging, and durably
-publishes only aggregate evidence. It cannot deploy, reload a service, change a
-schedule, clean staging, or invoke Action 9. Generator-domain failures retain
-the section 16 rollback semantics; wrapper validation after successful
+inventory, output preconditions, protected-state snapshot, and private evidence
+directory. After invocation it validates the sidecar/status pair against
+inventory and the installed database, rejects leftover temporary artifacts,
+rechecks protected configuration/dataset state, and durably publishes only
+aggregate evidence. It cannot deploy, reload a service, change a schedule,
+recreate or clean transport staging, or invoke Action 9. Generator-domain
+failures retain the section 16 rollback semantics; wrapper validation after successful
 publication may require rollback review but never automatic rollback. The
 wrapper consumes no historical Action 5 evidence. After all read-only
 preconditions pass, it creates one unique private invocation-owned
@@ -753,6 +753,16 @@ operator-supplied evidence path. It publishes `generation-performance.txt`
 before result-last `generation-result.json`, reports the exact directory, and
 requires that temporary evidence to remain intact for the next separately
 authorized validation boundary. Missing evidence is not reconstructed.
+
+Transport staging is transient pre-install transfer state. Once Action 6 has
+validated and atomically published the immutable version and Action 7 has
+selected that exact installed database, staging is neither a generator input nor
+a provenance, security, privacy, or rollback authority. Production Action 8
+therefore does not require, read, fingerprint, recreate, or clean transport
+staging. It fails closed on the installed immutable database/manifest and active
+configuration identities instead. Staging may be removed only at a separately
+authorized cleanup boundary after reviewed Action 6 completion; its prior or
+current absence does not weaken the installed dataset contract.
 
 ## 20. Conflict and organization normalization
 

@@ -1359,13 +1359,15 @@ organization variant enters Git.
 Python compatibility governance is resolved under Model D in
 [PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). Windows
 CPython 3.13.x is supported with validated patch evidence 3.13.15. PE-3 Actions
-1 through 4 are **PASS — COMPLETE** and the validated pair remains in private
-PI3 transport staging. Actions 5, 6-A, and 6-B are **PASS — COMPLETE** and
+1 through 4 are **PASS — COMPLETE** and the validated pair was transferred
+through private PI3 transport staging. Actions 5, 6-A, and 6-B are **PASS — COMPLETE** and
 Action 6 is **COMPLETE**. Action 7-A and Action 7-B are **PASS — COMPLETE** and
-Action 7 is **COMPLETE**. Action 8 is **NOT STARTED**. No rollback is
+Action 7 is **COMPLETE**. Action 8 was attempted but stopped before generation
+and is **NOT COMPLETE**. No rollback is
 recommended; the current deployed runtime remains in place, the exact immutable
 `local-ieee-ra--2026-08-11-r1` database is selected in configuration, and PE-3
-transport staging remains preserved. PE-4 through PE-10 remain not started.
+transport staging is confirmed absent, and that loss does not affect the
+installed immutable dataset. PE-4 through PE-10 remain not started.
 
 Action 1 pre-execution review identified two operator-input defects without
 executing the action: a hard-coded `python` PATH assumption and ambiguous choice
@@ -1672,6 +1674,21 @@ that temporary evidence blocks later authorization; it is never reconstructed.
 Because the script identity changes, the reviewed bootstrap PASS for the prior
 blob remains historical and a new bootstrap is required after commit/push. No
 replacement bootstrap, Action 8, Action 9, or production action occurred.
+
+**PE-3 Action 8 transport-staging lifetime correction (2026-08-22):** The first
+post-bootstrap Action 8 attempt passed target, source, runtime, configuration,
+installed dataset, dataset validation, and inventory, then stopped before
+generation with `TRANSPORT_STAGING_INVALID` because the historical `/tmp`
+transfer directory was absent. Repository review confirms Action 8 consumes no
+staging bytes: Action 6 already validated and atomically published the immutable
+pair, and Action 7 selected that installed database. The former requirement is
+classified as **PE-3 ACTION 8 TRANSPORT-STAGING LIFETIME CONTRACT DEFECT —
+EPHEMERAL TRANSFER STATE INCORRECTLY REQUIRED AFTER IMMUTABLE INSTALLATION**.
+Action 8 now accepts absent staging while retaining exact active-configuration,
+installed-dataset, validator, privacy, and protected-state barriers. It does not
+recreate, retransmit, or clean staging. The attempt caused no generation
+mutation; Action 8 remains incomplete, Action 9 remains not started, and rollback
+is not recommended. The changed script requires a new post-push bootstrap gate.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

@@ -53,6 +53,10 @@ explicit approval. It is not a runtime upgrade and cannot invoke generation.
 The separately authorized generator wrapper accepts no release-evidence path;
 it creates and reports one private invocation-owned Action 8 evidence directory
 after its read-only preconditions pass.
+The wrapper validates the installed immutable dataset selected by configuration;
+it does not consume or require the earlier `/tmp` transport staging. Transfer
+staging ceases to be authoritative after reviewed immutable publication and may
+be removed only through a separately authorized cleanup boundary.
 
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 

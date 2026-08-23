@@ -19,10 +19,17 @@
   manufacturer artifacts, Action 8 evidence, or transport staging. The
   bootstrap is prepared but not executed; Action 8 remains not started.
 
+- Corrected the PE-3 Action 8 transport-staging lifetime defect exposed by the
+  pre-generation `TRANSPORT_STAGING_INVALID` stop. Action 8 now treats transfer
+  staging as transient Action 6 input, validates the installed immutable pair and
+  active configuration as authoritative, and neither reads, recreates,
+  retransmits, nor cleans staging. The stopped attempt generated no manufacturer
+  artifacts; rollback is not recommended and Action 9 remains not started.
+
 - Replaced the unsafe PE-3 Action 8 inline generation block with a governed
   protected-generation wrapper. It verifies target/source/runtime, activated
   configuration, exact immutable dataset, inventory, output preconditions,
-  transport staging, protected state, generated sidecar/status, and private
+  installed dataset, protected state, generated sidecar/status, and private
   aggregate evidence; preserves the generator's existing lock and atomic-write
   contracts; and stops before Action 9. Action 7 is complete, Action 8 remains
   not started, and no production action occurred.

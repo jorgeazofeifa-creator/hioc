@@ -39,7 +39,7 @@ Action 8.
 
 Action 8 is not a release deployment. Its repository-controlled wrapper invokes
 the already deployed manual manufacturer generator only after source/runtime,
-configuration, dataset, inventory, output, protected-state, staging, and
+configuration, installed dataset, inventory, output, protected-state, and
 evidence gates pass. Because PI3 currently predates the wrapper, a separate
 source-synchronization/script-identity bootstrap must pass before the mutating
 action can be considered. The bootstrap only fast-forwards the clean release
@@ -47,8 +47,12 @@ source to the explicitly supplied and validated operator-approved full 40-hex
 post-push commit, proves exact script identity, and stops. Action 8
 does not use `release/upgrade.sh`, alter deployed code, or chain Action 9.
 It creates its own private temporary evidence directory only after deployment,
-source, runtime, configuration, dataset, inventory, output, and staging
+source, runtime, configuration, installed dataset, inventory, and output
 preconditions pass; no Action 5/5C evidence directory is an input.
+Transport staging is transient pre-install state and is not consumed or required
+after Action 6 immutable publication and Action 7 activation. Its absence does
+not authorize recreation or retransmission and does not weaken installed-dataset
+identity validation.
 
 ## Document Ownership
 
