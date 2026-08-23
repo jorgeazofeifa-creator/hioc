@@ -48,7 +48,8 @@ Action 8 likewise is not a release deployment. Its governed source-side wrapper
 coordinates the already deployed manual generator and bounded evidence only.
 Making that new wrapper available requires a separately authorized
 release-source fast-forward/script-identity gate that stops after exact proof;
-it is not a runtime upgrade and cannot invoke generation.
+its exact full 40-hex governance commit is supplied only after publication and
+explicit approval. It is not a runtime upgrade and cannot invoke generation.
 
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 

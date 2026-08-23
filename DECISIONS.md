@@ -1142,3 +1142,21 @@ committed and worktree Git blob
 `91360c1f83c890dd340a9a6390bf462cb0f95731`. It then stops. Runtime,
 configuration, dataset, inventory, manufacturer artifacts, Action 8 evidence,
 transport staging, services, and Action 9 are outside this bootstrap boundary.
+
+## Decision: Action 8 bootstrap governance identity is supplied after publication
+
+**Date:** 2026-08-22
+**Status:** Corrected before bootstrap execution
+
+The first Action 8 bootstrap correction froze its parent commit before the
+governance correction itself could exist. This is classified as **PE-3 ACTION 8
+BOOTSTRAP GOVERNANCE-COMMIT SELF-STALE CONTRACT DEFECT**, a repository defect
+and not a production failure. A literal replacement would become stale again.
+
+The bootstrap therefore accepts one explicit operator-approved lowercase full
+40-hex governance commit after commit/push. Format validation precedes target,
+fetch, and merge work; the value is never inferred from a branch, tag, symbolic
+ref, or remote. Exact `origin/main`, ancestry, fast-forward-only synchronization,
+post-sync HEAD, cleanliness, and the frozen Action 8 script Git/worktree blob
+remain mandatory. The bootstrap still stops without runtime, staging, evidence,
+generation, rollback, or Action 9 work.

@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Corrected the PE-3 Action 8 bootstrap's self-stale governance identity. The
+  gate now accepts an explicitly approved literal full 40-hex post-push commit,
+  validates it before target/network work, and retains exact remote, ancestry,
+  fast-forward, synchronized HEAD, cleanliness, and frozen script-blob barriers.
+  No bootstrap, generation, production, staging, or later action occurred.
+
 - Governed the separate PE-3 Action 8 bootstrap as a source-only clean
   fast-forward and exact script Git/worktree identity gate. It stops before
   generation and never reads or changes runtime state, configuration, dataset,

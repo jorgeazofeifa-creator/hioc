@@ -289,8 +289,10 @@ generation, publishes only aggregate private evidence, and never deploys,
 reloads services, changes schedules, cleans staging, or chains Action 9. A
 separately authorized bootstrap gate is required because the PI3 source predates
 this script. That parent-shell-safe gate performs only clean fast-forward source
-synchronization to the exact governance commit and exact script Git/worktree
-identity proof, then stops without reading production state or transport staging.
+synchronization to an explicitly supplied, validated, operator-approved full
+40-hex post-push governance commit and exact script Git/worktree identity proof,
+then stops without reading production state or transport staging. The commit is
+never inferred or frozen before its governing correction is published.
 
 ## Known Dangerous Operator Patterns
 

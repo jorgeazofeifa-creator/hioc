@@ -1638,14 +1638,26 @@ the new script, a separately reviewed future bootstrap gate is required after
 commit/push and is not prepared here. No Action 8 or production action occurred.
 
 **PE-3 Action 8 bootstrap governance (2026-08-22):** The required bootstrap is
-now frozen as a separately authorized, inline, parent-shell-safe synchronization
-and script-identity gate. It may only fast-forward the clean PI3 release-source
-checkout to `8d65af39c6f41a7dcd003371378ace41fab270cd` and prove Git/worktree identity
+now governed as a separately authorized, inline, parent-shell-safe synchronization
+and script-identity gate. It accepts the exact operator-approved full 40-hex
+post-push governance commit, validates it before network or mutation, may only
+fast-forward the clean PI3 release-source checkout to that exact commit, and
+proves Git/worktree identity
 for `tools/hioc-pe3-action8-generate.sh` at blob
 `91360c1f83c890dd340a9a6390bf462cb0f95731`, then stop. It does not read or
 change runtime configuration, dataset, inventory, sidecar/status, evidence, or
 transport staging and cannot invoke Action 8 or Action 9. The bootstrap is
 prepared but not executed; Action 8 remains not started.
+
+**PE-3 Action 8 bootstrap governance-commit correction (2026-08-22):** The
+first bootstrap checkpoint incorrectly froze its pre-correction parent commit,
+creating a self-stale contract after publication. This is classified as **PE-3
+ACTION 8 BOOTSTRAP GOVERNANCE-COMMIT SELF-STALE CONTRACT DEFECT**. The corrected
+gate takes the explicitly approved literal full 40-hex post-push commit as its
+sole argument, rejects invalid or symbolic input before target/network work, and
+still requires exact `origin/main`, ancestry, fast-forward, post-sync HEAD, clean
+tree, and frozen script Git/worktree identity. No bootstrap or production action
+occurred; Action 8 remains not started.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 

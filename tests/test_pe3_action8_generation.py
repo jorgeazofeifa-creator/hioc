@@ -28,9 +28,12 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
 
     def test_bootstrap_is_frozen_and_separate(self):
         self.assertIn("hioc_pe3_action8_bootstrap_sync()", self.bootstrap)
-        self.assertIn("8d65af39c6f41a7dcd003371378ace41fab270cd", self.bootstrap)
         self.assertIn("91360c1f83c890dd340a9a6390bf462cb0f95731", self.bootstrap)
         self.assertIn("ACTION8_BOOTSTRAP=COMPLETE", self.bootstrap)
+        self.assertIn("GOVERNANCE_COMMIT=${1:-}", self.bootstrap)
+        self.assertIn('[ "$#" -eq 1 ]', self.bootstrap)
+        self.assertIn("<operator-approved-full-40-hex-governance-commit>", self.bootstrap)
+        self.assertNotRegex(self.bootstrap, r"GOVERNANCE_COMMIT=[0-9a-f]{40}")
         self.assertNotIn('bash "$SCRIPT"', self.bootstrap)
         for forbidden in (
             "/home/jazofv1/hioc/config", "hioc-pe3-dataset-transfer",
@@ -51,6 +54,70 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
             self.assertIn(marker, self.bootstrap)
         for marker in ("ERROR_CODE=%s", "FAILURE_STAGE=%s", "ROLLBACK_RECOMMENDED=FALSE"):
             self.assertIn(marker, self.bootstrap)
+
+    def test_bootstrap_input_and_failure_mappings(self):
+        self.assertIn("'^[0-9a-f]{40}$'", self.bootstrap)
+        self.assertLess(self.bootstrap.index("INVALID_GOVERNANCE_COMMIT"), self.bootstrap.index("hostname -s"))
+        self.assertLess(self.bootstrap.index("INVALID_GOVERNANCE_COMMIT"), self.bootstrap.index("fetch origin"))
+        mappings = {
+            "WRONG_TARGET": "TARGET_SYNCHRONIZATION",
+            "SOURCE_REPOSITORY_MISSING": "REPOSITORY_PRECONDITION",
+            "WRONG_BRANCH": "REPOSITORY_PRECONDITION",
+            "SOURCE_REPOSITORY_DIRTY": "REPOSITORY_PRECONDITION",
+            "ACTIVE_GIT_OPERATION": "REPOSITORY_PRECONDITION",
+            "GIT_FETCH_FAILED": "REPOSITORY_SYNCHRONIZATION",
+            "GOVERNANCE_COMMIT_MISMATCH": "REPOSITORY_SYNCHRONIZATION",
+            "NON_FAST_FORWARD_SOURCE": "REPOSITORY_SYNCHRONIZATION",
+            "FAST_FORWARD_FAILED": "REPOSITORY_SYNCHRONIZATION",
+            "POST_SYNC_HEAD_MISMATCH": "SYNCHRONIZED_HEAD_IDENTITY",
+            "POST_SYNC_REPOSITORY_DIRTY": "SYNCHRONIZED_HEAD_IDENTITY",
+            "ACTION8_SCRIPT_MISSING": "SCRIPT_AVAILABILITY",
+            "ACTION8_SCRIPT_NOT_REGULAR": "SCRIPT_AVAILABILITY",
+            "ACTION8_SCRIPT_GIT_IDENTITY_MISMATCH": "SCRIPT_IDENTITY",
+            "ACTION8_SCRIPT_WORKTREE_IDENTITY_MISMATCH": "SCRIPT_IDENTITY",
+        }
+        for code, stage in mappings.items():
+            self.assertRegex(self.bootstrap, rf"fail {code} {stage}")
+
+    def test_bootstrap_exact_synchronization_and_identity_barriers(self):
+        barriers = (
+            'branch --show-current 2>/dev/null)" = main',
+            'status --porcelain 2>/dev/null)',
+            'fetch origin',
+            'rev-parse origin/main 2>/dev/null)" = "$GOVERNANCE_COMMIT"',
+            'merge-base --is-ancestor HEAD "$GOVERNANCE_COMMIT"',
+            'merge --ff-only origin/main',
+            'rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT"',
+            '[ ! -L "$SCRIPT" ]', '[ -e "$SCRIPT" ]', '[ -f "$SCRIPT" ]',
+            'rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL"',
+            'hash-object --path="$SCRIPT_REL" "$SCRIPT"',
+            'diff --quiet -- "$SCRIPT_REL"',
+        )
+        for barrier in barriers:
+            self.assertIn(barrier, self.bootstrap)
+        self.assertLess(self.bootstrap.index("fetch origin"), self.bootstrap.index("merge --ff-only"))
+        self.assertLess(self.bootstrap.index("merge --ff-only"), self.bootstrap.index("POST_SYNC_HEAD_MISMATCH"))
+        self.assertLess(self.bootstrap.index("POST_SYNC_REPOSITORY_DIRTY"), self.bootstrap.index("ACTION8_SCRIPT_MISSING"))
+
+    def test_invalid_bootstrap_input_preserves_parent_shell(self):
+        shell = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash")
+        if not shell:
+            self.skipTest("Bash is required")
+        body = self.bootstrap.rsplit("hioc_pe3_action8_bootstrap_sync", 1)[0]
+        invalid_args = (
+            "", "invalid", "d47eb6e", "D47EB6E272E75E2209591693E819F62423F7DC70",
+            "main", "v1.0.0", "d47eb6e272e75e2209591693e819f62423f7dc70 extra",
+        )
+        for args in invalid_args:
+            command = body + f"hioc_pe3_action8_bootstrap_sync {args}; printf 'PARENT_SHELL_ALIVE=TRUE\\n'"
+            result = subprocess.run([shell, "-c", command], text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("ERROR_CODE=INVALID_GOVERNANCE_COMMIT", result.stdout)
+            self.assertIn("FAILURE_STAGE=INPUT_VALIDATION", result.stdout)
+            self.assertIn("ROLLBACK_RECOMMENDED=FALSE", result.stdout)
+            self.assertIn("PARENT_SHELL_ALIVE=TRUE", result.stdout)
+            self.assertNotIn("TARGET_IDENTITY=PASS", result.stdout)
+            self.assertNotIn("REPOSITORY_SYNCHRONIZATION=PASS", result.stdout)
 
     def test_exact_identity_contract(self):
         self.assertIn('"$(id -un 2>/dev/null)" = jazofv1', self.script)

@@ -907,9 +907,11 @@ hioc_pe3_action8_bootstrap_sync() {
   SOURCE=/home/jazofv1/hioc-release-source
   SCRIPT_REL=tools/hioc-pe3-action8-generate.sh
   SCRIPT="$SOURCE/$SCRIPT_REL"
-  GOVERNANCE_COMMIT=8d65af39c6f41a7dcd003371378ace41fab270cd
+  GOVERNANCE_COMMIT=${1:-}
   SCRIPT_BLOB=91360c1f83c890dd340a9a6390bf462cb0f95731
   fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\nROLLBACK_RECOMMENDED=FALSE\n' "$1" "$2"; return 1; }
+  [ "$#" -eq 1 ] || { fail INVALID_GOVERNANCE_COMMIT INPUT_VALIDATION; return; }
+  printf '%s' "$GOVERNANCE_COMMIT" | grep -Eq '^[0-9a-f]{40}$' || { fail INVALID_GOVERNANCE_COMMIT INPUT_VALIDATION; return; }
   [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
   ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
   printf 'TARGET_IDENTITY=PASS\n'
@@ -927,14 +929,22 @@ hioc_pe3_action8_bootstrap_sync() {
   [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail POST_SYNC_HEAD_MISMATCH SYNCHRONIZED_HEAD_IDENTITY; return; }
   [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_REPOSITORY_DIRTY SYNCHRONIZED_HEAD_IDENTITY; return; }
   printf 'SYNCHRONIZED_HEAD_IDENTITY=PASS\n'
-  [ -f "$SCRIPT" ] && [ ! -L "$SCRIPT" ] || { fail ACTION8_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  [ ! -L "$SCRIPT" ] || { fail ACTION8_SCRIPT_NOT_REGULAR SCRIPT_AVAILABILITY; return; }
+  [ -e "$SCRIPT" ] || { fail ACTION8_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  [ -f "$SCRIPT" ] || { fail ACTION8_SCRIPT_NOT_REGULAR SCRIPT_AVAILABILITY; return; }
   printf 'ACTION8_SCRIPT_AVAILABILITY=PASS\n'
   [ "$(git -C "$SOURCE" rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL" 2>/dev/null)" = "$SCRIPT_BLOB" ] || { fail ACTION8_SCRIPT_GIT_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
   [ "$(git -C "$SOURCE" hash-object --path="$SCRIPT_REL" "$SCRIPT" 2>/dev/null)" = "$SCRIPT_BLOB" ] && git -C "$SOURCE" diff --quiet -- "$SCRIPT_REL" || { fail ACTION8_SCRIPT_WORKTREE_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
   printf 'ACTION8_SCRIPT_IDENTITY=PASS\nACTION8_BOOTSTRAP=COMPLETE\nRESULT=PASS\n'
 }
-hioc_pe3_action8_bootstrap_sync
+hioc_pe3_action8_bootstrap_sync '<operator-approved-full-40-hex-governance-commit>'
 ```
+
+The invocation value is supplied only after the final governance correction is
+committed, pushed, and explicitly approved. It must be a literal lowercase full
+40-hex commit ID; an empty value, abbreviation, symbolic ref, branch, or tag
+fails as `INVALID_GOVERNANCE_COMMIT` at `INPUT_VALIDATION` before target checks,
+fetch, or merge. The procedure never infers the value from a ref.
 
 Canonical PASS is exactly, in order: `TARGET_IDENTITY`,
 `REPOSITORY_PRECONDITION`, `REPOSITORY_SYNCHRONIZATION`,
