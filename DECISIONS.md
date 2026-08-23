@@ -1,5 +1,20 @@
 # HIOC Architecture Decisions
 
+## Decision: Action 9 is read-only validation with invocation-owned evidence
+
+The historical Action 9 inline procedure is rejected for stale evidence
+provenance, interactive strict mode, unavailable timing dependency, repeated
+generation, and incomplete failure/evidence semantics. The corrected boundary
+uses `tools/hioc-pe3-action9-validate.sh`, consumes the exact reviewed Action 8
+PASS evidence only after strict path/type/ownership/mode/content validation, and
+reuses its governed Python performance record rather than rerunning generation.
+
+Action 9 independently validates current production artifacts and protected
+state without modifying them. Only private invocation-owned Action 9 evidence is
+written, with a bounded machine-readable Evidence Report and result-last marker.
+Rollback is always advisory FALSE because no production mutation occurs. The
+tool stops without Action 10, cleanup, deployment, staging, or retransmission.
+
 ## Decision: Record governed PE-3 Action 8 production completion before Action 9
 
 The governed PI3 Action 8 execution at commit

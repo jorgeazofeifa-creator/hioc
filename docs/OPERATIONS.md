@@ -1,5 +1,14 @@
 # HIOC Operations
 
+PE-3 Action 9 is a separately authorized read-only validation checkpoint owned
+by `tools/hioc-pe3-action9-validate.sh`. Operators must supply the approved full
+governance commit and the exact preserved Action 8 PASS evidence path. The tool
+validates evidence provenance/content, current artifacts, privacy, performance,
+and protected-state equality, then creates only private invocation-owned Action
+9 evidence and stops. It never regenerates outputs, uses `/usr/bin/time`, cleans
+evidence or staging, performs rollback, or chains Action 10. Preserve every
+reported Action 9 evidence directory for review.
+
 Corrected Action 8 validator deployment is a dedicated, validator-only
 checkpoint. The tool produces private invocation evidence and a backup path only
 when replacement is required. It never restores automatically. Failures before

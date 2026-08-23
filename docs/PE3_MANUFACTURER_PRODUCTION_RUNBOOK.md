@@ -1148,9 +1148,63 @@ criterion. Do not manually edit sidecars or status.
 
 ## Action 9 — Production validation and Evidence Report
 
-Target: PI3 runtime and evidence directory. Mutation: evidence files; repeated
-generator calls for governed timing use no-op sidecar semantics. Rollback
-relevance depends on demonstrated causal failure.
+The historical inline procedure below is obsolete and must not be executed. It
+is rejected as **PE-3 ACTION 9 OPERATOR-SAFETY AND EVIDENCE-CONTRACT DEFECT —
+STALE EVIDENCE INPUT, INTERACTIVE STRICT MODE, UNDECLARED TIMING DEPENDENCY, AND
+UNBOUNDED FAILURE SEMANTICS**.
+
+Current Action 9 is owned only by
+`tools/hioc-pe3-action9-validate.sh`. It is a read-only production validation
+transaction whose only mutation is a private invocation-owned
+`/tmp/hioc-pe3-action9-XXXXXXXX` evidence directory. It accepts exactly
+`--governance-commit <full-lowercase-40-hex>` and
+`--action8-evidence-dir </tmp/hioc-pe3-action8-*>`. The operator supplies the
+exact preserved directory returned by the reviewed Action 8 PASS; the tool does
+not infer or hard-code a suffix and rejects arbitrary names or contents.
+
+The tool proves PI3, operator, clean exact-commit source, its own Git/worktree
+identity, the Action 8 wrapper, validator, manufacturer library, and deployed
+validator/library equality. It requires Action 8 evidence to contain exactly
+private `generation-result.json`, `generation-performance.txt`, and
+`pre/protected.json`, rejects failure or unexpected evidence, validates the
+bounded PASS/count/performance schemas, and never invokes the generator.
+Performance acceptance reuses governed Action 8 timing and RSS evidence; there
+is no `/usr/bin/time` dependency.
+
+It independently validates configuration selection, immutable dataset hashes,
+inventory permission class, exact-private manufacturer artifacts, absence of
+temporary outputs, privacy-safe database and sidecar results, and byte-identical
+protected state before/after. It publishes bounded `evidence-report.json`, then
+result-last `action9-result.txt`, both mode `0600` under a mode-`0700` directory.
+No inventory, configuration, dataset, manufacturer output, service, schedule,
+Action 8 evidence, transport staging, or production code is modified.
+
+Canonical PASS is exactly, in order: `TARGET_IDENTITY`, `SOURCE_IDENTITY`,
+`RUNTIME_IDENTITY`, `ACTION8_EVIDENCE_IDENTITY`,
+`ACTION8_EVIDENCE_VALIDATION`, `PERFORMANCE_EVIDENCE_VALIDATION`,
+`EVIDENCE_PREPARATION`, `CONFIGURATION_IDENTITY`, `DATASET_IDENTITY`,
+`INVENTORY_IDENTITY`, `MANUFACTURER_ARTIFACT_IDENTITY`,
+`MANUFACTURER_ARTIFACT_VALIDATION`, `PROTECTED_STATE`, `EVIDENCE_REPORT`,
+`EVIDENCE_DIR`, `ACTION9=COMPLETE`, `RESULT=PASS`, and
+`ROLLBACK_RECOMMENDED=FALSE`. Every failure emits bounded `RESULT`, `ERROR_CODE`,
+`FAILURE_STAGE`, and `ROLLBACK_RECOMMENDED=FALSE`, plus `EVIDENCE_DIR` only when
+created. It returns to the parent prompt and stops. Action 10 remains **NOT
+STARTED / NOT PREPARED**.
+
+Interface, documented but not authorized for execution by this repository
+checkpoint:
+
+```text
+bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action9-validate.sh \
+  --governance-commit '<approved-full-40-hex-post-push-commit>' \
+  --action8-evidence-dir '<exact-reviewed-action8-evidence-directory>'
+```
+
+### Obsolete Action 9 inline procedure — do not execute
+
+The following block is retained solely as historical defect evidence. Its path,
+strict mode, timing utility, repeated generator calls, and output behavior are
+not part of the active Action 9 contract.
 
 ```bash
 set -euo pipefail

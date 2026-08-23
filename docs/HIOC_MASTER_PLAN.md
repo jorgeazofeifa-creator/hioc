@@ -1,5 +1,24 @@
 # HIOC Master Plan
 
+## PE-3 Action 9 operator-safety and evidence-contract correction
+
+Repository forensics reject the historical Action 9 inline block as **PE-3
+ACTION 9 OPERATOR-SAFETY AND EVIDENCE-CONTRACT DEFECT — STALE EVIDENCE INPUT,
+INTERACTIVE STRICT MODE, UNDECLARED TIMING DEPENDENCY, AND UNBOUNDED FAILURE
+SEMANTICS**. It referenced an unrelated historical evidence prefix, could kill
+an interactive parent shell, depended on unavailable `/usr/bin/time`, reran the
+generator, and lacked private invocation evidence with bounded failures.
+
+The corrected repository architecture assigns Action 9 only to
+`tools/hioc-pe3-action9-validate.sh`. It validates the exact operator-supplied
+Action 8 PASS evidence, uses its governed performance record without generation,
+independently validates current production artifacts and protected-state
+identity, and publishes a private result-last Evidence Report. Production is
+read only; only invocation-owned Action 9 evidence may be written. Actions 1–8
+remain complete, Action 9 remains **NOT STARTED**, and Action 10 remains **NOT
+STARTED / NOT PREPARED**. No production, rollback, staging, retransmission, or
+future-roadmap action is performed by this correction.
+
 ## PE-3 Action 8 production completion checkpoint
 
 The governed PI3 Action 8 execution at governance commit

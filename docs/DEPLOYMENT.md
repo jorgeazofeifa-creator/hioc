@@ -1,5 +1,13 @@
 # HIOC Deployment
 
+Action 9 is not deployment. Its repository-controlled tool reads the clean
+exact-commit release source, deployed validator/library, current manufacturer
+artifacts, immutable dataset selection, inventory, and reviewed Action 8 PASS
+evidence. Runtime content is not published or changed. The sole permitted
+mutation is a private invocation-owned Action 9 Evidence Report directory under
+`/tmp`. No release upgrade, installer, generator, service action, staging,
+retransmission, rollback, or later action belongs to this boundary.
+
 The bounded corrected-manufacturer-validator checkpoint is owned only by
 `tools/hioc-pe3-action8-validator-deploy.sh`. It is not a release upgrade. It
 requires release-source already synchronized to the approved full commit, then

@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Replaced the unsafe historical PE-3 Action 9 inline procedure with a governed
+  read-only validation tool. It strictly validates the operator-supplied Action
+  8 PASS evidence, reuses its portable performance record, independently proves
+  current production artifacts and protected state unchanged, and publishes a
+  private result-last Evidence Report. It has no `/usr/bin/time`, generator,
+  strict interactive shell, staging, rollback, or Action 10 behavior. Action 9
+  remains not started pending commit, push, synchronization, and authorization.
+
 - Recorded the governed PE-3 Action 8 production PASS at commit
   `fa344828161e892523faa3da5d4cdf07d2e8e792`, including preserved private
   evidence `/tmp/hioc-pe3-action8-eZxNGrKa`, current source-refresh and

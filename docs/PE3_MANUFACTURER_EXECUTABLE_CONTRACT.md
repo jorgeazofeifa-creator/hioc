@@ -1,5 +1,26 @@
 # PE-3.1 Manufacturer Enrichment Executable Contract
 
+## Action 9 read-only production validation contract
+
+`tools/hioc-pe3-action9-validate.sh` accepts exactly a lowercase full governance
+commit and the exact reviewed Action 8 evidence directory. Naming is necessary
+but insufficient: the directory and `pre` child must be real private `0700`
+directories owned by `jazofv1:jazofv1`; the only accepted evidence files are
+mode-`0600` `generation-result.json`, `generation-performance.txt`, and
+`pre/protected.json`. Failure evidence and unexpected entries are rejected.
+
+Action 9 validates the Action 8 PASS/count schema and its governed Python timing
+and RSS record against the frozen bounds. It does not invoke generation or use
+`/usr/bin/time`. Current configuration, inventory, immutable database/manifest,
+manufacturer sidecar/status, validator results, privacy result, temporary-file
+absence, and protected pre/post hashes are independently verified read only.
+
+Only `/tmp/hioc-pe3-action9-XXXXXXXX` may be created. It is private `0700`; its
+bounded Evidence Report and result are `0600`, fsynced, and the result is
+published last. Failures are bounded as input/precondition or validation errors,
+always recommend no production rollback, and return control to the parent shell.
+The tool cannot invoke Action 8, Action 10, deployment, cleanup, or rollback.
+
 ## Corrected-validator publication contract
 
 The validator-only corrective tool accepts exactly

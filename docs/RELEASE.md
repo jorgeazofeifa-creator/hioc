@@ -1,5 +1,12 @@
 # HIOC Release Process
 
+PE-3 Action 9 is outside the release path. After its new tool is reviewed,
+committed, pushed, source-synchronized, and separately authorized, it may verify
+the exact Action 8 PASS evidence and current runtime read only. It does not use
+`release/upgrade.sh`, `pi4/install_pi4.sh`, `/usr/bin/time`, or the manufacturer
+generator. Its private Evidence Report does not alter release artifacts,
+production files, transport staging, or future checkpoints.
+
 The corrected manufacturer-validator deployment is intentionally outside
 `release/upgrade.sh`: the broad release path invokes installer behavior that is
 unrelated to this corrective checkpoint. The dedicated PE-3 tool may publish
