@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Recorded the governed PE-3 Action 8 production PASS at commit
+  `fa344828161e892523faa3da5d4cdf07d2e8e792`, including preserved private
+  evidence `/tmp/hioc-pe3-action8-eZxNGrKa`, current source-refresh and
+  corrected-validator deployment prerequisites, `ROLLBACK_RECOMMENDED=FALSE`,
+  no rollback, absent/unnecessary transport staging, and no retransmission.
+  Action 8 is complete; Action 9 remains not started pending a separate governed
+  checkpoint after this completion record is committed and pushed.
+
 - Corrected the active Action 8 bootstrap status from the stale historical
   `NOT STARTED` state to `ATTEMPTED BUT NOT COMPLETE`. The active contract now
   preserves Action 9 as `NOT STARTED` and requires reviewed source refresh and

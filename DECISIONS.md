@@ -1,5 +1,19 @@
 # HIOC Architecture Decisions
 
+## Decision: Record governed PE-3 Action 8 production completion before Action 9
+
+The governed PI3 Action 8 execution at commit
+`fa344828161e892523faa3da5d4cdf07d2e8e792` returned `ACTION8=COMPLETE`,
+`RESULT=PASS`, and `ROLLBACK_RECOMMENDED=FALSE`. Its prerequisite source refresh
+and corrected-validator deployment are current PASS checkpoints. Evidence at
+`/tmp/hioc-pe3-action8-eZxNGrKa` is preserved without reuse or cleanup; no
+rollback, transport-staging recreation, or dataset retransmission occurred.
+
+Action 8 is complete and Action 9 remains not started. The permanent completion
+rule requires this status and production evidence to be committed and pushed
+before a separately governed Action 9 review or preparation begins. All future
+roadmap commitments remain unchanged.
+
 ## Action 8 corrected-validator deployment boundary
 
 Decision: `tools/hioc-pe3-action8-validator-deploy.sh` exclusively owns the

@@ -1,16 +1,32 @@
 # HIOC Master Plan
 
-## PE-3 active Action 8 status-governance correction
+## PE-3 Action 8 production completion checkpoint
 
-The active source-refresh/bootstrap contract no longer repeats the historical
-pre-execution state. It now records Action 8 as **ATTEMPTED BUT NOT COMPLETE**,
-Action 9 as **NOT STARTED**, and requires reviewed source refresh plus corrected
-validator-only runtime deployment before a separately authorized next Action 8
-attempt. Dated earlier checkpoints retain their historically accurate status.
-No source refresh, deployment, bootstrap, generation, rollback, or other
-production action is performed by this documentation correction.
+The governed PI3 Action 8 execution at governance commit
+`fa344828161e892523faa3da5d4cdf07d2e8e792` completed with `ACTION8=COMPLETE`,
+`RESULT=PASS`, and `ROLLBACK_RECOMMENDED=FALSE`. The prerequisite source refresh
+and corrected-validator deployment are **PASS / COMPLETE / CURRENT**. Private
+Action 8 evidence is preserved at `/tmp/hioc-pe3-action8-eZxNGrKa`; it must not
+be modified, deleted, reused, or cleaned. No rollback was performed. Transport
+staging remains absent and unnecessary, and retransmission is not required.
 
-## PE-3 Action 8 corrected-validator deployment governance
+Action 8 is **PASS / COMPLETE** and Action 9 remains **NOT STARTED**. In
+accordance with the permanent completion and commit rules, this production
+result must be validated, committed, pushed to `main`, and followed by a clean
+synchronized-tree verification before any Action 9 preparation. PE-10, the PI3
++ PI5 abrupt power-loss/cold-boot checkpoint, and every other future-roadmap
+commitment remain preserved.
+
+## Historical PE-3 active Action 8 status-governance correction
+
+At that pre-completion checkpoint, the active source-refresh/bootstrap contract
+stopped repeating the earlier pre-execution state and recorded Action 8 as
+**ATTEMPTED BUT NOT COMPLETE**, Action 9 as **NOT STARTED**, and reviewed source
+refresh plus corrected-validator runtime deployment as prerequisites for a
+separately authorized attempt. This section is retained as historical governance
+evidence; current status is recorded in the completion checkpoint above.
+
+## Historical PE-3 Action 8 corrected-validator deployment governance
 
 The permission-class correction exposed a second defect: **PE-3 ACTION 8
 CORRECTED VALIDATOR DEPLOYMENT GOVERNANCE GAP — NO BOUNDED VALIDATOR-ONLY
@@ -24,13 +40,13 @@ the reviewed validator, accepts exact identical runtime state as a no-op,
 otherwise creates a private durable backup and performs same-directory atomic
 publication with durability and final identity proof. It compares manufacturer
 outputs, inventory, active configuration, and the immutable pair before/after
-without exposing their contents. Source refresh and runtime deployment remain
-**NOT EXECUTED** and require separate reviewed STOP boundaries. Action 8 remains
-**ATTEMPTED BUT NOT COMPLETE**, Action 9 remains **NOT STARTED**, and the prior
-rollback recommendation remains advisory with no rollback performed. PE-10 and
-all preserved future checkpoints remain unchanged.
+without exposing their contents. At that checkpoint, source refresh and runtime
+deployment were **NOT EXECUTED** and required separate reviewed STOP boundaries;
+Action 8 was **ATTEMPTED BUT NOT COMPLETE**, Action 9 was **NOT STARTED**, and
+the prior rollback recommendation remained advisory with no rollback performed.
+The current completion state is recorded above.
 
-## PE-3 Action 8 permission-contract corrective checkpoint
+## Historical PE-3 Action 8 permission-contract corrective checkpoint
 
 The third Action 8 attempt generated and identity-checked private
 `manufacturer.json` and `manufacturer_status.json` files at exact mode `0600`,
@@ -41,10 +57,10 @@ MODE RULE APPLIED TO INVENTORY INPUT**.
 
 The correction keeps exact `0600` mandatory for both manufacturer artifacts and
 retains the inventory rule prohibiting group/world writes. Available evidence
-supports permission safety, not completed semantic validation. The rollback
-advisory remains `TRUE`, no rollback occurred, Action 8 remains **ATTEMPTED BUT
-NOT COMPLETE**, and Action 9 remains **NOT STARTED**. PE-10, PI3 + PI5 abrupt
-power-loss/cold-boot recovery validation, and all future checkpoints remain.
+supported permission safety, not completed semantic validation. At that
+checkpoint the rollback advisory was `TRUE`, no rollback had occurred, Action 8
+was **ATTEMPTED BUT NOT COMPLETE**, and Action 9 was **NOT STARTED**. The current
+completion state is recorded above; all future checkpoints remain preserved.
 
 **Version:** 1.0  
 **Status:** Active  
@@ -1345,6 +1361,12 @@ While implementing HIOC:
 This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
+
+PE-3 Actions 1–8 are complete. Action 8 production validation passed at
+governance commit `fa344828161e892523faa3da5d4cdf07d2e8e792`, with private
+evidence preserved at `/tmp/hioc-pe3-action8-eZxNGrKa` and no rollback
+recommended or performed. Action 9 remains not started and requires a separate
+post-checkpoint governance review and authorization.
 
 The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. Canonical Address Selection Hardening is production validated and complete. The network-probe checksum-governance and PI5 endpoint-migration correction is complete: repository correction, governed deployment, Phase A, Phase B incident recovery, and overall production validation passed at approved commit `e06539d9bece040d721b9912213559cc54f1610d`. The July 29 DHCP pool-exhaustion incident is resolved, HIOC deployment validation passed, and the documentation architecture now assigns current-state, runtime, network, deployment, incident, and recovery authority to focused documents. DHCP Service Health & Capacity Monitoring and `.152` DHCP residue cleanup remain separate future work. Phase 7A remains active and Active Discovery remains postponed.
 

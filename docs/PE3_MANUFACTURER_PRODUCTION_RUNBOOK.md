@@ -1,5 +1,21 @@
 # PE-3.3 Manufacturer Production Deployment and Validation Runbook
 
+## Current Action 8 completion checkpoint
+
+The governed Action 8 execution at governance commit
+`fa344828161e892523faa3da5d4cdf07d2e8e792` completed with `ACTION8=COMPLETE`,
+`RESULT=PASS`, and `ROLLBACK_RECOMMENDED=FALSE`. Its private invocation evidence
+is preserved at `/tmp/hioc-pe3-action8-eZxNGrKa` and must not be modified,
+deleted, reused, or cleaned. The prerequisite source-governance refresh and
+corrected-validator runtime deployment are **PASS / COMPLETE / CURRENT**. No
+rollback was performed, transport staging remains absent and unnecessary, and
+dataset retransmission is not required.
+
+Action 8 is **PASS / COMPLETE**. Action 9 remains **NOT STARTED**. The existing
+Action 9 operator block has not been prepared for execution at this checkpoint;
+it requires a separate governance review after this completion record is
+validated, committed, pushed to `main`, and the repository is verified clean.
+
 ## Corrected-validator synchronization and deployment prerequisites
 
 The previous Action 8 bootstrap PASS is historical for an earlier governance
@@ -19,8 +35,8 @@ Validator deployment emits `TARGET_IDENTITY`, `SOURCE_IDENTITY`,
 `ERROR_CODE`, `FAILURE_STAGE`, and rollback advice, plus private evidence/backup
 paths only when created. It cannot modify the generated manufacturer pair,
 inventory, configuration, immutable dataset, staging, services, or schedules.
-Action 8 remains **ATTEMPTED BUT NOT COMPLETE** and Action 9 remains **NOT
-STARTED**.
+At that prerequisite checkpoint, Action 8 remained **ATTEMPTED BUT NOT
+COMPLETE** and Action 9 remained **NOT STARTED**.
 
 ## Current Action 8 permission-contract stop
 
@@ -34,11 +50,12 @@ two files, then incorrectly applied their private permission ceiling to
 `inventory.json`. The correction preserves exact `0600` for both manufacturer
 artifacts and the established non-group/world-writable inventory input modes.
 
-The existing artifacts appear permission-safe from supplied metadata, but
-semantic validation has not completed. The rollback advisory remains
-fail-closed `TRUE`; no rollback was performed. Action 8 is **ATTEMPTED BUT NOT
-COMPLETE** and Action 9 is **NOT STARTED**. Governed runtime validator
-synchronization and a separately reviewed next authorization are required.
+At that historical permission-contract stop, the existing artifacts appeared
+permission-safe from supplied metadata, but semantic validation had not
+completed. The rollback advisory was fail-closed `TRUE`; no rollback was
+performed. Action 8 was **ATTEMPTED BUT NOT COMPLETE** and Action 9 was **NOT
+STARTED**. Governed runtime validator synchronization and a separately reviewed
+next authorization were required.
 
 Status: **DESIGN FROZEN; NOT EXECUTED**
 
@@ -994,10 +1011,12 @@ Canonical PASS is exactly, in order: `TARGET_IDENTITY`,
 Every failure emits bounded `RESULT`, `ERROR_CODE`, `FAILURE_STAGE`, and
 `ROLLBACK_RECOMMENDED=FALSE`, suppresses later stages, and returns control to the
 parent prompt. Stop after bootstrap PASS and return all output for review. The
-exact prior evidence-directory path is not an input to this bootstrap. Action 8
-remains **ATTEMPTED BUT NOT COMPLETE**. Another attempt requires separate
-authorization only after the source refresh and corrected-validator deployment
-checkpoints pass and are reviewed. Action 9 remains **NOT STARTED**.
+exact prior evidence-directory path is not an input to this bootstrap. At that
+pre-execution checkpoint, Action 8 remained **ATTEMPTED BUT NOT COMPLETE**.
+Another attempt required separate authorization only after the source refresh
+and corrected-validator deployment checkpoints passed and were reviewed. The
+later governed execution is recorded above as **PASS / COMPLETE**; Action 9
+remains **NOT STARTED**.
 
 The generator remains the established manual
 `pi4/bin/hioc-generate-manufacturer.py`; no collector, service, timer, cron job,
@@ -1067,9 +1086,9 @@ unsafe/missing prior output, or leftover generator temporary artifact proves a
 potentially partial or unsafe output transaction. A safe status-only failure
 update remains non-rollback. Failure-evidence publication or cleanup uncertainty
 fails closed with rollback review recommended. Rollback is never automatic.
-Action 8 remains **NOT COMPLETE** and the changed wrapper requires a new
-post-push bootstrap before any future separately authorized attempt. Action 9
-remains **NOT STARTED**.
+At that historical generator-failure checkpoint, Action 8 remained **NOT
+COMPLETE** and the changed wrapper required a new post-push bootstrap before any
+future separately authorized attempt. Action 9 remained **NOT STARTED**.
 
 The next governed attempt reached the generation boundary but the hard-coded
 optional `/usr/bin/time` launcher was absent on PI3. Sanitized failure evidence
@@ -1083,7 +1102,8 @@ mandatory private evidence, but no external timing package is required.
 `generator_launch_status=CONFIRMED` means `Popen` returned successfully;
 otherwise it is `UNCONFIRMED` and the wrapper reports
 `GENERATOR_INVOCATION_FAILED` at `MANUFACTURER_INVOCATION`. The corrected
-wrapper requires another post-push bootstrap and Action 8 remains incomplete.
+wrapper required another post-push bootstrap and Action 8 remained incomplete
+at that historical portability-defect checkpoint.
 
 The original Action 8 staging barrier is retired as **PE-3 ACTION 8
 TRANSPORT-STAGING LIFETIME CONTRACT DEFECT — EPHEMERAL TRANSFER STATE

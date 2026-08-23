@@ -69,7 +69,7 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
     def test_active_bootstrap_status_matches_current_action8_state(self):
         bootstrap_contract = self.action8.split("Canonical PASS is exactly", 1)[1].split("The generator remains", 1)[0]
         flat = " ".join(bootstrap_contract.split())
-        self.assertIn("Action 8 remains **ATTEMPTED BUT NOT COMPLETE**", flat)
+        self.assertIn("later governed execution is recorded above as **PASS / COMPLETE**", flat)
         self.assertIn("Action 9 remains **NOT STARTED**", flat)
         self.assertNotIn("Action 8 remains **NOT STARTED**", flat)
         self.assertIn("source refresh and corrected-validator deployment", flat)
