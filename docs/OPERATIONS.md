@@ -8,6 +8,13 @@ barriers. It remains unprepared and unexecuted pending a separate post-push
 checkpoint; it does not use runtime, manufacturer output, evidence, or transport
 staging state.
 
+The following governed Action 8 attempt retained sanitized exit `127` evidence
+because `/usr/bin/time` was absent before generator execution could be proven.
+Action 8 now uses governed Python for child launch and private elapsed/RSS
+measurement. Operators must distinguish `GENERATOR_INVOCATION_FAILED` with
+`generator_launch_status=UNCONFIRMED` from a confirmed generator-domain failure.
+Neither result authorizes automatic rollback or continuation.
+
 ## PE-3 manufacturer dataset conflicts
 
 The offline PE-3 builder may report an aggregate nonzero conflict count for

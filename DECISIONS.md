@@ -1249,3 +1249,22 @@ executable trust anchor, not merely whatever object happens to exist at the
 approved commit. The active gate now freezes blob
 `482f83584a62be2f02b2a73af4e78b0f4ebf447a`. No bootstrap, generation,
 production, transport-staging, rollback, or Action 9 action occurred.
+
+## Decision: Action 8 performance evidence uses governed Python
+
+**Date:** 2026-08-22
+**Status:** Corrected after retained exit-127 production evidence
+
+The second Action 8 attempt retained private sanitized evidence proving no
+manufacturer output mutation and exit `127`, while PI3 lacked the wrapper's
+hard-coded `/usr/bin/time`. The generator was not proven to have started. This
+is **PE-3 ACTION 8 PERFORMANCE-INSTRUMENTATION PORTABILITY DEFECT — OPTIONAL
+/usr/bin/time DEPENDENCY BLOCKS GOVERNED MANUFACTURER GENERATION**.
+
+Performance evidence remains mandatory, but the already-required governed
+Python runtime now owns child creation, monotonic elapsed time, and child maximum
+RSS. A private marker records only confirmed child creation; failure evidence
+uses bounded `CONFIRMED` or `UNCONFIRMED` launch status and never raw diagnostics.
+The changed wrapper invalidates the current bootstrap identity and requires a
+new post-push trust gate. No rollback, staging, retransmission, or Action 9 work
+is authorized.

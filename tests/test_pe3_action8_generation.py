@@ -31,7 +31,7 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
 
     def test_bootstrap_is_frozen_and_separate(self):
         self.assertIn("hioc_pe3_action8_bootstrap_sync()", self.bootstrap)
-        self.assertIn("482f83584a62be2f02b2a73af4e78b0f4ebf447a", self.bootstrap)
+        self.assertIn("b8c38607325acaf6ab3a02878c834e05e54bea56", self.bootstrap)
         self.assertNotIn("91360c1f83c890dd340a9a6390bf462cb0f95731", self.bootstrap)
         self.assertIn("ACTION8_BOOTSTRAP=COMPLETE", self.bootstrap)
         self.assertIn("GOVERNANCE_COMMIT=${1:-}", self.bootstrap)
@@ -190,7 +190,7 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         )
 
     def test_mutation_and_protection_boundaries(self):
-        self.assertIn('python3 "$RUNTIME/$GENERATOR_REL" --home "$RUNTIME" --json', self.script)
+        self.assertIn('subprocess.Popen([sys.executable, str(generator), "--home", str(home), "--json"])', self.script)
         self.assertIn("manufacturer.json", self.script)
         self.assertIn("manufacturer_status.json", self.script)
         self.assertIn("generation-result.json", self.script)
@@ -239,7 +239,8 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
             ".action8-stderr.XXXXXXXX", ".action8-failure.XXXXXXXX",
             "generation-failure.json", "GENERATOR_FAILURE_EVIDENCE=PASS",
             "GENERATOR_FAILURE_EVIDENCE_PUBLICATION_FAILED",
-            '"generator_exit_code"', '"generator_error_code"',
+            '"observed_exit_code"', '"generator_error_code"',
+            '"generator_launch_status"', '"GENERATOR_INVOCATION_FAILED"',
             '"stdout_structured_failure"', '"stderr_present"',
             '"manufacturer_sidecar"', '"manufacturer_status"',
             '"output_mutation"', '"rollback_recommended"',
@@ -253,9 +254,9 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
 
     def test_generator_failure_raw_captures_are_private_and_removed(self):
         self.assertIn('2> "$TEMP_STDERR"', self.script)
-        self.assertIn('rm -- "$TEMP_RESULT" "$TEMP_STDERR"', self.script)
+        self.assertIn('rm -- "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_STARTED"', self.script)
         self.assertLess(
-            self.script.index('rm -- "$TEMP_RESULT" "$TEMP_STDERR"'),
+            self.script.index('rm -- "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_STARTED"'),
             self.script.index('mv -fT -- "$TEMP_FAILURE"'),
         )
         self.assertNotIn('cat "$TEMP_RESULT"', self.script)
@@ -274,8 +275,8 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
     def test_generator_failure_rollback_tracks_output_mutation(self):
         self.assertIn('rollback = sidecar_mutated or unsafe_output_state', self.script)
         self.assertIn('"STATUS_ONLY" if status_mutated else "NONE"', self.script)
-        self.assertIn('raise SystemExit(10 if rollback else 0)', self.script)
-        self.assertIn('10) FAILURE_ROLLBACK=TRUE', self.script)
+        self.assertIn('raise SystemExit(10 if generator_failure and rollback else 0 if generator_failure else 12 if rollback else 11)', self.script)
+        self.assertIn('10) FAILURE_KIND=GENERATOR; FAILURE_ROLLBACK=TRUE', self.script)
         self.assertRegex(
             self.script,
             r"fail_action8 VALIDATION_FAIL MANUFACTURER_GENERATOR_FAILED "
@@ -311,7 +312,7 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertIn('owned_mode_directory "$EVIDENCE_DIR" 700', self.script)
 
     def test_generator_failure_cleanup_uncertainty_fails_closed(self):
-        cleanup = 'rm -- "$TEMP_RESULT" "$TEMP_STDERR" >/dev/null 2>&1 || { FAILURE_ROLLBACK=TRUE; return 20; }'
+        cleanup = 'rm -- "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_STARTED" >/dev/null 2>&1 || { FAILURE_ROLLBACK=TRUE; return 20; }'
         self.assertIn(cleanup, self.script)
         self.assertIn("GENERATOR_FAILURE_EVIDENCE_PUBLICATION_FAILED", self.script)
         self.assertIn("EVIDENCE_PUBLICATION", self.script)
@@ -323,6 +324,25 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         )
         self.assertIn('mv -fT -- "$TEMP_RESULT" "$EVIDENCE_DIR/generation-result.json"', self.script)
         self.assertNotEqual("generation-failure.json", "generation-result.json")
+
+    def test_generation_performance_uses_governed_python_not_external_time(self):
+        self.assertNotIn("/usr/bin/time", self.script)
+        self.assertIn("time.perf_counter()", self.script)
+        self.assertIn("resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss", self.script)
+        self.assertIn("manufacturer_generation_measurement_status", self.script)
+        self.assertIn("subprocess.Popen", self.script)
+
+    def test_generator_launch_status_is_confirmed_only_after_child_creation(self):
+        self.assertNotIn('"generator_started"', self.script)
+        self.assertIn('"generator_launch_status": "CONFIRMED" if launch_confirmed else "UNCONFIRMED"', self.script)
+        self.assertLess(self.script.index("subprocess.Popen"), self.script.index('started.write_text("TRUE\\n"'))
+        self.assertIn("GENERATOR_INVOCATION_FAILED", self.script)
+        self.assertIn("MANUFACTURER_INVOCATION", self.script)
+
+    def test_performance_launcher_embedded_python_compiles(self):
+        function = self.script.split("run_generation() {", 1)[1]
+        program = function.split('2> "$TEMP_STDERR"\n', 1)[1].split("\nPY\n", 1)[0]
+        compile(program, "action8-performance-launcher", "exec")
 
     def test_transport_staging_absence_is_accepted_after_installation_and_activation(self):
         self.assertNotIn("/tmp/hioc-pe3-dataset-transfer-", self.script)
@@ -375,10 +395,10 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
             text=True, capture_output=True, check=True,
         ).stdout.strip()
         self.assertEqual(current_blob, committed_bootstrap_blob)
-        self.assertEqual(current_blob, "482f83584a62be2f02b2a73af4e78b0f4ebf447a")
+        self.assertEqual(current_blob, "b8c38607325acaf6ab3a02878c834e05e54bea56")
         self.assertEqual(
             hashlib.sha256(SCRIPT.read_bytes()).hexdigest(),
-            "493927ec4c1d2c74276167d14224932f53f6cd3e50b55a18a3e519e57d2e7fcb",
+            "e42aa964ba822176e9b354ccbf9a726623361f236455bd16b5c29a301de2cb5a",
         )
 
 

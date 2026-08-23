@@ -25,11 +25,12 @@ TEMP_RESULT=
 TEMP_STDERR=
 TEMP_PERFORMANCE=
 TEMP_FAILURE=
+TEMP_STARTED=
 GENERATOR_SUCCEEDED=FALSE
 EVIDENCE_DIR_CREATED=FALSE
 
 cleanup_evidence_temps() {
-  for candidate in "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_PERFORMANCE" "$TEMP_FAILURE"; do
+  for candidate in "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_PERFORMANCE" "$TEMP_FAILURE" "$TEMP_STARTED"; do
     [ -n "$candidate" ] || continue
     case "$candidate" in "$EVIDENCE_DIR"/.action8-*) ;; *) return 1 ;; esac
     [ -e "$candidate" ] || [ -L "$candidate" ] || continue
@@ -40,6 +41,7 @@ cleanup_evidence_temps() {
   TEMP_STDERR=
   TEMP_PERFORMANCE=
   TEMP_FAILURE=
+  TEMP_STARTED=
 }
 
 fail_action8() {
@@ -215,17 +217,17 @@ publish_generator_failure_evidence() {
   generation_rc=$1
   TEMP_FAILURE="$(mktemp "$EVIDENCE_DIR/.action8-failure.XXXXXXXX" 2>/dev/null)" || return 20
   chmod 0600 "$TEMP_FAILURE" || return 20
-  python3 - "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_FAILURE" "$SIDE" "$STATUS" \
+  python3 - "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_FAILURE" "$TEMP_STARTED" "$SIDE" "$STATUS" \
     "$SIDE_BEFORE_PRESENT" "$SIDE_SHA_BEFORE" "$STATUS_BEFORE_PRESENT" \
     "$STATUS_SHA_BEFORE" "$generation_rc" <<'PY'
 import hashlib, json, os, pathlib, pwd, grp, stat, sys
 
-raw_result, raw_stderr, target, side, status = map(pathlib.Path, sys.argv[1:6])
-side_before_present = sys.argv[6] == "TRUE"
-side_before_sha = sys.argv[7]
-status_before_present = sys.argv[8] == "TRUE"
-status_before_sha = sys.argv[9]
-generator_exit_code = int(sys.argv[10])
+raw_result, raw_stderr, target, started, side, status = map(pathlib.Path, sys.argv[1:7])
+side_before_present = sys.argv[7] == "TRUE"
+side_before_sha = sys.argv[8]
+status_before_present = sys.argv[9] == "TRUE"
+status_before_sha = sys.argv[10]
+observed_exit_code = int(sys.argv[11])
 
 allowed_codes = {
     "MANUFACTURER_NOT_CONFIGURED", "MANUFACTURER_DATABASE_MISSING",
@@ -298,6 +300,11 @@ status_state = state(status, status_before_present, status_before_sha)
 stdout_code = structured_failure(raw_result)
 status_code = status_error(status) if status_state["present"] and status_state["safe"] else None
 diagnostic_code = stdout_code or status_code
+try:
+    launch_confirmed = started.read_text(encoding="ascii") == "TRUE\n"
+except (OSError, UnicodeError):
+    launch_confirmed = False
+generator_failure = launch_confirmed and observed_exit_code in {2, 3, 4, 6, 7, 12, 17, 18, 70}
 leftover_temps = []
 try:
     leftover_temps = sorted(
@@ -313,12 +320,12 @@ rollback = sidecar_mutated or unsafe_output_state
 mutation_class = "SIDECAR_OR_UNSAFE_OUTPUT" if rollback else "STATUS_ONLY" if status_mutated else "NONE"
 
 document = {
-    "schema_version": 1,
+    "schema_version": 2,
     "result": "FAIL",
-    "failure_stage": "MANUFACTURER_GENERATION",
-    "wrapper_error_code": "MANUFACTURER_GENERATOR_FAILED",
-    "generator_started": True,
-    "generator_exit_code": generator_exit_code,
+    "failure_stage": "MANUFACTURER_GENERATION" if generator_failure else "MANUFACTURER_INVOCATION",
+    "wrapper_error_code": "MANUFACTURER_GENERATOR_FAILED" if generator_failure else "GENERATOR_INVOCATION_FAILED",
+    "generator_launch_status": "CONFIRMED" if launch_confirmed else "UNCONFIRMED",
+    "observed_exit_code": observed_exit_code,
     "generator_diagnostic": "RECOGNIZED" if diagnostic_code else "UNAVAILABLE",
     "generator_error_code": diagnostic_code,
     "stdout_structured_failure": stdout_code is not None,
@@ -335,19 +342,22 @@ with os.fdopen(fd, "wb") as handle:
     handle.write(data)
     handle.flush()
     os.fsync(handle.fileno())
-raise SystemExit(10 if rollback else 0)
+raise SystemExit(10 if generator_failure and rollback else 0 if generator_failure else 12 if rollback else 11)
 PY
   diagnostic_rc=$?
   case "$diagnostic_rc" in
-    0) FAILURE_ROLLBACK=FALSE ;;
-    10) FAILURE_ROLLBACK=TRUE ;;
+    0) FAILURE_KIND=GENERATOR; FAILURE_ROLLBACK=FALSE ;;
+    10) FAILURE_KIND=GENERATOR; FAILURE_ROLLBACK=TRUE ;;
+    11) FAILURE_KIND=INVOCATION; FAILURE_ROLLBACK=FALSE ;;
+    12) FAILURE_KIND=INVOCATION; FAILURE_ROLLBACK=TRUE ;;
     *) FAILURE_ROLLBACK=TRUE; return 20 ;;
   esac
   owned_mode_file "$TEMP_FAILURE" 600 || { FAILURE_ROLLBACK=TRUE; return 20; }
   sync -f "$TEMP_PERFORMANCE" && sync -f "$TEMP_FAILURE" || { FAILURE_ROLLBACK=TRUE; return 20; }
-  rm -- "$TEMP_RESULT" "$TEMP_STDERR" >/dev/null 2>&1 || { FAILURE_ROLLBACK=TRUE; return 20; }
+  rm -- "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_STARTED" >/dev/null 2>&1 || { FAILURE_ROLLBACK=TRUE; return 20; }
   TEMP_RESULT=
   TEMP_STDERR=
+  TEMP_STARTED=
   mv -fT -- "$TEMP_PERFORMANCE" "$EVIDENCE_DIR/generation-performance.txt" || { FAILURE_ROLLBACK=TRUE; return 20; }
   TEMP_PERFORMANCE=
   mv -fT -- "$TEMP_FAILURE" "$EVIDENCE_DIR/generation-failure.json" || { FAILURE_ROLLBACK=TRUE; return 20; }
@@ -360,17 +370,52 @@ run_generation() {
   TEMP_RESULT="$(mktemp "$EVIDENCE_DIR/.action8-result.XXXXXXXX" 2>/dev/null)" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CREATE_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
   TEMP_STDERR="$(mktemp "$EVIDENCE_DIR/.action8-stderr.XXXXXXXX" 2>/dev/null)" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CREATE_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
   TEMP_PERFORMANCE="$(mktemp "$EVIDENCE_DIR/.action8-performance.XXXXXXXX" 2>/dev/null)" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CREATE_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
-  chmod 0600 "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_PERFORMANCE" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_PERMISSION_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
-  /usr/bin/time -f 'manufacturer_generation_elapsed_seconds=%e manufacturer_generation_max_rss_kib=%M' -o "$TEMP_PERFORMANCE" python3 "$RUNTIME/$GENERATOR_REL" --home "$RUNTIME" --json > "$TEMP_RESULT" 2> "$TEMP_STDERR"
+  TEMP_STARTED="$(mktemp "$EVIDENCE_DIR/.action8-started.XXXXXXXX" 2>/dev/null)" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CREATE_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
+  chmod 0600 "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_PERFORMANCE" "$TEMP_STARTED" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_PERMISSION_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
+  python3 - "$RUNTIME/$GENERATOR_REL" "$RUNTIME" "$TEMP_PERFORMANCE" "$TEMP_STARTED" <<'PY' > "$TEMP_RESULT" 2> "$TEMP_STDERR"
+import os, pathlib, resource, subprocess, sys, time
+generator, home, performance, started = map(pathlib.Path, sys.argv[1:])
+begin = time.perf_counter()
+launch_status = "UNAVAILABLE"
+maximum_rss = 0
+return_code = 125
+try:
+    process = subprocess.Popen([sys.executable, str(generator), "--home", str(home), "--json"])
+    started.write_text("TRUE\n", encoding="ascii")
+    with started.open("rb") as handle:
+        os.fsync(handle.fileno())
+    launch_status = "MEASURED"
+    return_code = process.wait()
+    maximum_rss = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+except OSError:
+    if "process" in locals():
+        process.wait()
+    return_code = 125
+elapsed = time.perf_counter() - begin
+performance.write_text(
+    f"manufacturer_generation_elapsed_seconds={elapsed:.6f} "
+    f"manufacturer_generation_max_rss_kib={maximum_rss} "
+    f"manufacturer_generation_measurement_status={launch_status}\n",
+    encoding="ascii",
+)
+with performance.open("rb") as handle:
+    os.fsync(handle.fileno())
+raise SystemExit(return_code)
+PY
   generation_rc=$?
   if [ "$generation_rc" -ne 0 ]; then
     FAILURE_ROLLBACK=FALSE
     publish_generator_failure_evidence "$generation_rc" || { fail_action8 VALIDATION_FAIL GENERATOR_FAILURE_EVIDENCE_PUBLICATION_FAILED EVIDENCE_PUBLICATION "$FAILURE_ROLLBACK"; return 1; }
-    fail_action8 VALIDATION_FAIL MANUFACTURER_GENERATOR_FAILED MANUFACTURER_GENERATION "$FAILURE_ROLLBACK"
+    if [ "${FAILURE_KIND:-INVOCATION}" = GENERATOR ]; then
+      fail_action8 VALIDATION_FAIL MANUFACTURER_GENERATOR_FAILED MANUFACTURER_GENERATION "$FAILURE_ROLLBACK"
+    else
+      fail_action8 VALIDATION_FAIL GENERATOR_INVOCATION_FAILED MANUFACTURER_INVOCATION "$FAILURE_ROLLBACK"
+    fi
     return 1
   fi
-  rm -- "$TEMP_STDERR" >/dev/null 2>&1 || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CLEANUP_FAILED EVIDENCE_CLEANUP TRUE; return 1; }
+  rm -- "$TEMP_STDERR" "$TEMP_STARTED" >/dev/null 2>&1 || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CLEANUP_FAILED EVIDENCE_CLEANUP TRUE; return 1; }
   TEMP_STDERR=
+  TEMP_STARTED=
   GENERATOR_SUCCEEDED=TRUE
   python3 - "$TEMP_RESULT" <<'PY'
 import json, pathlib, sys

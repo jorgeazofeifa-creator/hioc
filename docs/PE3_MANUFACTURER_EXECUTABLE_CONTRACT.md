@@ -776,6 +776,16 @@ review. The recommendation is evidence-derived and never automatic. A malformed
 or absent generator envelope is recorded as diagnostic unavailable with the exit
 status and stderr-presence boolean; it is never treated as trusted input.
 
+Action 8 performance instrumentation is implemented by the already-required
+governed Python runtime, using monotonic elapsed time and child-process maximum
+RSS. `/usr/bin/time` is not an Action 8 dependency. The private performance
+record includes elapsed seconds, maximum RSS KiB, and bounded measurement status.
+Failure-evidence schema version 2 uses `generator_launch_status`: `CONFIRMED` only after Python
+successfully creates the generator child, otherwise `UNCONFIRMED`. An
+unconfirmed launch fails as `GENERATOR_INVOCATION_FAILED` at
+`MANUFACTURER_INVOCATION`; `observed_exit_code` is the launcher-observed status
+and is not claimed to be a generator exit when launch is unconfirmed.
+
 Transport staging is transient pre-install transfer state. Once Action 6 has
 validated and atomically published the immutable version and Action 7 has
 selected that exact installed database, staging is neither a generator input nor

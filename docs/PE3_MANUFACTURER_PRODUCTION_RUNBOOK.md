@@ -909,7 +909,7 @@ hioc_pe3_action8_bootstrap_sync() {
   SCRIPT_REL=tools/hioc-pe3-action8-generate.sh
   SCRIPT="$SOURCE/$SCRIPT_REL"
   GOVERNANCE_COMMIT=${1:-}
-  SCRIPT_BLOB=482f83584a62be2f02b2a73af4e78b0f4ebf447a
+  SCRIPT_BLOB=b8c38607325acaf6ab3a02878c834e05e54bea56
   fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\nROLLBACK_RECOMMENDED=FALSE\n' "$1" "$2"; return 1; }
   [ "$#" -eq 1 ] || { fail INVALID_GOVERNANCE_COMMIT INPUT_VALIDATION; return; }
   printf '%s' "$GOVERNANCE_COMMIT" | grep -Eq '^[0-9a-f]{40}$' || { fail INVALID_GOVERNANCE_COMMIT INPUT_VALIDATION; return; }
@@ -1028,6 +1028,20 @@ fails closed with rollback review recommended. Rollback is never automatic.
 Action 8 remains **NOT COMPLETE** and the changed wrapper requires a new
 post-push bootstrap before any future separately authorized attempt. Action 9
 remains **NOT STARTED**.
+
+The next governed attempt reached the generation boundary but the hard-coded
+optional `/usr/bin/time` launcher was absent on PI3. Sanitized failure evidence
+was retained with exit `127`, no output mutation, and rollback not recommended;
+the governed Python generator was not proven to have started. This is **PE-3
+ACTION 8 PERFORMANCE-INSTRUMENTATION PORTABILITY DEFECT — OPTIONAL
+/usr/bin/time DEPENDENCY BLOCKS GOVERNED MANUFACTURER GENERATION**. Action 8 now
+uses an embedded governed-Python launcher with `perf_counter`, child
+`getrusage`, and an invocation-private launch marker. Performance remains
+mandatory private evidence, but no external timing package is required.
+`generator_launch_status=CONFIRMED` means `Popen` returned successfully;
+otherwise it is `UNCONFIRMED` and the wrapper reports
+`GENERATOR_INVOCATION_FAILED` at `MANUFACTURER_INVOCATION`. The corrected
+wrapper requires another post-push bootstrap and Action 8 remains incomplete.
 
 The original Action 8 staging barrier is retired as **PE-3 ACTION 8
 TRANSPORT-STAGING LIFETIME CONTRACT DEFECT — EPHEMERAL TRANSFER STATE

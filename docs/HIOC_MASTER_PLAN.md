@@ -1731,6 +1731,25 @@ STARTED**, and the historical failed-attempt rollback remains **NOT
 RECOMMENDED**. A separate post-push preparation checkpoint is still required.
 PE-10 and the PI3 + PI5 abrupt power-loss/cold-boot checkpoint remain preserved.
 
+**PE-3 Action 8 performance-instrumentation portability correction
+(2026-08-22):** The second governed attempt passed all source, runtime,
+configuration, dataset, inventory, output, evidence, and protected-pre-state
+checks, then retained sanitized exit `127` evidence in
+`/tmp/hioc-pe3-action8-hGuyFmbK`. PI3 lacked the wrapper's undeclared hard-coded
+`/usr/bin/time`; no manufacturer output changed, rollback was not recommended,
+and the governed generator was not proven to have executed. This is **PE-3
+ACTION 8 PERFORMANCE-INSTRUMENTATION PORTABILITY DEFECT — OPTIONAL
+/usr/bin/time DEPENDENCY BLOCKS GOVERNED MANUFACTURER GENERATION**.
+
+The wrapper now measures the child with governed Python monotonic timing and
+child resource usage, records launch as confirmed only after successful child
+creation, and distinguishes invocation failure from generator failure. Private
+performance and result-last evidence ordering remain mandatory. Action 8 is
+**ATTEMPTED BUT NOT COMPLETE**, Action 9 is **NOT STARTED**, and the current
+bootstrap PASS becomes historical/stale because the wrapper changed. A new
+post-push bootstrap is required. Transport staging remains absent and unrelated;
+PE-10 and every preserved future checkpoint remain unchanged.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

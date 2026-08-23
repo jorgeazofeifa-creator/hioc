@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Replaced Action 8's undeclared hard-coded `/usr/bin/time` launcher after PI3
+  retained sanitized exit-127 evidence proving instrumentation blocked the
+  governed generator before execution was confirmed. Governed Python now owns
+  child launch, monotonic timing, child maximum-RSS measurement, and a bounded
+  launch-status marker. No output changed and rollback remains unrecommended.
+
 - Corrected the active PE-3 Action 8 bootstrap trust gate after preparation
   stopped before PI3 execution because it still froze the superseded wrapper
   blob. The independently reviewed Git-blob anchor now names the current

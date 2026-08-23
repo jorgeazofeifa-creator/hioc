@@ -7,6 +7,12 @@ preparation before execution. Correcting the repository contract does not
 prepare or execute synchronization, deploy runtime code, require transport
 staging, or authorize Action 8 or Action 9.
 
+Action 8 no longer depends on the undeclared host utility `/usr/bin/time`.
+Performance instrumentation is owned by the already-required governed Python
+runtime, so no host package installation is part of deployment. The changed
+wrapper requires a new source-only bootstrap identity gate after publication;
+it does not require runtime deployment or transport staging.
+
 For PE-3 Production Action 5, the authoritative runbook invokes the checked-in
 `tools/hioc-pe3-action5-deploy.sh`; do not reconstruct its deployment logic in
 an interactive shell. The action changes only supported runtime code and release

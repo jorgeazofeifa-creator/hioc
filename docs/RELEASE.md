@@ -6,6 +6,11 @@ reviewed wrapper blob after preparation stopped on the superseded identity.
 This repository correction does not itself prepare or execute the bootstrap and
 does not authorize runtime deployment, Action 8, or Action 9.
 
+Action 8 performance evidence no longer relies on `/usr/bin/time`; governed
+Python performs child launch and measurement. This is a wrapper/governance
+change, not a new host-package or runtime-deployment dependency. Its new Git
+blob must pass a separately authorized post-push bootstrap before another run.
+
 HIOC releases are built from the repository into a versioned package.
 
 ## Document Ownership
