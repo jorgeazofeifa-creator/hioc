@@ -1659,6 +1659,20 @@ still requires exact `origin/main`, ancestry, fast-forward, post-sync HEAD, clea
 tree, and frozen script Git/worktree identity. No bootstrap or production action
 occurred; Action 8 remains not started.
 
+**PE-3 Action 8 evidence-directory correction (2026-08-22):** The wrapper's
+operator-supplied `/tmp/hioc-pe3-production-validation-*` destination had no
+Action 5/5C provenance marker, durable discriminator, or safe recovery contract.
+This is classified as **PE-3 ACTION 8 EVIDENCE-DIRECTORY PROVENANCE AND
+DURABILITY CONTRACT DEFECT — EPHEMERAL PATH IS NOT DURABLY IDENTIFIABLE**.
+Action 8 needs no historical Action 5 evidence. The corrected wrapper accepts
+only the governance commit and, after all read-only preconditions pass, creates
+one unique private invocation-owned `/tmp/hioc-pe3-action8-XXXXXXXX` directory,
+publishes aggregate evidence result-last, and reports its exact path. Loss of
+that temporary evidence blocks later authorization; it is never reconstructed.
+Because the script identity changes, the reviewed bootstrap PASS for the prior
+blob remains historical and a new bootstrap is required after commit/push. No
+replacement bootstrap, Action 8, Action 9, or production action occurred.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

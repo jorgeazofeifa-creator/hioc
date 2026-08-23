@@ -876,12 +876,13 @@ later action occurred.
 
 Substantial Action 8 logic is now owned by
 `tools/hioc-pe3-action8-generate.sh`. The script accepts the exact governance
-commit and the exact existing Action 5 evidence directory as explicit operator
-inputs. It proves target and source identity; its own, generator, validator, and
+commit as its only operator input. It proves target and source identity; its
+own, generator, validator, and
 manufacturer-library Git/worktree identity; deployed runtime identity; Action 7
 configuration selection; exact immutable database identity and privacy-safe
 validator PASS; inventory validity; output preconditions; transport-staging
-preservation; and private evidence-directory state before generation.
+preservation; and protected state before creating its own private evidence
+directory and beginning generation.
 
 The published PI3 release source at
 `46f06bc3b1e7676ec23ac310d7a9a8585c05f632` predates this new script. A future
@@ -963,9 +964,13 @@ systemd unit, reload, or restart is introduced. It consumes the single
 manifest plus current `inventory.json` under its existing exclusive manufacturer
 lock. It may atomically create or replace only private mode-`0600`
 `manufacturer.json` and `manufacturer_status.json` according to the executable
-contract. The wrapper may add only private Action 8 evidence under the existing
-evidence directory: `pre/protected.json`, `generation-result.json`, and
-`generation-performance.txt`.
+contract. The wrapper creates one invocation-owned
+`/tmp/hioc-pe3-action8-XXXXXXXX` directory only after all read-only identity and
+output preconditions pass. The real non-symlink directory and its `pre`
+subdirectory are owned by `jazofv1:jazofv1` at mode `0700`; no operator path is
+accepted and no prior directory is reused. It may contain only Action 8 private
+evidence: `pre/protected.json`, `generation-performance.txt`, and
+`generation-result.json` plus invocation-owned temporary files while running.
 
 Action 8 must not alter configuration, the immutable database/manifest,
 inventory or other protected runtime state, transport staging, services,
@@ -978,14 +983,45 @@ evidence publication stops with rollback review recommended; rollback is never
 automatic.
 
 Canonical PASS requires, in order: `TARGET_IDENTITY`, `SOURCE_IDENTITY`,
-`RUNTIME_IDENTITY`, `EVIDENCE_PRECONDITION`, `CONFIGURATION_IDENTITY`,
-`DATASET_IDENTITY`, `DATASET_VALIDATION`, `INVENTORY_IDENTITY`,
-`OUTPUT_PRECONDITION`, `PROTECTED_PRE_STATE`, `MANUFACTURER_GENERATION`,
+`RUNTIME_IDENTITY`, `CONFIGURATION_IDENTITY`, `DATASET_IDENTITY`,
+`DATASET_VALIDATION`, `INVENTORY_IDENTITY`, `OUTPUT_PRECONDITION`,
+`EVIDENCE_PRECONDITION`, `PROTECTED_PRE_STATE`, `MANUFACTURER_GENERATION`,
 `MANUFACTURER_ARTIFACT_IDENTITY`, `MANUFACTURER_ARTIFACT_VALIDATION`,
-`PROTECTED_POST_GENERATION`, `EVIDENCE_PUBLICATION`, `ACTION8=COMPLETE`, and
-`RESULT=PASS`. Every failure emits `RESULT`, `ERROR_CODE`, `FAILURE_STAGE`, and
-`ROLLBACK_RECOMMENDED`, returns control to the parent prompt, suppresses later
-stages, and never performs automatic rollback or later-action chaining.
+`PROTECTED_POST_GENERATION`, `EVIDENCE_PUBLICATION`, `EVIDENCE_REPORT=PASS`,
+the exact `EVIDENCE_DIR`, `ACTION8=COMPLETE`, `RESULT=PASS`, and
+`ROLLBACK_RECOMMENDED=FALSE`. Performance evidence is published before the
+generation result, which is the result-last marker. Every failure emits
+`RESULT`, `ERROR_CODE`, `FAILURE_STAGE`, and `ROLLBACK_RECOMMENDED`; after safe
+directory creation it also emits the exact `EVIDENCE_DIR`. Failures return
+control to the parent prompt, suppress later stages, and never perform automatic
+rollback or later-action chaining.
+
+The earlier dependency on an operator-supplied
+`/tmp/hioc-pe3-production-validation-*` path is rejected as **PE-3 ACTION 8
+EVIDENCE-DIRECTORY PROVENANCE AND DURABILITY CONTRACT DEFECT — EPHEMERAL PATH IS
+NOT DURABLY IDENTIFIABLE**. Action 8 consumes no Action 5 or Action 5C evidence.
+Its fresh directory is temporary operator evidence whose exact returned path
+must remain intact through reviewed Action 8 evidence and separately authorized
+Action 9. If it is lost, Action 9 remains blocked; no reconstruction or arbitrary
+directory substitution is allowed. Persistent archival, if required by the
+final Evidence Report contract, remains a later governed boundary.
+
+After the evidence-directory correction changes the Action 8 script blob, the
+previous bootstrap PASS at governance commit
+`932a05efe7bf44cee91d1b85e0f90e68552c288a` remains historical evidence only.
+A new synchronization/script-identity bootstrap must be reviewed and pass after
+this correction is committed and pushed. It is not prepared here.
+
+After that future replacement bootstrap PASS and separate Action 8 authorization,
+the wrapper interface is only:
+
+```text
+bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action8-generate.sh \
+  --governance-commit '<approved-full-40-hex-post-push-commit>'
+```
+
+No evidence-directory argument is accepted. This interface is documented but
+not authorized for execution by this correction checkpoint.
 
 Reviewed full Action 8 PASS and the private aggregate evidence are required
 before Action 9 may be prepared. Match percentage is not an acceptance

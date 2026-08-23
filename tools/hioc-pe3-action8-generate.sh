@@ -25,6 +25,7 @@ EXPECTED_DATABASE_RECORD_COUNT=53581
 TEMP_RESULT=
 TEMP_PERFORMANCE=
 GENERATOR_SUCCEEDED=FALSE
+EVIDENCE_DIR_CREATED=FALSE
 
 cleanup_evidence_temps() {
   for candidate in "$TEMP_RESULT" "$TEMP_PERFORMANCE"; do
@@ -46,9 +47,11 @@ fail_action8() {
   rollback=$4
   if ! cleanup_evidence_temps; then
     printf 'RESULT=VALIDATION_FAIL\nERROR_CODE=EVIDENCE_TEMP_CLEANUP_FAILED\nFAILURE_STAGE=EVIDENCE_CLEANUP\nROLLBACK_RECOMMENDED=%s\n' "$rollback"
+    [ "${EVIDENCE_DIR_CREATED:-FALSE}" != TRUE ] || printf 'EVIDENCE_DIR=%s\n' "$EVIDENCE_DIR"
     return 1
   fi
   printf 'RESULT=%s\nERROR_CODE=%s\nFAILURE_STAGE=%s\nROLLBACK_RECOMMENDED=%s\n' "$result" "$code" "$stage" "$rollback"
+  [ "${EVIDENCE_DIR_CREATED:-FALSE}" != TRUE ] || printf 'EVIDENCE_DIR=%s\n' "$EVIDENCE_DIR"
   return 1
 }
 
@@ -132,19 +135,13 @@ verify_target_source_runtime() {
   printf 'RUNTIME_IDENTITY=PASS\n'
 }
 
-verify_evidence_directory() {
-  case "$EVIDENCE_DIR" in /tmp/hioc-pe3-production-validation-*) ;; *) fail_action8 INPUT_OR_PRECONDITION_ERROR EVIDENCE_PATH_INVALID EVIDENCE_PRECONDITION FALSE; return 1 ;; esac
-  [ "$(dirname -- "$EVIDENCE_DIR")" = /tmp ] || { fail_action8 INPUT_OR_PRECONDITION_ERROR EVIDENCE_PATH_INVALID EVIDENCE_PRECONDITION FALSE; return 1; }
-  owned_mode_directory "$EVIDENCE_DIR" 700 || { fail_action8 INPUT_OR_PRECONDITION_ERROR EVIDENCE_DIRECTORY_INVALID EVIDENCE_PRECONDITION FALSE; return 1; }
-  for name in generation-result.json generation-performance.txt; do
-    [ ! -e "$EVIDENCE_DIR/$name" ] && [ ! -L "$EVIDENCE_DIR/$name" ] || { fail_action8 INPUT_OR_PRECONDITION_ERROR ACTION8_EVIDENCE_ALREADY_EXISTS EVIDENCE_PRECONDITION FALSE; return 1; }
-  done
-  if [ -e "$EVIDENCE_DIR/pre" ] || [ -L "$EVIDENCE_DIR/pre" ]; then
-    owned_mode_directory "$EVIDENCE_DIR/pre" 700 || { fail_action8 INPUT_OR_PRECONDITION_ERROR EVIDENCE_PRE_DIRECTORY_INVALID EVIDENCE_PRECONDITION FALSE; return 1; }
-    [ -z "$(find "$EVIDENCE_DIR/pre" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ] || { fail_action8 INPUT_OR_PRECONDITION_ERROR ACTION8_EVIDENCE_ALREADY_EXISTS EVIDENCE_PRECONDITION FALSE; return 1; }
-  else
-    install -d -o jazofv1 -g jazofv1 -m 0700 -- "$EVIDENCE_DIR/pre" || { fail_action8 VALIDATION_FAIL EVIDENCE_PRE_DIRECTORY_CREATE_FAILED EVIDENCE_PRECONDITION FALSE; return 1; }
-  fi
+prepare_evidence_directory() {
+  EVIDENCE_DIR="$(mktemp -d /tmp/hioc-pe3-action8-XXXXXXXX 2>/dev/null)" || { fail_action8 VALIDATION_FAIL EVIDENCE_DIRECTORY_CREATE_FAILED EVIDENCE_PREPARATION FALSE; return 1; }
+  case "$EVIDENCE_DIR" in /tmp/hioc-pe3-action8-*) ;; *) fail_action8 VALIDATION_FAIL EVIDENCE_DIRECTORY_INVALID EVIDENCE_PREPARATION FALSE; return 1 ;; esac
+  [ "$(dirname -- "$EVIDENCE_DIR")" = /tmp ] || { fail_action8 VALIDATION_FAIL EVIDENCE_DIRECTORY_INVALID EVIDENCE_PREPARATION FALSE; return 1; }
+  chmod 0700 "$EVIDENCE_DIR" >/dev/null 2>&1 && owned_mode_directory "$EVIDENCE_DIR" 700 || { fail_action8 VALIDATION_FAIL EVIDENCE_DIRECTORY_INVALID EVIDENCE_PREPARATION FALSE; return 1; }
+  EVIDENCE_DIR_CREATED=TRUE
+  install -d -m 0700 -- "$EVIDENCE_DIR/pre" >/dev/null 2>&1 && owned_mode_directory "$EVIDENCE_DIR/pre" 700 || { fail_action8 VALIDATION_FAIL EVIDENCE_PRE_DIRECTORY_CREATE_FAILED EVIDENCE_PREPARATION FALSE; return 1; }
   printf 'EVIDENCE_PRECONDITION=PASS\n'
 }
 
@@ -241,21 +238,21 @@ validate_and_publish_evidence() {
   mv -fT -- "$TEMP_RESULT" "$EVIDENCE_DIR/generation-result.json" || { fail_action8 VALIDATION_FAIL EVIDENCE_PUBLICATION_FAILED EVIDENCE_PUBLICATION TRUE; return 1; }
   TEMP_RESULT=
   sync -f "$EVIDENCE_DIR/generation-result.json" && sync -f "$EVIDENCE_DIR/generation-performance.txt" && sync -f "$EVIDENCE_DIR" || { fail_action8 VALIDATION_FAIL EVIDENCE_FSYNC_FAILED EVIDENCE_PUBLICATION TRUE; return 1; }
-  printf 'EVIDENCE_PUBLICATION=PASS\nACTION8=COMPLETE\nRESULT=PASS\n'
+  printf 'EVIDENCE_PUBLICATION=PASS\nEVIDENCE_REPORT=PASS\nEVIDENCE_DIR=%s\nACTION8=COMPLETE\nRESULT=PASS\nROLLBACK_RECOMMENDED=FALSE\n' "$EVIDENCE_DIR"
 }
 
 main() {
   FAILURE_REPORTED=0
   GOVERNANCE_COMMIT=
   EVIDENCE_DIR=
-  [ "$#" -eq 4 ] && [ "$1" = --governance-commit ] && [ "$3" = --evidence-dir ] || { fail_action8 INPUT_OR_PRECONDITION_ERROR INVALID_ARGUMENTS INPUT_VALIDATION FALSE; return 1; }
+  EVIDENCE_DIR_CREATED=FALSE
+  [ "$#" -eq 2 ] && [ "$1" = --governance-commit ] || { fail_action8 INPUT_OR_PRECONDITION_ERROR INVALID_ARGUMENTS INPUT_VALIDATION FALSE; return 1; }
   GOVERNANCE_COMMIT=$2
-  EVIDENCE_DIR=$4
   printf '%s' "$GOVERNANCE_COMMIT" | grep -Eq '^[0-9a-f]{40}$' || { fail_action8 INPUT_OR_PRECONDITION_ERROR INVALID_GOVERNANCE_COMMIT INPUT_VALIDATION FALSE; return 1; }
   verify_target_source_runtime || return 1
-  verify_evidence_directory || return 1
   verify_configuration_dataset_inventory || return 1
   verify_transport_and_output_prestate || return 1
+  prepare_evidence_directory || return 1
   write_protected_snapshot || return 1
   run_generation || return 1
   validate_and_publish_evidence || return 1

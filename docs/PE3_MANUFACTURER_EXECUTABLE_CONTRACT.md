@@ -745,7 +745,14 @@ artifacts, rechecks protected configuration/dataset/staging, and durably
 publishes only aggregate evidence. It cannot deploy, reload a service, change a
 schedule, clean staging, or invoke Action 9. Generator-domain failures retain
 the section 16 rollback semantics; wrapper validation after successful
-publication may require rollback review but never automatic rollback.
+publication may require rollback review but never automatic rollback. The
+wrapper consumes no historical Action 5 evidence. After all read-only
+preconditions pass, it creates one unique private invocation-owned
+`/tmp/hioc-pe3-action8-XXXXXXXX` directory and never accepts or reuses an
+operator-supplied evidence path. It publishes `generation-performance.txt`
+before result-last `generation-result.json`, reports the exact directory, and
+requires that temporary evidence to remain intact for the next separately
+authorized validation boundary. Missing evidence is not reconstructed.
 
 ## 20. Conflict and organization normalization
 

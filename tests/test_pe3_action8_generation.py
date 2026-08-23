@@ -145,11 +145,38 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
             "MANUFACTURER_ARTIFACT_IDENTITY=PASS",
             "MANUFACTURER_ARTIFACT_VALIDATION=PASS",
             "PROTECTED_POST_GENERATION=PASS", "EVIDENCE_PUBLICATION=PASS",
-            "ACTION8=COMPLETE", "RESULT=PASS",
+            "EVIDENCE_REPORT=PASS", "EVIDENCE_DIR=%s", "ACTION8=COMPLETE",
+            "RESULT=PASS", "ROLLBACK_RECOMMENDED=FALSE",
         ):
             self.assertIn(marker, self.script)
         for marker in ("ERROR_CODE=%s", "FAILURE_STAGE=%s", "ROLLBACK_RECOMMENDED=%s"):
             self.assertIn(marker, self.script)
+        ordered = (
+            "TARGET_IDENTITY=PASS", "SOURCE_IDENTITY=PASS", "RUNTIME_IDENTITY=PASS",
+            "CONFIGURATION_IDENTITY=PASS", "DATASET_IDENTITY=PASS",
+            "DATASET_VALIDATION=PASS", "INVENTORY_IDENTITY=PASS",
+            "OUTPUT_PRECONDITION=PASS", "EVIDENCE_PRECONDITION=PASS",
+            "PROTECTED_PRE_STATE=PASS", "MANUFACTURER_GENERATION=PASS",
+            "MANUFACTURER_ARTIFACT_IDENTITY=PASS",
+            "MANUFACTURER_ARTIFACT_VALIDATION=PASS",
+            "PROTECTED_POST_GENERATION=PASS", "EVIDENCE_PUBLICATION=PASS",
+            "EVIDENCE_REPORT=PASS", "ACTION8=COMPLETE", "RESULT=PASS",
+        )
+        for marker in ordered:
+            self.assertIn(marker.split("=", 1)[0], self.action8)
+        main_body = self.script.split("main() {", 1)[1].split("action8_entry() {", 1)[0]
+        phases = (
+            "verify_target_source_runtime", "verify_configuration_dataset_inventory",
+            "verify_transport_and_output_prestate", "prepare_evidence_directory",
+            "write_protected_snapshot", "run_generation", "validate_and_publish_evidence",
+        )
+        positions = [main_body.index(phase) for phase in phases]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn(
+            "EVIDENCE_PUBLICATION=PASS\\nEVIDENCE_REPORT=PASS\\nEVIDENCE_DIR=%s\\n"
+            "ACTION8=COMPLETE\\nRESULT=PASS\\nROLLBACK_RECOMMENDED=FALSE\\n",
+            self.script,
+        )
 
     def test_mutation_and_protection_boundaries(self):
         self.assertIn('python3 "$RUNTIME/$GENERATOR_REL" --home "$RUNTIME" --json', self.script)
@@ -163,6 +190,24 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
             self.assertNotIn(forbidden, self.script)
 
     def test_private_atomic_evidence_and_artifact_validation(self):
+        self.assertIn("/tmp/hioc-pe3-action8-XXXXXXXX", self.script)
+        self.assertIn("EVIDENCE_DIR_CREATED=TRUE", self.script)
+        self.assertIn('owned_mode_directory "$EVIDENCE_DIR" 700', self.script)
+        self.assertNotIn("/tmp/hioc-pe3-production-validation-", self.script)
+        self.assertNotIn("--evidence-dir", self.script)
+        self.assertNotIn("hioc-pe3-action5-", self.script)
+        self.assertNotIn("hioc-pe3-action5c-", self.script)
+        self.assertIn("EVIDENCE_DIRECTORY_CREATE_FAILED EVIDENCE_PREPARATION FALSE", self.script)
+        self.assertIn("EVIDENCE_PRE_DIRECTORY_CREATE_FAILED EVIDENCE_PREPARATION FALSE", self.script)
+        self.assertIn('EVIDENCE_DIR=%s\\n\' "$EVIDENCE_DIR"', self.script)
+        self.assertLess(
+            self.script.index("verify_transport_and_output_prestate || return 1"),
+            self.script.index("prepare_evidence_directory || return 1"),
+        )
+        self.assertLess(
+            self.script.index("prepare_evidence_directory || return 1"),
+            self.script.index("run_generation || return 1"),
+        )
         self.assertIn(".action8-result.XXXXXXXX", self.script)
         self.assertIn(".action8-performance.XXXXXXXX", self.script)
         self.assertIn('mv -fT -- "$TEMP_RESULT"', self.script)
@@ -191,6 +236,32 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertIn("ERROR_CODE=INVALID_ARGUMENTS", result.stdout)
         self.assertIn("PARENT_SHELL_ALIVE=TRUE", result.stdout)
         self.assertNotRegex(self.script, r"(?m)^\s*(?:set\s+-[^\n]*e|exit(?:\s|$))")
+
+    def test_operator_supplied_evidence_directory_is_rejected(self):
+        shell = os.environ.get("HIOC_TEST_SHELL") or shutil.which("bash")
+        if not shell:
+            self.skipTest("Bash is required")
+        path = str(SCRIPT).replace("\\", "/")
+        if re.match(r"^[A-Za-z]:/", path):
+            path = "/" + path[0].lower() + path[2:]
+        result = subprocess.run(
+            [shell, path, "--governance-commit", "0" * 40,
+             "--evidence-dir", "/tmp/hioc-pe3-action5c-anything"],
+            text=True, capture_output=True,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("ERROR_CODE=INVALID_ARGUMENTS", result.stdout)
+        self.assertIn("FAILURE_STAGE=INPUT_VALIDATION", result.stdout)
+        self.assertNotIn("TARGET_IDENTITY=PASS", result.stdout)
+
+    def test_previous_bootstrap_blob_is_explicitly_stale(self):
+        committed_bootstrap_blob = re.search(r"SCRIPT_BLOB=([0-9a-f]{40})", self.bootstrap).group(1)
+        current_blob = subprocess.run(
+            ["git", "hash-object", str(SCRIPT)], cwd=ROOT,
+            text=True, capture_output=True, check=True,
+        ).stdout.strip()
+        self.assertNotEqual(current_blob, committed_bootstrap_blob)
+        self.assertIn("new synchronization/script-identity bootstrap", self.action8_flat)
 
 
 if __name__ == "__main__":

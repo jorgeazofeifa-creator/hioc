@@ -46,6 +46,9 @@ action can be considered. The bootstrap only fast-forwards the clean release
 source to the explicitly supplied and validated operator-approved full 40-hex
 post-push commit, proves exact script identity, and stops. Action 8
 does not use `release/upgrade.sh`, alter deployed code, or chain Action 9.
+It creates its own private temporary evidence directory only after deployment,
+source, runtime, configuration, dataset, inventory, output, and staging
+preconditions pass; no Action 5/5C evidence directory is an input.
 
 ## Document Ownership
 

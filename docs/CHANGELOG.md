@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Removed PE-3 Action 8's unverifiable historical evidence-directory input.
+  The wrapper now creates one unique private invocation-owned
+  `/tmp/hioc-pe3-action8-XXXXXXXX` directory after read-only preconditions pass,
+  publishes sanitized performance then result-last aggregate evidence, and
+  reports the exact path. No bootstrap, generation, production, or later action
+  occurred; the changed script requires a new post-push bootstrap identity gate.
+
 - Corrected the PE-3 Action 8 bootstrap's self-stale governance identity. The
   gate now accepts an explicitly approved literal full 40-hex post-push commit,
   validates it before target/network work, and retains exact remote, ancestry,

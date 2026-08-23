@@ -50,6 +50,9 @@ Making that new wrapper available requires a separately authorized
 release-source fast-forward/script-identity gate that stops after exact proof;
 its exact full 40-hex governance commit is supplied only after publication and
 explicit approval. It is not a runtime upgrade and cannot invoke generation.
+The separately authorized generator wrapper accepts no release-evidence path;
+it creates and reports one private invocation-owned Action 8 evidence directory
+after its read-only preconditions pass.
 
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 

@@ -1160,3 +1160,23 @@ ref, or remote. Exact `origin/main`, ancestry, fast-forward-only synchronization
 post-sync HEAD, cleanliness, and the frozen Action 8 script Git/worktree blob
 remain mandatory. The bootstrap still stops without runtime, staging, evidence,
 generation, rollback, or Action 9 work.
+
+## Decision: Action 8 owns its temporary evidence directory
+
+**Date:** 2026-08-22
+**Status:** Corrected before Action 8 execution
+
+The operator-supplied `/tmp/hioc-pe3-production-validation-*` input is rejected
+as **PE-3 ACTION 8 EVIDENCE-DIRECTORY PROVENANCE AND DURABILITY CONTRACT DEFECT
+— EPHEMERAL PATH IS NOT DURABLY IDENTIFIABLE**. Neither Action 5B nor Action 5C
+creates that prefix, and Action 8 consumes none of their evidence. Name, owner,
+mode, and absent output files could not establish historical provenance.
+
+Action 8 now accepts only the exact governance commit. After every read-only
+identity and output precondition passes, it creates one unique private
+invocation-owned `/tmp/hioc-pe3-action8-XXXXXXXX` directory, writes only
+sanitized protected-state, aggregate result, and performance evidence, publishes
+the result last, and reports the exact path. The path is temporary operator
+evidence for reviewed Action 8 and later separate validation; loss blocks later
+authorization and never permits reconstruction or substitution. The script blob
+change requires a new post-push bootstrap identity gate before Action 8.

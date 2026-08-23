@@ -294,6 +294,14 @@ synchronization to an explicitly supplied, validated, operator-approved full
 then stops without reading production state or transport staging. The commit is
 never inferred or frozen before its governing correction is published.
 
+Action 8 does not consume or reuse Action 5/5C evidence. Its child wrapper
+creates a unique mode-`0700`, `jazofv1:jazofv1`, invocation-owned
+`/tmp/hioc-pe3-action8-XXXXXXXX` directory only after all read-only preconditions
+pass. The directory path is emitted on PASS and on later failures where it was
+safely created. Operators must return that exact path and preserve it for the
+next authorized boundary; arbitrary discovery, substitution, recreation, and
+wildcard cleanup are prohibited.
+
 ## Known Dangerous Operator Patterns
 
 Operational instructions must state the exact target machine and shell and must
