@@ -1,5 +1,27 @@
 # PE-3.3 Manufacturer Production Deployment and Validation Runbook
 
+## Corrected-validator synchronization and deployment prerequisites
+
+The previous Action 8 bootstrap PASS is historical for an earlier governance
+commit. Although the Action 8 wrapper blob remains unchanged, release-source
+must first pass the existing synchronization/bootstrap gate at the newly
+approved commit and STOP for review. A second, separately authorized boundary
+may then invoke `tools/hioc-pe3-action8-validator-deploy.sh` with that same full
+commit and must STOP after evidence review. No executable operator invocation is
+authorized or prepared by this implementation checkpoint.
+
+Validator deployment emits `TARGET_IDENTITY`, `SOURCE_IDENTITY`,
+`SOURCE_VALIDATOR_IDENTITY`, `RUNTIME_PRECONDITION`, `PROTECTED_PRE_STATE`,
+`BACKUP`, `VALIDATOR_PUBLICATION`, `RUNTIME_VALIDATOR_IDENTITY`,
+`SOURCE_RUNTIME_EQUALITY`, `PROTECTED_POST_STATE`, `DEPLOYMENT_DISPOSITION`,
+`EVIDENCE_REPORT`, `RESULT`, and `ROLLBACK_RECOMMENDED`. Disposition is
+`NOOP_IDENTICAL` or `REPLACED`. Every failure emits bounded `RESULT`,
+`ERROR_CODE`, `FAILURE_STAGE`, and rollback advice, plus private evidence/backup
+paths only when created. It cannot modify the generated manufacturer pair,
+inventory, configuration, immutable dataset, staging, services, or schedules.
+Action 8 remains **ATTEMPTED BUT NOT COMPLETE** and Action 9 remains **NOT
+STARTED**.
+
 ## Current Action 8 permission-contract stop
 
 At governance commit `6828ee0d0f9b47d9c8c86b5e660c14a09894c2ad`, the

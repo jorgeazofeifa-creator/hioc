@@ -1,5 +1,13 @@
 # HIOC Release Process
 
+The corrected manufacturer-validator deployment is intentionally outside
+`release/upgrade.sh`: the broad release path invokes installer behavior that is
+unrelated to this corrective checkpoint. The dedicated PE-3 tool may publish
+only `pi4/bin/hioc-validate-manufacturer.py`. It requires a prior separately
+reviewed release-source synchronization PASS and stops after validator identity
+and protected-state evidence. No restart, reload, schedule change, engine run,
+generator run, or later PE-3 action is part of this boundary.
+
 The Action 8 permission-class correction changes the manufacturer validator:
 private sidecar/status files remain exact `0600`, while the inventory input uses
 its established no-group/world-write rule. It does not change the Action 8

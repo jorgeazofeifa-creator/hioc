@@ -1,5 +1,27 @@
 # PE-3.1 Manufacturer Enrichment Executable Contract
 
+## Corrected-validator publication contract
+
+The validator-only corrective tool accepts exactly
+`--governance-commit <full-lowercase-40-hex>`. Release-source must already be
+clean `main` with HEAD and `origin/main` equal to that commit. The tool proves
+its own commit-derived Git/worktree identity and separately requires validator
+blob `656f64c8c556ef62e149ef036c767cd7fc3736a0` and SHA-256
+`03f5e4658379fcf6d3093fa36cb8b9fb8a806f27b81777a0a751c647643ff5a2`.
+
+The runtime target must already be a regular non-symlink owned by
+`jazofv1:jazofv1` at exact `0700`. Exact content is a no-op. Differing content
+uses a private `0700` invocation-owned backup directory and `0700` backup file,
+followed by a `0700` same-directory temporary file, identity proof, file fsync,
+atomic replacement, target and parent-directory fsync, and final byte equality.
+Missing or unsafe targets fail without mutation. Rollback is advisory only.
+
+Private sanitized evidence is retained under
+`/tmp/hioc-pe3-action8-validator-deploy-XXXXXXXX`: the directory is `0700`,
+files are `0600`, and the bounded result is published last. It contains hashes
+and metadata only, never configuration, inventory, database, manufacturer, or
+secret contents.
+
 ## Action 8 permission-class correction
 
 The third governed Action 8 attempt generated both private manufacturer

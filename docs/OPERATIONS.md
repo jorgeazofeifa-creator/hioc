@@ -1,5 +1,13 @@
 # HIOC Operations
 
+Corrected Action 8 validator deployment is a dedicated, validator-only
+checkpoint. The tool produces private invocation evidence and a backup path only
+when replacement is required. It never restores automatically. Failures before
+target mutation recommend no rollback; uncertain post-publication identity,
+protected-state drift, or leftover publication temporary state recommends
+operator rollback review. Manufacturer outputs, inventory, configuration, and
+the selected immutable pair are read only and must compare exactly pre/post.
+
 Private `manufacturer.json` and `manufacturer_status.json` outputs require exact
 mode `0600`. The current `inventory.json` supplied to the manufacturer validator
 is a separate input class: read bits may be broader, but group/world write bits

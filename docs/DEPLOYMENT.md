@@ -1,5 +1,15 @@
 # HIOC Deployment
 
+The bounded corrected-manufacturer-validator checkpoint is owned only by
+`tools/hioc-pe3-action8-validator-deploy.sh`. It is not a release upgrade. It
+requires release-source already synchronized to the approved full commit, then
+proves source Git/worktree identity and the independently frozen validator blob.
+An exact runtime match is `NOOP_IDENTICAL`; otherwise a safe existing validator
+is backed up privately and replaced atomically at owner/group
+`jazofv1:jazofv1`, mode `0700`, with file and directory durability checks.
+Source synchronization and validator deployment are separate review/STOP
+boundaries. Neither boundary authorizes Action 8.
+
 The Action 8 permission correction changes the governed validator source, not
 the generated production artifacts or their exact `0600` requirement.
 Production runtime must not be edited ad hoc. Source synchronization, supported

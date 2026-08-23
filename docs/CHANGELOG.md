@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Added a governed validator-only Action 8 corrective deployment boundary. It
+  independently freezes the reviewed validator identity, supports exact
+  identical no-op, creates a private durable backup only for replacement,
+  publishes atomically in the runtime target directory, and proves protected
+  manufacturer/configuration/dataset/inventory state unchanged. It does not use
+  the broad release upgrade or invoke engines, schedules, Action 8, or Action 9.
+
 - Corrected the Action 8 validator permission-class mismatch exposed by the
   third governed attempt. Both generated private artifacts passed exact `0600`
   identity checks, but the validator later applied their private bitmask to the

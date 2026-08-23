@@ -1,5 +1,25 @@
 # HIOC Master Plan
 
+## PE-3 Action 8 corrected-validator deployment governance
+
+The permission-class correction exposed a second defect: **PE-3 ACTION 8
+CORRECTED VALIDATOR DEPLOYMENT GOVERNANCE GAP — NO BOUNDED VALIDATOR-ONLY
+RUNTIME PUBLICATION CONTRACT**. The supported release upgrade is intentionally
+too broad because it copies unrelated code, invokes installer behavior, manages
+schedules/permissions, and runs engines.
+
+Repository implementation now assigns only the corrected validator checkpoint
+to `tools/hioc-pe3-action8-validator-deploy.sh`. The tool independently freezes
+the reviewed validator, accepts exact identical runtime state as a no-op,
+otherwise creates a private durable backup and performs same-directory atomic
+publication with durability and final identity proof. It compares manufacturer
+outputs, inventory, active configuration, and the immutable pair before/after
+without exposing their contents. Source refresh and runtime deployment remain
+**NOT EXECUTED** and require separate reviewed STOP boundaries. Action 8 remains
+**ATTEMPTED BUT NOT COMPLETE**, Action 9 remains **NOT STARTED**, and the prior
+rollback recommendation remains advisory with no rollback performed. PE-10 and
+all preserved future checkpoints remain unchanged.
+
 ## PE-3 Action 8 permission-contract corrective checkpoint
 
 The third Action 8 attempt generated and identity-checked private

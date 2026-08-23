@@ -1,5 +1,28 @@
 # HIOC Architecture Decisions
 
+## Action 8 corrected-validator deployment boundary
+
+Decision: `tools/hioc-pe3-action8-validator-deploy.sh` exclusively owns the
+corrective publication of `pi4/bin/hioc-validate-manufacturer.py` from a clean,
+exact-commit PI3 release-source checkout into the non-Git runtime. The reviewed
+validator blob is an independent executable trust anchor in addition to the
+operator-supplied governance commit. An intentional validator change therefore
+requires explicit anchor review; unrelated commits do not silently redefine the
+runtime executable.
+
+An exact identical owner/group/mode/content target is a no-op without backup.
+A differing but otherwise safe target receives one invocation-owned private
+backup, then same-directory private temporary publication, exact `0700`
+ownership/mode, identity validation, atomic replacement, and file/directory
+fsync. Rollback is advisory and never automatic. Stable manufacturer outputs,
+inventory, active configuration, and selected immutable database/manifest are
+hashed with relevant metadata before and after and must remain identical.
+
+Context: the broad supported release upgrade copies unrelated artifacts, invokes
+the installer, manages schedules and permissions, and runs engines. It cannot
+satisfy the bounded corrective checkpoint. The new tool cannot invoke that
+upgrade, the installer, any engine, Action 8, Action 9, services, or schedules.
+
 ## Action 8 validator permission classes
 
 Decision: manufacturer sidecar and status outputs remain private regular
