@@ -1,5 +1,24 @@
 # HIOC Architecture Decisions
 
+## Decision: Action 9 performance is observational pending a governed baseline
+
+The first governed Action 9 attempt passed target, source, runtime, and Action 8
+evidence identity, then failed in the combined Action 8 evidence-validation
+stage. Read-only forensics proved the Action 8 result and protected-snapshot
+schemas passed; only performance failed, with elapsed `12.467231` seconds and
+maximum child RSS `146744` KiB. No Action 9 evidence directory or production
+mutation occurred, and rollback remains FALSE.
+
+This is **CASE D — BOTH CONTRACT AND MEASUREMENT DEFECTS**: unvalidated design
+targets of four seconds and 48 MiB were promoted to a single-run hard production
+gate, while total peak child RSS was compared with an incremental-RSS target.
+Action 9 now validates result, performance syntax, performance assessment, and
+protected snapshot independently. Valid measured performance is recorded as
+`INSUFFICIENT_BASELINE`; historical target exceedance is contextual and cannot
+control production acceptance. Future hard limits require a separate governed,
+versioned, workload-specific benchmark. Action 9 remains attempted but not
+complete, and Action 10 remains not started/not prepared.
+
 ## Decision: Action 9 is read-only validation with invocation-owned evidence
 
 The historical Action 9 inline procedure is rejected for stale evidence

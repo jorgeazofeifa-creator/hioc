@@ -1,7 +1,10 @@
 import pathlib
+import json
 import re
 import shutil
 import subprocess
+import sys
+import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -12,6 +15,36 @@ class PE3Action9ValidationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.text = SCRIPT.read_text(encoding="utf-8")
+        cls.programs = re.findall(r"<<'PY'[^\n]*\n(.*?)\nPY", cls.text, re.S)
+        cls.result_program = next(program for program in cls.programs if "expected_keys" not in program and "keys={'schema_version'" in program)
+        cls.performance_program = next(program for program in cls.programs if "historical_elapsed" not in program and "elapsed > 4" in program)
+        cls.protected_program = next(program for program in cls.programs if "set(protected)" in program)
+
+    def run_evidence_program(self, program, root):
+        return subprocess.run(
+            [sys.executable, "-c", program, str(root)],
+            text=True, capture_output=True,
+        )
+
+    def write_valid_evidence(self, root, elapsed="1.250000", rss="2048", status="MEASURED"):
+        root.mkdir()
+        (root / "pre").mkdir()
+        result = {
+            "schema_version": "1.0", "result": "PASS", "status": "online",
+            "record_count": 4, "matched_count": 2, "unknown_count": 0,
+            "excluded_count": 2, "invalid_count": 0, "error": None,
+        }
+        (root / "generation-result.json").write_text(json.dumps(result), encoding="utf-8")
+        (root / "generation-performance.txt").write_text(
+            f"manufacturer_generation_elapsed_seconds={elapsed} "
+            f"manufacturer_generation_max_rss_kib={rss} "
+            f"manufacturer_generation_measurement_status={status}\n",
+            encoding="ascii",
+        )
+        (root / "pre" / "protected.json").write_text(
+            json.dumps({"stable": [], "operational_drift": []}), encoding="utf-8"
+        )
+        return result
 
     def test_exact_interface_and_commit_validation(self):
         self.assertIn("--governance-commit", self.text)
@@ -46,10 +79,89 @@ class PE3Action9ValidationTests(unittest.TestCase):
         self.assertIn("sum(counts[1:])!=counts[0]", self.text)
         self.assertIn("ACTION8_EVIDENCE_CONTENTS_INVALID", self.text)
 
+    def test_result_validation_behavior(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary) / "evidence"
+            result = self.write_valid_evidence(root)
+            self.assertEqual(self.run_evidence_program(self.result_program, root).returncode, 0)
+            (root / "generation-result.json").write_text("{", encoding="utf-8")
+            self.assertEqual(self.run_evidence_program(self.result_program, root).returncode, 2)
+            result["extra"] = True
+            (root / "generation-result.json").write_text(json.dumps(result), encoding="utf-8")
+            self.assertEqual(self.run_evidence_program(self.result_program, root).returncode, 2)
+            result.pop("extra")
+            result["record_count"] = "4"
+            (root / "generation-result.json").write_text(json.dumps(result), encoding="utf-8")
+            self.assertEqual(self.run_evidence_program(self.result_program, root).returncode, 3)
+
+    def test_result_count_partition_and_non_null_error(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary) / "evidence"
+            result = self.write_valid_evidence(root)
+            result["record_count"] = 5
+            (root / "generation-result.json").write_text(json.dumps(result), encoding="utf-8")
+            self.assertEqual(self.run_evidence_program(self.result_program, root).returncode, 3)
+            result["record_count"] = 4
+            result["error"] = {"code": "unexpected"}
+            (root / "generation-result.json").write_text(json.dumps(result), encoding="utf-8")
+            self.assertEqual(self.run_evidence_program(self.result_program, root).returncode, 2)
+
     def test_performance_uses_action8_evidence_only(self):
-        for value in ("manufacturer_generation_elapsed_seconds", "manufacturer_generation_max_rss_kib", "manufacturer_generation_measurement_status=MEASURED", "PERFORMANCE_EVIDENCE_VALIDATION=PASS"):
+        for value in ("manufacturer_generation_elapsed_seconds", "manufacturer_generation_max_rss_kib", "PERFORMANCE_MEASUREMENT_STATUS=MEASURED", "ACTION8_PERFORMANCE_ASSESSMENT=PASS"):
             self.assertIn(value, self.text)
         self.assertNotIn("/usr/bin/time", self.text)
+
+    def test_performance_behavior_and_unvalidated_baseline(self):
+        cases = (
+            ("1.0", "1024", "FALSE", "FALSE"),
+            ("12.467231", "1024", "TRUE", "FALSE"),
+            ("1.0", "146744", "FALSE", "TRUE"),
+            ("12.467231", "146744", "TRUE", "TRUE"),
+        )
+        for elapsed, rss, elapsed_exceeded, rss_exceeded in cases:
+            with self.subTest(elapsed=elapsed, rss=rss), tempfile.TemporaryDirectory() as temporary:
+                root = pathlib.Path(temporary) / "evidence"
+                self.write_valid_evidence(root, elapsed=elapsed, rss=rss)
+                completed = self.run_evidence_program(self.performance_program, root)
+                self.assertEqual(completed.returncode, 0, completed.stderr)
+                fields = completed.stdout.strip().split("\t")
+                self.assertEqual(fields[2:], [elapsed_exceeded, rss_exceeded])
+        self.assertIn("PERFORMANCE_BASELINE_STATUS=UNVALIDATED", self.text)
+        self.assertIn("PERFORMANCE_OBSERVATION=INSUFFICIENT_BASELINE", self.text)
+        self.assertIn("HISTORICAL_TARGETS_PRODUCTION_ENFORCED=FALSE", self.text)
+
+    def test_performance_malformed_status_and_negative_values(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary) / "evidence"
+            self.write_valid_evidence(root)
+            path = root / "generation-performance.txt"
+            path.write_text("missing-keys\n", encoding="ascii")
+            self.assertEqual(self.run_evidence_program(self.performance_program, root).returncode, 4)
+            self.write_valid_performance(path, "1.0", "2", "UNAVAILABLE")
+            self.assertEqual(self.run_evidence_program(self.performance_program, root).returncode, 5)
+            self.write_valid_performance(path, "-1", "2", "MEASURED")
+            self.assertEqual(self.run_evidence_program(self.performance_program, root).returncode, 4)
+            self.write_valid_performance(path, "1", "-2", "MEASURED")
+            self.assertEqual(self.run_evidence_program(self.performance_program, root).returncode, 4)
+
+    @staticmethod
+    def write_valid_performance(path, elapsed, rss, status):
+        path.write_text(
+            f"manufacturer_generation_elapsed_seconds={elapsed} "
+            f"manufacturer_generation_max_rss_kib={rss} "
+            f"manufacturer_generation_measurement_status={status}\n",
+            encoding="ascii",
+        )
+
+    def test_protected_snapshot_behavior(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary) / "evidence"
+            self.write_valid_evidence(root)
+            self.assertEqual(self.run_evidence_program(self.protected_program, root).returncode, 0)
+            (root / "pre" / "protected.json").write_text(
+                json.dumps({"stable": {}}), encoding="utf-8"
+            )
+            self.assertEqual(self.run_evidence_program(self.protected_program, root).returncode, 2)
 
     def test_configuration_dataset_inventory_and_artifacts(self):
         for value in ("MANUFACTURER_DB_PATH", "local-ieee-ra--2026-08-11-r1", "CONFIGURATION_SELECTION_MISMATCH", "DATASET_IDENTITY_MISMATCH", "INVENTORY_IDENTITY_INVALID", "MANUFACTURER_TEMP_ARTIFACT_PRESENT"):
@@ -83,8 +195,9 @@ class PE3Action9ValidationTests(unittest.TestCase):
     def test_pass_order_and_bounded_failure(self):
         ordered = (
             "TARGET_IDENTITY=PASS", "SOURCE_IDENTITY=PASS", "RUNTIME_IDENTITY=PASS",
-            "ACTION8_EVIDENCE_IDENTITY=PASS", "ACTION8_EVIDENCE_VALIDATION=PASS",
-            "PERFORMANCE_EVIDENCE_VALIDATION=PASS", "EVIDENCE_PREPARATION=PASS",
+            "ACTION8_EVIDENCE_IDENTITY=PASS", "ACTION8_RESULT_VALIDATION=PASS",
+            "ACTION8_PERFORMANCE_SYNTAX=PASS", "ACTION8_PERFORMANCE_ASSESSMENT=PASS",
+            "ACTION8_PROTECTED_SNAPSHOT_VALIDATION=PASS", "EVIDENCE_PREPARATION=PASS",
             "CONFIGURATION_IDENTITY=PASS", "DATASET_IDENTITY=PASS", "INVENTORY_IDENTITY=PASS",
             "MANUFACTURER_ARTIFACT_IDENTITY=PASS", "MANUFACTURER_ARTIFACT_VALIDATION=PASS",
             "PROTECTED_STATE=PASS", "EVIDENCE_REPORT=PASS", "ACTION9=COMPLETE",
@@ -95,6 +208,17 @@ class PE3Action9ValidationTests(unittest.TestCase):
         self.assertIn("EVIDENCE_REPORT=PASS\\nEVIDENCE_DIR=%s\\nACTION9=COMPLETE\\nRESULT=PASS\\nROLLBACK_RECOMMENDED=FALSE", self.text)
         for value in ("RESULT=%s", "ERROR_CODE=%s", "FAILURE_STAGE=%s", "ROLLBACK_RECOMMENDED=FALSE"):
             self.assertIn(value, self.text)
+        self.assertNotIn("ACTION8_EVIDENCE_VALIDATION_FAILED", self.text)
+        self.assertNotIn("FAILURE_STAGE=ACTION8_EVIDENCE_VALIDATION", self.text)
+        for code, stage in (
+            ("ACTION8_RESULT_SCHEMA_INVALID", "ACTION8_RESULT_VALIDATION"),
+            ("ACTION8_RESULT_COUNTS_INVALID", "ACTION8_RESULT_VALIDATION"),
+            ("ACTION8_PERFORMANCE_FORMAT_INVALID", "ACTION8_PERFORMANCE_SYNTAX"),
+            ("ACTION8_PERFORMANCE_STATUS_INVALID", "ACTION8_PERFORMANCE_SYNTAX"),
+            ("ACTION8_PROTECTED_SNAPSHOT_SCHEMA_INVALID", "ACTION8_PROTECTED_SNAPSHOT_VALIDATION"),
+        ):
+            self.assertIn(code, self.text)
+            self.assertIn(stage, self.text)
 
     def test_rollback_is_always_false_and_no_later_action(self):
         self.assertNotIn("ROLLBACK_RECOMMENDED=TRUE", self.text)
@@ -102,15 +226,20 @@ class PE3Action9ValidationTests(unittest.TestCase):
             self.assertNotIn(forbidden, self.text)
 
     def test_evidence_report_is_bounded(self):
-        for value in ("'schema_version':'1.0'", "'action':'PE-3_ACTION9'", "'governance_commit':commit", "'rollback_recommended':False", "'warnings':[]"):
+        for value in ("'schema_version':'1.0'", "'action':'PE-3_ACTION9'", "'governance_commit':commit", "'rollback_recommended':False", "'warnings':['PERFORMANCE_BASELINE_NOT_ESTABLISHED']"):
             self.assertIn(value, self.text)
         for forbidden in ("mac_address", "matched_prefix", "organization", "error_message", "secret"):
             self.assertNotIn(forbidden, self.text.lower())
+        for value in (
+            "'maximum_child_rss_kib'", "'rss_semantic':'TOTAL_PEAK_CHILD_RSS'",
+            "'baseline_status':'UNVALIDATED'", "'observation':'INSUFFICIENT_BASELINE'",
+            "'historical_targets_production_enforced':False",
+        ):
+            self.assertIn(value, self.text)
 
     def test_embedded_python_compiles(self):
-        programs = re.findall(r"<<'PY'\n(.*?)\nPY", self.text, re.S)
-        self.assertEqual(len(programs), 2)
-        for index, program in enumerate(programs):
+        self.assertEqual(len(self.programs), 5)
+        for index, program in enumerate(self.programs):
             compile(program, f"action9-embedded-{index}", "exec")
 
     def test_no_global_strict_mode_or_shell_exit(self):

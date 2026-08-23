@@ -1,6 +1,28 @@
 # PE-3.3 Manufacturer Production Deployment and Validation Runbook
 
-## Current Action 8 completion checkpoint
+## Current Action 9 corrective checkpoint
+
+Action 9 source refresh is **PASS / COMPLETE / CURRENT**. Its first production
+attempt is **ATTEMPTED BUT NOT COMPLETE** after the former combined Action 8
+evidence-validation stage returned `ACTION8_EVIDENCE_VALIDATION_FAILED`.
+Read-only forensics proved result schema/counts and protected snapshot PASS and
+isolated performance: elapsed `12.467231` seconds, total peak child RSS `146744`
+KiB, measurement syntax/status PASS. No Action 9 evidence directory was created,
+production was unchanged, and rollback remains FALSE.
+
+The corrected tool emits, in order, `TARGET_IDENTITY`, `SOURCE_IDENTITY`,
+`RUNTIME_IDENTITY`, `ACTION8_EVIDENCE_IDENTITY`,
+`ACTION8_RESULT_VALIDATION`, `ACTION8_PERFORMANCE_SYNTAX`, sanitized performance
+fields, `ACTION8_PERFORMANCE_ASSESSMENT`,
+`ACTION8_PROTECTED_SNAPSHOT_VALIDATION`, `EVIDENCE_PREPARATION`, configuration,
+dataset, inventory, manufacturer-artifact and protected-state validation,
+`EVIDENCE_REPORT`, `ACTION9=COMPLETE`, `RESULT=PASS`, and rollback FALSE.
+Malformed result, performance, and protected evidence use their own bounded
+stages. Valid measured performance is `INSUFFICIENT_BASELINE`; historical
+four-second and incremental-RSS 48-MiB exceedance is recorded but not enforced.
+No rerun is authorized here. Action 10 remains **NOT STARTED / NOT PREPARED**.
+
+## Historical Action 8 completion checkpoint
 
 The governed Action 8 execution at governance commit
 `fa344828161e892523faa3da5d4cdf07d2e8e792` completed with `ACTION8=COMPLETE`,
@@ -11,7 +33,7 @@ corrected-validator runtime deployment are **PASS / COMPLETE / CURRENT**. No
 rollback was performed, transport staging remains absent and unnecessary, and
 dataset retransmission is not required.
 
-Action 8 is **PASS / COMPLETE**. Action 9 remains **NOT STARTED**. The existing
+At that checkpoint, Action 8 was **PASS / COMPLETE** and Action 9 remained **NOT STARTED**. The existing
 Action 9 operator block has not been prepared for execution at this checkpoint;
 it requires a separate governance review after this completion record is
 validated, committed, pushed to `main`, and the repository is verified clean.

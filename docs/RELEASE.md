@@ -1,5 +1,14 @@
 # HIOC Release Process
 
+The corrected Action 9 tool remains outside the release path. Its first attempt
+is recorded as attempted but incomplete after a performance-only failure, with
+no evidence directory or production mutation and rollback FALSE. Result and
+protected schemas passed; `12.467231` seconds and `146744` KiB total peak child
+RSS are observations under an unvalidated baseline. Historical four-second and
+incremental-RSS 48-MiB targets are not current hard gates. After commit/push, a
+separate release-source synchronization is required for the changed tool; no
+runtime deployment, upgrade, installer, generator, or Action 10 step is implied.
+
 PE-3 Action 9 is outside the release path. After its new tool is reviewed,
 committed, pushed, source-synchronized, and separately authorized, it may verify
 the exact Action 8 PASS evidence and current runtime read only. It does not use

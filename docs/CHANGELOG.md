@@ -1,5 +1,16 @@
 # HIOC Changelog
 
+- Corrected PE-3 Action 9 performance validation after its first read-only
+  production attempt isolated a performance-only failure. Result and protected
+  schemas passed; measured elapsed time was `12.467231` seconds and total peak
+  child RSS was `146744` KiB. The four-second and incremental-RSS 48-MiB design
+  targets lack current PI3 production provenance and no longer hard-fail Action
+  9. Independent result, performance-syntax, insufficient-baseline assessment,
+  and protected-snapshot stages replace the collapsed diagnostic. The private
+  Evidence Report records sanitized observations and historical comparisons.
+  No Action 9 evidence directory or production mutation occurred; rollback is
+  FALSE, Action 9 is attempted but incomplete, and Action 10 is not started.
+
 - Replaced the unsafe historical PE-3 Action 9 inline procedure with a governed
   read-only validation tool. It strictly validates the operator-supplied Action
   8 PASS evidence, reuses its portable performance record, independently proves

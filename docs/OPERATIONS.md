@@ -1,5 +1,15 @@
 # HIOC Operations
 
+PE-3 Action 9 is currently **ATTEMPTED BUT NOT COMPLETE**. Its current source
+refresh is PASS. The first attempt produced no Action 9 evidence directory and
+made no production change; read-only forensics isolated a performance-only
+failure (`12.467231` seconds, `146744` KiB total peak child RSS), with result and
+protected schemas PASS and rollback FALSE. The corrected tool separates result,
+performance syntax, insufficient-baseline assessment, and protected snapshot.
+Historical four-second and incremental-RSS 48-MiB targets are recorded as
+context but are not production-enforced. Preserve any future Action 9 evidence
+directory unchanged and stop for review. Action 10 remains not started.
+
 PE-3 Action 9 is a separately authorized read-only validation checkpoint owned
 by `tools/hioc-pe3-action9-validate.sh`. Operators must supply the approved full
 governance commit and the exact preserved Action 8 PASS evidence path. The tool

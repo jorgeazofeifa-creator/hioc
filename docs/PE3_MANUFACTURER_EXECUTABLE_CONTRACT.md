@@ -1,5 +1,25 @@
 # PE-3.1 Manufacturer Enrichment Executable Contract
 
+## Corrected Action 9 evidence and performance domains
+
+Action 9 validates Action 8 evidence through independent domains. Result JSON
+uses `ACTION8_RESULT_VALIDATION` with bounded schema/count failures. Performance
+format, numeric nonnegative values, and `MEASURED` status use
+`ACTION8_PERFORMANCE_SYNTAX`. The subsequent assessment records elapsed seconds,
+maximum child RSS KiB with semantic `TOTAL_PEAK_CHILD_RSS`, historical-target
+comparisons, baseline status `UNVALIDATED`, observation
+`INSUFFICIENT_BASELINE`, and `historical_targets_production_enforced=false`.
+Protected snapshot schema uses `ACTION8_PROTECTED_SNAPSHOT_VALIDATION`.
+
+The historical four-second generation and 48-MiB incremental-RSS values remain
+design context only. They lack a versioned current PI3 baseline, workload-scaling
+rule, and compatible metric, so a valid measured observation cannot fail current
+production acceptance solely by exceeding them. The Action 8 field
+`manufacturer_generation_max_rss_kib` is total peak child RSS on Linux, not
+incremental RSS. Future hard acceptance requires a separately governed baseline
+covering hardware/runtime, dataset/inventory workloads, warm/cold repetitions,
+percentiles, stable inputs, and explicit RSS semantics.
+
 ## Action 9 read-only production validation contract
 
 `tools/hioc-pe3-action9-validate.sh` accepts exactly a lowercase full governance
@@ -10,7 +30,7 @@ mode-`0600` `generation-result.json`, `generation-performance.txt`, and
 `pre/protected.json`. Failure evidence and unexpected entries are rejected.
 
 Action 9 validates the Action 8 PASS/count schema and its governed Python timing
-and RSS record against the frozen bounds. It does not invoke generation or use
+and RSS record using the independent domains above. It does not invoke generation or use
 `/usr/bin/time`. Current configuration, inventory, immutable database/manifest,
 manufacturer sidecar/status, validator results, privacy result, temporary-file
 absence, and protected pre/post hashes are independently verified read only.

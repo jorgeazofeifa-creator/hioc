@@ -1,5 +1,14 @@
 # HIOC Deployment
 
+The Action 9 performance correction is repository governance, not deployment.
+The first attempt changed no production state and created no Action 9 evidence
+directory. Current Action 9 records valid performance as an observation with an
+unvalidated baseline; it does not deploy code, invoke generation, or enforce the
+historical four-second/incremental-RSS targets as current production limits.
+Any changed Action 9 tool requires a new post-push source-governance refresh,
+but no runtime deployment: Action 9 executes from release-source and continues
+to verify the already-deployed validator/library identity read only.
+
 Action 9 is not deployment. Its repository-controlled tool reads the clean
 exact-commit release source, deployed validator/library, current manufacturer
 artifacts, immutable dataset selection, inventory, and reviewed Action 8 PASS

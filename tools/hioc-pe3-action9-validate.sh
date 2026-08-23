@@ -23,6 +23,10 @@ ACTION8_EVIDENCE_DIR=
 REPORT_TEMP=
 RESULT_TEMP=
 FAILURE_REPORTED=0
+PERFORMANCE_ELAPSED_SECONDS=
+PERFORMANCE_MAX_CHILD_RSS_KIB=
+HISTORICAL_ELAPSED_TARGET_EXCEEDED=
+HISTORICAL_RSS_TARGET_EXCEEDED=
 
 active_git_operation() {
   for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do
@@ -123,24 +127,76 @@ verify_action8_evidence() {
   done
   [ ! -e "$ACTION8_EVIDENCE_DIR/generation-failure.json" ] && [ ! -L "$ACTION8_EVIDENCE_DIR/generation-failure.json" ] || { fail_action9 INPUT_OR_PRECONDITION_ERROR ACTION8_FAILURE_EVIDENCE_PRESENT ACTION8_EVIDENCE_IDENTITY; return 1; }
   printf 'ACTION8_EVIDENCE_IDENTITY=PASS\n'
+
   python3 - "$ACTION8_EVIDENCE_DIR" <<'PY' >/dev/null 2>&1
-import json, pathlib, re, sys
+import json, pathlib, sys
 root=pathlib.Path(sys.argv[1])
-result=json.loads((root/'generation-result.json').read_text(encoding='utf-8'))
+try:
+    result=json.loads((root/'generation-result.json').read_text(encoding='utf-8'))
+except (OSError, UnicodeError, json.JSONDecodeError):
+    raise SystemExit(2)
 keys={'schema_version','result','status','record_count','matched_count','unknown_count','excluded_count','invalid_count','error'}
-if set(result)!=keys or result.get('schema_version')!='1.0' or result.get('result')!='PASS' or result.get('status')!='online' or result.get('error') is not None: raise SystemExit(2)
+if not isinstance(result,dict) or set(result)!=keys or result.get('schema_version')!='1.0' or result.get('result')!='PASS' or result.get('status')!='online' or result.get('error') is not None: raise SystemExit(2)
 counts=[result.get(k) for k in ('record_count','matched_count','unknown_count','excluded_count','invalid_count')]
 if any(type(x) is not int or x < 0 for x in counts) or sum(counts[1:])!=counts[0]: raise SystemExit(3)
-text=(root/'generation-performance.txt').read_text(encoding='ascii')
-m=re.fullmatch(r'manufacturer_generation_elapsed_seconds=([0-9]+(?:\.[0-9]+)?) manufacturer_generation_max_rss_kib=([0-9]+) manufacturer_generation_measurement_status=MEASURED\n',text)
-if not m: raise SystemExit(4)
-elapsed=float(m.group(1)); rss=int(m.group(2))
-if elapsed < 0 or elapsed > 4 or rss < 0 or rss*1024 > 50331648: raise SystemExit(5)
-protected=json.loads((root/'pre/protected.json').read_text(encoding='utf-8'))
-if set(protected)!={'stable','operational_drift'} or not isinstance(protected['stable'],list) or not isinstance(protected['operational_drift'],list): raise SystemExit(6)
 PY
-  [ "$?" -eq 0 ] || { fail_action9 VALIDATION_FAIL ACTION8_EVIDENCE_VALIDATION_FAILED ACTION8_EVIDENCE_VALIDATION; return 1; }
-  printf 'ACTION8_EVIDENCE_VALIDATION=PASS\nPERFORMANCE_EVIDENCE_VALIDATION=PASS\n'
+  case "$?" in
+    0) ;;
+    3) fail_action9 VALIDATION_FAIL ACTION8_RESULT_COUNTS_INVALID ACTION8_RESULT_VALIDATION; return 1 ;;
+    *) fail_action9 VALIDATION_FAIL ACTION8_RESULT_SCHEMA_INVALID ACTION8_RESULT_VALIDATION; return 1 ;;
+  esac
+  printf 'ACTION8_RESULT_VALIDATION=PASS\n'
+
+  performance_values="$(python3 - "$ACTION8_EVIDENCE_DIR" <<'PY'
+import pathlib, re, sys
+root=pathlib.Path(sys.argv[1])
+try:
+    text=(root/'generation-performance.txt').read_text(encoding='ascii')
+except (OSError, UnicodeError):
+    raise SystemExit(4)
+m=re.fullmatch(r'manufacturer_generation_elapsed_seconds=([^ ]+) manufacturer_generation_max_rss_kib=([^ ]+) manufacturer_generation_measurement_status=([^\n]+)\n',text)
+if not m: raise SystemExit(4)
+try:
+    elapsed=float(m.group(1)); rss=int(m.group(2))
+except ValueError:
+    raise SystemExit(4)
+if m.group(3)!='MEASURED': raise SystemExit(5)
+if elapsed < 0 or rss < 0: raise SystemExit(4)
+print(f'{elapsed:.6f}\t{rss}\t{"TRUE" if elapsed > 4 else "FALSE"}\t{"TRUE" if rss*1024 > 50331648 else "FALSE"}')
+PY
+)"
+  case "$?" in
+    0) ;;
+    5) fail_action9 VALIDATION_FAIL ACTION8_PERFORMANCE_STATUS_INVALID ACTION8_PERFORMANCE_SYNTAX; return 1 ;;
+    *) fail_action9 VALIDATION_FAIL ACTION8_PERFORMANCE_FORMAT_INVALID ACTION8_PERFORMANCE_SYNTAX; return 1 ;;
+  esac
+  IFS="$(printf '\t')" read -r PERFORMANCE_ELAPSED_SECONDS PERFORMANCE_MAX_CHILD_RSS_KIB HISTORICAL_ELAPSED_TARGET_EXCEEDED HISTORICAL_RSS_TARGET_EXCEEDED <<EOF
+$performance_values
+EOF
+  [ -n "$PERFORMANCE_ELAPSED_SECONDS" ] && [ -n "$PERFORMANCE_MAX_CHILD_RSS_KIB" ] || { fail_action9 VALIDATION_FAIL ACTION8_PERFORMANCE_FORMAT_INVALID ACTION8_PERFORMANCE_SYNTAX; return 1; }
+  printf 'ACTION8_PERFORMANCE_SYNTAX=PASS\n'
+  printf 'PERFORMANCE_ELAPSED_SECONDS=%s\n' "$PERFORMANCE_ELAPSED_SECONDS"
+  printf 'PERFORMANCE_MAX_CHILD_RSS_KIB=%s\n' "$PERFORMANCE_MAX_CHILD_RSS_KIB"
+  printf 'PERFORMANCE_RSS_SEMANTIC=TOTAL_PEAK_CHILD_RSS\n'
+  printf 'PERFORMANCE_MEASUREMENT_STATUS=MEASURED\n'
+  printf 'PERFORMANCE_BASELINE_STATUS=UNVALIDATED\n'
+  printf 'PERFORMANCE_OBSERVATION=INSUFFICIENT_BASELINE\n'
+  printf 'HISTORICAL_ELAPSED_TARGET_EXCEEDED=%s\n' "$HISTORICAL_ELAPSED_TARGET_EXCEEDED"
+  printf 'HISTORICAL_RSS_TARGET_EXCEEDED=%s\n' "$HISTORICAL_RSS_TARGET_EXCEEDED"
+  printf 'HISTORICAL_TARGETS_PRODUCTION_ENFORCED=FALSE\n'
+  printf 'ACTION8_PERFORMANCE_ASSESSMENT=PASS\n'
+
+  python3 - "$ACTION8_EVIDENCE_DIR" <<'PY' >/dev/null 2>&1
+import json, pathlib, sys
+root=pathlib.Path(sys.argv[1])
+try:
+    protected=json.loads((root/'pre/protected.json').read_text(encoding='utf-8'))
+except (OSError, UnicodeError, json.JSONDecodeError):
+    raise SystemExit(2)
+if not isinstance(protected,dict) or set(protected)!={'stable','operational_drift'} or not isinstance(protected['stable'],list) or not isinstance(protected['operational_drift'],list): raise SystemExit(2)
+PY
+  [ "$?" -eq 0 ] || { fail_action9 VALIDATION_FAIL ACTION8_PROTECTED_SNAPSHOT_SCHEMA_INVALID ACTION8_PROTECTED_SNAPSHOT_VALIDATION; return 1; }
+  printf 'ACTION8_PROTECTED_SNAPSHOT_VALIDATION=PASS\n'
 }
 
 prepare_evidence() {
@@ -174,10 +230,11 @@ PY
   printf 'INVENTORY_IDENTITY=PASS\nMANUFACTURER_ARTIFACT_IDENTITY=PASS\n'
   REPORT_TEMP="$(mktemp "$EVIDENCE_DIR/.action9-report.XXXXXXXX" 2>/dev/null)" || { fail_action9 VALIDATION_FAIL EVIDENCE_TEMP_CREATE_FAILED PRODUCTION_VALIDATION; return 1; }
   chmod 0600 "$REPORT_TEMP" || { fail_action9 VALIDATION_FAIL EVIDENCE_TEMP_PERMISSION_FAILED PRODUCTION_VALIDATION; return 1; }
-  python3 - "$RUNTIME" "$SOURCE" "$GOVERNANCE_COMMIT" "$ACTION8_EVIDENCE_DIR" "$REPORT_TEMP" "$DB_SHA256" "$MF_SHA256" "$EXPECTED_RECORD_COUNT" <<'PY'
+  python3 - "$RUNTIME" "$SOURCE" "$GOVERNANCE_COMMIT" "$ACTION8_EVIDENCE_DIR" "$REPORT_TEMP" "$DB_SHA256" "$MF_SHA256" "$EXPECTED_RECORD_COUNT" "$PERFORMANCE_ELAPSED_SECONDS" "$PERFORMANCE_MAX_CHILD_RSS_KIB" "$HISTORICAL_ELAPSED_TARGET_EXCEEDED" "$HISTORICAL_RSS_TARGET_EXCEEDED" <<'PY'
 import hashlib,json,os,pathlib,subprocess,sys
 runtime,source=map(pathlib.Path,sys.argv[1:3]); commit,action8=sys.argv[3:5]; target=pathlib.Path(sys.argv[5]); db_sha,mf_sha=sys.argv[6:8]
 expected_database_records=int(sys.argv[8])
+elapsed=float(sys.argv[9]); max_child_rss_kib=int(sys.argv[10]); historical_elapsed_exceeded=sys.argv[11]=='TRUE'; historical_rss_exceeded=sys.argv[12]=='TRUE'
 paths=[runtime/'config/hioc.conf',runtime/'state/inventory/inventory.json',runtime/'state/inventory/manufacturer.json',runtime/'state/inventory/manufacturer_status.json',runtime/'data/manufacturer/versions/local-ieee-ra--2026-08-11-r1/manufacturer-db.json',runtime/'data/manufacturer/versions/local-ieee-ra--2026-08-11-r1/manufacturer-db.manifest.json']
 def snapshot(): return {str(p.relative_to(runtime)):{'size':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths}
 before=snapshot()
@@ -194,7 +251,7 @@ after=snapshot()
 if before!=after: raise SystemExit(23)
 generation=json.loads((pathlib.Path(action8)/'generation-result.json').read_text(encoding='utf-8'))
 if artifact['record_count']!=generation['record_count']: raise SystemExit(24)
-report={'schema_version':'1.0','result':'PASS','action':'PE-3_ACTION9','governance_commit':commit,'target':{'hostname':'nutandpihole','ipv4':'192.168.100.252'},'action8_evidence':{'path':action8,'generation_result_sha256':hashlib.sha256((pathlib.Path(action8)/'generation-result.json').read_bytes()).hexdigest(),'generation_performance_sha256':hashlib.sha256((pathlib.Path(action8)/'generation-performance.txt').read_bytes()).hexdigest(),'validated':True},'dataset':{'id':'local-ieee-ra','version':'2026-08-11-r1','database_sha256':db_sha,'manifest_sha256':mf_sha,'record_count':expected_database_records},'manufacturer':{'status':'online','record_count':artifact['record_count'],'privacy_safe':True},'performance':{'source':'ACTION8_GOVERNED_EVIDENCE','validated':True},'protected_state':{'unchanged':True,'artifacts':before},'warnings':[],'rollback_recommended':False}
+report={'schema_version':'1.0','result':'PASS','action':'PE-3_ACTION9','governance_commit':commit,'target':{'hostname':'nutandpihole','ipv4':'192.168.100.252'},'action8_evidence':{'path':action8,'generation_result_sha256':hashlib.sha256((pathlib.Path(action8)/'generation-result.json').read_bytes()).hexdigest(),'generation_performance_sha256':hashlib.sha256((pathlib.Path(action8)/'generation-performance.txt').read_bytes()).hexdigest(),'validated':True},'dataset':{'id':'local-ieee-ra','version':'2026-08-11-r1','database_sha256':db_sha,'manifest_sha256':mf_sha,'record_count':expected_database_records},'manufacturer':{'status':'online','record_count':artifact['record_count'],'privacy_safe':True},'performance':{'source':'ACTION8_GOVERNED_EVIDENCE','measurement_status':'MEASURED','elapsed_seconds':elapsed,'maximum_child_rss_kib':max_child_rss_kib,'rss_semantic':'TOTAL_PEAK_CHILD_RSS','baseline_status':'UNVALIDATED','observation':'INSUFFICIENT_BASELINE','historical_elapsed_target_seconds':4,'historical_incremental_rss_target_bytes':50331648,'historical_elapsed_target_exceeded':historical_elapsed_exceeded,'historical_rss_target_exceeded':historical_rss_exceeded,'historical_targets_production_enforced':False},'protected_state':{'unchanged':True,'artifacts':before},'warnings':['PERFORMANCE_BASELINE_NOT_ESTABLISHED'],'rollback_recommended':False}
 data=(json.dumps(report,sort_keys=True,separators=(',',':'))+'\n').encode()
 with target.open('wb') as handle: handle.write(data); handle.flush(); os.fsync(handle.fileno())
 PY

@@ -1,5 +1,24 @@
 # HIOC Master Plan
 
+## PE-3 Action 9 performance-contract correction
+
+The first Action 9 production attempt is **ATTEMPTED BUT NOT COMPLETE**. Source
+refresh is **PASS / COMPLETE / CURRENT**. The attempt failed only at the former
+combined `ACTION8_EVIDENCE_VALIDATION` stage; read-only forensics proved the
+Action 8 result schema/count partition and protected snapshot passed, while the
+measured `12.467231` seconds and `146744` KiB total peak child RSS exceeded
+historical design targets. It created no Action 9 evidence directory, changed no
+production state, and recommends no rollback.
+
+The classification is **CASE D — BOTH CONTRACT AND MEASUREMENT DEFECTS**. The
+four-second and incremental-RSS 48-MiB targets have no validated current PI3
+baseline and are not hard production gates. Result validation, performance
+syntax, insufficient-baseline assessment, and protected-snapshot validation are
+now separate domains. A future versioned benchmark must define hardware,
+workload, repetition/percentile method, and total-versus-incremental RSS before
+hard limits can be authorized. Actions 1–8 remain complete; Action 10 remains
+**NOT STARTED / NOT PREPARED**; all future-roadmap commitments are preserved.
+
 ## PE-3 Action 9 operator-safety and evidence-contract correction
 
 Repository forensics reject the historical Action 9 inline block as **PE-3
@@ -9,15 +28,15 @@ SEMANTICS**. It referenced an unrelated historical evidence prefix, could kill
 an interactive parent shell, depended on unavailable `/usr/bin/time`, reran the
 generator, and lacked private invocation evidence with bounded failures.
 
-The corrected repository architecture assigns Action 9 only to
+At that pre-attempt repository correction, the architecture assigned Action 9 only to
 `tools/hioc-pe3-action9-validate.sh`. It validates the exact operator-supplied
 Action 8 PASS evidence, uses its governed performance record without generation,
 independently validates current production artifacts and protected-state
 identity, and publishes a private result-last Evidence Report. Production is
 read only; only invocation-owned Action 9 evidence may be written. Actions 1–8
-remain complete, Action 9 remains **NOT STARTED**, and Action 10 remains **NOT
-STARTED / NOT PREPARED**. No production, rollback, staging, retransmission, or
-future-roadmap action is performed by this correction.
+remained complete, Action 9 was **NOT STARTED**, and Action 10 was **NOT STARTED
+/ NOT PREPARED**. No production, rollback, staging, retransmission, or
+future-roadmap action was performed by that correction.
 
 ## PE-3 Action 8 production completion checkpoint
 
