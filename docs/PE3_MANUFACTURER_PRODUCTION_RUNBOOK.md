@@ -910,9 +910,9 @@ PROCEDURE NOT PRODUCTION-SAFE**. It enabled interactive `set -euo pipefail`,
 used a `tee` pipeline under pipefail, retained an unresolved evidence-directory
 placeholder, used bare assertions, and lacked complete target, source, runtime,
 configuration, dataset, inventory, output-precondition, post-publication,
-failure-stage, and rollback evidence. Action 8 remains **NOT STARTED**. No
-manufacturer sidecar/status generation, evidence mutation, staging cleanup, or
-later action occurred.
+failure-stage, and rollback evidence. At that historical checkpoint, Action 8
+remained **NOT STARTED**. No manufacturer sidecar/status generation, evidence
+mutation, staging cleanup, or later action occurred.
 
 Substantial Action 8 logic is now owned by
 `tools/hioc-pe3-action8-generate.sh`. The script accepts the exact governance
@@ -995,7 +995,9 @@ Every failure emits bounded `RESULT`, `ERROR_CODE`, `FAILURE_STAGE`, and
 `ROLLBACK_RECOMMENDED=FALSE`, suppresses later stages, and returns control to the
 parent prompt. Stop after bootstrap PASS and return all output for review. The
 exact prior evidence-directory path is not an input to this bootstrap. Action 8
-remains **NOT STARTED** and requires separate authorization.
+remains **ATTEMPTED BUT NOT COMPLETE**. Another attempt requires separate
+authorization only after the source refresh and corrected-validator deployment
+checkpoints pass and are reviewed. Action 9 remains **NOT STARTED**.
 
 The generator remains the established manual
 `pi4/bin/hioc-generate-manufacturer.py`; no collector, service, timer, cron job,

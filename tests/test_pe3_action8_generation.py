@@ -66,6 +66,16 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         for marker in ("ERROR_CODE=%s", "FAILURE_STAGE=%s", "ROLLBACK_RECOMMENDED=FALSE"):
             self.assertIn(marker, self.bootstrap)
 
+    def test_active_bootstrap_status_matches_current_action8_state(self):
+        bootstrap_contract = self.action8.split("Canonical PASS is exactly", 1)[1].split("The generator remains", 1)[0]
+        flat = " ".join(bootstrap_contract.split())
+        self.assertIn("Action 8 remains **ATTEMPTED BUT NOT COMPLETE**", flat)
+        self.assertIn("Action 9 remains **NOT STARTED**", flat)
+        self.assertNotIn("Action 8 remains **NOT STARTED**", flat)
+        self.assertIn("source refresh and corrected-validator deployment", flat)
+        self.assertIn("separate authorization", flat)
+        self.assertNotIn('bash "$SCRIPT"', self.bootstrap)
+
     def test_bootstrap_input_and_failure_mappings(self):
         self.assertIn("'^[0-9a-f]{40}$'", self.bootstrap)
         self.assertLess(self.bootstrap.index("INVALID_GOVERNANCE_COMMIT"), self.bootstrap.index("hostname -s"))

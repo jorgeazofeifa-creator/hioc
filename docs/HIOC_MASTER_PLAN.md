@@ -1,5 +1,15 @@
 # HIOC Master Plan
 
+## PE-3 active Action 8 status-governance correction
+
+The active source-refresh/bootstrap contract no longer repeats the historical
+pre-execution state. It now records Action 8 as **ATTEMPTED BUT NOT COMPLETE**,
+Action 9 as **NOT STARTED**, and requires reviewed source refresh plus corrected
+validator-only runtime deployment before a separately authorized next Action 8
+attempt. Dated earlier checkpoints retain their historically accurate status.
+No source refresh, deployment, bootstrap, generation, rollback, or other
+production action is performed by this documentation correction.
+
 ## PE-3 Action 8 corrected-validator deployment governance
 
 The permission-class correction exposed a second defect: **PE-3 ACTION 8

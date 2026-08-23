@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Corrected the active Action 8 bootstrap status from the stale historical
+  `NOT STARTED` state to `ATTEMPTED BUT NOT COMPLETE`. The active contract now
+  preserves Action 9 as `NOT STARTED` and requires reviewed source refresh and
+  corrected-validator deployment before another separately authorized attempt;
+  dated historical checkpoint statements remain historical evidence.
+
 - Added a governed validator-only Action 8 corrective deployment boundary. It
   independently freezes the reviewed validator identity, supports exact
   identical no-op, creates a private durable backup only for replacement,
