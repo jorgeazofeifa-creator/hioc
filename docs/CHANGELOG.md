@@ -1,5 +1,17 @@
 # HIOC Changelog
 
+- Recorded the governed PE-3 Action 9 production PASS. The read-only validation
+  published its private Evidence Report at
+  `/tmp/hioc-pe3-action9-Bb6vGrmm`, returned `ACTION9=COMPLETE` and
+  `ROLLBACK_RECOMMENDED=FALSE`, and caused no production mutation or rollback.
+  Its valid `12.467231`-second and `146744`-KiB total-peak-child-RSS
+  observations remain `UNVALIDATED`/`INSUFFICIENT_BASELINE`; both historical
+  targets were exceeded but were not production enforced. Actions 1–9 are
+  complete, Action 10 remains not started/not prepared, Action 8 evidence remains
+  preserved at `/tmp/hioc-pe3-action8-eZxNGrKa`, transport staging remains
+  absent, retransmission remains unnecessary, and all future checkpoints are
+  preserved.
+
 - Corrected PE-3 Action 9 performance validation after its first read-only
   production attempt isolated a performance-only failure. Result and protected
   schemas passed; measured elapsed time was `12.467231` seconds and total peak

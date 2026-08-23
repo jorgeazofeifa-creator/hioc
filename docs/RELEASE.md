@@ -1,7 +1,14 @@
 # HIOC Release Process
 
-The corrected Action 9 tool remains outside the release path. Its first attempt
-is recorded as attempted but incomplete after a performance-only failure, with
+The corrected Action 9 validation completed successfully outside the release
+path, publishing only private evidence at
+`/tmp/hioc-pe3-action9-Bb6vGrmm`. It performed no release, runtime deployment,
+production mutation, or rollback. Actions 1–9 are complete; Action 10 remains
+not started/not prepared and requires a separate review after this completion
+checkpoint is committed and pushed.
+
+The corrected Action 9 tool remains outside the release path. Its historical
+first attempt is recorded as attempted but incomplete after a performance-only failure, with
 no evidence directory or production mutation and rollback FALSE. Result and
 protected schemas passed; `12.467231` seconds and `146744` KiB total peak child
 RSS are observations under an unvalidated baseline. Historical four-second and

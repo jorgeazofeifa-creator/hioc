@@ -1,14 +1,22 @@
 # HIOC Operations
 
-PE-3 Action 9 is currently **ATTEMPTED BUT NOT COMPLETE**. Its current source
-refresh is PASS. The first attempt produced no Action 9 evidence directory and
-made no production change; read-only forensics isolated a performance-only
-failure (`12.467231` seconds, `146744` KiB total peak child RSS), with result and
-protected schemas PASS and rollback FALSE. The corrected tool separates result,
-performance syntax, insufficient-baseline assessment, and protected snapshot.
-Historical four-second and incremental-RSS 48-MiB targets are recorded as
-context but are not production-enforced. Preserve any future Action 9 evidence
-directory unchanged and stop for review. Action 10 remains not started.
+PE-3 Actions 1–9 are **COMPLETE**. The corrected Action 9 read-only production
+validation returned `RESULT=PASS`, `ACTION9=COMPLETE`, and
+`ROLLBACK_RECOMMENDED=FALSE`; preserve its private Evidence Report at
+`/tmp/hioc-pe3-action9-Bb6vGrmm` unchanged. Preserve the successful Action 8
+evidence at `/tmp/hioc-pe3-action8-eZxNGrKa` unchanged as well. No production
+mutation or rollback occurred. Transport staging remains absent and dataset
+retransmission remains unnecessary.
+
+The accepted performance evidence is `12.467231` seconds and `146744` KiB total
+peak child RSS, measured under an `UNVALIDATED` baseline and classified
+`INSUFFICIENT_BASELINE`. Both historical targets were exceeded but are not
+production-enforced. Action 10 remains **NOT STARTED / NOT PREPARED** and
+requires a separate operator-safety/governance review after this completion
+checkpoint is committed and pushed. No Action 10 command is authorized here.
+
+The earlier attempted-but-incomplete Action 9 result and its read-only forensic
+analysis remain historical chronology; they do not describe current status.
 
 PE-3 Action 9 is a separately authorized read-only validation checkpoint owned
 by `tools/hioc-pe3-action9-validate.sh`. Operators must supply the approved full

@@ -1,6 +1,24 @@
 # HIOC Architecture Decisions
 
-## Decision: Action 9 performance is observational pending a governed baseline
+## Decision: Record governed PE-3 Action 9 production completion
+
+The corrected governed Action 9 production validation completed with
+`RESULT=PASS`, `ACTION9=COMPLETE`, and `ROLLBACK_RECOMMENDED=FALSE`. Its private
+Evidence Report at `/tmp/hioc-pe3-action9-Bb6vGrmm` is preserved unchanged,
+alongside the successful Action 8 evidence at
+`/tmp/hioc-pe3-action8-eZxNGrKa`. Production validation was read only; no
+production mutation or rollback occurred.
+
+The valid observations remain `12.467231` seconds and `146744` KiB total peak
+child RSS, with `MEASURED`, `UNVALIDATED`, and `INSUFFICIENT_BASELINE`
+semantics. Both historical targets were exceeded but are not production
+enforced, so the performance assessment passed without creating replacement
+thresholds. Actions 1–9 are complete. Action 10 remains not started/not
+prepared pending this completion checkpoint's commit and push followed by a
+separate operator-safety/governance review. The future performance-baseline
+checkpoint and every future-roadmap commitment remain preserved.
+
+## Historical decision: Action 9 performance correction before completion
 
 The first governed Action 9 attempt passed target, source, runtime, and Action 8
 evidence identity, then failed in the combined Action 8 evidence-validation

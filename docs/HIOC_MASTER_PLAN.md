@@ -1,6 +1,27 @@
 # HIOC Master Plan
 
-## PE-3 Action 9 performance-contract correction
+## PE-3 Action 9 production completion checkpoint
+
+The corrected governed Action 9 production validation is **PASS / COMPLETE**.
+It returned `RESULT=PASS`, `ACTION9=COMPLETE`, and
+`ROLLBACK_RECOMMENDED=FALSE`, with its private Evidence Report preserved at
+`/tmp/hioc-pe3-action9-Bb6vGrmm`. Validation was read only and caused no
+production mutation or rollback. Successful Action 8 evidence remains preserved
+at `/tmp/hioc-pe3-action8-eZxNGrKa`.
+
+Performance evidence recorded `12.467231` seconds and `146744` KiB with
+`PERFORMANCE_RSS_SEMANTIC=TOTAL_PEAK_CHILD_RSS`, measurement status `MEASURED`,
+baseline status `UNVALIDATED`, and observation `INSUFFICIENT_BASELINE`. Both
+historical targets were exceeded, but
+`HISTORICAL_TARGETS_PRODUCTION_ENFORCED=FALSE`; no replacement threshold was
+introduced. Actions 1–9 are **COMPLETE**. Action 10 remains **NOT STARTED / NOT
+PREPARED** until this completion checkpoint is committed and pushed and a
+separate operator-safety/governance review is authorized. Transport staging
+remains absent, retransmission remains unnecessary, and the future governed
+performance-baseline checkpoint, PE-10, and every future-roadmap commitment
+remain preserved.
+
+## Historical PE-3 Action 9 performance-contract correction
 
 The first Action 9 production attempt is **ATTEMPTED BUT NOT COMPLETE**. Source
 refresh is **PASS / COMPLETE / CURRENT**. The attempt failed only at the former
@@ -1400,11 +1421,12 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-PE-3 Actions 1–8 are complete. Action 8 production validation passed at
-governance commit `fa344828161e892523faa3da5d4cdf07d2e8e792`, with private
-evidence preserved at `/tmp/hioc-pe3-action8-eZxNGrKa` and no rollback
-recommended or performed. Action 9 remains not started and requires a separate
-post-checkpoint governance review and authorization.
+PE-3 Actions 1–9 are complete. Action 8 evidence remains preserved at
+`/tmp/hioc-pe3-action8-eZxNGrKa`; Action 9 completed read-only production
+validation with private Evidence Report `/tmp/hioc-pe3-action9-Bb6vGrmm` and no
+rollback recommended or performed. Action 10 remains not started/not prepared
+pending the committed and pushed Action 9 completion checkpoint and a separate
+operator-safety/governance review.
 
 The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. Canonical Address Selection Hardening is production validated and complete. The network-probe checksum-governance and PI5 endpoint-migration correction is complete: repository correction, governed deployment, Phase A, Phase B incident recovery, and overall production validation passed at approved commit `e06539d9bece040d721b9912213559cc54f1610d`. The July 29 DHCP pool-exhaustion incident is resolved, HIOC deployment validation passed, and the documentation architecture now assigns current-state, runtime, network, deployment, incident, and recovery authority to focused documents. DHCP Service Health & Capacity Monitoring and `.152` DHCP residue cleanup remain separate future work. Phase 7A remains active and Active Discovery remains postponed.
 

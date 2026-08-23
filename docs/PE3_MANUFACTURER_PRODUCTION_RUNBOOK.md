@@ -1,6 +1,25 @@
 # PE-3.3 Manufacturer Production Deployment and Validation Runbook
 
-## Current Action 9 corrective checkpoint
+## Current Action 9 production completion checkpoint
+
+The corrected governed Action 9 production validation is **PASS / COMPLETE**.
+It returned `RESULT=PASS`, `ACTION9=COMPLETE`, and
+`ROLLBACK_RECOMMENDED=FALSE`. Its private Evidence Report is preserved unchanged
+at `/tmp/hioc-pe3-action9-Bb6vGrmm`; the successful Action 8 evidence remains
+preserved unchanged at `/tmp/hioc-pe3-action8-eZxNGrKa`. Validation was read
+only, and no production mutation or rollback occurred.
+
+The accepted performance record is `12.467231` seconds and `146744` KiB total
+peak child RSS, with `MEASURED`, `UNVALIDATED`, and `INSUFFICIENT_BASELINE`
+semantics. Both historical targets were exceeded, but
+`HISTORICAL_TARGETS_PRODUCTION_ENFORCED=FALSE`; the assessment passed without
+replacement thresholds. Actions 1–9 are **COMPLETE**. Transport staging remains
+absent and retransmission remains unnecessary. Action 10 remains **NOT STARTED /
+NOT PREPARED** until this completion checkpoint is committed and pushed and a
+separate operator-safety/governance review is authorized. All future-roadmap
+commitments remain preserved.
+
+## Historical Action 9 corrective checkpoint
 
 Action 9 source refresh is **PASS / COMPLETE / CURRENT**. Its first production
 attempt is **ATTEMPTED BUT NOT COMPLETE** after the former combined Action 8

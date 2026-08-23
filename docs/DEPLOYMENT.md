@@ -1,7 +1,14 @@
 # HIOC Deployment
 
-The Action 9 performance correction is repository governance, not deployment.
-The first attempt changed no production state and created no Action 9 evidence
+Action 9 production validation is now **PASS / COMPLETE**. It was read only and
+created only its private Evidence Report at
+`/tmp/hioc-pe3-action9-Bb6vGrmm`; no runtime deployment, production mutation, or
+rollback occurred. Actions 1–9 are complete. Action 10 remains not started/not
+prepared pending commit/push of the completion checkpoint and separate
+operator-safety/governance review.
+
+The historical Action 9 performance correction was repository governance, not
+deployment. The first attempt changed no production state and created no Action 9 evidence
 directory. Current Action 9 records valid performance as an observation with an
 unvalidated baseline; it does not deploy code, invoke generation, or enforce the
 historical four-second/incremental-RSS targets as current production limits.

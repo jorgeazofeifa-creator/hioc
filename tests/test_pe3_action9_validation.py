@@ -9,6 +9,15 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "hioc-pe3-action9-validate.sh"
+COMPLETION_DOCUMENTS = (
+    ROOT / "DECISIONS.md",
+    ROOT / "docs" / "CHANGELOG.md",
+    ROOT / "docs" / "DEPLOYMENT.md",
+    ROOT / "docs" / "HIOC_MASTER_PLAN.md",
+    ROOT / "docs" / "OPERATIONS.md",
+    ROOT / "docs" / "PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md",
+    ROOT / "docs" / "RELEASE.md",
+)
 
 
 class PE3Action9ValidationTests(unittest.TestCase):
@@ -236,6 +245,28 @@ class PE3Action9ValidationTests(unittest.TestCase):
             "'historical_targets_production_enforced':False",
         ):
             self.assertIn(value, self.text)
+
+    def test_current_governance_records_action9_completion(self):
+        for path in COMPLETION_DOCUMENTS:
+            text = " ".join(path.read_text(encoding="utf-8").split())
+            self.assertIn("/tmp/hioc-pe3-action9-Bb6vGrmm", text, path)
+            self.assertRegex(
+                text,
+                r"Actions 1[–-]9 (?:are )?(?:\*\*)?COMPLETE(?:\*\*)?|Actions 1[–-]9 are complete",
+                path,
+            )
+            self.assertRegex(
+                text,
+                r"Action 10 remains (?:\*\*)?(?:NOT STARTED / NOT PREPARED|not started/not prepared)",
+                path,
+            )
+        runbook = " ".join(
+            (ROOT / "docs" / "PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md")
+            .read_text(encoding="utf-8")
+            .split()
+        )
+        self.assertIn("HISTORICAL_TARGETS_PRODUCTION_ENFORCED=FALSE", runbook)
+        self.assertIn("Historical Action 9 corrective checkpoint", runbook)
 
     def test_embedded_python_compiles(self):
         self.assertEqual(len(self.programs), 5)
