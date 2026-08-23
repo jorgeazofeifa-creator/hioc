@@ -734,6 +734,19 @@ validator to obtain a shared database lock is superseded. The corrected generato
 order, builder transaction, error mappings, and all other frozen contracts remain
 unchanged.
 
+Production Action 8 is the first governed invocation of the manual generator.
+Its repository-controlled wrapper does not replace the generator transaction or
+introduce another lock. Before invocation it proves the exact Action 7
+configuration selection, immutable dataset identity and validation, current
+inventory, output preconditions, protected-state snapshot, transport-staging
+preservation, and private evidence directory. After invocation it validates the
+sidecar/status pair against inventory and database, rejects leftover temporary
+artifacts, rechecks protected configuration/dataset/staging, and durably
+publishes only aggregate evidence. It cannot deploy, reload a service, change a
+schedule, clean staging, or invoke Action 9. Generator-domain failures retain
+the section 16 rollback semantics; wrapper validation after successful
+publication may require rollback review but never automatic rollback.
+
 ## 20. Conflict and organization normalization
 
 Exact normalized duplicates (same class, prefix, organization) collapse and

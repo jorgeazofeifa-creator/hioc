@@ -42,9 +42,10 @@ PE-2 are **COMPLETE - PRODUCTION VALIDATED**. PE-3.0 is complete; PE-3.1 is
 **IMPLEMENTED - REPOSITORY VALIDATED**; PE-3.2 is **COMPLETE - EXTERNAL DATASET
 VALIDATED**; PE-3.3 is **COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED**.
 Windows CPython 3.13.x is operator-supported with validated patch 3.13.15.
-PE-3 Actions 1-5 are complete. Action 6-A and Action 6-B each passed and are
-complete; Action 6 is complete. Action 7 is not started. No rollback is
-recommended, the current deployed runtime remains in place, and PE-3 transport
+PE-3 Actions 1-5 are complete. Action 6-A, Action 6-B, Action 7-A, and Action
+7-B each passed and are complete; Actions 6 and 7 are complete. Action 8 is not
+started. No rollback is recommended, the current deployed runtime remains in
+place, the immutable manufacturer database is selected, and PE-3 transport
 staging remains preserved. PE-4 through PE-10 are not started. Historical
 pre-execution and corrective records remain chronology rather than current
 status and must not be read as reopening completed actions.
@@ -194,10 +195,10 @@ Python reconciliation also updates governed operator code and tests: it promotes
 3.13.x support, records 3.13.15 evidence, and aligns Action 1 with exact managed-
 interpreter selection. No unresolved authoritative contradiction remains.
 
-Open work is intentional roadmap scope: PE-3 Action 7, PE-4 through PE-10, and
-the separately preserved future checkpoints above. Actions 1-6 are complete;
-the deployed runtime and transport staging remain preserved with no rollback
-recommended. Action 7 is not started.
+Open work is intentional roadmap scope: PE-3 Action 8 and later actions, PE-4
+through PE-10, and the separately preserved future checkpoints above. Actions
+1-7 are complete; the deployed runtime and transport staging remain preserved
+with no rollback recommended. Action 8 is not started.
 
 Action 5 operator governance was corrected before execution. Its former inline
 strict-mode block could terminate the evidence-bearing shell and had incomplete

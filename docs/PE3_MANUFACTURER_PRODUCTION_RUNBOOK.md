@@ -862,41 +862,69 @@ full Action 7 PASS.
 Target: PI3 runtime state. Mutation: evidence directory, manufacturer sidecar,
 and manufacturer status only. Rollback relevance: sidecar/config domains.
 
-Use the exact `EVIDENCE_DIR` returned by Action 5:
+### Pre-execution governance correction
 
-```bash
-set -euo pipefail
-set +x
-RUNTIME=/home/jazofv1/hioc
-SOURCE=/home/jazofv1/hioc-release-source
-EVIDENCE_DIR='/tmp/hioc-pe3-production-validation-XXXXXXXX'
-mkdir -p "$EVIDENCE_DIR/pre" "$EVIDENCE_DIR/post"
-chmod 0700 "$EVIDENCE_DIR" "$EVIDENCE_DIR/pre" "$EVIDENCE_DIR/post"
-python3 - "$RUNTIME" "$EVIDENCE_DIR/pre/protected.json" <<'PY'
-import hashlib,json,pathlib,sys
-root=pathlib.Path(sys.argv[1]); target=pathlib.Path(sys.argv[2])
-stable=['state/inventory/inventory.json','state/inventory/devices.json','state/inventory/services.json','state/inventory/topology.json','state/inventory/dependencies.json','state/inventory/summary.json','state/inventory/status.json','state/inventory/enrichment.json','state/inventory/enrichment_status.json','state/inventory/assets.json','state/inventory/assets_status.json','state/platform/status.json']
-live=['state/incidents/active.json','state/incidents/history.json','state/incidents/summary.json','state/incident_engine_status.json']
-def clean(v):
- if isinstance(v,dict): return {k:clean(x) for k,x in sorted(v.items()) if k not in {'updated','updated_at','generated_at','timestamp','last_seen','last_changed'}}
- if isinstance(v,list): return [clean(x) for x in v]
- return v
-def item(rel,kind):
- p=root/rel
- if not p.is_file() or p.is_symlink(): return {'path':rel,'class':kind,'present':False}
- value=json.loads(p.read_text(encoding='utf-8')); raw=json.dumps(clean(value),sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()
- count=len(value) if isinstance(value,(dict,list)) else None
- return {'path':rel,'class':kind,'present':True,'semantic_sha256':hashlib.sha256(raw).hexdigest(),'top_level_count':count}
-target.write_text(json.dumps({'stable':[item(x,'stable') for x in stable],'operational_drift':[item(x,'live') for x in live]},indent=2,sort_keys=True)+'\n',encoding='utf-8')
-PY
-/usr/bin/time -f 'manufacturer_generation_elapsed_seconds=%e manufacturer_generation_max_rss_kib=%M' -o "$EVIDENCE_DIR/generation-performance.txt" python3 "$RUNTIME/pi4/bin/hioc-generate-manufacturer.py" --home "$RUNTIME" --json | tee "$EVIDENCE_DIR/generation-result.json"
-jq -e '.result=="PASS" and .status=="online" and (.record_count|type)=="number" and (.matched_count|type)=="number" and (.unknown_count|type)=="number" and (.excluded_count|type)=="number" and (.invalid_count|type)=="number" and .error==null' "$EVIDENCE_DIR/generation-result.json" >/dev/null
-printf 'MANUFACTURER_GENERATION=PASS\n'
-```
+The historical inline block is rejected before execution as **PE-3 ACTION 8
+OPERATOR-SAFETY AND EVIDENCE CONTRACT DEFECT — MANUFACTURER GENERATION
+PROCEDURE NOT PRODUCTION-SAFE**. It enabled interactive `set -euo pipefail`,
+used a `tee` pipeline under pipefail, retained an unresolved evidence-directory
+placeholder, used bare assertions, and lacked complete target, source, runtime,
+configuration, dataset, inventory, output-precondition, post-publication,
+failure-stage, and rollback evidence. Action 8 remains **NOT STARTED**. No
+manufacturer sidecar/status generation, evidence mutation, staging cleanup, or
+later action occurred.
 
-The generated output is aggregate only. Match percentage is not an acceptance
-criterion. Stop on lock, database, inventory, write, or aggregate failure. Do not
-manually edit sidecars. Run Action 8 only; return output.
+Substantial Action 8 logic is now owned by
+`tools/hioc-pe3-action8-generate.sh`. The script accepts the exact governance
+commit and the exact existing Action 5 evidence directory as explicit operator
+inputs. It proves target and source identity; its own, generator, validator, and
+manufacturer-library Git/worktree identity; deployed runtime identity; Action 7
+configuration selection; exact immutable database identity and privacy-safe
+validator PASS; inventory validity; output preconditions; transport-staging
+preservation; and private evidence-directory state before generation.
+
+The published PI3 release source at
+`46f06bc3b1e7676ec23ac310d7a9a8585c05f632` predates this new script. A future
+bootstrap synchronization/script-identity gate is therefore mandatory after the
+correction is reviewed, committed, and pushed. That gate is not prepared by this
+checkpoint. No Action 8 operator command is authorized until the exact post-push
+governance commit, script identity, reviewed bootstrap PASS, and the exact prior
+evidence-directory path are available.
+
+The generator remains the established manual
+`pi4/bin/hioc-generate-manufacturer.py`; no collector, service, timer, cron job,
+systemd unit, reload, or restart is introduced. It consumes the single
+`MANUFACTURER_DB_PATH` activated by Action 7 and reads the adjacent immutable
+manifest plus current `inventory.json` under its existing exclusive manufacturer
+lock. It may atomically create or replace only private mode-`0600`
+`manufacturer.json` and `manufacturer_status.json` according to the executable
+contract. The wrapper may add only private Action 8 evidence under the existing
+evidence directory: `pre/protected.json`, `generation-result.json`, and
+`generation-performance.txt`.
+
+Action 8 must not alter configuration, the immutable database/manifest,
+inventory or other protected runtime state, transport staging, services,
+schedules, environment configuration, or deployment state. It cannot clean
+staging or chain Action 9. The sidecar generator's frozen two-artifact failure
+semantics remain authoritative: prior valid state is preserved where specified;
+a generator-domain failure does not by itself recommend rollback. A successful
+generation followed by invalid output, protected-state drift, or failed durable
+evidence publication stops with rollback review recommended; rollback is never
+automatic.
+
+Canonical PASS requires, in order: `TARGET_IDENTITY`, `SOURCE_IDENTITY`,
+`RUNTIME_IDENTITY`, `EVIDENCE_PRECONDITION`, `CONFIGURATION_IDENTITY`,
+`DATASET_IDENTITY`, `DATASET_VALIDATION`, `INVENTORY_IDENTITY`,
+`OUTPUT_PRECONDITION`, `PROTECTED_PRE_STATE`, `MANUFACTURER_GENERATION`,
+`MANUFACTURER_ARTIFACT_IDENTITY`, `MANUFACTURER_ARTIFACT_VALIDATION`,
+`PROTECTED_POST_GENERATION`, `EVIDENCE_PUBLICATION`, `ACTION8=COMPLETE`, and
+`RESULT=PASS`. Every failure emits `RESULT`, `ERROR_CODE`, `FAILURE_STAGE`, and
+`ROLLBACK_RECOMMENDED`, returns control to the parent prompt, suppresses later
+stages, and never performs automatic rollback or later-action chaining.
+
+Reviewed full Action 8 PASS and the private aggregate evidence are required
+before Action 9 may be prepared. Match percentage is not an acceptance
+criterion. Do not manually edit sidecars or status.
 
 ## Action 9 — Production validation and Evidence Report
 

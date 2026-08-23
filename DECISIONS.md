@@ -1104,3 +1104,25 @@ immutable dataset, transport staging, sidecar/status, services, schedules, and
 all unrelated configuration remain untouched. Rollback is reported, never
 automatic, and is recommended only after publication if durability or
 post-publication validation fails. Action 8 remains separately authorized.
+
+## Decision: PE-3 Action 8 is a governed protected-generation transaction
+
+**Date:** 2026-08-22
+**Status:** Accepted before Action 8 execution; Action 8 not started
+
+The historical Action 8 inline procedure is rejected as **PE-3 ACTION 8
+OPERATOR-SAFETY AND EVIDENCE CONTRACT DEFECT — MANUFACTURER GENERATION
+PROCEDURE NOT PRODUCTION-SAFE**. Interactive strict mode, a `tee` pipeline under
+pipefail, an unresolved evidence path, bare assertions, and incomplete identity,
+protected-state, publication, failure, and rollback evidence made it unsuitable
+for production. No Action 8 mutation occurred.
+
+Action 8 is owned by `tools/hioc-pe3-action8-generate.sh`, which coordinates the
+existing manual generator without changing its lock, atomic-write, no-op, or
+failure contracts. The wrapper proves target/source/runtime, activated
+configuration, exact dataset, inventory, output preconditions, transport
+staging, and evidence state; validates the resulting private sidecar/status and
+protected domains; and publishes aggregate private evidence. It cannot deploy,
+reload, reschedule, clean staging, or chain Action 9. Since PI3 predates the new
+wrapper, a future separately authorized bootstrap synchronization/identity gate
+is mandatory after commit/push and is intentionally not invented here.

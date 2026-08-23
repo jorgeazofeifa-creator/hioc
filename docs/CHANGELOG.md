@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Replaced the unsafe PE-3 Action 8 inline generation block with a governed
+  protected-generation wrapper. It verifies target/source/runtime, activated
+  configuration, exact immutable dataset, inventory, output preconditions,
+  transport staging, protected state, generated sidecar/status, and private
+  aggregate evidence; preserves the generator's existing lock and atomic-write
+  contracts; and stops before Action 9. Action 7 is complete, Action 8 remains
+  not started, and no production action occurred.
+
 - Replaced the unsafe PE-3 Action 7 inline configuration block with a separately
   bootstrapped repository-controlled activation transaction. The corrected
   contract proves source/runtime and exact immutable dataset identity, validates

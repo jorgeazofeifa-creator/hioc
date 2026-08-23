@@ -276,6 +276,20 @@ dataset afterward, and never reloads a service or chains Action 8. Duplicate or
 different nonempty values fail closed. Rollback is never automatic and is
 recommended only after publication if durability or post-validation fails.
 
+PE-3 Action 8 protected generation is owned by
+`tools/hioc-pe3-action8-generate.sh`. The retired inline block was not
+production-safe: it used interactive strict mode, a pipefail-sensitive `tee`
+pipeline, an unresolved evidence path, bare assertions, and incomplete identity,
+publication, failure, and rollback evidence. The governed wrapper invokes only
+the established manual generator after proving target/source/runtime identity,
+the Action 7 configuration selection, exact immutable dataset, inventory,
+output preconditions, transport-staging preservation, and private evidence
+state. It validates both generated private artifacts and protected domains after
+generation, publishes only aggregate private evidence, and never deploys,
+reloads services, changes schedules, cleans staging, or chains Action 9. A
+future bootstrap gate is required because the currently published PI3 source
+predates this script; that gate is not part of this checkpoint.
+
 ## Known Dangerous Operator Patterns
 
 Operational instructions must state the exact target machine and shell and must

@@ -1361,9 +1361,11 @@ Python compatibility governance is resolved under Model D in
 CPython 3.13.x is supported with validated patch evidence 3.13.15. PE-3 Actions
 1 through 4 are **PASS — COMPLETE** and the validated pair remains in private
 PI3 transport staging. Actions 5, 6-A, and 6-B are **PASS — COMPLETE** and
-Action 6 is **COMPLETE**. Action 7 is **NOT STARTED**. No rollback is
-recommended; the current deployed runtime remains in place and PE-3 transport
-staging remains preserved. PE-4 through PE-10 remain not started.
+Action 6 is **COMPLETE**. Action 7-A and Action 7-B are **PASS — COMPLETE** and
+Action 7 is **COMPLETE**. Action 8 is **NOT STARTED**. No rollback is
+recommended; the current deployed runtime remains in place, the exact immutable
+`local-ieee-ra--2026-08-11-r1` database is selected in configuration, and PE-3
+transport staging remains preserved. PE-4 through PE-10 remain not started.
 
 Action 1 pre-execution review identified two operator-input defects without
 executing the action: a hard-coded `python` PATH assumption and ambiguous choice
@@ -1619,6 +1621,21 @@ preserves all unrelated configuration and staging, performs no reload or
 sidecar generation, and cannot chain Action 8. No Action 7 or production action
 occurred; no rollback is recommended and the current deployed runtime remains
 in place.
+
+**PE-3 Action 8 operator-safety correction (2026-08-22):** Action 7-A and
+Action 7-B passed; Action 7 is complete and Action 8 remains not started. The
+historical Action 8 inline block is classified as **PE-3 ACTION 8
+OPERATOR-SAFETY AND EVIDENCE CONTRACT DEFECT — MANUFACTURER GENERATION
+PROCEDURE NOT PRODUCTION-SAFE** because it used interactive strict mode, a
+pipefail-sensitive `tee` pipeline, an unresolved evidence path, bare assertions,
+and incomplete identity, protected-state, publication, failure, and rollback
+evidence. The corrected repository-controlled Action 8 transaction verifies the
+activated configuration, exact immutable dataset, current inventory, output
+preconditions, protected state, transport staging, generated sidecar/status, and
+private aggregate evidence. It performs no deployment, service activation,
+staging cleanup, or Action 9 chaining. Because the published PI3 source predates
+the new script, a separately reviewed future bootstrap gate is required after
+commit/push and is not prepared here. No Action 8 or production action occurred.
 
 Do not begin Active Discovery until Phase 7A has been completed.
 
