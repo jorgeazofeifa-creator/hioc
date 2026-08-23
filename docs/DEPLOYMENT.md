@@ -54,6 +54,13 @@ after Action 6 immutable publication and Action 7 activation. Its absence does
 not authorize recreation or retransmission and does not weaken installed-dataset
 identity validation.
 
+Action 8 generator failures now retain a private, structured failure artifact
+without deploying code or exposing raw generator streams. The wrapper publishes
+performance first and `generation-failure.json` last, records bounded root-cause
+and output-mutation evidence, removes raw captures, and stops. This repository
+change does not authorize synchronization, deployment, generation, or Action 9;
+the changed wrapper requires a separate post-push bootstrap identity gate.
+
 ## Document Ownership
 
 This document owns the repository-to-production workflow, source and runtime boundaries, operator responsibilities, synchronization expectations, and production acceptance boundary. Detailed commands remain in [INSTALL.md](INSTALL.md) and packaging mechanics remain in [RELEASE.md](RELEASE.md).

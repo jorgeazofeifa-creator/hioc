@@ -1690,6 +1690,31 @@ recreate, retransmit, or clean staging. The attempt caused no generation
 mutation; Action 8 remains incomplete, Action 9 remains not started, and rollback
 is not recommended. The changed script requires a new post-push bootstrap gate.
 
+**PE-3 Action 8 generator-failure diagnostic-retention correction
+(2026-08-22):** The separately authorized Action 8 attempt reached
+`PROTECTED_PRE_STATE=PASS` and stopped on a nonzero generator exit. Its private
+evidence directory `/tmp/hioc-pe3-action8-gbLOVQJW` was preserved. Reviewed
+read-only forensics found exactly `pre/protected.json`, no status file, and no
+temporary, performance, success-result, or failure-result evidence. The
+underlying generator error cannot be recovered. This is classified as **PE-3
+ACTION 8 GENERATOR FAILURE DIAGNOSTIC RETENTION DEFECT — WRAPPER COLLAPSES
+GENERATOR FAILURE WITHOUT DURABLE SANITIZED ROOT-CAUSE EVIDENCE**.
+
+The corrected wrapper retains only private bounded failure evidence: performance
+is published before result-last `generation-failure.json`; the document records
+the numeric exit status, allowlisted generator code when available, structured
+result and stderr-presence booleans, safe sidecar/status change summaries,
+temporary-artifact presence, mutation class, and rollback recommendation. Raw
+stdout/stderr are never published and are removed. Safe status-only failure
+updates remain non-rollback; sidecar mutation, unsafe output state, leftover
+temporaries, or evidence/cleanup uncertainty requires manual rollback review.
+No rollback is automatic. Action 8 remains **NOT COMPLETE**, Action 9 remains
+**NOT STARTED**, transport staging remains irrelevant, and a new post-push
+bootstrap is required for the changed wrapper. PE-10 remains **PLANNED / NOT
+STARTED — FUTURE ARCHITECTURE**; the PI3 + PI5 Abrupt Power-Loss / Cold-Boot
+Recovery Validation checkpoint and all other future roadmap commitments remain
+preserved.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

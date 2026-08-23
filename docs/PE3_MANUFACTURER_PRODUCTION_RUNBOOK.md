@@ -970,7 +970,10 @@ output preconditions pass. The real non-symlink directory and its `pre`
 subdirectory are owned by `jazofv1:jazofv1` at mode `0700`; no operator path is
 accepted and no prior directory is reused. It may contain only Action 8 private
 evidence: `pre/protected.json`, `generation-performance.txt`, and
-`generation-result.json` plus invocation-owned temporary files while running.
+result-last `generation-result.json` on PASS. A generator failure instead retains
+`generation-performance.txt` followed by result-last `generation-failure.json`.
+Invocation-owned raw stdout/stderr and diagnostic temporary files exist only
+while running and are removed before control returns when cleanup succeeds.
 
 Action 8 must not alter configuration, the immutable database/manifest,
 inventory or other protected runtime state, services,
@@ -995,6 +998,36 @@ generation result, which is the result-last marker. Every failure emits
 directory creation it also emits the exact `EVIDENCE_DIR`. Failures return
 control to the parent prompt, suppress later stages, and never perform automatic
 rollback or later-action chaining.
+
+The production attempt at governance commit
+`e59b74a2a5c8b8cad05589198609fd616044a434` reached
+`PROTECTED_PRE_STATE=PASS`, then stopped with `MANUFACTURER_GENERATOR_FAILED`.
+Read-only forensics proved the private evidence layout contained only
+`pre/protected.json`; no result, performance, temporary capture, or status
+diagnostic survived. The underlying generator error is unrecoverable. This is
+classified as **PE-3 ACTION 8 GENERATOR FAILURE DIAGNOSTIC RETENTION DEFECT —
+WRAPPER COLLAPSES GENERATOR FAILURE WITHOUT DURABLE SANITIZED ROOT-CAUSE
+EVIDENCE**.
+
+The corrected wrapper privately captures generator stdout and stderr, never
+prints either raw stream, and accepts only a bounded JSON `FAIL` envelope with an
+allowlisted manufacturer error code. It publishes performance evidence first
+and a private mode-`0600` `generation-failure.json` last. The failure document
+contains only schema/result/stage, wrapper and allowlisted generator codes,
+numeric exit status, structured-result and stderr-presence booleans, safe
+sidecar/status presence/change/type summaries, temporary-artifact presence,
+output-mutation class, and rollback recommendation. It contains no raw output,
+message, inventory, MAC, prefix, manufacturer, database, configuration, secret,
+or environment value. Raw captures are removed before final publication.
+
+`MANUFACTURER_GENERATOR_FAILED` recommends rollback only when a sidecar change,
+unsafe/missing prior output, or leftover generator temporary artifact proves a
+potentially partial or unsafe output transaction. A safe status-only failure
+update remains non-rollback. Failure-evidence publication or cleanup uncertainty
+fails closed with rollback review recommended. Rollback is never automatic.
+Action 8 remains **NOT COMPLETE** and the changed wrapper requires a new
+post-push bootstrap before any future separately authorized attempt. Action 9
+remains **NOT STARTED**.
 
 The original Action 8 staging barrier is retired as **PE-3 ACTION 8
 TRANSPORT-STAGING LIFETIME CONTRACT DEFECT — EPHEMERAL TRANSFER STATE

@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Corrected PE-3 Action 8 generator-failure diagnostic retention after production
+  forensics proved the failed invocation retained only protected pre-state. The
+  wrapper now publishes private sanitized performance followed by result-last
+  `generation-failure.json`, records allowlisted root cause, exit status, output
+  mutation, and rollback advice, and deletes raw stdout/stderr captures. Action 8
+  remains incomplete, Action 9 remains not started, and the changed wrapper
+  requires a new post-push bootstrap before another separately authorized run.
+
 - Removed PE-3 Action 8's unverifiable historical evidence-directory input.
   The wrapper now creates one unique private invocation-owned
   `/tmp/hioc-pe3-action8-XXXXXXXX` directory after read-only preconditions pass,

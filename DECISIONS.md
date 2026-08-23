@@ -1205,3 +1205,28 @@ publication as a separate authorization; an already absent directory needs no
 cleanup action. The stopped attempt caused no generation mutation and recommends
 no rollback. The changed wrapper requires a new post-push bootstrap identity gate
 before any separately authorized Action 8 retry.
+
+## Decision: Action 8 retains sanitized generator-failure evidence
+
+**Date:** 2026-08-22
+**Status:** Corrected after failed-generation forensics; Action 8 incomplete
+
+The Action 8 attempt at governance commit
+`e59b74a2a5c8b8cad05589198609fd616044a434` reached protected pre-state and then
+returned `MANUFACTURER_GENERATOR_FAILED`. The wrapper captured the generator's
+bounded JSON stdout privately but deleted it during failure cleanup, discarded
+stderr, and did not publish performance. The generator produced no status file.
+Forensics found only the valid protected pre-state snapshot, so the underlying
+production root cause cannot be recovered. This is **PE-3 ACTION 8 GENERATOR
+FAILURE DIAGNOSTIC RETENTION DEFECT — WRAPPER COLLAPSES GENERATOR FAILURE
+WITHOUT DURABLE SANITIZED ROOT-CAUSE EVIDENCE**.
+
+Action 8 now privately captures stdout/stderr, parses only the allowlisted JSON
+failure code, records numeric exit status and stderr presence without raw
+content, compares strict pre/post sidecar and status identities, and publishes
+performance before result-last `generation-failure.json`. Raw captures are
+removed. Status-only safe failure publication does not recommend rollback;
+sidecar mutation, unsafe output state, leftover temporaries, or evidence/cleanup
+uncertainty does. Rollback remains manual. No production action, rerun, Action 9
+preparation, staging reconstruction, or rollback is authorized by this decision.
+The wrapper blob change requires a new post-push bootstrap gate.

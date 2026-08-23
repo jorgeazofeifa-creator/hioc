@@ -57,6 +57,11 @@ The wrapper validates the installed immutable dataset selected by configuration;
 it does not consume or require the earlier `/tmp` transport staging. Transfer
 staging ceases to be authoritative after reviewed immutable publication and may
 be removed only through a separately authorized cleanup boundary.
+Generator failure evidence is likewise not a release artifact. The Action 8
+wrapper retains it privately in the invocation-owned evidence directory as
+performance followed by result-last `generation-failure.json`; raw captures are
+not published. Any wrapper identity change requires a new separately authorized
+release-source synchronization/script-identity gate before execution.
 
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 

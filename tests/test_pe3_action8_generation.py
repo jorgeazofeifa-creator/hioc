@@ -223,6 +223,96 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertIn("MANUFACTURER_TEMP_ARTIFACT_PRESENT", self.script)
         self.assertNotIn("| tee", self.script)
 
+    def test_generator_failure_publishes_private_structured_evidence(self):
+        for marker in (
+            ".action8-stderr.XXXXXXXX", ".action8-failure.XXXXXXXX",
+            "generation-failure.json", "GENERATOR_FAILURE_EVIDENCE=PASS",
+            "GENERATOR_FAILURE_EVIDENCE_PUBLICATION_FAILED",
+            '"generator_exit_code"', '"generator_error_code"',
+            '"stdout_structured_failure"', '"stderr_present"',
+            '"manufacturer_sidecar"', '"manufacturer_status"',
+            '"output_mutation"', '"rollback_recommended"',
+        ):
+            self.assertIn(marker, self.script)
+        self.assertLess(
+            self.script.index('mv -fT -- "$TEMP_PERFORMANCE"'),
+            self.script.index('mv -fT -- "$TEMP_FAILURE"'),
+        )
+        self.assertIn("generation-failure.json", self.action8_flat)
+
+    def test_generator_failure_raw_captures_are_private_and_removed(self):
+        self.assertIn('2> "$TEMP_STDERR"', self.script)
+        self.assertIn('rm -- "$TEMP_RESULT" "$TEMP_STDERR"', self.script)
+        self.assertLess(
+            self.script.index('rm -- "$TEMP_RESULT" "$TEMP_STDERR"'),
+            self.script.index('mv -fT -- "$TEMP_FAILURE"'),
+        )
+        self.assertNotIn('cat "$TEMP_RESULT"', self.script)
+        self.assertNotIn('cat "$TEMP_STDERR"', self.script)
+        self.assertNotIn('printf "$TEMP_RESULT"', self.script)
+        self.assertNotIn('printf "$TEMP_STDERR"', self.script)
+        self.assertIn('path.stat().st_size > 65536', self.script)
+
+    def test_generator_failure_privacy_is_allowlisted(self):
+        self.assertIn("allowed_codes = {", self.script)
+        self.assertNotIn('"generator_error_message"', self.script)
+        self.assertNotIn('"stderr"', self.script)
+        self.assertNotIn('"stdout"', self.script)
+        self.assertIn('"generator_diagnostic"', self.script)
+
+    def test_generator_failure_rollback_tracks_output_mutation(self):
+        self.assertIn('rollback = sidecar_mutated or unsafe_output_state', self.script)
+        self.assertIn('"STATUS_ONLY" if status_mutated else "NONE"', self.script)
+        self.assertIn('raise SystemExit(10 if rollback else 0)', self.script)
+        self.assertIn('10) FAILURE_ROLLBACK=TRUE', self.script)
+        self.assertRegex(
+            self.script,
+            r"fail_action8 VALIDATION_FAIL MANUFACTURER_GENERATOR_FAILED "
+            r'MANUFACTURER_GENERATION "\$FAILURE_ROLLBACK"',
+        )
+
+    def test_generator_failure_does_not_publish_success_markers(self):
+        failure_branch = self.script.split('if [ "$generation_rc" -ne 0 ]; then', 1)[1].split("fi", 1)[0]
+        self.assertNotIn("MANUFACTURER_GENERATION=PASS", failure_branch)
+        self.assertNotIn("generation-result.json", failure_branch)
+        self.assertNotIn("ACTION8=COMPLETE", failure_branch)
+
+    def test_generator_failure_embedded_python_compiles(self):
+        function = self.script.split("publish_generator_failure_evidence() {", 1)[1]
+        program = function.split("<<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
+        compile(program, "action8-generator-failure-evidence", "exec")
+
+    def test_generator_failure_malformed_or_unexpected_diagnostic_is_unavailable(self):
+        self.assertIn("except (OSError, UnicodeError, json.JSONDecodeError):", self.script)
+        self.assertIn('value.get("result") != "FAIL"', self.script)
+        self.assertIn('error.get("code") not in allowed_codes', self.script)
+        self.assertIn('"generator_diagnostic": "RECOGNIZED" if diagnostic_code else "UNAVAILABLE"', self.script)
+
+    def test_generator_failure_status_is_bounded_and_attributed(self):
+        self.assertIn("def status_error(path):", self.script)
+        self.assertIn('value.get("status") not in {"degraded", "unavailable", "error"}', self.script)
+        self.assertIn("status_code = status_error(status)", self.script)
+        self.assertIn("diagnostic_code = stdout_code or status_code", self.script)
+
+    def test_generator_failure_evidence_permissions_are_private(self):
+        self.assertIn('chmod 0600 "$TEMP_FAILURE"', self.script)
+        self.assertIn('owned_mode_file "$TEMP_FAILURE" 600', self.script)
+        self.assertIn('owned_mode_directory "$EVIDENCE_DIR" 700', self.script)
+
+    def test_generator_failure_cleanup_uncertainty_fails_closed(self):
+        cleanup = 'rm -- "$TEMP_RESULT" "$TEMP_STDERR" >/dev/null 2>&1 || { FAILURE_ROLLBACK=TRUE; return 20; }'
+        self.assertIn(cleanup, self.script)
+        self.assertIn("GENERATOR_FAILURE_EVIDENCE_PUBLICATION_FAILED", self.script)
+        self.assertIn("EVIDENCE_PUBLICATION", self.script)
+
+    def test_generator_failure_result_last_is_distinct_from_success_result(self):
+        self.assertLess(
+            self.script.index('mv -fT -- "$TEMP_PERFORMANCE" "$EVIDENCE_DIR/generation-performance.txt"'),
+            self.script.index('mv -fT -- "$TEMP_FAILURE" "$EVIDENCE_DIR/generation-failure.json"'),
+        )
+        self.assertIn('mv -fT -- "$TEMP_RESULT" "$EVIDENCE_DIR/generation-result.json"', self.script)
+        self.assertNotEqual("generation-failure.json", "generation-result.json")
+
     def test_transport_staging_absence_is_accepted_after_installation_and_activation(self):
         self.assertNotIn("/tmp/hioc-pe3-dataset-transfer-", self.script)
         self.assertNotIn("TRANSPORT_STAGE", self.script)

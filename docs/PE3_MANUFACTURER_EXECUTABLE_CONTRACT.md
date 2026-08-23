@@ -754,6 +754,28 @@ before result-last `generation-result.json`, reports the exact directory, and
 requires that temporary evidence to remain intact for the next separately
 authorized validation boundary. Missing evidence is not reconstructed.
 
+On a nonzero generator exit, Action 8 must not discard its only bounded root
+cause. The wrapper privately captures stdout, stderr, and performance inside its
+invocation-owned evidence directory. It parses stdout strictly as the existing
+bounded JSON failure envelope, retains only an allowlisted manufacturer error
+code and numeric exit status, records only whether stderr was nonempty, and
+publishes no raw stream or error message. It compares pre/post sidecar and status
+presence and hashes under strict owner/type/mode checks, records only booleans
+and a bounded mutation class, and records whether generator temporary artifacts
+remain. It publishes `generation-performance.txt` before result-last
+`generation-failure.json` only after removing the raw captures, then fsyncs both
+published files and the directory. Failure evidence is private mode `0600` and contains no device,
+manufacturer, prefix, database, inventory, configuration, secret, path-content,
+or environment data.
+
+A nonzero exit before output change remains non-rollback. A validated safe
+status-only failure update remains non-rollback. A sidecar change, unsafe or
+missing prior output, leftover generator temporary artifact, failure-evidence
+publication uncertainty, or raw-capture cleanup uncertainty requires rollback
+review. The recommendation is evidence-derived and never automatic. A malformed
+or absent generator envelope is recorded as diagnostic unavailable with the exit
+status and stderr-presence boolean; it is never treated as trusted input.
+
 Transport staging is transient pre-install transfer state. Once Action 6 has
 validated and atomically published the immutable version and Action 7 has
 selected that exact installed database, staging is neither a generator input nor

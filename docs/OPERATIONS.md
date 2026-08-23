@@ -308,6 +308,16 @@ Action 7 activation, Action 8 relies on the exact installed database/manifest an
 configuration selection. It accepts staging absence, never reads or recreates
 staging, and retains fail-closed configuration and installed-dataset drift checks.
 
+After the first corrected Action 8 attempt returned a nonzero generator exit,
+forensics proved that the wrapper deleted its structured stdout capture and
+discarded stderr, leaving no attributable root cause. The corrected failure path
+now publishes private sanitized `generation-performance.txt` followed by
+result-last `generation-failure.json`. Raw stdout/stderr remain private temporary
+captures and are removed; they are never printed or copied into evidence.
+Operators must stop and preserve the exact evidence directory after either PASS
+or failure. The changed wrapper requires a new bootstrap identity gate before a
+future separately authorized Action 8 attempt.
+
 ## Known Dangerous Operator Patterns
 
 Operational instructions must state the exact target machine and shell and must

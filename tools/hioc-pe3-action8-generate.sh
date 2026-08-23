@@ -22,12 +22,14 @@ DB_SHA256=81f147cc57768c5797c4ad73a8c0369001bbdcbfe1548e71d3702c8c7f81e0e1
 MF_SHA256=10c8097c0a4ec6e8cc4cd3dc61afc7f368057f4ef4b6534df9f6dd31634a4ac4
 EXPECTED_DATABASE_RECORD_COUNT=53581
 TEMP_RESULT=
+TEMP_STDERR=
 TEMP_PERFORMANCE=
+TEMP_FAILURE=
 GENERATOR_SUCCEEDED=FALSE
 EVIDENCE_DIR_CREATED=FALSE
 
 cleanup_evidence_temps() {
-  for candidate in "$TEMP_RESULT" "$TEMP_PERFORMANCE"; do
+  for candidate in "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_PERFORMANCE" "$TEMP_FAILURE"; do
     [ -n "$candidate" ] || continue
     case "$candidate" in "$EVIDENCE_DIR"/.action8-*) ;; *) return 1 ;; esac
     [ -e "$candidate" ] || [ -L "$candidate" ] || continue
@@ -35,7 +37,9 @@ cleanup_evidence_temps() {
     rm -- "$candidate" >/dev/null 2>&1 || return 1
   done
   TEMP_RESULT=
+  TEMP_STDERR=
   TEMP_PERFORMANCE=
+  TEMP_FAILURE=
 }
 
 fail_action8() {
@@ -168,6 +172,14 @@ verify_output_prestate() {
     validate_sidecar || { fail_action8 INPUT_OR_PRECONDITION_ERROR EXISTING_MANUFACTURER_OUTPUT_INVALID OUTPUT_PRECONDITION FALSE; return 1; }
     side_exists=TRUE
   fi
+  SIDE_BEFORE_PRESENT=$side_exists
+  STATUS_BEFORE_PRESENT=$side_exists
+  SIDE_SHA_BEFORE=NONE
+  STATUS_SHA_BEFORE=NONE
+  if [ "$side_exists" = TRUE ]; then
+    SIDE_SHA_BEFORE="$(sha256sum "$SIDE" | awk '{print $1}')"
+    STATUS_SHA_BEFORE="$(sha256sum "$STATUS" | awk '{print $1}')"
+  fi
   printf 'OUTPUT_PRECONDITION=PASS\n'
 }
 
@@ -199,13 +211,166 @@ PY
   printf 'PROTECTED_PRE_STATE=PASS\n'
 }
 
+publish_generator_failure_evidence() {
+  generation_rc=$1
+  TEMP_FAILURE="$(mktemp "$EVIDENCE_DIR/.action8-failure.XXXXXXXX" 2>/dev/null)" || return 20
+  chmod 0600 "$TEMP_FAILURE" || return 20
+  python3 - "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_FAILURE" "$SIDE" "$STATUS" \
+    "$SIDE_BEFORE_PRESENT" "$SIDE_SHA_BEFORE" "$STATUS_BEFORE_PRESENT" \
+    "$STATUS_SHA_BEFORE" "$generation_rc" <<'PY'
+import hashlib, json, os, pathlib, pwd, grp, stat, sys
+
+raw_result, raw_stderr, target, side, status = map(pathlib.Path, sys.argv[1:6])
+side_before_present = sys.argv[6] == "TRUE"
+side_before_sha = sys.argv[7]
+status_before_present = sys.argv[8] == "TRUE"
+status_before_sha = sys.argv[9]
+generator_exit_code = int(sys.argv[10])
+
+allowed_codes = {
+    "MANUFACTURER_NOT_CONFIGURED", "MANUFACTURER_DATABASE_MISSING",
+    "MANUFACTURER_MANIFEST_MISSING", "MANUFACTURER_DATABASE_UNREADABLE",
+    "MANUFACTURER_MANIFEST_UNREADABLE", "MANUFACTURER_DATABASE_SCHEMA_INVALID",
+    "MANUFACTURER_MANIFEST_SCHEMA_INVALID", "MANUFACTURER_DATABASE_CHECKSUM_MISMATCH",
+    "MANUFACTURER_DATABASE_SEMANTIC_MISMATCH", "MANUFACTURER_VERSION_UNSUPPORTED",
+    "MANUFACTURER_DATASET_EMPTY", "MANUFACTURER_DATASET_CONFLICT",
+    "MANUFACTURER_DETERMINISM_FAILED", "MANUFACTURER_INVENTORY_MISSING",
+    "MANUFACTURER_INVENTORY_INVALID", "MANUFACTURER_LOCK_TIMEOUT",
+    "MANUFACTURER_SIDECAR_INVALID", "MANUFACTURER_SIDECAR_WRITE_FAILED",
+    "MANUFACTURER_STATUS_INVALID", "MANUFACTURER_STATUS_WRITE_FAILED",
+    "MANUFACTURER_PERMISSION_ERROR", "MANUFACTURER_PRIVACY_REFUSED",
+    "MANUFACTURER_INTERNAL_ERROR",
+}
+
+def sha256(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+def state(path, before_present, before_sha):
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return {"present": False, "safe": not before_present, "changed": before_present}
+    safe = (
+        stat.S_ISREG(info.st_mode) and not path.is_symlink()
+        and pwd.getpwuid(info.st_uid).pw_name == "jazofv1"
+        and grp.getgrgid(info.st_gid).gr_name == "jazofv1"
+        and stat.S_IMODE(info.st_mode) == 0o600
+    )
+    current_sha = sha256(path) if safe else None
+    changed = not before_present or current_sha != before_sha
+    return {"present": True, "safe": safe, "changed": changed}
+
+def structured_failure(path):
+    try:
+        if path.stat().st_size > 65536:
+            return None
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(value, dict) or value.get("result") != "FAIL" or value.get("status") != "error":
+        return None
+    error = value.get("error")
+    if not isinstance(error, dict) or error.get("code") not in allowed_codes:
+        return None
+    counts = [value.get(k) for k in ("record_count", "matched_count", "unknown_count", "excluded_count", "invalid_count")]
+    if any(type(item) is not int or item < 0 for item in counts):
+        return None
+    return error["code"]
+
+def status_error(path):
+    try:
+        if path.stat().st_size > 65536:
+            return None
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(value, dict) or value.get("status") not in {"degraded", "unavailable", "error"}:
+        return None
+    code = value.get("error_code")
+    return code if code in allowed_codes else None
+
+side_state = state(side, side_before_present, side_before_sha)
+status_state = state(status, status_before_present, status_before_sha)
+stdout_code = structured_failure(raw_result)
+status_code = status_error(status) if status_state["present"] and status_state["safe"] else None
+diagnostic_code = stdout_code or status_code
+leftover_temps = []
+try:
+    leftover_temps = sorted(
+        item.name for item in side.parent.iterdir()
+        if item.name.startswith(".manufacturer") and item.name.endswith(".tmp")
+    )
+except OSError:
+    leftover_temps = ["UNREADABLE"]
+unsafe_output_state = not side_state["safe"] or not status_state["safe"] or bool(leftover_temps)
+sidecar_mutated = side_state["changed"]
+status_mutated = status_state["changed"]
+rollback = sidecar_mutated or unsafe_output_state
+mutation_class = "SIDECAR_OR_UNSAFE_OUTPUT" if rollback else "STATUS_ONLY" if status_mutated else "NONE"
+
+document = {
+    "schema_version": 1,
+    "result": "FAIL",
+    "failure_stage": "MANUFACTURER_GENERATION",
+    "wrapper_error_code": "MANUFACTURER_GENERATOR_FAILED",
+    "generator_started": True,
+    "generator_exit_code": generator_exit_code,
+    "generator_diagnostic": "RECOGNIZED" if diagnostic_code else "UNAVAILABLE",
+    "generator_error_code": diagnostic_code,
+    "stdout_structured_failure": stdout_code is not None,
+    "stderr_present": raw_stderr.stat().st_size > 0,
+    "manufacturer_sidecar": side_state,
+    "manufacturer_status": status_state,
+    "output_mutation": mutation_class,
+    "temporary_output_artifacts_present": bool(leftover_temps),
+    "rollback_recommended": rollback,
+}
+data = (json.dumps(document, indent=2, sort_keys=True, separators=(",", ": ")) + "\n").encode()
+fd = os.open(target, os.O_WRONLY | os.O_TRUNC)
+with os.fdopen(fd, "wb") as handle:
+    handle.write(data)
+    handle.flush()
+    os.fsync(handle.fileno())
+raise SystemExit(10 if rollback else 0)
+PY
+  diagnostic_rc=$?
+  case "$diagnostic_rc" in
+    0) FAILURE_ROLLBACK=FALSE ;;
+    10) FAILURE_ROLLBACK=TRUE ;;
+    *) FAILURE_ROLLBACK=TRUE; return 20 ;;
+  esac
+  owned_mode_file "$TEMP_FAILURE" 600 || { FAILURE_ROLLBACK=TRUE; return 20; }
+  sync -f "$TEMP_PERFORMANCE" && sync -f "$TEMP_FAILURE" || { FAILURE_ROLLBACK=TRUE; return 20; }
+  rm -- "$TEMP_RESULT" "$TEMP_STDERR" >/dev/null 2>&1 || { FAILURE_ROLLBACK=TRUE; return 20; }
+  TEMP_RESULT=
+  TEMP_STDERR=
+  mv -fT -- "$TEMP_PERFORMANCE" "$EVIDENCE_DIR/generation-performance.txt" || { FAILURE_ROLLBACK=TRUE; return 20; }
+  TEMP_PERFORMANCE=
+  mv -fT -- "$TEMP_FAILURE" "$EVIDENCE_DIR/generation-failure.json" || { FAILURE_ROLLBACK=TRUE; return 20; }
+  TEMP_FAILURE=
+  sync -f "$EVIDENCE_DIR/generation-performance.txt" && sync -f "$EVIDENCE_DIR/generation-failure.json" && sync -f "$EVIDENCE_DIR" || { FAILURE_ROLLBACK=TRUE; return 20; }
+  printf 'GENERATOR_FAILURE_EVIDENCE=PASS\n'
+}
+
 run_generation() {
   TEMP_RESULT="$(mktemp "$EVIDENCE_DIR/.action8-result.XXXXXXXX" 2>/dev/null)" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CREATE_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
+  TEMP_STDERR="$(mktemp "$EVIDENCE_DIR/.action8-stderr.XXXXXXXX" 2>/dev/null)" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CREATE_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
   TEMP_PERFORMANCE="$(mktemp "$EVIDENCE_DIR/.action8-performance.XXXXXXXX" 2>/dev/null)" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CREATE_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
-  chmod 0600 "$TEMP_RESULT" "$TEMP_PERFORMANCE" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_PERMISSION_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
-  /usr/bin/time -f 'manufacturer_generation_elapsed_seconds=%e manufacturer_generation_max_rss_kib=%M' -o "$TEMP_PERFORMANCE" python3 "$RUNTIME/$GENERATOR_REL" --home "$RUNTIME" --json > "$TEMP_RESULT" 2>/dev/null
+  chmod 0600 "$TEMP_RESULT" "$TEMP_STDERR" "$TEMP_PERFORMANCE" || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_PERMISSION_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
+  /usr/bin/time -f 'manufacturer_generation_elapsed_seconds=%e manufacturer_generation_max_rss_kib=%M' -o "$TEMP_PERFORMANCE" python3 "$RUNTIME/$GENERATOR_REL" --home "$RUNTIME" --json > "$TEMP_RESULT" 2> "$TEMP_STDERR"
   generation_rc=$?
-  [ "$generation_rc" -eq 0 ] || { fail_action8 VALIDATION_FAIL MANUFACTURER_GENERATOR_FAILED MANUFACTURER_GENERATION FALSE; return 1; }
+  if [ "$generation_rc" -ne 0 ]; then
+    FAILURE_ROLLBACK=FALSE
+    publish_generator_failure_evidence "$generation_rc" || { fail_action8 VALIDATION_FAIL GENERATOR_FAILURE_EVIDENCE_PUBLICATION_FAILED EVIDENCE_PUBLICATION "$FAILURE_ROLLBACK"; return 1; }
+    fail_action8 VALIDATION_FAIL MANUFACTURER_GENERATOR_FAILED MANUFACTURER_GENERATION "$FAILURE_ROLLBACK"
+    return 1
+  fi
+  rm -- "$TEMP_STDERR" >/dev/null 2>&1 || { fail_action8 VALIDATION_FAIL EVIDENCE_TEMP_CLEANUP_FAILED EVIDENCE_CLEANUP TRUE; return 1; }
+  TEMP_STDERR=
   GENERATOR_SUCCEEDED=TRUE
   python3 - "$TEMP_RESULT" <<'PY'
 import json, pathlib, sys
