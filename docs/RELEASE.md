@@ -1,5 +1,12 @@
 # HIOC Release Process
 
+The Action 8 permission-class correction changes the manufacturer validator:
+private sidecar/status files remain exact `0600`, while the inventory input uses
+its established no-group/world-write rule. It does not change the Action 8
+wrapper or its bootstrap blob. The corrected validator still requires governed
+source synchronization and supported runtime deployment/identity verification
+before any separately authorized rerun.
+
 The PE-3 Action 8 bootstrap remains a separate source-checkout synchronization
 boundary. Its committed trust gate now freezes the current independently
 reviewed wrapper blob after preparation stopped on the superseded identity.

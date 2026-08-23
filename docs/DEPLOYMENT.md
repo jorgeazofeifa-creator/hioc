@@ -1,5 +1,12 @@
 # HIOC Deployment
 
+The Action 8 permission correction changes the governed validator source, not
+the generated production artifacts or their exact `0600` requirement.
+Production runtime must not be edited ad hoc. Source synchronization, supported
+runtime deployment/identity proof, and any later Action 8 attempt require their
+own reviewed authorizations. The Action 8 wrapper is unchanged, so its bootstrap
+script-blob trust anchor does not change.
+
 The active PE-3 Action 8 bootstrap trust gate freezes the independently reviewed
 diagnostic-retention wrapper blob
 `482f83584a62be2f02b2a73af4e78b0f4ebf447a`. The prior stale identity blocked

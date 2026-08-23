@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Corrected the Action 8 validator permission-class mismatch exposed by the
+  third governed attempt. Both generated private artifacts passed exact `0600`
+  identity checks, but the validator later applied their private bitmask to the
+  inventory input and returned `MANUFACTURER_PERMISSION_ERROR`. Manufacturer
+  outputs remain exact `0600`; inventory retains its no-group/world-write rule.
+  Action 8 remains incomplete, the rollback advisory remains true, and no
+  rollback or production action occurred.
+
 - Replaced Action 8's undeclared hard-coded `/usr/bin/time` launcher after PI3
   retained sanitized exit-127 evidence proving instrumentation blocked the
   governed generator before execution was confirmed. Governed Python now owns

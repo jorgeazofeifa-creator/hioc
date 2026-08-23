@@ -234,6 +234,18 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertIn("MANUFACTURER_TEMP_ARTIFACT_PRESENT", self.script)
         self.assertNotIn("| tee", self.script)
 
+    def test_wrapper_and_validator_share_the_artifact_permission_contract(self):
+        validator = (ROOT / "pi4" / "bin" / "hioc-validate-manufacturer.py").read_text(encoding="utf-8")
+        generator = (ROOT / "pi4" / "bin" / "hioc-generate-manufacturer.py").read_text(encoding="utf-8")
+        self.assertIn('owned_mode_file "$SIDE" 600', self.script)
+        self.assertIn('owned_mode_file "$STATUS" 600', self.script)
+        self.assertIn('mode == 0o600', validator)
+        self.assertIn('"private_manufacturer"', validator)
+        self.assertIn('"inventory_input"', validator)
+        self.assertIn('mode & 0o022 == 0', validator)
+        self.assertIn('write_json_atomic(sidecar_path,sidecar,mode=0o600)', generator)
+        self.assertIn('write_json_atomic(status_path,status,mode=0o600)', generator)
+
     def test_generator_failure_publishes_private_structured_evidence(self):
         for marker in (
             ".action8-stderr.XXXXXXXX", ".action8-failure.XXXXXXXX",

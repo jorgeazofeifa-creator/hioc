@@ -104,7 +104,9 @@ class PE3ProductionRunbookSequencingTests(unittest.TestCase):
         implementation = (ROOT / "pi4" / "lib" / "hioc" / "manufacturer.py").read_text(encoding="utf-8")
         validator = (ROOT / "pi4" / "bin" / "hioc-validate-manufacturer.py").read_text(encoding="utf-8")
         self.assertIn("stat.S_IMODE(info.st_mode) & ~0o600", implementation)
-        self.assertIn("stat.S_IMODE(path.stat().st_mode)&~0o600", validator)
+        self.assertIn("permission_mode_is_valid(stat.S_IMODE(path.stat().st_mode),artifact_class)", validator)
+        self.assertIn('artifact_class == "private_manufacturer"', validator)
+        self.assertIn('artifact_class == "inventory_input"', validator)
         self.assertIn('mode" = 600 ] || [ "$mode" = 644', self.resume_script)
         for marker in ("STAGING_EXTRA_OR_MISSING_ENTRY", "STAGING_OWNER_OR_TYPE_DRIFT",
                        "STAGING_SIZE_DRIFT", "STAGING_HASH_DRIFT",

@@ -1,5 +1,12 @@
 # HIOC Operations
 
+Private `manufacturer.json` and `manufacturer_status.json` outputs require exact
+mode `0600`. The current `inventory.json` supplied to the manufacturer validator
+is a separate input class: read bits may be broader, but group/world write bits
+are prohibited. Do not chmod production outputs to work around a validation
+failure. The third Action 8 attempt remains incomplete; its rollback advisory is
+preserved and no rollback or rerun is authorized by this correction.
+
 PE-3 replacement Action 8 bootstrap preparation stopped before PI3 execution
 because the governed source-only trust gate referenced a superseded wrapper
 blob. The corrected gate freezes the current reviewed wrapper Git blob while

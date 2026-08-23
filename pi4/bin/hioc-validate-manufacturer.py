@@ -9,10 +9,14 @@ def parser():
     root=Parser(); sub=root.add_subparsers(dest="target",required=True)
     db=sub.add_parser("database"); db.add_argument("--database",required=True); db.add_argument("--manifest",required=True); db.add_argument("--json",action="store_true")
     side=sub.add_parser("sidecar"); side.add_argument("--sidecar",required=True); side.add_argument("--status",required=True); side.add_argument("--inventory"); side.add_argument("--database"); side.add_argument("--manifest"); side.add_argument("--json",action="store_true"); return root
-def read(path_text, code):
+def permission_mode_is_valid(mode, artifact_class):
+    if artifact_class == "private_manufacturer": return mode == 0o600
+    if artifact_class == "inventory_input": return mode & 0o022 == 0
+    raise ValueError("unknown permission artifact class")
+def read(path_text, code, artifact_class):
     path=pathlib.Path(path_text)
     if not path.is_absolute() or path.is_symlink() or not path.is_file(): raise ManufacturerValidationError(code,"validation file is invalid")
-    if os.name=="posix" and stat.S_IMODE(path.stat().st_mode)&~0o600: raise ManufacturerUnavailableError("MANUFACTURER_PERMISSION_ERROR","file mode is unsafe")
+    if os.name=="posix" and not permission_mode_is_valid(stat.S_IMODE(path.stat().st_mode),artifact_class): raise ManufacturerUnavailableError("MANUFACTURER_PERMISSION_ERROR","file mode is unsafe")
     try: document=json.loads(path.read_text(encoding="utf-8"),object_pairs_hook=dict)
     except (OSError,UnicodeError,json.JSONDecodeError) as exc: raise ManufacturerValidationError(code,"validation JSON is invalid") from exc
     return document,path
@@ -28,14 +32,14 @@ def run(argv=None):
             db=load_database(dbp,mfp); record_count=db.document["record_count"]
         else:
             if bool(args.database)!=bool(args.manifest): raise ManufacturerInputError("MANUFACTURER_MANIFEST_SCHEMA_INVALID","database and manifest must appear together")
-            side,_=read(args.sidecar,"MANUFACTURER_SIDECAR_INVALID"); statdoc,_=read(args.status,"MANUFACTURER_STATUS_INVALID")
+            side,_=read(args.sidecar,"MANUFACTURER_SIDECAR_INVALID","private_manufacturer"); statdoc,_=read(args.status,"MANUFACTURER_STATUS_INVALID","private_manufacturer")
             try: side=validate_manufacturer_sidecar(side)
             except ManufacturerError as exc: raise ManufacturerValidationError("MANUFACTURER_SIDECAR_INVALID",exc.safe_message) from exc
             try: statdoc=validate_manufacturer_status(statdoc)
             except ManufacturerError as exc: raise ManufacturerValidationError("MANUFACTURER_STATUS_INVALID",exc.safe_message) from exc
             if statdoc["status"]=="online" and any(statdoc[k]!=side[k] for k in ("record_count","matched_count","unknown_count","excluded_count","invalid_count","dataset_version","dataset_semantic_sha256")): raise ManufacturerValidationError("MANUFACTURER_STATUS_INVALID","sidecar and status differ")
             if args.inventory:
-                inv,_=read(args.inventory,"MANUFACTURER_INVENTORY_INVALID"); ids=[]
+                inv,_=read(args.inventory,"MANUFACTURER_INVENTORY_INVALID","inventory_input"); ids=[]
                 if not isinstance(inv,dict) or not isinstance(inv.get("devices"),list): raise ManufacturerValidationError("MANUFACTURER_INVENTORY_INVALID","inventory is invalid")
                 for item in inv["devices"]:
                     if not isinstance(item,dict) or not isinstance(item.get("id"),str): raise ManufacturerValidationError("MANUFACTURER_INVENTORY_INVALID","inventory is invalid")

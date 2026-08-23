@@ -1,5 +1,23 @@
 # PE-3.3 Manufacturer Production Deployment and Validation Runbook
 
+## Current Action 8 permission-contract stop
+
+At governance commit `6828ee0d0f9b47d9c8c86b5e660c14a09894c2ad`, the
+third governed attempt reached `MANUFACTURER_GENERATION=PASS` and
+`MANUFACTURER_ARTIFACT_IDENTITY=PASS`, then stopped at
+`MANUFACTURER_ARTIFACT_VALIDATION` with `MANUFACTURER_PERMISSION_ERROR`.
+Both generated artifacts were owner/group `jazofv1:jazofv1`, exact mode `0600`,
+and no manufacturer temporary artifacts existed. The validator accepted those
+two files, then incorrectly applied their private permission ceiling to
+`inventory.json`. The correction preserves exact `0600` for both manufacturer
+artifacts and the established non-group/world-writable inventory input modes.
+
+The existing artifacts appear permission-safe from supplied metadata, but
+semantic validation has not completed. The rollback advisory remains
+fail-closed `TRUE`; no rollback was performed. Action 8 is **ATTEMPTED BUT NOT
+COMPLETE** and Action 9 is **NOT STARTED**. Governed runtime validator
+synchronization and a separately reviewed next authorization are required.
+
 Status: **DESIGN FROZEN; NOT EXECUTED**
 
 This is the authoritative operator procedure for deploying and validating PE-3

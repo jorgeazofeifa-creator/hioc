@@ -1,5 +1,22 @@
 # PE-3.1 Manufacturer Enrichment Executable Contract
 
+## Action 8 permission-class correction
+
+The third governed Action 8 attempt generated both private manufacturer
+artifacts successfully and proved their identity, ownership, exact mode `0600`,
+and absence of temporary siblings. Dedicated sidecar validation then returned
+`MANUFACTURER_PERMISSION_ERROR`. The validator had already accepted the private
+sidecar and status; it failed afterward because it applied their private-file
+bitmask to the current inventory input. That bitmask rejected group/world read
+bits even though the established inventory contract permits them.
+
+The authoritative classes are explicit. `manufacturer.json` and
+`manufacturer_status.json` must each be regular non-symlink files at exact mode
+`0600`. The current `inventory.json` is an input, not a private manufacturer
+artifact: it may contain owner, group, or world read bits, but no group or world
+write bits. The immutable database and manifest retain their existing private
+`0600` contract. The validator remains read-only and rejects symlinks.
+
 Status: **COMPLETE — EXECUTABLE CONTRACT FROZEN; REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
 
 This is the single normative executable contract for PE-3.1. It refines the

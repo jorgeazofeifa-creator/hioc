@@ -1,5 +1,23 @@
 # HIOC Architecture Decisions
 
+## Action 8 validator permission classes
+
+Decision: manufacturer sidecar and status outputs remain private regular
+non-symlink files at exact mode `0600`. Inventory supplied for semantic
+comparison is a distinct input class: it may be readable by group/world but may
+not be writable by either. Immutable manufacturer database files retain their
+existing private contract.
+
+Context: the third governed Action 8 attempt proved generation and artifact
+identity, then the validator reported a generic permission error. Its reader had
+accepted both generated artifacts and subsequently rejected inventory by
+applying the private-artifact bitmask to it.
+
+Consequences: validation remains read-only and fail-closed, exact manufacturer
+privacy is not relaxed, and unsafe broader writes and symlinks remain rejected.
+Production semantic PASS is unresolved; the rollback advisory is preserved and
+no rollback was performed.
+
 ## Document Ownership
 
 This file is the Architecture Decision Record log.

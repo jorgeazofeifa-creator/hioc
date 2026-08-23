@@ -1,5 +1,21 @@
 # HIOC Master Plan
 
+## PE-3 Action 8 permission-contract corrective checkpoint
+
+The third Action 8 attempt generated and identity-checked private
+`manufacturer.json` and `manufacturer_status.json` files at exact mode `0600`,
+with no temporary manufacturer artifacts, but dedicated validation stopped with
+`MANUFACTURER_PERMISSION_ERROR`. Repository forensics classified this as
+**PE-3 ACTION 8 MANUFACTURER INPUT PERMISSION-CLASS DEFECT — PRIVATE ARTIFACT
+MODE RULE APPLIED TO INVENTORY INPUT**.
+
+The correction keeps exact `0600` mandatory for both manufacturer artifacts and
+retains the inventory rule prohibiting group/world writes. Available evidence
+supports permission safety, not completed semantic validation. The rollback
+advisory remains `TRUE`, no rollback occurred, Action 8 remains **ATTEMPTED BUT
+NOT COMPLETE**, and Action 9 remains **NOT STARTED**. PE-10, PI3 + PI5 abrupt
+power-loss/cold-boot recovery validation, and all future checkpoints remain.
+
 **Version:** 1.0  
 **Status:** Active  
 **Owner:** Jorge Azofeifa  
