@@ -1126,3 +1126,19 @@ protected domains; and publishes aggregate private evidence. It cannot deploy,
 reload, reschedule, clean staging, or chain Action 9. Since PI3 predates the new
 wrapper, a future separately authorized bootstrap synchronization/identity gate
 is mandatory after commit/push and is intentionally not invented here.
+
+## Decision: PE-3 Action 8 bootstrap is a separate source-only trust boundary
+
+**Date:** 2026-08-22
+**Status:** Prepared; not executed
+
+The missing bootstrap contract is classified as **PE-3 ACTION 8 BOOTSTRAP
+CONTRACT MISSING — TARGET RELEASE SOURCE PREDATES GOVERNED GENERATION SCRIPT**.
+The correction freezes a parent-shell-safe inline gate that verifies PI3,
+requires a clean `main` release-source checkout without an active Git operation,
+fetches and fast-forwards only to governance commit
+`8d65af39c6f41a7dcd003371378ace41fab270cd`, and proves the Action 8 script's
+committed and worktree Git blob
+`91360c1f83c890dd340a9a6390bf462cb0f95731`. It then stops. Runtime,
+configuration, dataset, inventory, manufacturer artifacts, Action 8 evidence,
+transport staging, services, and Action 9 are outside this bootstrap boundary.

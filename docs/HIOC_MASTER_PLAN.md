@@ -1637,6 +1637,16 @@ staging cleanup, or Action 9 chaining. Because the published PI3 source predates
 the new script, a separately reviewed future bootstrap gate is required after
 commit/push and is not prepared here. No Action 8 or production action occurred.
 
+**PE-3 Action 8 bootstrap governance (2026-08-22):** The required bootstrap is
+now frozen as a separately authorized, inline, parent-shell-safe synchronization
+and script-identity gate. It may only fast-forward the clean PI3 release-source
+checkout to `8d65af39c6f41a7dcd003371378ace41fab270cd` and prove Git/worktree identity
+for `tools/hioc-pe3-action8-generate.sh` at blob
+`91360c1f83c890dd340a9a6390bf462cb0f95731`, then stop. It does not read or
+change runtime configuration, dataset, inventory, sidecar/status, evidence, or
+transport staging and cannot invoke Action 8 or Action 9. The bootstrap is
+prepared but not executed; Action 8 remains not started.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

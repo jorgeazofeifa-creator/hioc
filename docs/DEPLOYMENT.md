@@ -41,9 +41,10 @@ Action 8 is not a release deployment. Its repository-controlled wrapper invokes
 the already deployed manual manufacturer generator only after source/runtime,
 configuration, dataset, inventory, output, protected-state, staging, and
 evidence gates pass. Because PI3 currently predates the wrapper, a separate
-future source-synchronization/script-identity bootstrap must pass before the
-mutating action can be considered. Action 8 does not use `release/upgrade.sh`,
-alter deployed code, or chain Action 9.
+source-synchronization/script-identity bootstrap must pass before the mutating
+action can be considered. The bootstrap only fast-forwards the clean release
+source to the frozen commit, proves exact script identity, and stops. Action 8
+does not use `release/upgrade.sh`, alter deployed code, or chain Action 9.
 
 ## Document Ownership
 

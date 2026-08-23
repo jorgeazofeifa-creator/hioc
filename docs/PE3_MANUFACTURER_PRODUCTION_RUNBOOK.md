@@ -886,10 +886,65 @@ preservation; and private evidence-directory state before generation.
 The published PI3 release source at
 `46f06bc3b1e7676ec23ac310d7a9a8585c05f632` predates this new script. A future
 bootstrap synchronization/script-identity gate is therefore mandatory after the
-correction is reviewed, committed, and pushed. That gate is not prepared by this
-checkpoint. No Action 8 operator command is authorized until the exact post-push
-governance commit, script identity, reviewed bootstrap PASS, and the exact prior
-evidence-directory path are available.
+correction is reviewed, committed, and pushed.
+
+### Action 8 bootstrap — target synchronization and script identity
+
+The bootstrap is a separate, non-production authorization boundary. It owns
+only clean fast-forward synchronization of the PI3 release-source checkout to
+the exact published governance commit and proof of the Action 8 script's Git and
+worktree identity, then stops. It never reads runtime configuration, the
+immutable dataset, inventory, manufacturer outputs, Action 8 evidence, or
+transport staging and cannot invoke Action 8 or Action 9.
+
+Target: PI3 **NUT&PIHOLE**, interactive Bash. Mutation: Git metadata and tracked
+release-source files through fast-forward only. Runtime/production mutation:
+none. Rollback: not applicable and not recommended.
+
+```bash
+set +x
+hioc_pe3_action8_bootstrap_sync() {
+  SOURCE=/home/jazofv1/hioc-release-source
+  SCRIPT_REL=tools/hioc-pe3-action8-generate.sh
+  SCRIPT="$SOURCE/$SCRIPT_REL"
+  GOVERNANCE_COMMIT=8d65af39c6f41a7dcd003371378ace41fab270cd
+  SCRIPT_BLOB=91360c1f83c890dd340a9a6390bf462cb0f95731
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\nROLLBACK_RECOMMENDED=FALSE\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  printf 'TARGET_IDENTITY=PASS\n'
+  [ -d "$SOURCE/.git" ] || { fail SOURCE_REPOSITORY_MISSING REPOSITORY_PRECONDITION; return; }
+  [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] || { fail WRONG_BRANCH REPOSITORY_PRECONDITION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY REPOSITORY_PRECONDITION; return; }
+  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION REPOSITORY_PRECONDITION; return; }; done
+  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION REPOSITORY_PRECONDITION; return; }
+  printf 'REPOSITORY_PRECONDITION=PASS\n'
+  git -C "$SOURCE" fetch origin >/dev/null 2>&1 || { fail GIT_FETCH_FAILED REPOSITORY_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail GOVERNANCE_COMMIT_MISMATCH REPOSITORY_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge-base --is-ancestor HEAD "$GOVERNANCE_COMMIT" >/dev/null 2>&1 || { fail NON_FAST_FORWARD_SOURCE REPOSITORY_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge --ff-only origin/main >/dev/null 2>&1 || { fail FAST_FORWARD_FAILED REPOSITORY_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_SYNCHRONIZATION=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail POST_SYNC_HEAD_MISMATCH SYNCHRONIZED_HEAD_IDENTITY; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_REPOSITORY_DIRTY SYNCHRONIZED_HEAD_IDENTITY; return; }
+  printf 'SYNCHRONIZED_HEAD_IDENTITY=PASS\n'
+  [ -f "$SCRIPT" ] && [ ! -L "$SCRIPT" ] || { fail ACTION8_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  printf 'ACTION8_SCRIPT_AVAILABILITY=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL" 2>/dev/null)" = "$SCRIPT_BLOB" ] || { fail ACTION8_SCRIPT_GIT_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  [ "$(git -C "$SOURCE" hash-object --path="$SCRIPT_REL" "$SCRIPT" 2>/dev/null)" = "$SCRIPT_BLOB" ] && git -C "$SOURCE" diff --quiet -- "$SCRIPT_REL" || { fail ACTION8_SCRIPT_WORKTREE_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  printf 'ACTION8_SCRIPT_IDENTITY=PASS\nACTION8_BOOTSTRAP=COMPLETE\nRESULT=PASS\n'
+}
+hioc_pe3_action8_bootstrap_sync
+```
+
+Canonical PASS is exactly, in order: `TARGET_IDENTITY`,
+`REPOSITORY_PRECONDITION`, `REPOSITORY_SYNCHRONIZATION`,
+`SYNCHRONIZED_HEAD_IDENTITY`, `ACTION8_SCRIPT_AVAILABILITY`,
+`ACTION8_SCRIPT_IDENTITY`, `ACTION8_BOOTSTRAP=COMPLETE`, and `RESULT=PASS`.
+Every failure emits bounded `RESULT`, `ERROR_CODE`, `FAILURE_STAGE`, and
+`ROLLBACK_RECOMMENDED=FALSE`, suppresses later stages, and returns control to the
+parent prompt. Stop after bootstrap PASS and return all output for review. The
+exact prior evidence-directory path is not an input to this bootstrap. Action 8
+remains **NOT STARTED** and requires separate authorization.
 
 The generator remains the established manual
 `pi4/bin/hioc-generate-manufacturer.py`; no collector, service, timer, cron job,

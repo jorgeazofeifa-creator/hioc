@@ -287,8 +287,10 @@ output preconditions, transport-staging preservation, and private evidence
 state. It validates both generated private artifacts and protected domains after
 generation, publishes only aggregate private evidence, and never deploys,
 reloads services, changes schedules, cleans staging, or chains Action 9. A
-future bootstrap gate is required because the currently published PI3 source
-predates this script; that gate is not part of this checkpoint.
+separately authorized bootstrap gate is required because the PI3 source predates
+this script. That parent-shell-safe gate performs only clean fast-forward source
+synchronization to the exact governance commit and exact script Git/worktree
+identity proof, then stops without reading production state or transport staging.
 
 ## Known Dangerous Operator Patterns
 

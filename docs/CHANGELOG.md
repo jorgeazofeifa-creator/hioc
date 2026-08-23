@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Governed the separate PE-3 Action 8 bootstrap as a source-only clean
+  fast-forward and exact script Git/worktree identity gate. It stops before
+  generation and never reads or changes runtime state, configuration, dataset,
+  manufacturer artifacts, Action 8 evidence, or transport staging. The
+  bootstrap is prepared but not executed; Action 8 remains not started.
+
 - Replaced the unsafe PE-3 Action 8 inline generation block with a governed
   protected-generation wrapper. It verifies target/source/runtime, activated
   configuration, exact immutable dataset, inventory, output preconditions,

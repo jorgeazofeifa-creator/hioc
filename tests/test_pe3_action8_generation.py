@@ -18,6 +18,7 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         cls.runbook = RUNBOOK.read_text(encoding="utf-8")
         cls.action8 = cls.runbook.split("## Action 8", 1)[1].split("## Action 9", 1)[0]
         cls.action8_flat = " ".join(cls.action8.split())
+        cls.bootstrap = cls.action8.split("```bash", 1)[1].split("```", 1)[0]
 
     def test_unsafe_inline_action8_is_retired(self):
         self.assertIn("ACTION 8 OPERATOR-SAFETY AND EVIDENCE CONTRACT DEFECT", self.action8_flat)
@@ -25,11 +26,31 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertNotIn("| tee \"$EVIDENCE_DIR", self.action8)
         self.assertNotIn("hioc-pe3-production-validation-XXXXXXXX", self.action8)
 
-    def test_future_bootstrap_is_required_but_not_invented(self):
-        self.assertIn("future bootstrap synchronization/script-identity gate", self.action8_flat)
-        self.assertIn("not prepared by this checkpoint", self.action8_flat)
-        self.assertNotIn("hioc_pe3_action8_a_sync()", self.action8)
-        self.assertNotRegex(self.action8, r"```bash")
+    def test_bootstrap_is_frozen_and_separate(self):
+        self.assertIn("hioc_pe3_action8_bootstrap_sync()", self.bootstrap)
+        self.assertIn("8d65af39c6f41a7dcd003371378ace41fab270cd", self.bootstrap)
+        self.assertIn("91360c1f83c890dd340a9a6390bf462cb0f95731", self.bootstrap)
+        self.assertIn("ACTION8_BOOTSTRAP=COMPLETE", self.bootstrap)
+        self.assertNotIn('bash "$SCRIPT"', self.bootstrap)
+        for forbidden in (
+            "/home/jazofv1/hioc/config", "hioc-pe3-dataset-transfer",
+            "manufacturer.json", "manufacturer_status.json", "ACTION9",
+            "systemctl", "release/upgrade.sh",
+        ):
+            self.assertNotIn(forbidden, self.bootstrap)
+
+    def test_bootstrap_operator_safety_and_pass_contract(self):
+        self.assertIn("set +x", self.bootstrap)
+        self.assertNotRegex(self.bootstrap, r"(?m)^\s*(?:set\s+-[^\n]*e|exit(?:\s|$))")
+        for marker in (
+            "TARGET_IDENTITY=PASS", "REPOSITORY_PRECONDITION=PASS",
+            "REPOSITORY_SYNCHRONIZATION=PASS", "SYNCHRONIZED_HEAD_IDENTITY=PASS",
+            "ACTION8_SCRIPT_AVAILABILITY=PASS", "ACTION8_SCRIPT_IDENTITY=PASS",
+            "ACTION8_BOOTSTRAP=COMPLETE", "RESULT=PASS",
+        ):
+            self.assertIn(marker, self.bootstrap)
+        for marker in ("ERROR_CODE=%s", "FAILURE_STAGE=%s", "ROLLBACK_RECOMMENDED=FALSE"):
+            self.assertIn(marker, self.bootstrap)
 
     def test_exact_identity_contract(self):
         self.assertIn('"$(id -un 2>/dev/null)" = jazofv1', self.script)
