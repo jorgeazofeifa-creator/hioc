@@ -1230,3 +1230,22 @@ sidecar mutation, unsafe output state, leftover temporaries, or evidence/cleanup
 uncertainty does. Rollback remains manual. No production action, rerun, Action 9
 preparation, staging reconstruction, or rollback is authorized by this decision.
 The wrapper blob change requires a new post-push bootstrap gate.
+
+## Decision: Action 8 bootstrap retains an independent frozen wrapper identity
+
+**Date:** 2026-08-22
+**Status:** Corrected before replacement-bootstrap preparation or execution
+
+Replacement-bootstrap preparation stopped because the active runbook still
+froze the superseded Action 8 wrapper blob. This is **PE-3 ACTION 8 BOOTSTRAP
+SCRIPT-IDENTITY GOVERNANCE DEFECT — GOVERNED TRUST GATE REFERENCES SUPERSEDED
+WRAPPER BLOB**. Historical records of earlier wrapper identities remain valid
+historical evidence and are not rewritten.
+
+The governance commit remains an operator-supplied full lowercase 40-hex value
+because a tracked procedure cannot know its own future commit. The wrapper blob
+remains a separate frozen literal because it is the independently reviewed
+executable trust anchor, not merely whatever object happens to exist at the
+approved commit. The active gate now freezes blob
+`482f83584a62be2f02b2a73af4e78b0f4ebf447a`. No bootstrap, generation,
+production, transport-staging, rollback, or Action 9 action occurred.

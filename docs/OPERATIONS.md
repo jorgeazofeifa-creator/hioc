@@ -1,5 +1,13 @@
 # HIOC Operations
 
+PE-3 replacement Action 8 bootstrap preparation stopped before PI3 execution
+because the governed source-only trust gate referenced a superseded wrapper
+blob. The corrected gate freezes the current reviewed wrapper Git blob while
+retaining the operator-supplied governance commit and all clean fast-forward
+barriers. It remains unprepared and unexecuted pending a separate post-push
+checkpoint; it does not use runtime, manufacturer output, evidence, or transport
+staging state.
+
 ## PE-3 manufacturer dataset conflicts
 
 The offline PE-3 builder may report an aggregate nonzero conflict count for

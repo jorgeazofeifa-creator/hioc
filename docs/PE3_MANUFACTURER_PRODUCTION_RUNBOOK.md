@@ -909,7 +909,7 @@ hioc_pe3_action8_bootstrap_sync() {
   SCRIPT_REL=tools/hioc-pe3-action8-generate.sh
   SCRIPT="$SOURCE/$SCRIPT_REL"
   GOVERNANCE_COMMIT=${1:-}
-  SCRIPT_BLOB=91360c1f83c890dd340a9a6390bf462cb0f95731
+  SCRIPT_BLOB=482f83584a62be2f02b2a73af4e78b0f4ebf447a
   fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\nROLLBACK_RECOMMENDED=FALSE\n' "$1" "$2"; return 1; }
   [ "$#" -eq 1 ] || { fail INVALID_GOVERNANCE_COMMIT INPUT_VALIDATION; return; }
   printf '%s' "$GOVERNANCE_COMMIT" | grep -Eq '^[0-9a-f]{40}$' || { fail INVALID_GOVERNANCE_COMMIT INPUT_VALIDATION; return; }

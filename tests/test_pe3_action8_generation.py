@@ -1,3 +1,4 @@
+import hashlib
 import os
 import pathlib
 import re
@@ -9,6 +10,8 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "hioc-pe3-action8-generate.sh"
 RUNBOOK = ROOT / "docs" / "PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md"
+MASTER_PLAN = ROOT / "docs" / "HIOC_MASTER_PLAN.md"
+DECISIONS = ROOT / "DECISIONS.md"
 
 
 class PE3Action8GenerationContractTests(unittest.TestCase):
@@ -28,7 +31,8 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
 
     def test_bootstrap_is_frozen_and_separate(self):
         self.assertIn("hioc_pe3_action8_bootstrap_sync()", self.bootstrap)
-        self.assertIn("91360c1f83c890dd340a9a6390bf462cb0f95731", self.bootstrap)
+        self.assertIn("482f83584a62be2f02b2a73af4e78b0f4ebf447a", self.bootstrap)
+        self.assertNotIn("91360c1f83c890dd340a9a6390bf462cb0f95731", self.bootstrap)
         self.assertIn("ACTION8_BOOTSTRAP=COMPLETE", self.bootstrap)
         self.assertIn("GOVERNANCE_COMMIT=${1:-}", self.bootstrap)
         self.assertIn('[ "$#" -eq 1 ]', self.bootstrap)
@@ -41,6 +45,13 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
             "systemctl", "release/upgrade.sh",
         ):
             self.assertNotIn(forbidden, self.bootstrap)
+
+    def test_superseded_blob_is_retained_only_as_historical_evidence_or_test_sentinel(self):
+        old_blob = "91360c1f83c890dd340a9a6390bf462cb0f95731"
+        self.assertNotIn(old_blob, self.bootstrap)
+        self.assertIn(old_blob, MASTER_PLAN.read_text(encoding="utf-8"))
+        self.assertIn(old_blob, DECISIONS.read_text(encoding="utf-8"))
+        self.assertIn("historical", DECISIONS.read_text(encoding="utf-8").lower())
 
     def test_bootstrap_operator_safety_and_pass_contract(self):
         self.assertIn("set +x", self.bootstrap)
@@ -357,14 +368,18 @@ class PE3Action8GenerationContractTests(unittest.TestCase):
         self.assertIn("FAILURE_STAGE=INPUT_VALIDATION", result.stdout)
         self.assertNotIn("TARGET_IDENTITY=PASS", result.stdout)
 
-    def test_previous_bootstrap_blob_is_explicitly_stale(self):
+    def test_bootstrap_blob_matches_unchanged_diagnostic_retention_wrapper(self):
         committed_bootstrap_blob = re.search(r"SCRIPT_BLOB=([0-9a-f]{40})", self.bootstrap).group(1)
         current_blob = subprocess.run(
             ["git", "hash-object", str(SCRIPT)], cwd=ROOT,
             text=True, capture_output=True, check=True,
         ).stdout.strip()
-        self.assertNotEqual(current_blob, committed_bootstrap_blob)
-        self.assertIn("new synchronization/script-identity bootstrap", self.action8_flat)
+        self.assertEqual(current_blob, committed_bootstrap_blob)
+        self.assertEqual(current_blob, "482f83584a62be2f02b2a73af4e78b0f4ebf447a")
+        self.assertEqual(
+            hashlib.sha256(SCRIPT.read_bytes()).hexdigest(),
+            "493927ec4c1d2c74276167d14224932f53f6cd3e50b55a18a3e519e57d2e7fcb",
+        )
 
 
 if __name__ == "__main__":

@@ -1,5 +1,12 @@
 # HIOC Deployment
 
+The active PE-3 Action 8 bootstrap trust gate freezes the independently reviewed
+diagnostic-retention wrapper blob
+`482f83584a62be2f02b2a73af4e78b0f4ebf447a`. The prior stale identity blocked
+preparation before execution. Correcting the repository contract does not
+prepare or execute synchronization, deploy runtime code, require transport
+staging, or authorize Action 8 or Action 9.
+
 For PE-3 Production Action 5, the authoritative runbook invokes the checked-in
 `tools/hioc-pe3-action5-deploy.sh`; do not reconstruct its deployment logic in
 an interactive shell. The action changes only supported runtime code and release

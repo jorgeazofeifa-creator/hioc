@@ -1715,6 +1715,22 @@ STARTED — FUTURE ARCHITECTURE**; the PI3 + PI5 Abrupt Power-Loss / Cold-Boot
 Recovery Validation checkpoint and all other future roadmap commitments remain
 preserved.
 
+**PE-3 Action 8 bootstrap script-identity correction (2026-08-22):**
+Replacement-bootstrap preparation stopped before PI3 execution because the
+active governed trust gate still froze superseded wrapper blob
+`91360c1f83c890dd340a9a6390bf462cb0f95731`. This is classified as **PE-3
+ACTION 8 BOOTSTRAP SCRIPT-IDENTITY GOVERNANCE DEFECT — GOVERNED TRUST GATE
+REFERENCES SUPERSEDED WRAPPER BLOB**. The active bootstrap now independently
+freezes the reviewed diagnostic-retention wrapper blob
+`482f83584a62be2f02b2a73af4e78b0f4ebf447a`; the operator-supplied governance
+commit, exact Git-object/worktree checks, and source-only fast-forward boundary
+remain unchanged. No bootstrap was prepared or executed, no PI3 or production
+action occurred, and no retransmission or transport staging is required.
+Action 8 remains **ATTEMPTED BUT NOT COMPLETE**, Action 9 remains **NOT
+STARTED**, and the historical failed-attempt rollback remains **NOT
+RECOMMENDED**. A separate post-push preparation checkpoint is still required.
+PE-10 and the PI3 + PI5 abrupt power-loss/cold-boot checkpoint remain preserved.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

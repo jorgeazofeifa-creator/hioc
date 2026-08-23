@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Corrected the active PE-3 Action 8 bootstrap trust gate after preparation
+  stopped before PI3 execution because it still froze the superseded wrapper
+  blob. The independently reviewed Git-blob anchor now names the current
+  diagnostic-retention wrapper; parameterized governance-commit validation and
+  every source-only fail-closed boundary remain unchanged. The replacement
+  bootstrap remains not prepared or executed.
+
 - Corrected PE-3 Action 8 generator-failure diagnostic retention after production
   forensics proved the failed invocation retained only protected pre-state. The
   wrapper now publishes private sanitized performance followed by result-last

@@ -1,5 +1,11 @@
 # HIOC Release Process
 
+The PE-3 Action 8 bootstrap remains a separate source-checkout synchronization
+boundary. Its committed trust gate now freezes the current independently
+reviewed wrapper blob after preparation stopped on the superseded identity.
+This repository correction does not itself prepare or execute the bootstrap and
+does not authorize runtime deployment, Action 8, or Action 9.
+
 HIOC releases are built from the repository into a versioned package.
 
 ## Document Ownership
