@@ -37,6 +37,13 @@ identity, then publishes only the frozen manufacturer database/manifest pair as
 one immutable version. Action 6-A bootstrap and Action 6-B installation are
 separate authorizations. Configuration activation remains Action 7.
 
+Action 7 is not a release deployment. Its repository-controlled script is made
+available through a separate Action 7-A source synchronization/identity gate;
+only separately authorized Action 7-B may atomically activate the exact
+installed immutable manufacturer dataset in runtime configuration. It does not
+invoke the release upgrade or rollback flow and cannot chain manufacturer
+generation.
+
 On PI3, normal release work is prepared or executed from the authoritative source checkout after approved changes are pulled from GitHub:
 
 ```text

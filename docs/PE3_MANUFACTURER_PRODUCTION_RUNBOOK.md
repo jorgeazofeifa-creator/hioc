@@ -719,49 +719,143 @@ sidecars/status, cleans transport staging, or invokes Action 7.
 Target: PI3 runtime configuration. Mutation: conditional atomic configuration
 update plus exact backup. Rollback relevance: configuration domain.
 
+### Pre-execution governance correction
+
+The historical inline Action 7 block below this heading was rejected before
+execution as **PE-3 ACTION 7 OPERATOR-SAFETY AND EVIDENCE CONTRACT DEFECT —
+CONFIGURATION ACTIVATION PROCEDURE NOT PRODUCTION-SAFE**. It enabled interactive
+`set -euo pipefail`, used shell-level `exit`, depended on an unresolved evidence
+directory, embedded substantial mutation in chat-sized shell, and lacked closed
+source, runtime, immutable-dataset, backup, post-publication, and rollback
+evidence. Action 7 remains **NOT STARTED** and the installed immutable dataset,
+runtime configuration, sidecars/status, and transport staging remain untouched.
+
+Action 7 is split into two separately authorized boundaries because PI3 does
+not yet contain the new governed activation script.
+
+### Action 7-A — target synchronization and Action 7 script identity
+
+Action 7-A is bootstrap-safe. It owns only clean fast-forward synchronization
+to the approved governance commit and exact Action 7 script Git/worktree
+identity, then stops. The governance commit and script blob must be frozen from
+the reviewed post-push repository before this block is authorized; the block is
+not executable while either marked value remains unresolved.
+
 ```bash
-set -euo pipefail
-umask 077
-RUNTIME=/home/jazofv1/hioc
-EVIDENCE_DIR='/tmp/hioc-pe3-production-validation-XXXXXXXX'
-CONFIG="$RUNTIME/config/hioc.conf"
-FINAL_DB="$RUNTIME/data/manufacturer/versions/local-ieee-ra--2026-08-11-r1/manufacturer-db.json"
-CONFIG_BACKUP_DIR="$RUNTIME/backups/config"
-install -d -o jazofv1 -g jazofv1 -m 0700 "$CONFIG_BACKUP_DIR"
-CURRENT="$(python3 - "$CONFIG" <<'PY'
-import pathlib,sys
-lines=pathlib.Path(sys.argv[1]).read_text(encoding='utf-8').splitlines()
-values=[x.split('=',1)[1].strip().strip("\"'") for x in lines if x.startswith('MANUFACTURER_DB_PATH=')]
-if len(values)>1: raise SystemExit(2)
-print(values[0] if values else '')
-PY
-)"
-if [ -n "$CURRENT" ] && [ "$CURRENT" != "$FINAL_DB" ]; then printf 'CONFIG_RESULT=INPUT_OR_PRECONDITION_ERROR_DIFFERENT_VALUE\n' >&2; exit 20; fi
-if [ "$CURRENT" = "$FINAL_DB" ]; then printf 'NONE\n' > "$EVIDENCE_DIR/config-backup-path.txt"; printf 'CONFIG_RESULT=PASS_ALREADY_ACTIVE\n'; exit 0; fi
-CONFIG_BACKUP="$CONFIG_BACKUP_DIR/hioc.conf.$(date -u +%Y%m%dT%H%M%SZ).pre-pe3"
-install -o jazofv1 -g jazofv1 -m 0600 "$CONFIG" "$CONFIG_BACKUP"
-printf '%s\n' "$CONFIG_BACKUP" > "$EVIDENCE_DIR/config-backup-path.txt"
-python3 - "$CONFIG" "$FINAL_DB" <<'PY'
-import os,pathlib,sys,tempfile
-p=pathlib.Path(sys.argv[1]); value=sys.argv[2]; lines=p.read_text(encoding='utf-8').splitlines(); found=False; out=[]
-for line in lines:
- if line.startswith('MANUFACTURER_DB_PATH='):
-  if found: raise SystemExit('duplicate MANUFACTURER_DB_PATH')
-  out.append(f'MANUFACTURER_DB_PATH="{value}"'); found=True
- else: out.append(line)
-if not found: out.append(f'MANUFACTURER_DB_PATH="{value}"')
-fd,name=tempfile.mkstemp(prefix='.hioc.conf.',dir=p.parent); os.close(fd)
-q=pathlib.Path(name); q.write_text('\n'.join(out)+'\n',encoding='utf-8'); os.chmod(q,0o600); os.replace(q,p)
-PY
-chown jazofv1:jazofv1 "$CONFIG" && chmod 0600 "$CONFIG"
-grep -Fxq "MANUFACTURER_DB_PATH=\"$FINAL_DB\"" "$CONFIG"
-HIOC_HOME="$RUNTIME" python3 "$RUNTIME/pi4/bin/hioc-validate-manufacturer.py" database --database "$FINAL_DB" --manifest "${FINAL_DB%/*}/manufacturer-db.manifest.json" --json
-printf 'CONFIG_BACKUP=%s\nCONFIG_RESULT=PASS_ACTIVATED\n' "$CONFIG_BACKUP"
+set +x
+hioc_pe3_action7_a_sync() {
+  SOURCE=/home/jazofv1/hioc-release-source
+  SCRIPT_REL=tools/hioc-pe3-action7-activate.sh
+  SCRIPT="$SOURCE/$SCRIPT_REL"
+  GOVERNANCE_COMMIT='<approved-full-40-hex-action7-bootstrap-commit>'
+  SCRIPT_BLOB='<approved-action7-script-git-blob>'
+  fail() { printf 'RESULT=INPUT_OR_PRECONDITION_ERROR\nERROR_CODE=%s\nFAILURE_STAGE=%s\nROLLBACK_RECOMMENDED=FALSE\n' "$1" "$2"; return 1; }
+  [ "$(hostname -s 2>/dev/null)" = nutandpihole ] || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -Fxq 192.168.100.252 || { fail WRONG_TARGET TARGET_SYNCHRONIZATION; return; }
+  printf 'TARGET_IDENTITY=PASS\n'
+  [ -d "$SOURCE/.git" ] || { fail SOURCE_REPOSITORY_MISSING TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" branch --show-current 2>/dev/null)" = main ] || { fail WRONG_BRANCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail SOURCE_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  for marker in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do [ ! -e "$SOURCE/.git/$marker" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }; done
+  [ ! -d "$SOURCE/.git/rebase-merge" ] && [ ! -d "$SOURCE/.git/rebase-apply" ] || { fail ACTIVE_GIT_OPERATION TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_PRECONDITION=PASS\n'
+  git -C "$SOURCE" fetch origin >/dev/null 2>&1 || { fail GIT_FETCH_FAILED TARGET_SYNCHRONIZATION; return; }
+  [ "$(git -C "$SOURCE" rev-parse origin/main 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail GOVERNANCE_COMMIT_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge-base --is-ancestor HEAD origin/main >/dev/null 2>&1 || { fail NON_FAST_FORWARD_SOURCE TARGET_SYNCHRONIZATION; return; }
+  git -C "$SOURCE" merge --ff-only origin/main >/dev/null 2>&1 || { fail FAST_FORWARD_FAILED TARGET_SYNCHRONIZATION; return; }
+  printf 'REPOSITORY_SYNCHRONIZATION=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse HEAD 2>/dev/null)" = "$GOVERNANCE_COMMIT" ] || { fail POST_SYNC_HEAD_MISMATCH TARGET_SYNCHRONIZATION; return; }
+  [ -z "$(git -C "$SOURCE" status --porcelain 2>/dev/null)" ] || { fail POST_SYNC_REPOSITORY_DIRTY TARGET_SYNCHRONIZATION; return; }
+  printf 'SYNCHRONIZED_HEAD_IDENTITY=PASS\n'
+  [ -f "$SCRIPT" ] && [ ! -L "$SCRIPT" ] || { fail ACTION7_SCRIPT_MISSING SCRIPT_AVAILABILITY; return; }
+  printf 'ACTION7_SCRIPT_AVAILABILITY=PASS\n'
+  [ "$(git -C "$SOURCE" rev-parse "$GOVERNANCE_COMMIT:$SCRIPT_REL" 2>/dev/null)" = "$SCRIPT_BLOB" ] || { fail ACTION7_SCRIPT_GIT_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  [ "$(git -C "$SOURCE" hash-object --path="$SCRIPT_REL" "$SCRIPT" 2>/dev/null)" = "$SCRIPT_BLOB" ] && git -C "$SOURCE" diff --quiet -- "$SCRIPT_REL" || { fail ACTION7_SCRIPT_WORKTREE_IDENTITY_MISMATCH SCRIPT_IDENTITY; return; }
+  printf 'ACTION7_SCRIPT_IDENTITY=PASS\nACTION7_A=COMPLETE\nRESULT=PASS\n'
+}
+hioc_pe3_action7_a_sync
 ```
 
-Absent and empty values activate after backup; the same value is a no-op; a
-different nonempty value is an input/precondition error and is never overwritten.
-Run Action 7 only; return output.
+Action 7-A must stop after its eight exact PASS lines. It never reads or changes
+runtime configuration, the immutable dataset, sidecars/status, or transport
+staging and cannot invoke Action 7-B or Action 8. Any failure returns bounded
+evidence to the surviving parent shell. Action 7-B requires reviewed Action 7-A
+PASS and separate authorization.
+
+### Action 7-B — governed configuration activation
+
+The sole implementation is `tools/hioc-pe3-action7-activate.sh`. After reviewed
+Action 7-A PASS and separate authorization, the operator uses only:
+
+```bash
+bash /home/jazofv1/hioc-release-source/tools/hioc-pe3-action7-activate.sh \
+  --governance-commit '<approved-full-40-hex-action7-bootstrap-commit>'
+```
+
+Action 7-B proves target, source, script, validator, generator, runtime, exact
+immutable version, file ownership/modes/sizes/hashes, privacy-safe database PASS,
+and the configuration precondition before mutation. The only permitted setting
+is `MANUFACTURER_DB_PATH`, selecting
+`/home/jazofv1/hioc/data/manufacturer/versions/local-ieee-ra--2026-08-11-r1/manufacturer-db.json`.
+Absent or empty values activate after a private durable exact backup. The exact
+intended value at private mode `0600` is an idempotent no-op without another
+backup; the intended value at a safe owner-matched but broader read-only mode is
+backed up and atomically normalized to `0600`. Duplicate keys, group/world-
+writable configuration, or any different nonempty value fail closed and are
+never overwritten.
+
+Publication changes only that key, preserves all other lines, uses one private
+same-directory temporary file and atomic replacement, and fsyncs the file and
+configuration directory. Action 7 does not generate or modify manufacturer
+sidecar/status artifacts, restart or reload a service, change systemd, cron,
+timers, environment configuration, dataset permissions/ownership/content, or
+transport staging. The manual generator first consumes the activated setting in
+separately authorized Action 8.
+
+PASS requires `TARGET_IDENTITY`, `SOURCE_IDENTITY`, `RUNTIME_IDENTITY`,
+`DATASET_IDENTITY`, `DATASET_VALIDATION`, `CONFIGURATION_PRECONDITION`, one
+`CONFIGURATION_BACKUP` disposition, one `CONFIGURATION_ACTIVATION` disposition,
+`CONFIGURATION_VALIDATION`, `RUNTIME_DATASET_SELECTION`,
+`POST_ACTIVATION_VALIDATION`, `ACTION7=COMPLETE`, and `RESULT=PASS`. Failure
+reports `RESULT`, `ERROR_CODE`, `FAILURE_STAGE`, and `ROLLBACK_RECOMMENDED`.
+Rollback is never automatic. It is `FALSE` before atomic publication and `TRUE`
+only if the new configuration was published but durable or post-publication
+validation failed; the exact backup path is retained in failure evidence.
+
+#### Action 7 state and partial-failure matrix
+
+- **Never run / key absent or empty:** require exact Action 6 dataset PASS,
+  preserve a private `0600` byte-identical backup, activate the one intended
+  value atomically at mode `0600`, and validate again.
+- **Already active and correct at mode `0600`:** idempotent PASS; no mutation and
+  no new backup.
+- **Already selected at a safe broader read-only mode:** preserve a backup and
+  atomically normalize the activated configuration to `0600`.
+- **Duplicate keys, a different nonempty value, unsafe ownership/mode, invalid
+  shell syntax, missing dataset, or differing dataset identity:** fail before
+  configuration publication with rollback not recommended.
+- **Publication succeeds but fsync or post-validation fails:** retain the exact
+  backup path, report rollback recommended, and stop. Restoration is a separate
+  operator-reviewed atomic configuration action and is never automatic.
+- **Rerun after interruption:** atomic replacement means the configuration is
+  either the prior complete file or the new complete file. The rerun follows the
+  corresponding precondition/no-op path; it never guesses from a partial file.
+- **Power loss:** the durable pre-mutation backup and same-directory atomic
+  replacement bound the state to the complete prior or intended file. Abrupt
+  power-loss testing remains exclusively in the separate future PI3 + PI5
+  Abrupt Power-Loss / Cold-Boot Recovery Validation checkpoint.
+
+Before Action 7, Action 6 must be complete and the exact immutable version must
+exist while configuration remains unactivated or already exactly selected.
+After PASS, `config/hioc.conf` contains exactly one intended
+`MANUFACTURER_DB_PATH` at mode `0600`; all other configuration content, the
+immutable pair, transport staging, sidecars/status, services, and schedules are
+unchanged. The backup, when created, remains private durable rollback material.
+No reload is applicable. Reviewed full Action 7 PASS is the sole authorization
+prerequisite for preparing the separate Action 8 generation action.
+
+Run Action 7 only and return all output. Do not begin Action 8 without reviewed
+full Action 7 PASS.
 
 ## Action 8 — Protected pre-state and manufacturer generation
 

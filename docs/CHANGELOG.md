@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Replaced the unsafe PE-3 Action 7 inline configuration block with a separately
+  bootstrapped repository-controlled activation transaction. The corrected
+  contract proves source/runtime and exact immutable dataset identity, validates
+  privacy-safe record count, preserves unrelated configuration, creates a
+  private durable backup when needed, publishes atomically, validates the
+  selected runtime path, reports bounded rollback guidance, and stops before
+  Action 8. Action 7 remains not started; no production action occurred.
+
 - Added the future PE-10 Application, Integration & Service Assurance roadmap
   phase. It distinguishes infrastructure availability from functional service
   health; preserves PE-7 expected availability and the existing PE-8/PE-9 Asset,

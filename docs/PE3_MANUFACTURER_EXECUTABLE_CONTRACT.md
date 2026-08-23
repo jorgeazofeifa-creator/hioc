@@ -693,6 +693,21 @@ content and leave all existing version directories unchanged. Replacement is
 prohibited. Dataset activation is a later governed configuration/deployment
 change, never part of the builder.
 
+Production Action 7 owns that later activation and only that activation. It
+selects the exact installed immutable database through the single
+`MANUFACTURER_DB_PATH` key after source, runtime, dataset identity, and validator
+gates. It preserves unrelated configuration, rejects duplicate or conflicting
+values, creates a private durable exact backup before a required mutation, and
+uses same-directory atomic publication plus post-publication validation. An
+already-correct value at private mode `0600` is an idempotent PASS without
+another backup; an already-selected owner-matched safe file at a broader
+read-only mode is backed up and atomically normalized to `0600`. Action 7
+does not modify the immutable pair, generate sidecar/status state, reload a
+service, change scheduling or host configuration, touch transport staging, or
+invoke Action 8. The manual generator first consumes the selection in Action 8.
+Rollback is never automatic; it is recommended only when publication occurred
+and durability or post-publication validation did not pass.
+
 Production Action 6 follows the same immutable-directory publication boundary
 without rerunning the builder. It accepts only the exact preserved transport
 pair, copies it into one invocation-owned hidden directory under the runtime

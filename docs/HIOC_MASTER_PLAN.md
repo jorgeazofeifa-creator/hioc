@@ -1605,6 +1605,21 @@ publication, accepts only an exactly identical existing version, fails closed
 on any conflict, preserves configuration, and cannot chain Action 7. No Action
 6 production mutation occurred.
 
+**PE-3 Action 7 operator-safety correction (2026-08-22):** Action 6-A and
+Action 6-B passed; Action 6 is complete and Action 7 remains not started. The
+historical Action 7 inline block is classified as **PE-3 ACTION 7
+OPERATOR-SAFETY AND EVIDENCE CONTRACT DEFECT — CONFIGURATION ACTIVATION
+PROCEDURE NOT PRODUCTION-SAFE** because it used interactive strict mode and
+exits, an unresolved evidence path, and incomplete identity, backup,
+post-publication, and rollback evidence. The corrected architecture splits
+bootstrap-safe Action 7-A synchronization/script identity from separately
+authorized repository-controlled Action 7-B. Action 7-B changes only the
+`MANUFACTURER_DB_PATH` selection after exact immutable dataset validation,
+preserves all unrelated configuration and staging, performs no reload or
+sidecar generation, and cannot chain Action 8. No Action 7 or production action
+occurred; no rollback is recommended and the current deployed runtime remains
+in place.
+
 Do not begin Active Discovery until Phase 7A has been completed.
 
 ---

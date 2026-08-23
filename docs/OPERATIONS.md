@@ -262,6 +262,20 @@ PASS. Action 6-B then verifies the exact preserved staging directory
 same-filesystem no-replace atomic rename, and proves configuration unchanged.
 It never activates the dataset; Action 7 requires full reviewed Action 6 PASS.
 
+PE-3 Action 7 configuration activation is owned exclusively by
+`tools/hioc-pe3-action7-activate.sh`. The retired inline procedure was not
+production-safe because it used interactive strict mode and exits, an unresolved
+evidence path, and incomplete identity, backup, post-publication, and rollback
+evidence. Action 7-A separately synchronizes the clean release source and proves
+the activation script's Git/worktree identity, then stops. Separately authorized
+Action 7-B changes only `MANUFACTURER_DB_PATH` in `config/hioc.conf`, selecting
+the exact installed immutable `local-ieee-ra--2026-08-11-r1` database after
+identity and validator PASS. It creates a private durable exact backup only when
+activation is required, publishes atomically, validates the selected value and
+dataset afterward, and never reloads a service or chains Action 8. Duplicate or
+different nonempty values fail closed. Rollback is never automatic and is
+recommended only after publication if durability or post-validation fails.
+
 ## Known Dangerous Operator Patterns
 
 Operational instructions must state the exact target machine and shell and must

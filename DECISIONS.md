@@ -1077,3 +1077,30 @@ Infrastructure backup/DR/hardware migration and PI3 + PI5 Abrupt Power-Loss /
 Cold-Boot Recovery Validation remain separate checkpoints: the former protects
 restoration and migration, the latter proves uncontrolled-interruption recovery,
 and neither establishes steady-state application/service assurance.
+
+## Decision: PE-3 Action 7 is a separately bootstrapped configuration transaction
+
+**Date:** 2026-08-22
+**Status:** Accepted before Action 7 execution; Action 7 not started
+
+The historical inline Action 7 procedure is rejected as **PE-3 ACTION 7
+OPERATOR-SAFETY AND EVIDENCE CONTRACT DEFECT — CONFIGURATION ACTIVATION
+PROCEDURE NOT PRODUCTION-SAFE**. It used interactive `set -euo pipefail` and
+shell-level exits, depended on an unresolved evidence-directory placeholder,
+embedded meaningful mutation inline, and lacked closed source, runtime,
+immutable-dataset, backup, post-publication, and rollback evidence. No Action 7
+or production mutation occurred.
+
+Action 7-A is a bootstrap-safe clean synchronization and exact script-identity
+gate and must stop after PASS. Separately authorized Action 7-B is owned by
+`tools/hioc-pe3-action7-activate.sh`. It may change only
+`MANUFACTURER_DB_PATH`, from absent/empty to the exact installed immutable
+`local-ieee-ra--2026-08-11-r1` database. The intended value at mode `0600` is
+idempotent; a safe owner-matched selected file at a broader read-only mode is
+backed up and normalized. Duplicates and different nonempty values fail closed.
+A required change receives
+a private durable exact backup and same-directory atomic publication. The
+immutable dataset, transport staging, sidecar/status, services, schedules, and
+all unrelated configuration remain untouched. Rollback is reported, never
+automatic, and is recommended only after publication if durability or
+post-publication validation fails. Action 8 remains separately authorized.

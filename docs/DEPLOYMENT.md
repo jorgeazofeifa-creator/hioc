@@ -27,6 +27,16 @@ Action 6-B alone may create the immutable dataset version through a private
 same-filesystem staging directory and no-replace atomic publication. It does
 not activate configuration, clean transport staging, or invoke Action 7.
 
+Action 7 uses the same split trust boundary. Action 7-A performs only clean
+release-source synchronization and exact identity proof for
+`tools/hioc-pe3-action7-activate.sh`, then stops. Action 7-B is separately
+authorized and changes only the runtime `MANUFACTURER_DB_PATH` setting after
+proving the exact Action 6 immutable dataset. It preserves unrelated
+configuration, creates a private durable backup when mutation is needed,
+publishes atomically, and does not deploy code, reload services, touch transport
+staging, modify the immutable dataset, generate sidecars/status, or invoke
+Action 8.
+
 ## Document Ownership
 
 This document owns the repository-to-production workflow, source and runtime boundaries, operator responsibilities, synchronization expectations, and production acceptance boundary. Detailed commands remain in [INSTALL.md](INSTALL.md) and packaging mechanics remain in [RELEASE.md](RELEASE.md).
