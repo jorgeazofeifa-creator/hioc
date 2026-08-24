@@ -210,3 +210,9 @@ using the exact verified offline wheel, validate it, deploy the reviewed client,
 then atomically update the managed active pointer. It must not modify system
 Python, install globally, use live indexes, inherit system site packages, or
 access Home Assistant. No deployment is authorized by this checkpoint.
+
+The implementation is split across the repository-controlled A-G tools listed
+in `PE4_ISOLATED_RUNTIME_LIFECYCLE.md`. General release deployment must preserve
+`runtime/pe4` unchanged; PE-4 tools alone own its immutable environments and
+active pointer. Route proof precedes mutation, transfer stops before install,
+and publication stops before any authenticated execution.

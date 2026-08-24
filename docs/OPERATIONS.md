@@ -787,3 +787,9 @@ deployment and complete credential-free preflight. The exact dependency,
 offline artifact, permissions, active-pointer, evidence, and rollback contract
 is in `PE4_ISOLATED_RUNTIME_DEPENDENCY_CONTRACT.md`. This checkpoint supplies no
 operator installation, deployment, authentication, or client command.
+
+Lifecycle actions A-G and rollback are defined in
+`PE4_ISOLATED_RUNTIME_LIFECYCLE.md`. Never chain them. A PASS means preserve its
+sanitized Evidence Report and STOP for the next authorization. General release
+rollback is not PE-4 environment rollback; use only the separately governed
+PE-4 pointer rollback after exact eligibility review.

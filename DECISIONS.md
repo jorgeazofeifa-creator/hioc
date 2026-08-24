@@ -1506,3 +1506,14 @@ the exact official CPython 3.11 AArch64 `websockets==16.1.1` wheel frozen in
 and has no transitive dependencies. The client and isolated environment are one
 compatibility unit. This decision is governance only and authorizes no host,
 credential, installation, deployment, or client access.
+
+# Decision: Separate the PE-4 isolated-runtime lifecycle into A-G tools
+
+Artifact acquisition, transfer, credential-free route proof, private
+construction, dependency validation, publication, and final preflight remain
+separate authorization and STOP boundaries. Shared safety primitives are
+repository-controlled, while each action has its own executable. `runtime/pe4`
+is externalized from general release backup/rollback and recovered from the
+frozen artifact cache plus retained immutable environments. Dedicated rollback
+changes only the validated active pointer. Implementation alone authorizes no
+network or production action.

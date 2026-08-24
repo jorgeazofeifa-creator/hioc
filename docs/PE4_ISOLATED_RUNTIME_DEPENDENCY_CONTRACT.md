@@ -115,3 +115,7 @@ contract says to do so. It never changes system Python or production data.
 The independent credential-free PI3-to-PI5 route proof should precede runtime
 deployment to preserve fault isolation. Neither proof authorizes credentials,
 Home Assistant access, client execution, PE-4.0B.2b, or PE-4.0C.
+
+The executable lifecycle, separate A-G authorization boundaries, evidence,
+cleanup, backup, and rollback rules are governed by
+`PE4_ISOLATED_RUNTIME_LIFECYCLE.md`. Implementation does not authorize use.

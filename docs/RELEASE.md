@@ -296,3 +296,9 @@ state. A future release correction must govern creation, atomic active-pointer
 switching, prior-environment rollback retention, artifact-cache preservation,
 and backup exclusions before deployment. Nothing is installed or released by
 this checkpoint.
+
+The reviewed lifecycle correction now externalizes `runtime/pe4` from ordinary
+release backup, deployment, and rollback. Its recovery basis is the Git lock
+and tooling, exact frozen identity, durable workstation artifact cache, and
+retained prior immutable environment. PE-4 publication and pointer rollback are
+performed only by the dedicated tools in `PE4_ISOLATED_RUNTIME_LIFECYCLE.md`.

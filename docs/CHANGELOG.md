@@ -770,3 +770,9 @@ Initial real HIOC core foundation.
   versioned release-managed virtual environment with atomic activation and
   bounded rollback. No dependency was downloaded, installed, or deployed and
   PE-4.0B.2a remains not started.
+
+- Implemented repository-controlled PE-4.0B.2a isolated-runtime lifecycle
+  tooling with separate A-G authorization boundaries, offline hash-locked
+  construction, capability validation, atomic pointer publication, bounded
+  cleanup, sanitized evidence, durable artifact-cache recovery, and dedicated
+  rollback. No tool was executed against PI3, PI5, or Home Assistant.

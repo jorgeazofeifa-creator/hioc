@@ -2140,3 +2140,10 @@ active pointer. The independent route proof remains credential-free and should
 precede dependency deployment. Runtime preflight remains attempted but not
 complete and must be rerun through the future absolute isolated interpreter.
 PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain **NOT STARTED**.
+
+Repository-controlled lifecycle tooling now implements the separately gated
+PE-4.0B.2a-A through G sequence plus rollback. Route proof remains ordered
+before dependency deployment. This repository checkpoint does not acquire or
+transfer the artifact, contact PI3/PI5, construct an environment, deploy the
+client, run preflight, or authorize production. Each action still requires its
+own post-publication preparation, authorization, Evidence Report, and STOP.

@@ -77,6 +77,8 @@ class ReleaseScriptTests(unittest.TestCase):
         for exclusion in ("state", "history", "logs", "backups"):
             self.assertIn(f"--exclude {exclusion}", backup)
             self.assertIn(f"--exclude {exclusion}", deployment)
+        self.assertIn("--exclude runtime/pe4", backup)
+        self.assertIn("--exclude runtime/pe4", deployment)
         self.assertNotIn("--exclude .*", backup)
         self.assertNotIn("--exclude '.*'", backup)
         self.assertNotIn("--delete", backup)
@@ -93,6 +95,7 @@ class ReleaseScriptTests(unittest.TestCase):
         )
 
         self.assertIn("--exclude .git", restoration)
+        self.assertIn("--exclude runtime/pe4", restoration)
         self.assertNotIn("--exclude .*", restoration)
         self.assertNotIn("--exclude '.*'", restoration)
         self.assertNotIn("--delete", restoration)
@@ -141,6 +144,7 @@ class ReleaseScriptTests(unittest.TestCase):
         for exclusion in SOURCE_ONLY_EXCLUSIONS:
             self.assertIn(exclusion, deployment)
         self.assertIn("--exclude .git", deployment)
+        self.assertIn("--exclude '/runtime/pe4/'", deployment)
         self.assertNotIn("--delete", deployment)
         self.assertNotIn("--delete-excluded", deployment)
 

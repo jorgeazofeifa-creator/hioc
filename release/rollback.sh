@@ -16,7 +16,7 @@ if [ -z "$BACKUP_DIR" ] || [ ! -d "$BACKUP_DIR/current" ]; then
   exit 1
 fi
 
-rsync -a --exclude .git --exclude data/manufacturer "$BACKUP_DIR/current/" "$INSTALL_DIR/"
+rsync -a --exclude .git --exclude data/manufacturer --exclude runtime/pe4 "$BACKUP_DIR/current/" "$INSTALL_DIR/"
 "$INSTALL_DIR/pi4/install_pi4.sh"
 
 echo "HIOC rollback completed from $BACKUP_DIR"

@@ -38,6 +38,7 @@ if [ "$SRC_DIR" != "$INSTALL_DIR" ]; then
     --exclude '/docs/' \
     --exclude '/tests/' \
     --exclude '/data/manufacturer/' \
+    --exclude '/runtime/pe4/' \
     "$SRC_DIR/" "$INSTALL_DIR/"
 fi
 
