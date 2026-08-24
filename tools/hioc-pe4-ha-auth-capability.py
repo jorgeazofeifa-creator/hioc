@@ -42,15 +42,16 @@ ERROR_CODES = {
     "SECURE_PROMPT_UNAVAILABLE", "AUTHENTICATION_UNAVAILABLE",
     "AUTHENTICATION_FAILED", "INSUFFICIENT_READ_SCOPE", "ENDPOINT_UNAVAILABLE",
     "UNAPPROVED_REDIRECT", "PROXY_INFLUENCE_DETECTED", "RESPONSE_TOO_LARGE",
+    "REDIRECT_SUPPRESSION_UNAVAILABLE",
     "UNSUPPORTED_INTERFACE", "INTERFACE_CAPABILITY_MISSING", "UNEXPECTED_SCHEMA",
     "PRIVACY_CONTRACT_VIOLATION", "UNEXPECTED_ERROR",
 }
 STAGES = {
     "INPUT_VALIDATION", "TARGET_IDENTITY", "CREDENTIAL_ACQUISITION", "ENDPOINT",
     "AUTHENTICATION", "REST_CAPABILITY", "WEBSOCKET_CAPABILITY", "READ_SCOPE",
-    "PRIVACY_VALIDATION", "COMPLETE",
+    "PRIVACY_VALIDATION", "WEBSOCKET_API_COMPATIBILITY", "COMPLETE",
 }
-ALLOWED_WS_CLASSES = {"PYTHON_WEBSOCKETS", "ABSENT"}
+ALLOWED_WS_CLASSES = {"PYTHON_WEBSOCKETS", "INCOMPATIBLE", "ABSENT"}
 PROXY_NAMES = {
     "http_proxy", "https_proxy", "all_proxy", "no_proxy",
     "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
@@ -58,6 +59,7 @@ PROXY_NAMES = {
 ALLOWED_OUTPUT_VALUES = {
     "TARGET_IDENTITY": {"PASS"}, "ENDPOINT_POLICY": {"PASS"},
     "WEBSOCKET_CLIENT_CLASS": ALLOWED_WS_CLASSES, "CREDENTIAL_PROMPT": {"PASS"},
+    "REDIRECT_SUPPRESSION_CAPABILITY": {"PASS"},
     "CREDENTIAL_ACQUIRED": {"TRUE"}, "REST_AUTHENTICATION": {"PASS"},
     "REST_CAPABILITY": {"SUPPORTED"}, "WEBSOCKET_AUTHENTICATION": {"PASS"},
     "WEBSOCKET_CAPABILITY": {"SUPPORTED"}, "READ_SCOPE": {"PASS"},
@@ -117,11 +119,17 @@ def detect_websocket_client(
         connect = getattr(module, "connect")
         parameters = inspect.signature(connect).parameters
     except (AttributeError, ImportError, TypeError, ValueError):
-        return "ABSENT"
+        return "INCOMPATIBLE"
     required = {"open_timeout", "close_timeout", "max_size", "proxy"}
-    if callable(connect) and required.issubset(parameters):
+    accepts_socket = any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters.values()
+    )
+    redirect_handler = getattr(connect, "process_redirect", None)
+    if (callable(connect) and required.issubset(parameters) and accepts_socket
+            and callable(redirect_handler)):
         return "PYTHON_WEBSOCKETS"
-    return "ABSENT"
+    return "INCOMPATIBLE"
 
 
 def proxy_influence_present(environ: dict[str, str]) -> bool:
@@ -271,14 +279,26 @@ async def _websockets_async_check(
 ) -> None:
     websockets = websockets_module or importlib.import_module("websockets")
     connect = websockets.connect
-    if "proxy" not in inspect.signature(connect).parameters:
-        raise ContractFailure("INTERFACE_CAPABILITY_MISSING", "WEBSOCKET_CAPABILITY")
+    parameters = inspect.signature(connect).parameters
+    required = {"open_timeout", "close_timeout", "max_size", "proxy"}
+    if not required.issubset(parameters) or not any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters.values()
+    ) or not callable(getattr(connect, "process_redirect", None)):
+        raise ContractFailure(
+            "REDIRECT_SUPPRESSION_UNAVAILABLE", "WEBSOCKET_API_COMPATIBILITY"
+        )
+    connected_socket = None
     try:
+        connected_socket = socket.create_connection(
+            (TARGET_IPV4, TARGET_PORT),
+            timeout=remaining_timeout(deadline, CONNECT_TIMEOUT, "WEBSOCKET_CAPABILITY"),
+        )
         async with connect(
             WS_URI,
             open_timeout=remaining_timeout(deadline, CONNECT_TIMEOUT, "WEBSOCKET_CAPABILITY"),
             close_timeout=remaining_timeout(deadline, CONNECT_TIMEOUT, "WEBSOCKET_CAPABILITY"),
-            max_size=MAX_MESSAGE, proxy=None,
+            max_size=MAX_MESSAGE, proxy=None, sock=connected_socket,
         ) as ws:
             first = await asyncio.wait_for(
                 ws.recv(), remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY")
@@ -300,11 +320,20 @@ async def _websockets_async_check(
     except Exception as exc:
         if _dependency_rejected_oversized_message(exc, websockets):
             raise ContractFailure("RESPONSE_TOO_LARGE", "WEBSOCKET_CAPABILITY") from None
-        response = getattr(exc, "response", None)
-        status = getattr(response, "status_code", getattr(response, "status", None))
-        if isinstance(status, int) and 300 <= status < 400:
-            raise ContractFailure("UNAPPROVED_REDIRECT", "ENDPOINT") from None
+        current: BaseException | None = exc
+        while current is not None:
+            response = getattr(current, "response", None)
+            status = getattr(response, "status_code", getattr(response, "status", None))
+            if isinstance(status, int) and 300 <= status < 400:
+                raise ContractFailure("UNAPPROVED_REDIRECT", "ENDPOINT") from None
+            current = current.__cause__
         raise ContractFailure("INTERFACE_CAPABILITY_MISSING", "WEBSOCKET_CAPABILITY") from None
+    finally:
+        if connected_socket is not None:
+            try:
+                connected_socket.close()
+            except OSError:
+                pass
 
 
 def websockets_check(
@@ -316,7 +345,8 @@ def websockets_check(
 def success_lines(ws_class: str) -> list[str]:
     return [
         "TARGET_IDENTITY=PASS", "ENDPOINT_POLICY=PASS",
-        f"WEBSOCKET_CLIENT_CLASS={ws_class}", "CREDENTIAL_PROMPT=PASS",
+        f"WEBSOCKET_CLIENT_CLASS={ws_class}",
+        "REDIRECT_SUPPRESSION_CAPABILITY=PASS", "CREDENTIAL_PROMPT=PASS",
         "CREDENTIAL_ACQUIRED=TRUE", "REST_AUTHENTICATION=PASS",
         "REST_CAPABILITY=SUPPORTED", "WEBSOCKET_AUTHENTICATION=PASS",
         "WEBSOCKET_CAPABILITY=SUPPORTED", "READ_SCOPE=PASS",
@@ -373,6 +403,10 @@ def run(argv: Sequence[str], output: Callable[[str], None] = print) -> int:
         ws_class = detect_websocket_client()
         if ws_class == "ABSENT":
             raise ContractFailure("UNSUPPORTED_INTERFACE", "WEBSOCKET_CAPABILITY")
+        if ws_class == "INCOMPATIBLE":
+            raise ContractFailure(
+                "REDIRECT_SUPPRESSION_UNAVAILABLE", "WEBSOCKET_API_COMPATIBILITY"
+            )
         validate_terminal(sys.stdin.isatty(), sys.stderr.isatty())
         token = acquire_token()
         rest_check(token, deadline=deadline)

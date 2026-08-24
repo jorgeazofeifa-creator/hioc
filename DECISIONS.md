@@ -1,5 +1,18 @@
 # HIOC Architecture Decisions
 
+## Decision: Enforce zero WebSocket redirects with a target-bound socket
+
+The approved `websockets` dependency follows handshake redirects by default and
+does not expose a per-call redirect-count argument. PE-4.0B.2a therefore opens
+one bounded TCP socket to the exact governed target and supplies it through the
+supported `sock` connection path. The dependency rejects every redirect when a
+pre-existing socket is present, before following `Location`; this adds no
+request and implements no WebSocket framing. Missing redirect-rejection API
+capability fails before credential acquisition. This corrects the
+**PE-4.0B.2A WEBSOCKETS REDIRECT-SUPPRESSION ENFORCEMENT DEFECT — CLIENT ACCEPTS
+A DEPENDENCY API THAT MAY FOLLOW HANDSHAKE REDIRECTS WITHOUT AN EXPLICIT
+ZERO-REDIRECT CONTROL** without authorizing runtime preparation or execution.
+
 ## Decision: Require dependency-enforced PE-4.0B.2a message bounds
 
 The websocket-client path is removed because its complete-message `recv()`

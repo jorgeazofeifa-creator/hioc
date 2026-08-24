@@ -8,6 +8,17 @@
 
 ## Repository-controlled 2a client
 
+The client corrects the **PE-4.0B.2A WEBSOCKETS REDIRECT-SUPPRESSION
+ENFORCEMENT DEFECT — CLIENT ACCEPTS A DEPENDENCY API THAT MAY FOLLOW HANDSHAKE
+REDIRECTS WITHOUT AN EXPLICIT ZERO-REDIRECT CONTROL** by creating one bounded
+TCP connection to the exact governed target and supplying that pre-existing
+socket to `websockets.connect()`. The supported dependency rejects every
+handshake redirect when a pre-existing socket is supplied, so no alternate URI
+can be contacted and no token-bearing frame can reach a redirected endpoint.
+The dependency/API gate runs before `getpass`; future runtime preparation must
+emit `REDIRECT_SUPPRESSION_CAPABILITY=PASS` or fail with
+`REDIRECT_SUPPRESSION_UNAVAILABLE/WEBSOCKET_API_COMPATIBILITY`.
+
 `tools/hioc-pe4-ha-auth-capability.py` now implements this frozen contract in
 repository source. It requires the exact non-secret target tuple through
 `--expected-hostname a0d7b954-ssh --expected-operator root --target-ipv4
@@ -81,7 +92,8 @@ response, two credential-bearing requests, zero retries, zero redirects, no
 polling, subscriptions, background work, registry enumeration, or state
 enumeration. A credential-free precheck must prove that `websockets` is
 importable and exposes the required `max_size`, proxy, and timeout parameters;
-module importability alone is insufficient. It installs nothing. A
+module importability alone is insufficient. The API must also accept a
+pre-existing socket and expose its redirect-rejection path. It installs nothing. A
 repository-controlled client is required; standard-library REST is approved,
 but a custom RFC6455 stack is rejected. WebSocket execution must use the
 separately proved compatible dependency or stop `UNSUPPORTED_INTERFACE` before
@@ -92,6 +104,7 @@ The exact PASS markers are:
 ```text
 TARGET_IDENTITY=PASS
 ENDPOINT_POLICY=PASS
+REDIRECT_SUPPRESSION_CAPABILITY=PASS
 CREDENTIAL_PROMPT=PASS
 CREDENTIAL_ACQUIRED=TRUE
 REST_AUTHENTICATION=PASS

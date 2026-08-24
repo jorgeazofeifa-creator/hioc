@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Corrected the PE-4.0B.2a `websockets` redirect-suppression defect by binding
+  the handshake to one pre-connected governed-target socket. The dependency
+  refuses redirects on this path before another endpoint is contacted. Added
+  compatibility and redirect-path tests; runtime preparation remains blocked
+  pending publication, and PE-4.0B.2a remains not started.
+
 - Corrected the PE-4.0B.2a websocket-client receive-bound defect by removing
   that dependency path and requiring compatible `websockets` support with
   `max_size=65536` at connection creation. Added dependency-level oversized

@@ -63,6 +63,13 @@ def compatible_connect(*args, open_timeout=None, close_timeout=None, max_size=No
     raise AssertionError("not called during dependency detection")
 
 
+def reject_redirect(self, exc):
+    return exc
+
+
+compatible_connect.process_redirect = reject_redirect
+
+
 class ClientTests(unittest.TestCase):
     def failure(self, callable_, code, stage):
         with self.assertRaises(CLIENT.ContractFailure) as caught: callable_()
@@ -79,7 +86,8 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(CLIENT.detect_websocket_client(lambda n: object(), lambda n: module), "PYTHON_WEBSOCKETS")
         self.assertEqual(CLIENT.detect_websocket_client(lambda n: None), "ABSENT")
         incompatible = types.SimpleNamespace(connect=lambda uri: None)
-        self.assertEqual(CLIENT.detect_websocket_client(lambda n: object(), lambda n: incompatible), "ABSENT")
+        self.assertEqual(CLIENT.detect_websocket_client(
+            lambda n: object(), lambda n: incompatible), "INCOMPATIBLE")
 
     def test_target_gates(self):
         args = CLIENT.parse_args(ARGS)
@@ -142,59 +150,115 @@ class ClientTests(unittest.TestCase):
     def test_websockets_auth_only_receive_bound_and_close(self):
         ws = FakeWebSocket(['{"type":"auth_required"}', '{"type":"auth_ok"}'])
         captured = {}
-        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None):
+        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,
+                    **kwargs):
             captured.update(uri=uri, open_timeout=open_timeout, close_timeout=close_timeout,
-                            max_size=max_size, proxy=proxy)
+                            max_size=max_size, proxy=proxy, sock=kwargs.get("sock"))
             return ws
+        connect.process_redirect = reject_redirect
         module = types.SimpleNamespace(connect=connect, exceptions=types.SimpleNamespace(
             PayloadTooBig=FakePayloadTooBig))
-        asyncio.run(CLIENT._websockets_async_check("secret", websockets_module=module))
+        fake_socket = mock.Mock()
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=fake_socket):
+            asyncio.run(CLIENT._websockets_async_check("secret", websockets_module=module))
         self.assertTrue(ws.closed)
         self.assertEqual(len(ws.sent), 1)
         self.assertEqual(json.loads(ws.sent[0]), {"type": "auth", "access_token": "secret"})
         self.assertEqual(captured["max_size"], 65_536)
         self.assertIsNone(captured["proxy"])
+        self.assertIs(captured["sock"], fake_socket)
 
     def test_websockets_auth_invalid(self):
         ws = FakeWebSocket(['{"type":"auth_required"}', '{"type":"auth_invalid"}'])
-        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None):
+        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,
+                    **kwargs):
             return ws
+        connect.process_redirect = reject_redirect
         module = types.SimpleNamespace(
             connect=connect,
             exceptions=types.SimpleNamespace(PayloadTooBig=FakePayloadTooBig))
-        self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
-            "secret", websockets_module=module)), "AUTHENTICATION_FAILED", "AUTHENTICATION")
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=mock.Mock()):
+            self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
+                "secret", websockets_module=module)), "AUTHENTICATION_FAILED", "AUTHENTICATION")
         self.assertTrue(ws.closed)
         self.assertEqual(len(ws.sent), 1)
 
     def test_websockets_first_frame_and_connection_failures(self):
         ws = FakeWebSocket(['{"type":"auth_ok"}'])
-        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None):
+        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,
+                    **kwargs):
             return ws
+        connect.process_redirect = reject_redirect
         module = types.SimpleNamespace(connect=connect,
                                        exceptions=types.SimpleNamespace(PayloadTooBig=FakePayloadTooBig))
-        self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
-            "secret", websockets_module=module)), "UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
-        def failing_connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None):
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=mock.Mock()):
+            self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
+                "secret", websockets_module=module)), "UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+        def failing_connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,
+                            **kwargs):
             raise OSError()
+        failing_connect.process_redirect = reject_redirect
         module = types.SimpleNamespace(
             connect=failing_connect,
             exceptions=types.SimpleNamespace(PayloadTooBig=FakePayloadTooBig))
-        self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
-            "secret", websockets_module=module)), "ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=mock.Mock()):
+            self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
+                "secret", websockets_module=module)), "ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
 
     def test_dependency_level_oversize_maps_before_materialized_message(self):
         ws = FakeWebSocket([FakePayloadTooBig("oversized")])
-        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None):
+        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,
+                    **kwargs):
             return ws
+        connect.process_redirect = reject_redirect
         module = types.SimpleNamespace(connect=connect,
                                        exceptions=types.SimpleNamespace(PayloadTooBig=FakePayloadTooBig))
-        self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
-            "secret", websockets_module=module)), "RESPONSE_TOO_LARGE", "WEBSOCKET_CAPABILITY")
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=mock.Mock()):
+            self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
+                "secret", websockets_module=module)), "RESPONSE_TOO_LARGE", "WEBSOCKET_CAPABILITY")
+
+    def test_redirect_is_rejected_by_actual_socket_bound_connection_path(self):
+        class RedirectResponse:
+            status_code = 302
+
+        class RedirectStatus(Exception):
+            response = RedirectResponse()
+
+        class RedirectRefused(ValueError):
+            pass
+
+        calls = []
+        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None,
+                    proxy=None, **kwargs):
+            calls.append((uri, kwargs.get("sock")))
+            refused = RedirectRefused("redirect refused for pre-existing socket")
+            refused.__cause__ = RedirectStatus()
+            raise refused
+        connect.process_redirect = reject_redirect
+        module = types.SimpleNamespace(
+            connect=connect,
+            exceptions=types.SimpleNamespace(PayloadTooBig=FakePayloadTooBig),
+        )
+        fake_socket = mock.Mock()
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=fake_socket):
+            self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
+                "never-send-this-token", websockets_module=module)),
+                "UNAPPROVED_REDIRECT", "ENDPOINT")
+        self.assertEqual(calls, [(CLIENT.WS_URI, fake_socket)])
+        self.assertNotIn("never-send-this-token", repr(calls))
+
+    def test_redirect_capability_missing_fails_before_prompt(self):
+        def incompatible_connect(uri, *, open_timeout=None, close_timeout=None,
+                                 max_size=None, proxy=None, **kwargs):
+            raise AssertionError("must not connect")
+        module = types.SimpleNamespace(connect=incompatible_connect)
+        self.assertEqual(CLIENT.detect_websocket_client(
+            lambda name: object(), lambda name: module), "INCOMPATIBLE")
 
     def test_output_contract_and_privacy(self):
         lines = CLIENT.success_lines("PYTHON_WEBSOCKETS")
         CLIENT.validate_output(lines)
+        self.assertIn("REDIRECT_SUPPRESSION_CAPABILITY=PASS", lines)
         self.assertEqual(lines[-6:], ["RESULT=PASS", "ERROR_CODE=NONE", "FAILURE_STAGE=COMPLETE",
                                       "ROLLBACK_RECOMMENDED=FALSE", "PE4_0B2A=COMPLETE", "PE4_0B2B=NOT_STARTED"])
         for unsafe in (["DETAIL=secret"], ["ERROR_CODE=TOKEN"], ["ERROR_CODE=BAD"],
@@ -236,7 +300,7 @@ class ClientTests(unittest.TestCase):
         self.assertNotIn("top-secret", "\n".join(output))
         self.assertNotIn("Authorization", "\n".join(output))
 
-    @mock.patch.object(CLIENT, "detect_websocket_client", return_value="ABSENT")
+    @mock.patch.object(CLIENT, "detect_websocket_client", return_value="INCOMPATIBLE")
     @mock.patch.object(CLIENT, "proxy_influence_present", return_value=False)
     @mock.patch.object(CLIENT, "validate_target")
     @mock.patch.object(CLIENT, "parse_args")
@@ -246,7 +310,8 @@ class ClientTests(unittest.TestCase):
             output = []
             self.assertEqual(CLIENT.run(ARGS, output.append), 1)
             prompt.assert_not_called()
-        self.assertIn("ERROR_CODE=UNSUPPORTED_INTERFACE", output)
+        self.assertIn("ERROR_CODE=REDIRECT_SUPPRESSION_UNAVAILABLE", output)
+        self.assertIn("FAILURE_STAGE=WEBSOCKET_API_COMPATIBILITY", output)
 
     @mock.patch.object(CLIENT, "websockets_check")
     @mock.patch.object(CLIENT, "rest_check", side_effect=CLIENT.ContractFailure("AUTHENTICATION_FAILED", "AUTHENTICATION"))

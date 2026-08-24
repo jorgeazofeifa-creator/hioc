@@ -1,5 +1,18 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a WebSocket redirect-suppression correction
+
+Runtime-precheck preparation found the **PE-4.0B.2A WEBSOCKETS
+REDIRECT-SUPPRESSION ENFORCEMENT DEFECT — CLIENT ACCEPTS A DEPENDENCY API THAT
+MAY FOLLOW HANDSHAKE REDIRECTS WITHOUT AN EXPLICIT ZERO-REDIRECT CONTROL**. The
+corrected client binds `websockets.connect()` to its already-connected governed
+target socket. The supported dependency refuses every handshake redirect when
+a pre-existing socket is supplied, before another endpoint can be contacted.
+Compatibility must be proved before credential acquisition and the future
+runtime precheck must emit `REDIRECT_SUPPRESSION_CAPABILITY=PASS`. The correction
+has not been deployed or executed; PE-4.0B.2a remains **NOT STARTED**, and runtime
+precheck preparation remains blocked until commit and push.
+
 ## PE-4.0B.2a WebSocket receive-bound correction
 
 Runtime-precheck preparation found that the preferred websocket-client path

@@ -47,6 +47,13 @@ class PE4AuthenticatedAPIContractTests(unittest.TestCase):
         self.require("WEBSOCKET-CLIENT", "MESSAGE-BOUND ENFORCEMENT DEFECT",
                      "only approved path is `websockets`")
 
+    def test_client_dependency_enforces_zero_redirects(self):
+        source = (ROOT / "tools" / "hioc-pe4-ha-auth-capability.py").read_text(encoding="utf-8")
+        self.assertIn("sock=connected_socket", source)
+        self.assertIn("REDIRECT_SUPPRESSION_UNAVAILABLE", source)
+        self.require("REDIRECT-SUPPRESSION", "ENFORCEMENT DEFECT",
+                     "REDIRECT_SUPPRESSION_CAPABILITY=PASS", "pre-existing socket")
+
     def test_status_remains_not_started(self):
         self.assertIn("PE-4.0B.2a remains **NOT\nSTARTED**", MASTER)
         self.assertNotIn("PE-4.0B.2a is **COMPLETE", MASTER)
