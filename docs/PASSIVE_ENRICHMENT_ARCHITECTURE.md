@@ -421,9 +421,9 @@ production validation are complete.
    The PE-3.1 module, normalized-dataset, separate-sidecar, lookup, privacy,
    failure, validation, and 92-test contracts are frozen in
    [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
-   Executable work is repository validated and PE-3.2 externally validated the
-   production-intended dataset; deployment, generation, and production
-   validation are not started. Local acquisition and local
+   Executable work, external dataset validation, governed deployment,
+   generation, production validation, administrative Action 10 closure, and
+   final PE-3 governance closure are complete. Local acquisition and local
    transformation are approved; repository/release redistribution is prohibited.
 5. **PE-4 - Trusted integration association:** add a read-only Home Assistant
    registry adapter and declared field/association authority; do not infer
@@ -529,7 +529,7 @@ commit rather than embedded self-referentially. PE-1 was later implemented and
 production validated without changing public inventory contracts. Evidence is
 in [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
 PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is complete and
-production validated. PE-3.0 architecture is approved; PE-3.1 is implemented
-and repository validated; PE-3.2 external dataset validation is complete; and
-PE-3.3 deployment design is approved. Production deployment and PI3 validation
-remain pending.
+production validated. PE-3.0 through PE-3.3 and Actions 1–10 are complete,
+including external dataset validation, production deployment, generation, PI3
+validation, final Evidence Report, and administrative closure. PE-4 remains
+planned and not started pending separate access/schema governance approval.

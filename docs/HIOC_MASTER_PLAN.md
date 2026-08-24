@@ -1,5 +1,21 @@
 # HIOC Master Plan
 
+## PE-4 repository discovery checkpoint
+
+PE-4 — Home Assistant Association remains **PLANNED / NOT STARTED**. Repository
+forensics confirm that it is a read-only trusted-integration association layer,
+not a new identity engine: Home Assistant device/entity identifiers and
+area/name candidates may become local provenance-backed association evidence,
+but cannot replace canonical HIOC identity, operator Asset fields, liveness,
+health, or availability semantics. Live Home Assistant access, schema approval,
+implementation, deployment, and production validation remain separately gated.
+
+The authoritative passive-enrichment architecture previously retained an active
+pre-completion PE-3 status. That stale status is corrected to record PE-3 and
+Actions 1–10 complete. This repository-only correction performs no PE-4
+implementation or production access and preserves Phase 7A and all later roadmap
+checkpoints.
+
 ## PE-3 completion checkpoint
 
 PE-3 is **COMPLETE**. Actions 1–10 are **COMPLETE**. Action 10 completed
