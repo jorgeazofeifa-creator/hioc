@@ -6,8 +6,11 @@ PE-4.0B.1 is COMPLETE / PASS. Its credential-free PI5 preflight proved the
 or production mutation. The earlier `UNSUPPORTED_HA_DEPLOYMENT` result remains
 historical parser-contract failure evidence, not current status.
 
-PE-4.0B.2a authenticated capability proof is the next preparation-only gate.
-It must use a repository-controlled Python process and non-echoing `getpass`
+The PE-4.0B.2a authenticated capability client now exists at
+`tools/hioc-pe4-ha-auth-capability.py` but has not been deployed or executed.
+Its next gate is commit review followed by a separate dependency/runtime
+preparation checkpoint. When separately authorized, it must use a
+repository-controlled Python process and non-echoing `getpass`
 prompt, retain the credential only in memory, install nothing, publish no raw
 response, and stop for review on every result. It must not automatically run
 PE-4.0B.2b registry/schema discovery. No live-state identity authority,

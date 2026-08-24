@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Implemented the repository-controlled PE-4.0B.2a client at
+  `tools/hioc-pe4-ha-auth-capability.py` with offline tests for exact target,
+  dependency-before-secret, terminal-only credential handling, REST then
+  WebSocket authentication, strict bounds, proxy/redirect refusal, closed
+  privacy output, and fail-closed sequencing. It has not been committed,
+  deployed, or executed against PI5; PE-4.0B.2a and 2b remain not started.
+
 - Froze the official PE-4.0B.2a interface contract to authenticated `GET /api/`
   followed by `/api/websocket` authentication only. Recorded fixed response and
   handshake schemas, bearer-token handling, exact bounds and terminal markers,

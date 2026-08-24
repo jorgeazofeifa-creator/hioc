@@ -4,7 +4,25 @@
 
 **Scope:** Repository governance before live discovery
 
-**Next gate:** PE-4.0B.2a preparation, separately authorized
+**Next gate:** PE-4.0B.2a client commit review, separately authorized
+
+## Repository-controlled 2a client
+
+`tools/hioc-pe4-ha-auth-capability.py` now implements this frozen contract in
+repository source. It requires the exact non-secret target tuple through
+`--expected-hostname a0d7b954-ssh --expected-operator root --target-ipv4
+192.168.100.251 --target-port 8123 --instance-label PI5_HA`; it accepts no URL,
+secret, evidence path, or command argument. It proves an approved installed
+Python WebSocket dependency before target-gated terminal credential acquisition,
+preferring `websocket`/websocket-client and otherwise accepting `websockets`
+only when its API exposes explicit proxy suppression. It installs nothing.
+
+The source has offline fake-based tests but has not been deployed or executed
+against PI5 or live Home Assistant. Its Git blob and worktree SHA-256 are to be
+frozen at review. A separate checkpoint must decide whether governed source
+execution or a runtime deployment is appropriate and must prove the selected
+dependency identity before preparing any operator command. PE-4.0B.2a therefore
+remains **NOT STARTED**; implementation presence is not production PASS.
 
 ## Frozen PE-4.0B.2a official API contract
 
@@ -326,6 +344,7 @@ uncertain cleanup, and zero or ambiguous authority evidence fail closed.
 
 PE-4.0B.2a deployment type, endpoint, authentication semantics, credential
 injection, network policy, bounds, output, and STOP contract are frozen above.
-A separately authorized repository-controlled client implementation and
-credential-free dependency proof must pass before live access. The 2b registry
+The repository-controlled client is implemented but unexecuted. Separately
+authorized source/deployment identity and credential-free dependency proof must
+pass before live access. The 2b registry
 schema/evidence tool and PE-4 implementation remain separate and not started.

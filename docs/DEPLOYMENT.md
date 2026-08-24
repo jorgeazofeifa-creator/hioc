@@ -1,13 +1,21 @@
 # HIOC Deployment
 
+The repository now contains `tools/hioc-pe4-ha-auth-capability.py`; this
+implementation checkpoint deploys nothing. A future checkpoint must freeze its
+committed blob/SHA-256, prove one approved installed WebSocket dependency, and
+choose governed source execution or a restrictive runtime installation. Any
+future installed copy is expected to be owned by `root:root`, mode `0755`, and
+byte-identical to the approved Git object. No dependency installation is
+authorized or implied.
+
 PE-4.0B.1 is complete and deployed nothing. The accepted preflight was
 credential-free and read-only. PE-4.0B.2a capability proof, PE-4.0B.2b
 registry/schema discovery, PE-4.0C, the adapter, and production deployment are
 not started. No package installation or WebSocket-client deployment is implied
 by Python availability or by the absence of a dedicated WebSocket client.
-The frozen 2a contract adds no dependency or deployed artifact. Its future
-repository-controlled client and any dependency decision require separate
-implementation, release, and execution gates.
+The frozen 2a contract adds no deployed artifact. Its repository-controlled
+client and any dependency decision require separate commit, release/runtime,
+and execution gates.
 
 PE-4.0A deploys nothing. PE-4.0B preparation may approve only a supported,
 read-only Home Assistant interface after PI5 deployment classification. Direct

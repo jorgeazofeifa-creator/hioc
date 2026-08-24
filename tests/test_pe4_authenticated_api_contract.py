@@ -33,6 +33,11 @@ class PE4AuthenticatedAPIContractTests(unittest.TestCase):
     def test_terminal_only_and_repository_client(self):
         self.require("terminal-only", "creates no evidence directory", "repository-controlled client is required", "custom RFC6455 stack is rejected")
 
+    def test_repository_client_is_implemented_but_not_executed(self):
+        client = ROOT / "tools" / "hioc-pe4-ha-auth-capability.py"
+        self.assertTrue(client.is_file())
+        self.require("Repository-controlled 2a client", "has not been deployed or executed", "remains **NOT STARTED**")
+
     def test_status_remains_not_started(self):
         self.assertIn("PE-4.0B.2a remains **NOT\nSTARTED**", MASTER)
         self.assertNotIn("PE-4.0B.2a is **COMPLETE", MASTER)

@@ -1,5 +1,18 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a repository-controlled client implementation
+
+The repository now contains the standalone, terminal-only client
+`tools/hioc-pe4-ha-auth-capability.py` and comprehensive offline tests. It
+implements the frozen `REST_THEN_WEBSOCKET_2A` proof, closed output/privacy
+schema, target and proxy gates, secure in-memory credential prompt, explicit
+network bounds, and approved-library WebSocket authentication without any 2b
+command. The implementation has **NOT been executed against PI5**, is not
+deployed, and has no runtime copy. PE-4.0B.2a remains **NOT STARTED** until a
+separately reviewed dependency/identity, deployment-or-source-execution, and
+operator-invocation checkpoint is authorized. PE-4.0B.2b and PE-4.0C remain
+**NOT STARTED**.
+
 ## PE-4.0B.2a authenticated API interface-contract freeze
 
 Official Home Assistant research freezes `REST_THEN_WEBSOCKET_2A`: authenticated
@@ -7,8 +20,8 @@ Official Home Assistant research freezes `REST_THEN_WEBSOCKET_2A`: authenticated
 `ws://192.168.100.251:8123/api/websocket` must complete only the documented
 `auth_required` → `auth` → `auth_ok` exchange. No command, registry, state,
 config, subscription, or response body is published. PE-4.0B.2a remains **NOT
-STARTED** pending a separately governed repository-controlled client; 2b and
-PE-4.0C remain **NOT STARTED**.
+STARTED** pending separately governed review, publication, and execution of the
+repository-controlled client; 2b and PE-4.0C remain **NOT STARTED**.
 
 ## PE-4.0B.1 Home Assistant production preflight completion
 

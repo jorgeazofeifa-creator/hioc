@@ -1,5 +1,16 @@
 # HIOC Architecture Decisions
 
+## Decision: Implement PE-4.0B.2a as a bounded repository client
+
+The frozen proof is implemented by `tools/hioc-pe4-ha-auth-capability.py`.
+Callers supply only the exact governed non-secret target tuple; endpoints,
+sequence, bounds, and commands are internal constants. The client prefers the
+approved synchronous websocket-client API and otherwise accepts `websockets`
+only when explicit proxy suppression is available. Dependency absence stops
+before credential acquisition; package installation and a custom protocol
+stack remain rejected. This implementation decision does not authorize PI5
+access, deployment, credentials, execution, 2b, or association work.
+
 ## Decision: Freeze PE-4.0B.2a to REST then WebSocket authentication
 
 Official Home Assistant documentation supports a fixed-message authenticated
