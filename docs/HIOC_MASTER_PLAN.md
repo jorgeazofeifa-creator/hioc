@@ -1,5 +1,20 @@
 # HIOC Master Plan
 
+## PE-4.0A Home Assistant access and privacy contract
+
+PE-4.0A is **COMPLETE in repository governance**. The authoritative
+[access and privacy contract](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md)
+defines supported-interface candidacy, least-privilege credentials, read-only
+schema discovery, household-data exclusion, count-only sanitized evidence,
+identity and Asset authority, bounded failures, and private result-last
+evidence. No live Home Assistant or PI5 access occurred.
+
+Phase 7A remains active. PE-3 remains complete. PE-4.0B live/schema discovery
+and PE-4 implementation remain **NOT STARTED** and separately gated. The next
+checkpoint may prepare—but not execute—the exact PE-4.0B read-only discovery
+after classifying PI5/HA deployment, supported interface, credential handling,
+network/TLS inputs, and evidence bounds.
+
 ## PE-4 repository discovery checkpoint
 
 PE-4 — Home Assistant Association remains **PLANNED / NOT STARTED**. Repository

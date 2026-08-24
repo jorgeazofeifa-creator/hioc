@@ -8,6 +8,12 @@ This document owns Home Assistant integration: packages, entities, sensors, MQTT
 
 It should not duplicate the MQTT contract, data model, dashboard visual design, or dashboard operational-truth policy. For topic details, see [MQTT.md](MQTT.md). For payload fields, see [DATA_MODEL.md](DATA_MODEL.md). For dashboard design and UX rules, see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and [DASHBOARD_V2_PLAN.md](DASHBOARD_V2_PLAN.md). For dashboard truth ownership, layout-baseline protection, and storage-versus-YAML deployment architecture, see [DASHBOARD_ARCHITECTURE.md](DASHBOARD_ARCHITECTURE.md).
 
+PE-4 Home Assistant Association is governed separately by
+[PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md).
+The current MQTT/YAML integration is consumer-side context, not permission to
+read registries, `.storage`, recorder databases, entity states, or credentials.
+PE-4.0B discovery and the association adapter remain not started.
+
 ## Packages
 
 Installable packages are in `homeassistant/packages`:

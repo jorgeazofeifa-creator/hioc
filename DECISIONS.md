@@ -1,5 +1,16 @@
 # HIOC Architecture Decisions
 
+## Decision: Govern PE-4 Home Assistant access before live discovery
+
+PE-4.0A establishes a supported-interface-first, read-only, least-privilege
+contract before any PI5 or live Home Assistant access. Supported authenticated
+REST/WebSocket registry access is candidate-only pending deployed-interface
+classification; `.storage`, databases, shell/add-on access, state collection,
+and service or registry mutation are prohibited fallbacks. Sanitized discovery
+is count/category/schema evidence, not household inventory. HIOC identity and
+operator Asset authority remain protected. PE-4.0B and implementation remain
+not started and require separate authorization.
+
 ## Decision: Record Action 10 and PE-3 completion
 
 Action 10 is complete through administrative repository-only closure with

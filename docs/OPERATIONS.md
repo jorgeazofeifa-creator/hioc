@@ -1,5 +1,13 @@
 # HIOC Operations
 
+PE-4.0A is repository governance only. It authorizes no PI5 access or operator
+command. Before any separately authorized PE-4.0B invocation, operators must
+freeze the deployed HA type, supported read-only interface, non-echoing
+credential injection, endpoint/TLS trust, bounded queries, and sanitized
+private evidence contract. Unsupported access, unexpected schema, credential
+uncertainty, privacy risk, or cleanup uncertainty stops without fallback or
+rollback. See [PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md).
+
 PE-3 Action 10 requires no production operator action. Transport staging is
 already absent and ceased to be authoritative after Action 6 immutable
 publication and Action 7 configuration activation. The governed disposition is

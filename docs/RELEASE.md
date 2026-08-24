@@ -1,5 +1,10 @@
 # HIOC Release Process
 
+The PE-4.0A access/privacy contract is documentation and focused governance
+tests only. It adds no release artifact, credential, discovery executable,
+adapter, deployment, or production step. PE-4.0B preparation and any later
+implementation have separate review, commit, release, and authorization gates.
+
 Action 10 has no release or target-host step. Its original transport-cleanup
 operation is superseded because staging is absent and the installed immutable
 dataset plus active configuration are authoritative. Administrative disposition

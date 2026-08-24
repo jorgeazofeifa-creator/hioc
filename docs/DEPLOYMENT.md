@@ -1,5 +1,11 @@
 # HIOC Deployment
 
+PE-4.0A deploys nothing. PE-4.0B preparation may approve only a supported,
+read-only Home Assistant interface after PI5 deployment classification. Direct
+`.storage`, database, add-on, supervisor, shell, service, registry-write,
+restart, or reload paths are not deployment shortcuts. No adapter or discovery
+tool is deployed by this checkpoint.
+
 Action 10 is not deployment or production cleanup. Its historical transient
 transfer target is already absent and non-authoritative. The corrected boundary
 is repository-only administrative closure with disposition

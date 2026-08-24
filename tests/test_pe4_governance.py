@@ -19,9 +19,9 @@ class PE4GovernanceTests(unittest.TestCase):
 
     def test_pe4_is_planned_and_separately_gated(self):
         for value in (
-            "PE-4 — Home Assistant Association remains **PLANNED / NOT STARTED**",
+            "PE-4.0B live/schema discovery",
+            "PE-4 implementation remain **NOT STARTED**",
             "not a new identity engine",
-            "Live Home Assistant access, schema approval",
             "separately gated",
         ):
             self.assertIn(value, self.master)

@@ -425,9 +425,12 @@ production validation are complete.
    generation, production validation, administrative Action 10 closure, and
    final PE-3 governance closure are complete. Local acquisition and local
    transformation are approved; repository/release redistribution is prohibited.
-5. **PE-4 - Trusted integration association:** add a read-only Home Assistant
-   registry adapter and declared field/association authority; do not infer
-   availability.
+5. **PE-4 - Trusted integration association:** PE-4.0A has frozen the
+   repository-only access/privacy boundary in
+   [PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md).
+   PE-4.0B live/schema discovery and the adapter remain not started. Any later
+   read-only Home Assistant adapter uses a proved supported interface and cannot infer
+   availability or replace canonical identity or operator Asset fields.
 6. **PE-5 - Passive service and MQTT association provenance:** describe existing
    relationships without making transport evidence an identity authority.
 7. **PE-6 - Classification suggestions and metadata-quality summaries:** expose
@@ -503,7 +506,9 @@ Asset publication is deny-by-default. No Asset field may enter MQTT,
 notifications, logs, or dashboards without explicit field-level approval.
 Candidate histories and conflict details are also local by default. Logs use
 counts/source IDs and sanitized reasons, not sensitive values. Future HA access
-must be read-only, least-privilege, and secret-file/config based.
+must be read-only and least-privilege. The exact credential type and safe
+non-echoing injection method remain PE-4.0B preparation inputs; no credential
+workflow is assumed from repository evidence.
 
 ## Decisions deferred beyond PE-1
 

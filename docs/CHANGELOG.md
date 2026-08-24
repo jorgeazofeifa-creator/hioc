@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Defined the PE-4.0A Home Assistant access and privacy contract before live
+  discovery. It classifies supported API access as candidate-only pending PI5
+  deployment/interface proof; prohibits internal files/databases, states,
+  mutations, secrets, and household identifiers; freezes HIOC/Asset authority;
+  and requires bounded, private, result-last count/category evidence. PE-4.0B
+  and runtime implementation remain not started.
+
 - Recorded PE-3 completion. Action 10 completed administratively with disposition
   `NOOP_ALREADY_ABSENT`; Actions 1–10 and PE-3 are complete. No PI3 or PI5
   action, staging recreation or deletion, production mutation, rollback, or
