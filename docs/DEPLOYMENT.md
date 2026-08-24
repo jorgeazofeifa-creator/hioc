@@ -1,5 +1,13 @@
 # HIOC Deployment
 
+Action 10 is not deployment or production cleanup. Its historical transient
+transfer target is already absent and non-authoritative. The corrected boundary
+is repository-only administrative closure with disposition
+`NOOP_ALREADY_ABSENT`; it performs no PI3 verification, deletion, staging
+reconstruction, retransmission, runtime mutation, or evidence mutation. Action
+10 remains not complete pending publication and clean verification of this
+governance correction and a later repository-only completion record.
+
 Action 9 production validation is now **PASS / COMPLETE**. It was read only and
 created only its private Evidence Report at
 `/tmp/hioc-pe3-action9-Bb6vGrmm`; no runtime deployment, production mutation, or

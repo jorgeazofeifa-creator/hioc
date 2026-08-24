@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Corrected PE-3 Action 10 governance as **CASE C — ADMINISTRATIVE NO-OP
+  CLOSURE**. Historical Action 10 only deleted the two-file transport directory
+  and rewrote an obsolete combined evidence report. Transport staging is already
+  absent and non-authoritative after Action 6 immutable publication and Action 7
+  activation; Actions 8 and 9 do not consume it. No PI3 verification, deletion,
+  reconstruction, retransmission, or Action 8/9 evidence input is required.
+  `NOOP_ALREADY_ABSENT` is the administrative disposition. Action 10 remains not
+  complete pending validation, commit, push, and clean-tree verification of this
+  correction, followed by a separate repository-only completion record.
+
 - Recorded the governed PE-3 Action 9 production PASS. The read-only validation
   published its private Evidence Report at
   `/tmp/hioc-pe3-action9-Bb6vGrmm`, returned `ACTION9=COMPLETE` and

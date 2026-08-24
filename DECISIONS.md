@@ -1,5 +1,27 @@
 # HIOC Architecture Decisions
 
+## Decision: Action 10 is an administrative no-op closure
+
+Repository history proves PE-3 Action 10 originally existed only to delete the
+two-file transport directory after final validation and to rewrite the former
+combined production-evidence report. That design is superseded. Action 6
+validated and durably published the immutable database/manifest, Action 7 made
+the installed database authoritative through configuration, Action 8 removed
+the post-install staging dependency, and production later confirmed transport
+staging absent. Action 9 completed read-only validation and published its own
+private result-last Evidence Report.
+
+Action 10 is therefore **CASE C — ACTION 10 ADMINISTRATIVE NO-OP CLOSURE**. It
+requires no PI3 access, read-only verification, deletion, reconstruction,
+retransmission, new evidence directory, or consumption of Action 8/9 evidence.
+Its disposition is `NOOP_ALREADY_ABSENT`; rollback has no meaning and remains
+FALSE. The governance correction retires the stale deletion-required ledger,
+Action 9 timing-write language, and required-threshold language while preserving
+them in Git history. Action 10 remains **NOT COMPLETE** until this correction is
+validated, committed, pushed to `main`, and followed by clean-tree verification.
+Only then may a separate repository-only status checkpoint record Actions 1–10
+and PE-3 complete. All future-roadmap work remains separate.
+
 ## Decision: Record governed PE-3 Action 9 production completion
 
 The corrected governed Action 9 production validation completed with

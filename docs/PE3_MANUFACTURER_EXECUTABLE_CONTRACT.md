@@ -1,5 +1,19 @@
 # PE-3.1 Manufacturer Enrichment Executable Contract
 
+## Action 10 administrative closure contract
+
+Action 10 has no executable contract. Its historical two-file transport cleanup
+and combined-evidence rewrite are superseded by the installed immutable dataset,
+active configuration, and Action 9 result-last Evidence Report architecture.
+The recorded staging state is already absent, so the administrative disposition
+is `NOOP_ALREADY_ABSENT`.
+
+No target-host verification, mutation, invocation-owned evidence, Action 8/9
+evidence input, rollback, reconstruction, retransmission, or deletion is
+permitted. The repository governance correction must be validated, committed,
+pushed, and cleanly verified before a separate repository-only completion record
+may mark Action 10 and PE-3 complete.
+
 ## Corrected Action 9 evidence and performance domains
 
 Action 9 validates Action 8 evidence through independent domains. Result JSON

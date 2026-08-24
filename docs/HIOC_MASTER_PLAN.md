@@ -1,5 +1,27 @@
 # HIOC Master Plan
 
+## PE-3 Action 10 administrative no-op closure governance
+
+Action 10 is classified **CASE C — ACTION 10 ADMINISTRATIVE NO-OP CLOSURE**.
+Its original purpose was only deletion of the transient two-file transport
+directory after validation. Action 6 already consumed, validated, and durably
+published the immutable dataset; Action 7 selected it in configuration; Action
+8 retired the staging dependency after the directory was confirmed absent; and
+Action 9 completed the final read-only production validation and Evidence
+Report. Installed immutable dataset plus active configuration remain
+authoritative. Retransmission or staging reconstruction would add no provenance
+or safety value.
+
+No PI3 action, absence recheck, cleanup, mutation, or new Action 10 Evidence
+Report is required. Action 8 and Action 9 evidence remain preserved but are not
+Action 10 inputs. The administrative disposition is `NOOP_ALREADY_ABSENT`, with
+rollback FALSE. This correction retires the active deletion/PASS ledger and
+stale Action 9 timing/required-threshold wording. Action 10 remains **NOT
+COMPLETE** until the correction is validated, committed, pushed, and the clean
+published repository is verified. A later repository-only completion record
+may then mark Actions 1–10 and PE-3 complete. Future performance-baseline work,
+PE-10, and all other roadmap commitments remain separate and preserved.
+
 ## PE-3 Action 9 production completion checkpoint
 
 The corrected governed Action 9 production validation is **PASS / COMPLETE**.

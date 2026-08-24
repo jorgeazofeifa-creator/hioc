@@ -1315,23 +1315,34 @@ printf 'PRODUCTION_VALIDATION=PASS\nEVIDENCE_REPORT=%s\n' "$EVIDENCE_DIR/PE3_MAN
 
 MQTT and other live telemetry use existing platform validation evidence; no PE-3
 publisher is introduced. Incident changes are operational drift requiring causal
-review, not automatic invariant failure. A single performance miss is
-`VALIDATION_FAIL` pending a repeated governed measurement; rollback requires two
-stable-input runs above 150% of a hard bound with demonstrated PE-3 causality.
-Run Action 9 only; return the sanitized report and checksums.
+review, not automatic invariant failure. Valid Action 9 performance is recorded
+under an unvalidated baseline as `INSUFFICIENT_BASELINE`; historical target
+exceedance is not production enforced. Future hard limits require their own
+governed, versioned performance-baseline checkpoint.
 
-## Action 10 — Historical temporary transfer cleanup boundary
+## Action 10 — Administrative no-op closure
 
-Transport staging is transient Action 6 input and ceases to be authoritative
-after reviewed immutable publication. If it still exists, cleanup requires a
-separate future authorization and a current governed procedure. If it is already
-absent, as confirmed at the Action 8 pre-generation stop, no cleanup action is
-required or permitted. Action 8 and Action 9 do not depend on this boundary.
+Classification: **CASE C — ACTION 10 ADMINISTRATIVE NO-OP CLOSURE**. Original
+Action 10 deleted the exact two-file transport directory after final validation
+and rewrote the former combined production-evidence report. That operator model
+is obsolete. Action 6 consumed, validated, and durably published the transferred
+pair; Action 7 selected the installed immutable database; Action 8 removed the
+staging dependency after production confirmed the transfer directory absent;
+and Action 9 completed the final read-only validation with its own private
+result-last Evidence Report.
 
-The earlier inline deletion block is not an active operator instruction. Do not
-recreate staging to satisfy cleanup and do not remove the installed immutable
-version, Windows sources/build, release backup, configuration backup, or Action 8
-evidence.
+The authoritative state is the installed immutable database/manifest plus active
+configuration. Staging has no remaining provenance, security, rollback, or
+completion role. Its administrative disposition is `NOOP_ALREADY_ABSENT`. No
+PI3 access, read-only absence check, deletion, recreation, retransmission,
+rollback, or Action 10 Evidence Report is required. Action 8 evidence
+`/tmp/hioc-pe3-action8-eZxNGrKa` and Action 9 evidence
+`/tmp/hioc-pe3-action9-Bb6vGrmm` remain preserved but are not Action 10 inputs.
+
+Action 10 remains **NOT COMPLETE** until this governance correction passes
+validation, is committed and pushed to `main`, and the published tree is cleanly
+verified. A separate repository-only completion record may then mark Actions
+1–10 and PE-3 complete. Do not prepare an operator command.
 
 ## Result taxonomy and rollback domains
 
@@ -1374,8 +1385,8 @@ measurement are never rollback reasons by themselves.
 | 6 | PI3 runtime | new or identical immutable dataset PASS | New version only | Existing difference/install failure | Dataset |
 | 7 | PI3 runtime | config active/no-op PASS and backup if changed | Config/backup | Different value/config failure | Config |
 | 8 | PI3 runtime | aggregate generation PASS | Sidecar/status/evidence | Generator failure | Sidecar/config |
-| 9 | PI3 runtime | validation/evidence PASS | Evidence; no-op timing writes | Invariant/privacy/required threshold failure | Classified |
-| 10 | PI3 `/tmp` | transfer cleanup PASS | Exact temporary deletion | Unexpected staging contents | None |
+| 9 | PI3 runtime | validation/evidence PASS | Invocation-owned evidence only | Identity/schema/privacy/protected-state failure | None; read only |
+| 10 | Repository | administrative `NOOP_ALREADY_ABSENT` closure | None | Governance not validated/published/cleanly verified | None |
 
 At every boundary: run only the named action, return its output, and wait for
 explicit authorization. Never continue automatically.

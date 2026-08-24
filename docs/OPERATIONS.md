@@ -1,5 +1,18 @@
 # HIOC Operations
 
+PE-3 Action 10 requires no production operator action. Transport staging is
+already absent and ceased to be authoritative after Action 6 immutable
+publication and Action 7 configuration activation. The governed disposition is
+`NOOP_ALREADY_ABSENT`: do not access PI3 merely to recheck it, recreate it,
+retransmit the dataset, or delete any path. Action 8 and Action 9 evidence are
+preserved records, not Action 10 inputs.
+
+Action 10 is an administrative repository-only closure and remains **NOT
+COMPLETE** until this corrected governance is validated, committed, pushed, and
+cleanly verified. A separate repository-only status checkpoint must then record
+Actions 1–10 and PE-3 complete. No Action 10 shell command or Evidence Report is
+required, and rollback remains FALSE.
+
 PE-3 Actions 1–9 are **COMPLETE**. The corrected Action 9 read-only production
 validation returned `RESULT=PASS`, `ACTION9=COMPLETE`, and
 `ROLLBACK_RECOMMENDED=FALSE`; preserve its private Evidence Report at

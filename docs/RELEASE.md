@@ -1,5 +1,14 @@
 # HIOC Release Process
 
+Action 10 has no release or target-host step. Its original transport-cleanup
+operation is superseded because staging is absent and the installed immutable
+dataset plus active configuration are authoritative. Administrative disposition
+`NOOP_ALREADY_ABSENT` requires only governed repository closure; it must not
+recreate, retransmit, verify, or delete staging and must not consume or alter
+Action 8/9 evidence. Action 10 remains not complete until the correction is
+published and cleanly verified and a separate repository-only completion record
+is approved.
+
 The corrected Action 9 validation completed successfully outside the release
 path, publishing only private evidence at
 `/tmp/hioc-pe3-action9-Bb6vGrmm`. It performed no release, runtime deployment,
