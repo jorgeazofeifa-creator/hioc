@@ -1,5 +1,19 @@
 # HIOC Operations
 
+PE-4.0B.1 is COMPLETE / PASS. Its credential-free PI5 preflight proved the
+`HA_TERMINAL_ADDON` context, HA OS deployment, and exact endpoint
+`http://192.168.100.251:8123`; it performed no registry, state, configuration,
+or production mutation. The earlier `UNSUPPORTED_HA_DEPLOYMENT` result remains
+historical parser-contract failure evidence, not current status.
+
+PE-4.0B.2a authenticated capability proof is the next preparation-only gate.
+It must use a repository-controlled Python process and non-echoing `getpass`
+prompt, retain the credential only in memory, install nothing, publish no raw
+response, and stop for review on every result. It must not automatically run
+PE-4.0B.2b registry/schema discovery. No live-state identity authority,
+`.storage` fallback, database fallback, adapter implementation, or production
+mutation is permitted.
+
 PE-4.0A is repository governance only. It authorizes no PI5 access or operator
 command. Before any separately authorized PE-4.0B invocation, operators must
 freeze the deployed HA type, supported read-only interface, non-echoing

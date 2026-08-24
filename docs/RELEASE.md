@@ -1,5 +1,11 @@
 # HIOC Release Process
 
+PE-4.0B.1 completed as a credential-free production preflight and has no
+release artifact. The next boundary is repository review and preparation of
+PE-4.0B.2a authenticated capability proof only. It cannot release an adapter,
+install a client dependency, execute registry discovery, or continue to
+PE-4.0B.2b automatically.
+
 The PE-4.0A access/privacy contract is documentation and focused governance
 tests only. It adds no release artifact, credential, discovery executable,
 adapter, deployment, or production step. PE-4.0B preparation and any later

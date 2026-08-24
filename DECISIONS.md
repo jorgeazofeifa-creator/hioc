@@ -1,5 +1,22 @@
 # HIOC Architecture Decisions
 
+## Decision: Split authenticated PE-4 discovery after preflight PASS
+
+PE-4.0B.1 is COMPLETE / PASS. The governed target is PI5 in an
+`HA_TERMINAL_ADDON` context on HA OS, using the exact proven endpoint
+`http://192.168.100.251:8123`. The historical first attempt remains a failed
+HA CLI parser-contract chronology; only the corrected operator procedure
+produced PASS, and active repository code never contained that defect.
+
+PE-4.0B.2 will use separate authorization and STOP boundaries: 2a proves
+authentication and supported API capability; 2b may later perform sanitized
+registry/schema discovery. A standalone repository-controlled Python process
+with terminal `getpass` is the credential-injection choice. No dedicated
+WebSocket client was detected, so preparation must prove an existing Python
+library or technically review a standard-library implementation without
+installing packages. REST registry sufficiency and registry commands are not
+assumed. Neither 2a nor 2b is implemented or authorized by this decision.
+
 ## Decision: Govern PE-4 Home Assistant access before live discovery
 
 PE-4.0A establishes a supported-interface-first, read-only, least-privilege

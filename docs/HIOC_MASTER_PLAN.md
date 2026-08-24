@@ -1,5 +1,30 @@
 # HIOC Master Plan
 
+## PE-4.0B.1 Home Assistant production preflight completion
+
+PE-4.0B.1 is **COMPLETE / PASS**. The operator-run PI5 preflight proved an
+`HA_TERMINAL_ADDON` execution context with interactive zsh, Home Assistant OS
+18.1, Core 2026.8.1, supported and healthy Supervisor 2026.07.5, and the exact
+no-proxy endpoint `http://192.168.100.251:8123`. TLS is not applicable to that
+currently governed HTTP endpoint. Bash, Python 3.14.5, curl, OpenSSL, jq, the HA
+CLI, and a secure non-echoing prompt are available; no dedicated WebSocket
+client was detected. No credential, registry, `.storage`, database, live-state,
+configuration, or production mutation was involved. Rollback recommendation is
+FALSE and no rollback occurred.
+
+The earlier preflight stopped at `HA_DEPLOYMENT` with
+`UNSUPPORTED_HA_DEPLOYMENT`. It remains historical evidence of the
+**PE-4.0B.1 HA CLI PARSER-CONTRACT DEFECT — RECURSIVE/NONAUTHORITATIVE STATE
+FIELD USED FOR DEPLOYMENT VALIDATION**. The corrected operator procedure—not
+active repository code—subsequently produced the accepted PASS above.
+
+Phase 7A remains **ACTIVE**; PE-3, PE-4 prerequisite/governance discovery,
+PE-4.0A, and PE-4.0B.1 are complete. PE-4.0B.2, PE-4.0C, the association
+adapter, and production deployment remain **NOT STARTED**. PE-4 overall is not
+complete. The next separately authorized checkpoint is preparation only of
+PE-4.0B.2a authenticated API/capability proof; it cannot continue automatically
+to PE-4.0B.2b registry/schema discovery.
+
 ## PE-4.0A Home Assistant access and privacy contract
 
 PE-4.0A is **COMPLETE in repository governance**. The authoritative
@@ -10,10 +35,7 @@ identity and Asset authority, bounded failures, and private result-last
 evidence. No live Home Assistant or PI5 access occurred.
 
 Phase 7A remains active. PE-3 remains complete. PE-4.0B live/schema discovery
-and PE-4 implementation remain **NOT STARTED** and separately gated. The next
-checkpoint may prepare—but not execute—the exact PE-4.0B read-only discovery
-after classifying PI5/HA deployment, supported interface, credential handling,
-network/TLS inputs, and evidence bounds.
+has completed only its PE-4.0B.1 preflight; PE-4.0B.2 and PE-4 implementation remain **NOT STARTED** and separately gated.
 
 ## PE-4 repository discovery checkpoint
 

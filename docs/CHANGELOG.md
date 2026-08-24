@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Recorded PE-4.0B.1 production preflight COMPLETE / PASS. The credential-free
+  check proved PI5's HA Terminal add-on context, HA OS/Core/Supervisor
+  classification, exact no-proxy HTTP endpoint, available secure prompt and
+  client tooling, and absence of a dedicated WebSocket client, without registry,
+  state, internal-file, database, or production mutation. The earlier
+  `UNSUPPORTED_HA_DEPLOYMENT` parser-contract failure remains historical.
+  PE-4.0B.2 is not started and is split into separately authorized 2a
+  authenticated capability proof and 2b sanitized registry/schema discovery;
+  PE-4.0C, association implementation, and deployment remain not started.
+
 - Defined the PE-4.0A Home Assistant access and privacy contract before live
   discovery. It classifies supported API access as candidate-only pending PI5
   deployment/interface proof; prohibits internal files/databases, states,

@@ -12,7 +12,10 @@ PE-4 Home Assistant Association is governed separately by
 [PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md).
 The current MQTT/YAML integration is consumer-side context, not permission to
 read registries, `.storage`, recorder databases, entity states, or credentials.
-PE-4.0B discovery and the association adapter remain not started.
+PE-4.0B.1 production preflight is COMPLETE / PASS. It proved HA OS and the
+current HTTP endpoint without credentials or registry/state access. PE-4.0B.2
+authenticated discovery and the association adapter remain not started and
+separately gated; the preflight does not authorize either.
 
 ## Packages
 

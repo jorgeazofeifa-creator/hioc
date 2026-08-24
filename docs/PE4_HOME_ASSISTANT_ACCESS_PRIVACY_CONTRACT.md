@@ -4,14 +4,47 @@
 
 **Scope:** Repository governance before live discovery
 
-**Next gate:** PE-4.0B preparation, separately authorized
+**Next gate:** PE-4.0B.2a preparation, separately authorized
 
 ## Purpose and status
 
 This document is the authoritative pre-discovery contract for PE-4 Home
-Assistant Association. PE-4.0A is complete in repository governance. PE-4.0B
-live/schema discovery and PE-4 implementation are not started. This contract
-does not authorize PI5 access, credentials, discovery, deployment, or mutation.
+Assistant Association. PE-4.0A and the credential-free PE-4.0B.1 production
+preflight are complete. PE-4.0B.2 authenticated discovery and PE-4
+implementation are not started. This contract does not authorize PI5 access,
+credentials, discovery, deployment, or mutation.
+
+## PE-4.0B.1 accepted preflight and next boundary
+
+The accepted preflight classified PI5 as an `HA_TERMINAL_ADDON` with
+interactive zsh on HA OS 18.1, Core 2026.8.1, and supported/healthy Supervisor
+2026.07.5. The governed endpoint is exactly `http://192.168.100.251:8123`, with
+no proxy influence and TLS not applicable. Python 3.14.5 and the other reviewed
+client tools are available, a secure prompt is available, and no dedicated
+WebSocket client was detected. That absence is not itself a blocker and does
+not prove that any Python WebSocket module is installed.
+
+PE-4.0B.2 is subdivided into separately authorized STOP boundaries:
+
+1. **PE-4.0B.2a — authenticated API/capability proof.** A standalone,
+   repository-controlled Python process must obtain the operator-controlled
+   credential with `getpass` from the controlling terminal, retain it only in
+   process memory, prove authentication and the supported read-only capability,
+   and stop. Exact registry commands must not be guessed.
+2. **PE-4.0B.2b — registry/schema discovery.** Only a separately reviewed 2a
+   PASS may permit preparation of bounded structural discovery. It must not run
+   automatically after 2a.
+
+Preparation must decide between a proved already-installed Python WebSocket
+library and a technically reviewed repository-controlled standard-library
+client. It must install no package and must fail closed if neither mechanism is
+proved safe. REST alone is not assumed sufficient for registry metadata.
+
+Future evidence is invocation-owned under
+`/tmp/hioc-pe4-ha-discovery-XXXXXXXX`: directory mode `0700`, sanitized files
+mode `0600`, `discovery-report.json`, and result-last
+`discovery-result.txt`. Raw responses stay memory-only; there is no raw or
+redacted-raw dump and no caller-selected evidence path.
 
 PE-4 adds Home Assistant association evidence to an already-reconciled HIOC
 identity. It is not a new identity engine and cannot change stable HIOC IDs,
