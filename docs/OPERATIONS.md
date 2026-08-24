@@ -7,13 +7,12 @@ publication and Action 7 configuration activation. The governed disposition is
 retransmit the dataset, or delete any path. Action 8 and Action 9 evidence are
 preserved records, not Action 10 inputs.
 
-Action 10 is an administrative repository-only closure and remains **NOT
-COMPLETE** until this corrected governance is validated, committed, pushed, and
-cleanly verified. A separate repository-only status checkpoint must then record
-Actions 1–10 and PE-3 complete. No Action 10 shell command or Evidence Report is
-required, and rollback remains FALSE.
+Action 10 is **COMPLETE** through administrative repository-only closure;
+Actions 1–10 and PE-3 are **COMPLETE**. No Action 10 shell command, PI3 or PI5
+action, staging recreation or deletion, production mutation, or Evidence Report
+was required. Rollback remained FALSE and was not performed.
 
-PE-3 Actions 1–9 are **COMPLETE**. The corrected Action 9 read-only production
+The corrected Action 9 read-only production
 validation returned `RESULT=PASS`, `ACTION9=COMPLETE`, and
 `ROLLBACK_RECOMMENDED=FALSE`; preserve its private Evidence Report at
 `/tmp/hioc-pe3-action9-Bb6vGrmm` unchanged. Preserve the successful Action 8
@@ -24,9 +23,9 @@ retransmission remains unnecessary.
 The accepted performance evidence is `12.467231` seconds and `146744` KiB total
 peak child RSS, measured under an `UNVALIDATED` baseline and classified
 `INSUFFICIENT_BASELINE`. Both historical targets were exceeded but are not
-production-enforced. Action 10 remains **NOT STARTED / NOT PREPARED** and
-requires a separate operator-safety/governance review after this completion
-checkpoint is committed and pushed. No Action 10 command is authorized here.
+production-enforced. Action 9 remains the final PE-3 production validation and
+its Evidence Report remains the final production evidence. No Action 10 command
+exists or was executed.
 
 The earlier attempted-but-incomplete Action 9 result and its read-only forensic
 analysis remain historical chronology; they do not describe current status.

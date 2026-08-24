@@ -1,6 +1,20 @@
 # HIOC Master Plan
 
-## PE-3 Action 10 administrative no-op closure governance
+## PE-3 completion checkpoint
+
+PE-3 is **COMPLETE**. Actions 1–10 are **COMPLETE**. Action 10 completed
+administratively with disposition `NOOP_ALREADY_ABSENT`: no PI3 or PI5 action,
+staging recreation or deletion, production mutation, or Action 10 Evidence
+Report was required. Action 9 remains the final production validation and its
+Evidence Report at `/tmp/hioc-pe3-action9-Bb6vGrmm` remains the final PE-3
+production evidence. Rollback remained FALSE and was not performed. Transport
+staging remains absent and retransmission remains unnecessary.
+
+Phase 7A remains the active parent phase. PE-3 closure does not begin the next
+checkpoint; future performance-baseline work, PE-10, and every other governed
+roadmap commitment remain planned and separate.
+
+## Historical PE-3 Action 10 administrative no-op closure governance
 
 Action 10 is classified **CASE C — ACTION 10 ADMINISTRATIVE NO-OP CLOSURE**.
 Its original purpose was only deletion of the transient two-file transport
@@ -768,7 +782,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-4 COMPLETE; ACTION 5 NOT STARTED; PRODUCTION DEPLOYMENT NOT STARTED; PI3 VALIDATION NOT STARTED; PE-4 NOT STARTED**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3 COMPLETE; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-10 COMPLETE; ACTION 10 COMPLETE - NOOP_ALREADY_ABSENT; PRODUCTION DEPLOYMENT COMPLETE; PI3 VALIDATION COMPLETE; PE-4 NOT STARTED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -885,10 +899,9 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 
 1. **PE-1 - Hostname Enrichment** — complete, production validated.
 2. **PE-2 - Asset Foundation** — complete, production validated.
-3. **PE-3 - Manufacturer Reference Enrichment** — PE-3.0 through PE-3.3 have
-   reached their approved architecture, repository, external-data, and design
-   gates; production deployment, generation, PI3 validation, and final
-   governance closure remain open.
+3. **PE-3 - Manufacturer Reference Enrichment** — complete. Actions 1–10,
+   production deployment, generation, PI3 validation, final Evidence Report,
+   administrative Action 10 closure, and final governance closure are complete.
 4. **PE-4 - Home Assistant Association** — not started.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
 6. **PE-6 - Classification & Metadata Quality** — not started.
@@ -1443,12 +1456,14 @@ This section reflects the current state of the project.
 
 It should be updated whenever a development phase is completed.
 
-PE-3 Actions 1–9 are complete. Action 8 evidence remains preserved at
-`/tmp/hioc-pe3-action8-eZxNGrKa`; Action 9 completed read-only production
-validation with private Evidence Report `/tmp/hioc-pe3-action9-Bb6vGrmm` and no
-rollback recommended or performed. Action 10 remains not started/not prepared
-pending the committed and pushed Action 9 completion checkpoint and a separate
-operator-safety/governance review.
+PE-3 is complete and Actions 1–10 are complete. Action 10 completed
+administratively with disposition `NOOP_ALREADY_ABSENT`; no PI3 or PI5 action,
+staging recreation or deletion, production mutation, or Action 10 Evidence
+Report was required. Action 8 evidence remains preserved at
+`/tmp/hioc-pe3-action8-eZxNGrKa`. Action 9 completed read-only production
+validation with private Evidence Report `/tmp/hioc-pe3-action9-Bb6vGrmm`, which
+remains the final PE-3 production evidence. Rollback remained FALSE and was not
+performed. Transport staging remains absent and retransmission is not required.
 
 The Phase 7A.8 Recovery Validation Chain, repository governance reconstruction, reconciliation of the historical recovery documentation, Release Boundary Hardening, Changelog Governance Reconciliation, Repository Governance Reconciliation, Runtime Git Metadata Retirement, and the overall Repository and Deployment Hygiene checkpoint are complete. PI3 production migration, validation, supported upgrade proof, supported rollback proof, and quarantine removal are complete. ADR-0013 is resolved, and `/home/jazofv1/hioc` is formally non-Git. The former `61/62 commits behind` runtime condition is permanently resolved because the runtime is no longer a Git checkout and Git history belongs to the authoritative repositories. The approved lifecycle candidate remains intentionally reachable through `validation/phase-7a8-lifecycle`; completed merged topic branches and the temporary Windows SSH artifact have been retired. GitHub history is authoritative. Development checkouts, the authoritative source checkout for PI3 release execution, and the deployed production runtime have formally documented roles. The ADR-0014 Core MQTT correction, production deployment, and MQTT production Evidence Report are complete. Pi-hole DHCP Lease Ingestion implementation and production validation are complete with a documented warning. Canonical Address Selection Hardening is production validated and complete. The network-probe checksum-governance and PI5 endpoint-migration correction is complete: repository correction, governed deployment, Phase A, Phase B incident recovery, and overall production validation passed at approved commit `e06539d9bece040d721b9912213559cc54f1610d`. The July 29 DHCP pool-exhaustion incident is resolved, HIOC deployment validation passed, and the documentation architecture now assigns current-state, runtime, network, deployment, incident, and recovery authority to focused documents. DHCP Service Health & Capacity Monitoring and `.152` DHCP residue cleanup remain separate future work. Phase 7A remains active and Active Discovery remains postponed.
 
@@ -1506,18 +1521,14 @@ organization variant enters Git.
 
 ## Next Planned Task
 
-Python compatibility governance is resolved under Model D in
-[PYTHON_RUNTIME_COMPATIBILITY.md](PYTHON_RUNTIME_COMPATIBILITY.md). Windows
-CPython 3.13.x is supported with validated patch evidence 3.13.15. PE-3 Actions
-1 through 4 are **PASS — COMPLETE** and the validated pair was transferred
-through private PI3 transport staging. Actions 5, 6-A, and 6-B are **PASS — COMPLETE** and
-Action 6 is **COMPLETE**. Action 7-A and Action 7-B are **PASS — COMPLETE** and
-Action 7 is **COMPLETE**. Action 8 was attempted but stopped before generation
-and is **NOT COMPLETE**. No rollback is
-recommended; the current deployed runtime remains in place, the exact immutable
-`local-ieee-ra--2026-08-11-r1` database is selected in configuration, and PE-3
-transport staging is confirmed absent, and that loss does not affect the
-installed immutable dataset. PE-4 through PE-10 remain not started.
+PE-3 is **COMPLETE** with Actions 1–10 complete. The next ordered passive-
+enrichment checkpoint is **PE-4 - Home Assistant Association**, already planned
+and not started. Before implementation, its separately governed access/schema
+approval must authorize the read-only Home Assistant registry adapter and its
+association authority. This completion record does not begin that checkpoint.
+Phase 7A remains the active parent phase; PE-3 closure does not complete or
+replace it. PE-5 through PE-10 and all other future-roadmap commitments remain
+planned and separate.
 
 Action 1 pre-execution review identified two operator-input defects without
 executing the action: a hard-coded `python` PATH assumption and ambiguous choice

@@ -10,9 +10,9 @@ is `NOOP_ALREADY_ABSENT`.
 
 No target-host verification, mutation, invocation-owned evidence, Action 8/9
 evidence input, rollback, reconstruction, retransmission, or deletion is
-permitted. The repository governance correction must be validated, committed,
-pushed, and cleanly verified before a separate repository-only completion record
-may mark Action 10 and PE-3 complete.
+permitted. The separate repository-only completion record marks Action 10,
+Actions 1–10, and PE-3 **COMPLETE** without creating an executable contract or
+Action 10 Evidence Report.
 
 ## Corrected Action 9 evidence and performance domains
 

@@ -1,6 +1,16 @@
 # HIOC Architecture Decisions
 
-## Decision: Action 10 is an administrative no-op closure
+## Decision: Record Action 10 and PE-3 completion
+
+Action 10 is complete through administrative repository-only closure with
+disposition `NOOP_ALREADY_ABSENT`; Actions 1–10 and PE-3 are complete. No PI3 or
+PI5 action, staging recreation or deletion, production mutation, rollback, or
+Action 10 Evidence Report was required. Action 9 PASS and its private Evidence
+Report remain the final PE-3 production validation and evidence. Transport
+staging remains absent and retransmission remains unnecessary. Phase 7A remains
+active, and all future-roadmap checkpoints remain separate and preserved.
+
+## Historical decision: Action 10 is an administrative no-op closure
 
 Repository history proves PE-3 Action 10 originally existed only to delete the
 two-file transport directory after final validation and to rewrite the former

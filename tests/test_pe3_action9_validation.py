@@ -246,18 +246,18 @@ class PE3Action9ValidationTests(unittest.TestCase):
         ):
             self.assertIn(value, self.text)
 
-    def test_current_governance_records_action9_completion(self):
+    def test_current_governance_records_action9_and_pe3_completion(self):
         for path in COMPLETION_DOCUMENTS:
             text = " ".join(path.read_text(encoding="utf-8").split())
             self.assertIn("/tmp/hioc-pe3-action9-Bb6vGrmm", text, path)
             self.assertRegex(
                 text,
-                r"Actions 1[–-]9 (?:are )?(?:\*\*)?COMPLETE(?:\*\*)?|Actions 1[–-]9 are complete",
+                r"Actions 1[–-]10.{0,30}(?:\*\*)?(?:COMPLETE|complete)(?:\*\*)?",
                 path,
             )
             self.assertRegex(
                 text,
-                r"Action 10 remains (?:\*\*)?(?:NOT STARTED / NOT PREPARED|not started/not prepared)",
+                r"Action 10.{0,120}(?:\*\*)?(?:COMPLETE|complete)(?:\*\*)?",
                 path,
             )
         runbook = " ".join(

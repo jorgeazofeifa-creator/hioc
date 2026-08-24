@@ -52,10 +52,14 @@ class PE3Action10GovernanceTests(unittest.TestCase):
         self.assertNotIn("REMOVED_VALID_STAGING", self.action10)
 
     def test_completion_remains_repository_governed(self):
-        self.assertIn("Action 10 remains **NOT COMPLETE**", self.action10)
-        for value in ("committed", "pushed", "cleanly\nverified"):
-            self.assertIn(value, self.action10)
-        self.assertIn("separate repository-only completion record", self.action10)
+        for value in (
+            "Action 10 is **COMPLETE**",
+            "Actions 1–10 and PE-3 are **COMPLETE**",
+            "NOOP_ALREADY_ABSENT",
+            "final PE-3 production validation and evidence",
+        ):
+            self.assertIn(value, self.action10_flat)
+        self.assertNotIn("Action 10 remains **NOT COMPLETE**", self.action10)
 
     def test_active_ledger_has_no_stale_action9_or_deletion_contract(self):
         ledger = self.runbook.split("## Operator action ledger", 1)[1]

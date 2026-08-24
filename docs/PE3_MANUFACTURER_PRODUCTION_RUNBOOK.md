@@ -1,6 +1,16 @@
 # PE-3.3 Manufacturer Production Deployment and Validation Runbook
 
-## Current Action 9 production completion checkpoint
+## Current Action 10 and PE-3 completion checkpoint
+
+Action 10 is **COMPLETE** with administrative disposition
+`NOOP_ALREADY_ABSENT`; Actions 1–10 and PE-3 are **COMPLETE**. No PI3 or PI5
+action, staging recreation or deletion, production mutation, or Action 10
+Evidence Report was required. Action 9 remains the final production validation,
+and its PASS Evidence Report at `/tmp/hioc-pe3-action9-Bb6vGrmm` remains the
+final PE-3 production evidence. Rollback remained FALSE and was not performed.
+Transport staging remains absent and retransmission remains unnecessary.
+
+## Historical Action 9 production completion checkpoint
 
 The corrected governed Action 9 production validation is **PASS / COMPLETE**.
 It returned `RESULT=PASS`, `ACTION9=COMPLETE`, and
@@ -1339,10 +1349,11 @@ rollback, or Action 10 Evidence Report is required. Action 8 evidence
 `/tmp/hioc-pe3-action8-eZxNGrKa` and Action 9 evidence
 `/tmp/hioc-pe3-action9-Bb6vGrmm` remain preserved but are not Action 10 inputs.
 
-Action 10 remains **NOT COMPLETE** until this governance correction passes
-validation, is committed and pushed to `main`, and the published tree is cleanly
-verified. A separate repository-only completion record may then mark Actions
-1–10 and PE-3 complete. Do not prepare an operator command.
+Action 10 is **COMPLETE** through this repository-only completion record, with
+disposition `NOOP_ALREADY_ABSENT`. Actions 1–10 and PE-3 are **COMPLETE**. No
+operator command, PI3 or PI5 action, staging recreation or deletion, production
+mutation, or Action 10 Evidence Report was required. Action 9 PASS and its
+Evidence Report remain the final PE-3 production validation and evidence.
 
 ## Result taxonomy and rollback domains
 
