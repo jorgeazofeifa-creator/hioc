@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Corrected the PE-4.0B.2a websocket-client receive-bound defect by removing
+  that dependency path and requiring compatible `websockets` support with
+  `max_size=65536` at connection creation. Added dependency-level oversized
+  failure coverage and preserved fail-before-credential behavior. This is a
+  repository correction only; 2a remains not started.
+
 - Implemented the repository-controlled PE-4.0B.2a client at
   `tools/hioc-pe4-ha-auth-capability.py` with offline tests for exact target,
   dependency-before-secret, terminal-only credential handling, REST then

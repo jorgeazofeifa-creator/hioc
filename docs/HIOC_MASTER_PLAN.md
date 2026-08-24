@@ -1,5 +1,18 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a WebSocket receive-bound correction
+
+Runtime-precheck preparation found that the preferred websocket-client path
+checked 65,536 bytes only after `recv()` had materialized a complete message.
+This is the **PE-4.0B.2A WEBSOCKET-CLIENT MESSAGE-BOUND ENFORCEMENT DEFECT —
+PREFERRED DEPENDENCY PATH APPLIES THE 65,536-BYTE LIMIT ONLY AFTER UNBOUNDED
+MESSAGE MATERIALIZATION**. The corrected client removes websocket-client and
+accepts only a compatible `websockets` API with dependency-enforced
+`max_size=65536`, explicit proxy suppression, and bounded timeouts. Missing or
+incompatible support stops before credential acquisition. The correction has
+not been deployed or executed; PE-4.0B.2a remains **NOT STARTED**, and runtime
+precheck preparation remains blocked until commit and push.
+
 ## PE-4.0B.2a repository-controlled client implementation
 
 The repository now contains the standalone, terminal-only client

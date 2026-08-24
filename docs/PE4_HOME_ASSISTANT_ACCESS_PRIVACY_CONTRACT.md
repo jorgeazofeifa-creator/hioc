@@ -13,9 +13,13 @@ repository source. It requires the exact non-secret target tuple through
 `--expected-hostname a0d7b954-ssh --expected-operator root --target-ipv4
 192.168.100.251 --target-port 8123 --instance-label PI5_HA`; it accepts no URL,
 secret, evidence path, or command argument. It proves an approved installed
-Python WebSocket dependency before target-gated terminal credential acquisition,
-preferring `websocket`/websocket-client and otherwise accepting `websockets`
-only when its API exposes explicit proxy suppression. It installs nothing.
+Python WebSocket dependency before target-gated terminal credential acquisition.
+After correction of the post-materialization websocket-client bound defect, the
+only approved path is `websockets` with explicit `max_size=65536`, proxy
+suppression, and connect/close timeout parameters. It installs nothing.
+The superseded path is classified as **PE-4.0B.2A WEBSOCKET-CLIENT
+MESSAGE-BOUND ENFORCEMENT DEFECT — PREFERRED DEPENDENCY PATH APPLIES THE
+65,536-BYTE LIMIT ONLY AFTER UNBOUNDED MESSAGE MATERIALIZATION**.
 
 The source has offline fake-based tests but has not been deployed or executed
 against PI5 or live Home Assistant. Its Git blob and worktree SHA-256 are to be
@@ -75,11 +79,12 @@ installation IDs, and user IDs are discarded.
 5 seconds, read 10 seconds, total network budget 20 seconds, 65,536 bytes per
 response, two credential-bearing requests, zero retries, zero redirects, no
 polling, subscriptions, background work, registry enumeration, or state
-enumeration. A credential-free precheck may report only whether the Python
-modules `websockets` or `websocket` are importable. It installs nothing. A
+enumeration. A credential-free precheck must prove that `websockets` is
+importable and exposes the required `max_size`, proxy, and timeout parameters;
+module importability alone is insufficient. It installs nothing. A
 repository-controlled client is required; standard-library REST is approved,
-but a custom RFC6455 stack is rejected. WebSocket execution must use a
-separately proved existing dependency or stop `UNSUPPORTED_INTERFACE` before
+but a custom RFC6455 stack is rejected. WebSocket execution must use the
+separately proved compatible dependency or stop `UNSUPPORTED_INTERFACE` before
 prompting.
 
 The exact PASS markers are:
@@ -159,10 +164,9 @@ PE-4.0B.2 is subdivided into separately authorized STOP boundaries:
    PASS may permit preparation of bounded structural discovery. It must not run
    automatically after 2a.
 
-Preparation must decide between a proved already-installed Python WebSocket
-library and a technically reviewed repository-controlled standard-library
-client. It must install no package and must fail closed if neither mechanism is
-proved safe. REST alone is not assumed sufficient for registry metadata.
+Preparation must prove an already-installed compatible `websockets` dependency.
+It must install no package and must fail closed if that dependency is absent or
+incompatible. REST alone is not assumed sufficient for registry metadata.
 
 Future evidence is invocation-owned under
 `/tmp/hioc-pe4-ha-discovery-XXXXXXXX`: directory mode `0700`, sanitized files

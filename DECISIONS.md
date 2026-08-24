@@ -1,12 +1,21 @@
 # HIOC Architecture Decisions
 
+## Decision: Require dependency-enforced PE-4.0B.2a message bounds
+
+The websocket-client path is removed because its complete-message `recv()`
+could materialize more than 65,536 bytes before the client checked length.
+PE-4.0B.2a now accepts only a compatible `websockets` implementation whose
+connection receives `max_size=65536` together with explicit proxy and timeout
+controls. Dependency absence or incompatible signatures stop before credential
+acquisition; no unsafe fallback or custom RFC6455 implementation is permitted.
+
 ## Decision: Implement PE-4.0B.2a as a bounded repository client
 
 The frozen proof is implemented by `tools/hioc-pe4-ha-auth-capability.py`.
 Callers supply only the exact governed non-secret target tuple; endpoints,
-sequence, bounds, and commands are internal constants. The client prefers the
-approved synchronous websocket-client API and otherwise accepts `websockets`
-only when explicit proxy suppression is available. Dependency absence stops
+sequence, bounds, and commands are internal constants. The client accepts only
+a compatible `websockets` API with pre-materialization message bounding and
+explicit proxy suppression. Dependency absence or incompatibility stops
 before credential acquisition; package installation and a custom protocol
 stack remain rejected. This implementation decision does not authorize PI5
 access, deployment, credentials, execution, 2b, or association work.

@@ -38,6 +38,15 @@ class PE4AuthenticatedAPIContractTests(unittest.TestCase):
         self.assertTrue(client.is_file())
         self.require("Repository-controlled 2a client", "has not been deployed or executed", "remains **NOT STARTED**")
 
+    def test_client_dependency_enforces_receive_bound(self):
+        source = (ROOT / "tools" / "hioc-pe4-ha-auth-capability.py").read_text(encoding="utf-8")
+        self.assertIn("max_size=MAX_MESSAGE", source)
+        self.assertIn('required = {"open_timeout", "close_timeout", "max_size", "proxy"}', source)
+        self.assertNotIn("import websocket  #", source)
+        self.assertNotIn("websocket_client_check", source)
+        self.require("WEBSOCKET-CLIENT", "MESSAGE-BOUND ENFORCEMENT DEFECT",
+                     "only approved path is `websockets`")
+
     def test_status_remains_not_started(self):
         self.assertIn("PE-4.0B.2a remains **NOT\nSTARTED**", MASTER)
         self.assertNotIn("PE-4.0B.2a is **COMPLETE", MASTER)

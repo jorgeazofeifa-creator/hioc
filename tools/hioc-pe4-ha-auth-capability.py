@@ -11,6 +11,7 @@ import argparse
 import asyncio
 import getpass
 import http.client
+import importlib
 import importlib.util
 import inspect
 import json
@@ -49,7 +50,7 @@ STAGES = {
     "AUTHENTICATION", "REST_CAPABILITY", "WEBSOCKET_CAPABILITY", "READ_SCOPE",
     "PRIVACY_VALIDATION", "COMPLETE",
 }
-ALLOWED_WS_CLASSES = {"PYTHON_WEBSOCKET_CLIENT", "PYTHON_WEBSOCKETS", "ABSENT"}
+ALLOWED_WS_CLASSES = {"PYTHON_WEBSOCKETS", "ABSENT"}
 PROXY_NAMES = {
     "http_proxy", "https_proxy", "all_proxy", "no_proxy",
     "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
@@ -105,12 +106,20 @@ def parse_args(argv: Sequence[str]) -> Arguments:
     return args
 
 
-def detect_websocket_client(find_spec: Callable[[str], object] = importlib.util.find_spec) -> str:
-    # websocket-client is preferred because its synchronous API exposes explicit
-    # proxy and redirect controls. The alternative is still governed and bounded.
-    if find_spec("websocket") is not None:
-        return "PYTHON_WEBSOCKET_CLIENT"
-    if find_spec("websockets") is not None:
+def detect_websocket_client(
+    find_spec: Callable[[str], object] = importlib.util.find_spec,
+    import_module: Callable[[str], object] = importlib.import_module,
+) -> str:
+    if find_spec("websockets") is None:
+        return "ABSENT"
+    try:
+        module = import_module("websockets")
+        connect = getattr(module, "connect")
+        parameters = inspect.signature(connect).parameters
+    except (AttributeError, ImportError, TypeError, ValueError):
+        return "ABSENT"
+    required = {"open_timeout", "close_timeout", "max_size", "proxy"}
+    if callable(connect) and required.issubset(parameters):
         return "PYTHON_WEBSOCKETS"
     return "ABSENT"
 
@@ -141,8 +150,7 @@ def current_operator() -> str:
 
 
 def validate_target(args: Arguments, *, hostname: str, operator: str,
-                    addresses: set[str], stdin_tty: bool, stderr_tty: bool,
-                    shell: str) -> None:
+                    addresses: set[str], shell: str) -> None:
     if hostname != args.expected_hostname or args.target_ipv4 not in addresses:
         raise ContractFailure("WRONG_TARGET", "TARGET_IDENTITY")
     if operator != args.expected_operator:
@@ -150,6 +158,9 @@ def validate_target(args: Arguments, *, hostname: str, operator: str,
     shell_name = os.path.basename(shell).lower()
     if shell_name not in {"bash", "zsh", "ash"}:
         raise ContractFailure("UNSUPPORTED_SHELL", "TARGET_IDENTITY")
+
+
+def validate_terminal(stdin_tty: bool, stderr_tty: bool) -> None:
     if not stdin_tty or not stderr_tty:
         raise ContractFailure("SECURE_PROMPT_UNAVAILABLE", "CREDENTIAL_ACQUISITION")
 
@@ -244,42 +255,21 @@ def _parse_ws_message(raw: object) -> dict[str, object]:
     return value
 
 
-def websocket_client_check(token: str, deadline: float | None = None) -> None:
-    try:
-        import websocket  # type: ignore
-        ws = websocket.create_connection(
-            WS_URI, timeout=remaining_timeout(deadline, CONNECT_TIMEOUT, "WEBSOCKET_CAPABILITY"),
-            http_proxy_host=None, http_proxy_port=None,
-            proxy_type=None, redirect_limit=0, enable_multithread=False,
-        )
-        try:
-            ws.settimeout(remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY"))
-            if _parse_ws_message(ws.recv())["type"] != "auth_required":
-                raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
-            ws.send(json.dumps({"type": "auth", "access_token": token}, separators=(",", ":")))
-            ws.settimeout(remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY"))
-            kind = _parse_ws_message(ws.recv())["type"]
-            if kind == "auth_invalid":
-                raise ContractFailure("AUTHENTICATION_FAILED", "AUTHENTICATION")
-            if kind != "auth_ok":
-                raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
-        finally:
-            ws.close()
-    except ContractFailure:
-        raise
-    except (TimeoutError, OSError):
-        raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY") from None
-    except Exception as exc:
-        status = getattr(exc, "status_code", None)
-        if isinstance(status, int) and 300 <= status < 400:
-            raise ContractFailure("UNAPPROVED_REDIRECT", "ENDPOINT") from None
-        if "timeout" in type(exc).__name__.lower():
-            raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY") from None
-        raise ContractFailure("INTERFACE_CAPABILITY_MISSING", "WEBSOCKET_CAPABILITY") from None
+def _dependency_rejected_oversized_message(exc: Exception, module: object) -> bool:
+    exceptions = getattr(module, "exceptions", None)
+    payload_too_big = getattr(exceptions, "PayloadTooBig", None)
+    if isinstance(payload_too_big, type) and isinstance(exc, payload_too_big):
+        return True
+    for side in (getattr(exc, "rcvd", None), getattr(exc, "sent", None)):
+        if getattr(side, "code", None) == 1009:
+            return True
+    return False
 
 
-async def _websockets_async_check(token: str, deadline: float | None = None) -> None:
-    import websockets  # type: ignore
+async def _websockets_async_check(
+    token: str, deadline: float | None = None, websockets_module: object | None = None
+) -> None:
+    websockets = websockets_module or importlib.import_module("websockets")
     connect = websockets.connect
     if "proxy" not in inspect.signature(connect).parameters:
         raise ContractFailure("INTERFACE_CAPABILITY_MISSING", "WEBSOCKET_CAPABILITY")
@@ -308,6 +298,8 @@ async def _websockets_async_check(token: str, deadline: float | None = None) -> 
     except (TimeoutError, OSError, asyncio.TimeoutError):
         raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY") from None
     except Exception as exc:
+        if _dependency_rejected_oversized_message(exc, websockets):
+            raise ContractFailure("RESPONSE_TOO_LARGE", "WEBSOCKET_CAPABILITY") from None
         response = getattr(exc, "response", None)
         status = getattr(response, "status_code", getattr(response, "status", None))
         if isinstance(status, int) and 300 <= status < 400:
@@ -315,8 +307,10 @@ async def _websockets_async_check(token: str, deadline: float | None = None) -> 
         raise ContractFailure("INTERFACE_CAPABILITY_MISSING", "WEBSOCKET_CAPABILITY") from None
 
 
-def websockets_check(token: str, deadline: float | None = None) -> None:
-    asyncio.run(_websockets_async_check(token, deadline))
+def websockets_check(
+    token: str, deadline: float | None = None, websockets_module: object | None = None
+) -> None:
+    asyncio.run(_websockets_async_check(token, deadline, websockets_module))
 
 
 def success_lines(ws_class: str) -> list[str]:
@@ -370,24 +364,21 @@ def run(argv: Sequence[str], output: Callable[[str], None] = print) -> int:
     deadline = started + TOTAL_BUDGET
     try:
         args = parse_args(argv)
+        validate_target(
+            args, hostname=socket.gethostname(), operator=current_operator(),
+            addresses=local_ipv4_addresses(), shell=os.environ.get("SHELL", ""),
+        )
+        if proxy_influence_present(dict(os.environ)):
+            raise ContractFailure("PROXY_INFLUENCE_DETECTED", "ENDPOINT")
         ws_class = detect_websocket_client()
         if ws_class == "ABSENT":
             raise ContractFailure("UNSUPPORTED_INTERFACE", "WEBSOCKET_CAPABILITY")
-        if proxy_influence_present(dict(os.environ)):
-            raise ContractFailure("PROXY_INFLUENCE_DETECTED", "ENDPOINT")
-        validate_target(
-            args, hostname=socket.gethostname(), operator=current_operator(),
-            addresses=local_ipv4_addresses(), stdin_tty=sys.stdin.isatty(),
-            stderr_tty=sys.stderr.isatty(), shell=os.environ.get("SHELL", ""),
-        )
+        validate_terminal(sys.stdin.isatty(), sys.stderr.isatty())
         token = acquire_token()
         rest_check(token, deadline=deadline)
         if time.monotonic() - started >= TOTAL_BUDGET:
             raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
-        if ws_class == "PYTHON_WEBSOCKET_CLIENT":
-            websocket_client_check(token, deadline=deadline)
-        else:
-            websockets_check(token, deadline=deadline)
+        websockets_check(token, deadline=deadline)
         if time.monotonic() - started > TOTAL_BUDGET:
             raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
         emit(success_lines(ws_class), output)
