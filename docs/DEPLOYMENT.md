@@ -5,6 +5,9 @@ credential-free and read-only. PE-4.0B.2a capability proof, PE-4.0B.2b
 registry/schema discovery, PE-4.0C, the adapter, and production deployment are
 not started. No package installation or WebSocket-client deployment is implied
 by Python availability or by the absence of a dedicated WebSocket client.
+The frozen 2a contract adds no dependency or deployed artifact. Its future
+repository-controlled client and any dependency decision require separate
+implementation, release, and execution gates.
 
 PE-4.0A deploys nothing. PE-4.0B preparation may approve only a supported,
 read-only Home Assistant interface after PI5 deployment classification. Direct

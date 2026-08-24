@@ -428,8 +428,9 @@ production validation are complete.
 5. **PE-4 - Trusted integration association:** PE-4.0A has frozen the
    repository-only access/privacy boundary in
    [PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md).
-   PE-4.0B.1 credential-free production preflight is complete. PE-4.0B.2
-   authenticated registry/schema discovery and the adapter remain not started.
+   PE-4.0B.1 credential-free production preflight and the official 2a interface
+   research are complete. PE-4.0B.2a execution, 2b registry/schema discovery,
+   and the adapter remain not started.
    Any later read-only Home Assistant adapter uses a proved supported interface and cannot infer
    availability or replace canonical identity or operator Asset fields.
 6. **PE-5 - Passive service and MQTT association provenance:** describe existing

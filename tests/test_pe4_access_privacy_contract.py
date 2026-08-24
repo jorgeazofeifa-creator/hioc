@@ -20,7 +20,7 @@ class PE4AccessPrivacyContractTests(unittest.TestCase):
     def test_status_and_supported_interface_gate(self):
         self.assertIn("PE-4.0A is **COMPLETE in repository governance**", self.master)
         self.assertIn("PE-4.0B live/schema discovery", self.master)
-        self.require("SUPPORTED CANDIDATE", "UNSUPPORTED_INTERFACE", "must not fall back to internals")
+        self.require("SUPPORTED FOR 2a ROOT ONLY", "UNSUPPORTED_INTERFACE", "must not fall back to internals")
 
     def test_read_only_and_mutation_prohibitions(self):
         self.require(
@@ -84,9 +84,9 @@ class PE4AccessPrivacyContractTests(unittest.TestCase):
     def test_credentials_are_not_invented_or_persisted(self):
         self.require(
             "never committed, echoed, logged, printed",
-            "cannot yet safely freeze the exact credential type",
-            "must not be guessed",
-            "non-echoing, non-command-line safe invocation method",
+            "operator-provided HA access/bearer token",
+            "Token generation remains outside",
+            "non-command-line invocation method",
         )
 
 

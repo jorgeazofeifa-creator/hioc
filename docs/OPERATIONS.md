@@ -14,6 +14,12 @@ PE-4.0B.2b registry/schema discovery. No live-state identity authority,
 `.storage` fallback, database fallback, adapter implementation, or production
 mutation is permitted.
 
+Official API research now requires a repository-controlled client and
+`REST_THEN_WEBSOCKET_2A`. The REST root and WebSocket authentication exchange
+are the only authorized network interactions; the client must close without a
+WebSocket command. A missing approved WebSocket dependency stops before the
+credential prompt and must not trigger installation or custom protocol code.
+
 PE-4.0A is repository governance only. It authorizes no PI5 access or operator
 command. Before any separately authorized PE-4.0B invocation, operators must
 freeze the deployed HA type, supported read-only interface, non-echoing

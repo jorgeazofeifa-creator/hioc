@@ -5,6 +5,9 @@ release artifact. The next boundary is repository review and preparation of
 PE-4.0B.2a authenticated capability proof only. It cannot release an adapter,
 install a client dependency, execute registry discovery, or continue to
 PE-4.0B.2b automatically.
+Official API research is governance only. It freezes REST-root then WebSocket
+authentication but creates no client or release artifact; client implementation
+and production execution remain separate checkpoints.
 
 The PE-4.0A access/privacy contract is documentation and focused governance
 tests only. It adds no release artifact, credential, discovery executable,

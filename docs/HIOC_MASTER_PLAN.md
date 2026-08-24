@@ -1,5 +1,15 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a authenticated API interface-contract freeze
+
+Official Home Assistant research freezes `REST_THEN_WEBSOCKET_2A`: authenticated
+`GET /api/` must return only HTTP 200 JSON `{"message":"API running."}`, then
+`ws://192.168.100.251:8123/api/websocket` must complete only the documented
+`auth_required` → `auth` → `auth_ok` exchange. No command, registry, state,
+config, subscription, or response body is published. PE-4.0B.2a remains **NOT
+STARTED** pending a separately governed repository-controlled client; 2b and
+PE-4.0C remain **NOT STARTED**.
+
 ## PE-4.0B.1 Home Assistant production preflight completion
 
 PE-4.0B.1 is **COMPLETE / PASS**. The operator-run PI5 preflight proved an

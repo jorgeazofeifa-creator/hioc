@@ -6,6 +6,112 @@
 
 **Next gate:** PE-4.0B.2a preparation, separately authorized
 
+## Frozen PE-4.0B.2a official API contract
+
+The current, versionless Home Assistant developer documentation applies to the
+deployed Core 2026.8.1 contract; registry-source conclusions below are pinned
+separately to the official `2026.8.1` Core tag.
+
+The 2a sequence is `REST_THEN_WEBSOCKET_2A`:
+
+1. Send one authenticated `GET` to the exact trailing-slash path `/api/` at
+   `http://192.168.100.251:8123`, with `Authorization: Bearer <access-token>`
+   assembled only in process memory. Require HTTP 200, JSON content, and the
+   exact closed object `{"message":"API running."}`; discard the body.
+2. Connect without redirects or proxy use to
+   `ws://192.168.100.251:8123/api/websocket`. Require an `auth_required` object,
+   send exactly `{"type":"auth","access_token":<access-token>}`, and require
+   `auth_ok`. `auth_invalid` is `AUTHENTICATION_FAILED` and the connection is
+   closed. Send no command and close after authentication.
+
+REST 401 means `AUTHENTICATION_FAILED`; documented REST statuses also include
+400, 404, and 405, which are unexpected for the frozen root request. WebSocket
+command messages, if ever authorized later, carry a unique integer `id` and
+receive a `result` object with the same `id`, `success`, and either result or
+error information. Event subscriptions require an explicit command and are
+prohibited. There is **NO_GENERAL_CAPABILITY_DISCOVERY_DOCUMENTED**:
+`supported_features` enables client features and is not a server command list.
+
+The documented REST API provides no device-, entity-, area-registry, or
+config-entry relationship listing: all four are
+`NOT_SUPPORTED_BY_DOCUMENTED_REST`. Core 2026.8.1 source registers
+`config/device_registry/list`, `config/entity_registry/list`,
+`config/area_registry/list`, and `config_entries/get` as WebSocket commands
+without `require_admin`; source therefore classifies their read permission as
+`AUTHENTICATED_USER_SUFFICIENT`. They expose raw household records and belong
+only to 2b. Except for the separately documented
+`config/entity_registry/list_for_display`, these config/frontend commands are
+not presented as a stable public registry API in the developer WebSocket
+documentation. Source existence must not be silently elevated into an external
+compatibility promise; 2b requires a separate version-pinned review.
+
+The operator supplies an HA access/bearer token through Python `getpass`.
+There is no argv, environment, shell variable, file, log, evidence, printed
+header/frame, alternate secret source, or token-generation workflow. The token
+exists only in process memory and references are released promptly without
+claiming Python zeroization. `INSTANCE_REFERENCE_METHOD=OPERATOR_LOGICAL_LABEL`
+and the label is `PI5_HA`; all HA instance names, URLs, locations, UUIDs,
+installation IDs, and user IDs are discarded.
+
+2a is terminal-only and creates no evidence directory. Its limits are connect
+5 seconds, read 10 seconds, total network budget 20 seconds, 65,536 bytes per
+response, two credential-bearing requests, zero retries, zero redirects, no
+polling, subscriptions, background work, registry enumeration, or state
+enumeration. A credential-free precheck may report only whether the Python
+modules `websockets` or `websocket` are importable. It installs nothing. A
+repository-controlled client is required; standard-library REST is approved,
+but a custom RFC6455 stack is rejected. WebSocket execution must use a
+separately proved existing dependency or stop `UNSUPPORTED_INTERFACE` before
+prompting.
+
+The exact PASS markers are:
+
+```text
+TARGET_IDENTITY=PASS
+ENDPOINT_POLICY=PASS
+CREDENTIAL_PROMPT=PASS
+CREDENTIAL_ACQUIRED=TRUE
+REST_AUTHENTICATION=PASS
+REST_CAPABILITY=SUPPORTED
+WEBSOCKET_AUTHENTICATION=PASS
+WEBSOCKET_CAPABILITY=SUPPORTED
+READ_SCOPE=PASS
+INSTANCE_REFERENCE_METHOD=OPERATOR_LOGICAL_LABEL
+PRIVACY_VALIDATION=PASS
+RESULT=PASS
+ERROR_CODE=NONE
+FAILURE_STAGE=COMPLETE
+ROLLBACK_RECOMMENDED=FALSE
+PE4_0B2A=COMPLETE
+PE4_0B2B=NOT_STARTED
+```
+
+Every failure instead ends with `RESULT=FAIL`, one bounded `ERROR_CODE`, its
+current `FAILURE_STAGE`, `ROLLBACK_RECOMMENDED=FALSE`,
+`PE4_0B2A=NOT_COMPLETE`, and `PE4_0B2B=NOT_STARTED`, then stops. Codes/stages
+are: `INVALID_ARGUMENTS/INPUT_VALIDATION`; `WRONG_TARGET`, `WRONG_OPERATOR`, or
+`UNSUPPORTED_SHELL/TARGET_IDENTITY`; `SECURE_PROMPT_UNAVAILABLE` or
+`AUTHENTICATION_UNAVAILABLE/CREDENTIAL_ACQUISITION`; `ENDPOINT_UNAVAILABLE`,
+`UNAPPROVED_REDIRECT`, `PROXY_INFLUENCE_DETECTED`, or
+`RESPONSE_TOO_LARGE/ENDPOINT`; `AUTHENTICATION_FAILED/AUTHENTICATION`;
+`UNSUPPORTED_INTERFACE` or `INTERFACE_CAPABILITY_MISSING` at the applicable
+REST or WebSocket capability stage; `INSUFFICIENT_READ_SCOPE/READ_SCOPE`;
+`UNEXPECTED_SCHEMA` at the current capability stage;
+`PRIVACY_CONTRACT_VIOLATION/PRIVACY_VALIDATION`; and
+`UNEXPECTED_ERROR` at the current bounded stage. No failure triggers fallback.
+
+### Authoritative sources
+
+- Home Assistant developer REST API: https://developers.home-assistant.io/docs/api/rest/
+- Home Assistant developer WebSocket API: https://developers.home-assistant.io/docs/api/websocket/
+- Home Assistant authentication API: https://developers.home-assistant.io/docs/auth_api/
+- Home Assistant permissions: https://developers.home-assistant.io/docs/auth_permissions/
+- Core 2026.8.1 device registry source: https://github.com/home-assistant/core/blob/2026.8.1/homeassistant/components/config/device_registry.py
+- Core 2026.8.1 entity registry source: https://github.com/home-assistant/core/blob/2026.8.1/homeassistant/components/config/entity_registry.py
+- Core 2026.8.1 area registry source: https://github.com/home-assistant/core/blob/2026.8.1/homeassistant/components/config/area_registry.py
+- Core 2026.8.1 config-entry source: https://github.com/home-assistant/core/blob/2026.8.1/homeassistant/components/config/config_entries.py
+- Core 2026.8.1 WebSocket implementation: https://github.com/home-assistant/core/tree/2026.8.1/homeassistant/components/websocket_api
+
 ## Purpose and status
 
 This document is the authoritative pre-discovery contract for PE-4 Home
@@ -53,20 +159,18 @@ or operator-owned Asset fields.
 
 ## Repository-known facts and live-discovery inputs
 
-Repository-known facts are limited to the current consumer-side MQTT packages,
-templates, dashboards, and the PE-4 authority/privacy requirements below. No
-repository ingestion path from a Home Assistant device, entity, area, or config
-entry registry exists. Deployment type, supported endpoint, API capabilities,
-credential type, safe credential injection method, TLS trust, and registry
-schema require a separately prepared and authorized PE-4.0B inspection on PI5.
-They must not be guessed.
+Repository-known facts now include the accepted deployment preflight and the
+official 2a API contract above. No repository ingestion path from a Home
+Assistant device, entity, area, or config-entry registry exists. Actual client
+dependency availability and all 2b registry response schemas still require
+separately prepared, fail-closed checkpoints; they must not be guessed.
 
 ## Access-authority matrix
 
 | Source class | Classification | Contract |
 |---|---|---|
-| Authenticated supported REST API | SUPPORTED CANDIDATE | Eligible only after PE-4.0B proves the deployed version exposes the minimum registry structure read only, without collecting states or invoking services. |
-| Authenticated supported WebSocket API | SUPPORTED CANDIDATE | Preferred over internals when it provides equivalent supported registry reads; exact commands and authentication remain unfrozen pending live classification. |
+| Authenticated supported REST API | SUPPORTED FOR 2a ROOT ONLY | `GET /api/` is frozen for authentication/API proof. The documented REST API exposes none of the required registries. |
+| Authenticated supported WebSocket API | SUPPORTED FOR 2a AUTH ONLY | `/api/websocket` authentication is frozen. Source-level registry commands remain a version-pinned 2b candidate, not a public compatibility promise. |
 | `.storage` device/entity/area/config-entry files | PROHIBITED | Internal implementation files are not an approved compatibility interface. No direct read or write, recursive scan, or fallback is authorized. |
 | Recorder, SQLite, or external HA database | PROHIBITED | PE-4 needs registry association structure, not history or live state. Direct database access or mutation is forbidden. |
 | Existing MQTT data | INSUFFICIENT INFORMATION | Repository MQTT is a HIOC-to-HA publication path, not proven HA registry evidence and not identity authority. |
@@ -132,10 +236,10 @@ read-only contract is ineligible.
 Credentials are operator-controlled, never committed, echoed, logged, printed,
 embedded in evidence or documentation, or persisted by discovery tooling.
 Their scope must be read-only to the greatest extent supported; administrator
-mutation privileges cannot be required merely for convenience. The repository
-cannot yet safely freeze the exact credential type or token-generation flow.
-PE-4.0B preparation must determine the deployed supported mechanism and a
-non-echoing, non-command-line safe invocation method. Failure to do so stops.
+mutation privileges cannot be required merely for convenience. PE-4.0B.2a uses
+an operator-provided HA access/bearer token with the frozen non-echoing,
+non-command-line invocation method above. Token generation remains outside
+HIOC; failure to acquire the token safely stops.
 
 PE-4.0B preparation must freeze the exact allowlisted endpoint, localhost or
 network route, HTTP/HTTPS policy, certificate trust, redirect and proxy policy,
@@ -220,9 +324,8 @@ uncertain cleanup, and zero or ambiguous authority evidence fail closed.
 
 ## PE-4.0B preparation gate
 
-PE-4.0B preparation must determine the PI5/HA deployment type, approved
-supported endpoint and registry-read semantics, credential availability and
-safe injection, TLS/network inputs, exact query/response bounds, sanitized
-evidence schema, and one read-only operator procedure. It must prove that these
-requirements can be met before any live access. PE-4.0B and PE-4 implementation
-remain not started until separately authorized.
+PE-4.0B.2a deployment type, endpoint, authentication semantics, credential
+injection, network policy, bounds, output, and STOP contract are frozen above.
+A separately authorized repository-controlled client implementation and
+credential-free dependency proof must pass before live access. The 2b registry
+schema/evidence tool and PE-4 implementation remain separate and not started.

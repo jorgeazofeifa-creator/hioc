@@ -1,5 +1,16 @@
 # HIOC Architecture Decisions
 
+## Decision: Freeze PE-4.0B.2a to REST then WebSocket authentication
+
+Official Home Assistant documentation supports a fixed-message authenticated
+`GET /api/` and the `/api/websocket` authentication handshake. PE-4.0B.2a will
+perform exactly those two credential-bearing interactions and no WebSocket
+command. It uses terminal-only sanitized output, `PI5_HA` logical provenance,
+and a repository-controlled client. A custom WebSocket stack, dependency
+installation, registries, states, redirects, retries, and fallback are rejected.
+The public REST API exposes no required registries; source-level config/frontend
+WebSocket registry commands remain a separately reviewed 2b concern.
+
 ## Decision: Split authenticated PE-4 discovery after preflight PASS
 
 PE-4.0B.1 is COMPLETE / PASS. The governed target is PI5 in an

@@ -17,6 +17,10 @@ current HTTP endpoint without credentials or registry/state access. PE-4.0B.2
 authenticated discovery and the association adapter remain not started and
 separately gated; the preflight does not authorize either.
 
+PE-4.0B.2a is frozen to authenticated `GET /api/` followed by WebSocket
+authentication at `/api/websocket`, with no command or data enumeration. See
+the access/privacy contract for the official-source basis and exact limits.
+
 ## Packages
 
 Installable packages are in `homeassistant/packages`:

@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Froze the official PE-4.0B.2a interface contract to authenticated `GET /api/`
+  followed by `/api/websocket` authentication only. Recorded fixed response and
+  handshake schemas, bearer-token handling, exact bounds and terminal markers,
+  REST registry non-support, version-pinned frontend/source registry findings,
+  and the repository-controlled-client requirement. No client, credential,
+  network request, registry discovery, evidence, deployment, or production
+  change was created; 2a and 2b remain not started.
+
 - Recorded PE-4.0B.1 production preflight COMPLETE / PASS. The credential-free
   check proved PI5's HA Terminal add-on context, HA OS/Core/Supervisor
   classification, exact no-proxy HTTP endpoint, available secure prompt and
