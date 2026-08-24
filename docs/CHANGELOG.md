@@ -762,3 +762,11 @@ Initial real HIOC core foundation.
 - It does not replace the existing `hioc-network-probe.sh`.
 
 - Phase 7A repository governance now owns the checksum-verified HIOC network probe source, derives PI5 probing and inventory addressing from `HOME_ASSISTANT_IP`, provides guarded deterministic deployment, and separates Dashboard V2 MQTT operational freshness from forecast trend. This entry records the earlier pending state; the Unreleased production-validation entry closes it.
+# Unreleased
+
+- Governed CASE A for the PE-4.0B.2a PI3 dependency: retained the accepted
+  distribution CPython 3.11.2, froze the official AArch64
+  `websockets==16.1.1` wheel and SHA-256 in an offline lock, and defined a
+  versioned release-managed virtual environment with atomic activation and
+  bounded rollback. No dependency was downloaded, installed, or deployed and
+  PE-4.0B.2a remains not started.

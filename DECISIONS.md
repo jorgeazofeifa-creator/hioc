@@ -1495,3 +1495,14 @@ uses bounded `CONFIRMED` or `UNCONFIRMED` launch status and never raw diagnostic
 The changed wrapper invalidates the current bootstrap identity and requires a
 new post-push trust gate. No rollback, staging, retransmission, or Action 9 work
 is authorized.
+# Decision: Use a hash-locked isolated PI3 runtime for PE-4.0B.2a
+
+PE-4.0B.2a adopts CASE A: a release-managed, versioned virtual environment
+under `/home/jazofv1/hioc/runtime/pe4`, activated through a strictly managed
+atomic pointer. PI3's distribution CPython 3.11.2 satisfies the existing HIOC
+CPython 3.10 language-floor policy and is not replaced. The sole dependency is
+the exact official CPython 3.11 AArch64 `websockets==16.1.1` wheel frozen in
+`requirements-pe4.lock`; installation is offline, hash-required, binary-only,
+and has no transitive dependencies. The client and isolated environment are one
+compatibility unit. This decision is governance only and authorizes no host,
+credential, installation, deployment, or client access.

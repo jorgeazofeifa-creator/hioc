@@ -402,3 +402,12 @@ The repository-controlled client is implemented but unexecuted. Separately
 authorized source/deployment identity and credential-free dependency proof must
 pass before live access. The 2b registry
 schema/evidence tool and PE-4 implementation remain separate and not started.
+# Isolated dependency runtime
+
+PE-4.0B.2a uses the CASE A runtime governed by
+`PE4_ISOLATED_RUNTIME_DEPENDENCY_CONTRACT.md`: PI3 distribution CPython 3.11.2
+creates a versioned virtual environment containing only the hash-locked official
+AArch64 `websockets==16.1.1` wheel. The client runs only through the managed
+absolute interpreter. This changes no endpoint, credential, message-bound,
+redirect, proxy, privacy, or STOP rule in this document and authorizes no live
+Home Assistant access.

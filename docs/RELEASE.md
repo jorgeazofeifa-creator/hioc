@@ -287,3 +287,12 @@ It publishes retained MQTT topics:
 home/infrastructure/hioc/platform/version
 home/infrastructure/hioc/platform/status
 ```
+# PE-4.0B.2a isolated runtime release boundary
+
+The lock file and dependency contract are governed release content; the wheel
+is a digest-verified off-device artifact and is not stored in Git. Versioned
+virtual-environment bytes are reproducible release products, not persistent
+state. A future release correction must govern creation, atomic active-pointer
+switching, prior-environment rollback retention, artifact-cache preservation,
+and backup exclusions before deployment. Nothing is installed or released by
+this checkpoint.

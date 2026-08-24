@@ -2128,3 +2128,15 @@ malformed payloads, false PI5 evidence was absent, the backup was created, and
 no rollback occurred or was required. This closes only this corrective
 checkpoint. Phase 7A remains in progress; Canonical Address Selection
 Hardening remains next.
+# PE-4.0B.2a isolated runtime dependency governance
+
+Status: **READY FOR GOVERNANCE COMMIT REVIEW — NOT DEPLOYED / NOT EXECUTED**.
+
+PI3 CPython 3.11.2 satisfies the existing HIOC CPython policy; no Python
+version change is required. CASE A freezes `websockets==16.1.1` to the exact
+official CPython 3.11 AArch64 wheel and SHA-256, with no transitive dependencies,
+and defines a versioned release-managed virtual environment with an atomic
+active pointer. The independent route proof remains credential-free and should
+precede dependency deployment. Runtime preflight remains attempted but not
+complete and must be rerun through the future absolute isolated interpreter.
+PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain **NOT STARTED**.

@@ -778,3 +778,12 @@ rollback command reserved for justified deterministic failure.
 ## Operations Acceptance Standard
 
 The permanent actionable release checklist is in [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md#operations-acceptance-standard). Operations documentation must allow an operator to answer what exists, why, how it runs, how it is validated, and how it is recovered without rediscovering the system through SSH.
+# PE-4.0B.2a dependency/runtime boundary
+
+Do not run the capability client with an ambient interpreter. The future
+governed invocation must use
+`/home/jazofv1/hioc/runtime/pe4/active/bin/python` after a separately authorized
+deployment and complete credential-free preflight. The exact dependency,
+offline artifact, permissions, active-pointer, evidence, and rollback contract
+is in `PE4_ISOLATED_RUNTIME_DEPENDENCY_CONTRACT.md`. This checkpoint supplies no
+operator installation, deployment, authentication, or client command.

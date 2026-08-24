@@ -201,3 +201,12 @@ Production acceptance uses the deployed validator, cron inspection, fresh state,
 ## Operations Acceptance Standard
 
 A release is not complete until repository documentation answers what exists, why it exists, how it runs, how it is validated, and how it is recovered without requiring SSH discovery. The actionable checklist is authoritative in [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md#operations-acceptance-standard). Any required production verification must be captured in an Evidence Report and committed back to the repository.
+# PE-4.0B.2a isolated runtime (governance only)
+
+The governed design is CASE A in
+`PE4_ISOLATED_RUNTIME_DEPENDENCY_CONTRACT.md`. A future separately authorized
+deployment must build a new versioned environment from `requirements-pe4.lock`
+using the exact verified offline wheel, validate it, deploy the reviewed client,
+then atomically update the managed active pointer. It must not modify system
+Python, install globally, use live indexes, inherit system site packages, or
+access Home Assistant. No deployment is authorized by this checkpoint.

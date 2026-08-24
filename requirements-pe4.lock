@@ -1,0 +1,5 @@
+# PE-4.0B.2a; official CPython 3.11 AArch64 wheel only.
+# websockets-16.1.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+# size=188095; transitive_dependencies=NONE
+websockets==16.1.1 \
+    --hash=sha256:86d7f0f8bdb25d2c632b72527325e4776430fd5bc61b9118de4e2b8ddb5f5b01
