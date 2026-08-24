@@ -1,12 +1,20 @@
 # HIOC Deployment
 
+PE-4 client execution is governed on PI3, not in the PI5 Home Assistant
+Terminal add-on. `/home/jazofv1/hioc-release-source` remains authoritative clean
+release source and `/home/jazofv1/hioc` remains the non-Git deployed runtime.
+Exact Python, dependency, environment, installed path, ownership, and modes
+require credential-free PI3 preflight. Prefer a release-managed isolated
+environment if PI3 capability proof supports it; none is created here.
+
 The repository now contains `tools/hioc-pe4-ha-auth-capability.py`; this
 implementation checkpoint deploys nothing. A future checkpoint must freeze its
 committed blob/SHA-256, prove one approved installed WebSocket dependency, and
 choose governed source execution or a restrictive runtime installation. Any
-future installed copy is expected to be owned by `root:root`, mode `0755`, and
-byte-identical to the approved Git object. No dependency installation is
-authorized or implied.
+future installed copy must be byte-identical to the approved Git object and use
+ownership and modes proved and separately approved for PI3; the former PI5-local
+`root:root` assumption is superseded. No dependency installation is authorized
+or implied.
 
 PE-4.0B.1 is complete and deployed nothing. The accepted preflight was
 credential-free and read-only. PE-4.0B.2a capability proof, PE-4.0B.2b

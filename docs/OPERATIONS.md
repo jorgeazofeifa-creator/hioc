@@ -1,5 +1,13 @@
 # HIOC Operations
 
+The PE-4 authenticated client is an HIOC consumer on PI3 NUT&PIHOLE; PI5 HA is
+only the remote API endpoint. Before credentials, a future local, network-free
+PI3 preflight must prove execution identity, Python, terminal/getpass,
+dependency APIs, and intended deployment permissions. A separate later route
+proof may open only one bounded TCP connection to `192.168.100.251:8123`, send
+no bytes, and close. Neither is executed here. Do not install HIOC code or
+dependencies in PI5's Terminal add-on.
+
 PE-4.0B.1 is COMPLETE / PASS. Its credential-free PI5 preflight proved the
 `HA_TERMINAL_ADDON` context, HA OS deployment, and exact endpoint
 `http://192.168.100.251:8123`; it performed no registry, state, configuration,

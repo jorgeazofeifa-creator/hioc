@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Corrected PE-4.0B.2a execution architecture: the client is an HIOC consumer
+  on PI3 while PI5 HA remains the exact remote API source. Separated execution
+  and endpoint identity in code/tests, retained endpoint/privacy/network bounds,
+  preserved the failed PI5-local precheck as history, and designed separate
+  credential-free PI3 runtime and route proofs. Nothing was installed,
+  deployed, connected, or executed; PE-4.0B.2a remains not started.
+
 - Corrected the PE-4.0B.2a `websockets` redirect-suppression defect by binding
   the handshake to one pre-connected governed-target socket. The dependency
   refuses redirects on this path before another endpoint is contacted. Added

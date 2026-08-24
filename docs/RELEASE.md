@@ -1,5 +1,13 @@
 # HIOC Release Process
 
+The PE-4 client follows the established PI3 source/runtime boundary:
+`/home/jazofv1/hioc-release-source` is authoritative Git source and
+`/home/jazofv1/hioc` is the non-Git deployed runtime. PI5 HA remains a remote
+API source and receives no HIOC client or dependency. A future credential-free
+preflight must prove PI3 Python/dependency and installation facts before a
+release-managed, preferably isolated dependency design can be approved. This
+checkpoint deploys and installs nothing.
+
 The repository-controlled PE-4.0B.2a client is implemented and tested offline,
 but is unstaged, uncommitted, unreleased, undeployed, and unexecuted at this
 checkpoint. Its next boundary is exact diff/identity commit review. Only after

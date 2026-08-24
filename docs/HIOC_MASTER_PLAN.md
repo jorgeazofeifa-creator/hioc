@@ -1,5 +1,16 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a PI3 execution architecture
+
+PE-4 Home Assistant API consumption belongs to the HIOC execution environment
+on PI3 NUT&PIHOLE. PI5 HA remains the remote supported API source at
+`192.168.100.251:8123`; it is not a HIOC Python or dependency deployment host.
+The client separates PI3 execution-host identity from the fixed PI5 endpoint.
+The earlier PI5-local dependency precheck remains valid historical evidence of
+the superseded architecture. Credential-free PI3 runtime preflight, a separate
+one-endpoint route proof, dependency deployment, and 2a execution remain **NOT
+STARTED**. PE-4.0B.2b and PE-4.0C remain **NOT STARTED**.
+
 ## PE-4.0B.2a WebSocket redirect-suppression correction
 
 Runtime-precheck preparation found the **PE-4.0B.2A WEBSOCKETS

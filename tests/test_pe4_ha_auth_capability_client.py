@@ -16,8 +16,10 @@ sys.modules[SPEC.name] = CLIENT
 SPEC.loader.exec_module(CLIENT)
 
 
-ARGS = ["--expected-hostname", "a0d7b954-ssh", "--expected-operator", "root",
-        "--target-ipv4", "192.168.100.251", "--target-port", "8123",
+ARGS = ["--expected-execution-hostname", "nutandpihole",
+        "--expected-execution-operator", "jazofv1",
+        "--expected-execution-ipv4", "192.168.100.252",
+        "--ha-ipv4", "192.168.100.251", "--ha-port", "8123",
         "--instance-label", "PI5_HA"]
 
 
@@ -76,7 +78,7 @@ class ClientTests(unittest.TestCase):
         self.assertEqual((caught.exception.code, caught.exception.stage), (code, stage))
 
     def test_exact_cli(self):
-        self.assertEqual(CLIENT.parse_args(ARGS).target_port, 8123)
+        self.assertEqual(CLIENT.parse_args(ARGS).ha_port, 8123)
         self.failure(lambda: CLIENT.parse_args(ARGS[:-2]), "INVALID_ARGUMENTS", "INPUT_VALIDATION")
         bad = ARGS.copy(); bad[-1] = "OTHER"
         self.failure(lambda: CLIENT.parse_args(bad), "INVALID_ARGUMENTS", "INPUT_VALIDATION")
@@ -89,17 +91,18 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(CLIENT.detect_websocket_client(
             lambda n: object(), lambda n: incompatible), "INCOMPATIBLE")
 
-    def test_target_gates(self):
+    def test_execution_host_gates_are_separate_from_ha_endpoint(self):
         args = CLIENT.parse_args(ARGS)
-        good = dict(hostname="a0d7b954-ssh", operator="root", addresses={"192.168.100.251"},
+        good = dict(hostname="nutandpihole", operator="jazofv1", addresses={"192.168.100.252"},
                     shell="/bin/zsh")
-        CLIENT.validate_target(args, **good)
+        CLIENT.validate_execution_host(args, **good)
+        self.assertNotIn(CLIENT.HA_IPV4, good["addresses"])
         for field, value, code in (("hostname", "wrong", "WRONG_TARGET"),
                                    ("operator", "user", "WRONG_OPERATOR"),
                                    ("addresses", set(), "WRONG_TARGET"),
                                    ("shell", "/bin/fish", "UNSUPPORTED_SHELL")):
             changed = dict(good); changed[field] = value
-            self.failure(lambda c=changed: CLIENT.validate_target(args, **c), code, "TARGET_IDENTITY")
+            self.failure(lambda c=changed: CLIENT.validate_execution_host(args, **c), code, "TARGET_IDENTITY")
         CLIENT.validate_terminal(True, True)
         self.failure(lambda: CLIENT.validate_terminal(False, True),
                      "SECURE_PROMPT_UNAVAILABLE", "CREDENTIAL_ACQUISITION")
@@ -119,7 +122,12 @@ class ClientTests(unittest.TestCase):
 
     def test_rest_pass_exact_request(self):
         conn = FakeConnection(FakeResponse())
-        CLIENT.rest_check("secret", lambda *a, **k: conn)
+        endpoint = []
+        def factory(*args, **kwargs):
+            endpoint.append((args, kwargs))
+            return conn
+        CLIENT.rest_check("secret", factory)
+        self.assertEqual(endpoint[0][0], ("192.168.100.251", 8123))
         args, kwargs = conn.requests[0]
         self.assertEqual(args, ("GET", "/api/"))
         self.assertEqual(kwargs["headers"]["Authorization"], "Bearer secret")
@@ -159,8 +167,9 @@ class ClientTests(unittest.TestCase):
         module = types.SimpleNamespace(connect=connect, exceptions=types.SimpleNamespace(
             PayloadTooBig=FakePayloadTooBig))
         fake_socket = mock.Mock()
-        with mock.patch.object(CLIENT.socket, "create_connection", return_value=fake_socket):
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=fake_socket) as create:
             asyncio.run(CLIENT._websockets_async_check("secret", websockets_module=module))
+        create.assert_called_once_with(("192.168.100.251", 8123), timeout=5.0)
         self.assertTrue(ws.closed)
         self.assertEqual(len(ws.sent), 1)
         self.assertEqual(json.loads(ws.sent[0]), {"type": "auth", "access_token": "secret"})
@@ -278,13 +287,13 @@ class ClientTests(unittest.TestCase):
     @mock.patch.object(CLIENT, "rest_check")
     @mock.patch.object(CLIENT, "acquire_token", return_value="top-secret")
     @mock.patch.object(CLIENT, "validate_terminal")
-    @mock.patch.object(CLIENT, "validate_target")
+    @mock.patch.object(CLIENT, "validate_execution_host")
     @mock.patch.object(CLIENT, "proxy_influence_present", return_value=False)
     @mock.patch.object(CLIENT, "detect_websocket_client", return_value="PYTHON_WEBSOCKETS")
     @mock.patch.object(CLIENT, "parse_args")
     def test_run_sequence_and_no_secret_output(self, parse, dependency, proxy, target,
                                                terminal, prompt, rest, ws):
-        parse.return_value = CLIENT.Arguments("a0d7b954-ssh", "root", "192.168.100.251", 8123, "PI5_HA")
+        parse.return_value = CLIENT.Arguments("nutandpihole", "jazofv1", "192.168.100.252", "192.168.100.251", 8123, "PI5_HA")
         events = []
         target.side_effect = lambda *args, **kwargs: events.append("target")
         proxy.side_effect = lambda *args, **kwargs: events.append("proxy") or False
@@ -302,10 +311,10 @@ class ClientTests(unittest.TestCase):
 
     @mock.patch.object(CLIENT, "detect_websocket_client", return_value="INCOMPATIBLE")
     @mock.patch.object(CLIENT, "proxy_influence_present", return_value=False)
-    @mock.patch.object(CLIENT, "validate_target")
+    @mock.patch.object(CLIENT, "validate_execution_host")
     @mock.patch.object(CLIENT, "parse_args")
     def test_dependency_failure_before_prompt(self, parse, target, proxy, dependency):
-        parse.return_value = CLIENT.Arguments("a0d7b954-ssh", "root", "192.168.100.251", 8123, "PI5_HA")
+        parse.return_value = CLIENT.Arguments("nutandpihole", "jazofv1", "192.168.100.252", "192.168.100.251", 8123, "PI5_HA")
         with mock.patch.object(CLIENT, "acquire_token") as prompt:
             output = []
             self.assertEqual(CLIENT.run(ARGS, output.append), 1)
@@ -317,13 +326,13 @@ class ClientTests(unittest.TestCase):
     @mock.patch.object(CLIENT, "rest_check", side_effect=CLIENT.ContractFailure("AUTHENTICATION_FAILED", "AUTHENTICATION"))
     @mock.patch.object(CLIENT, "acquire_token", return_value="secret")
     @mock.patch.object(CLIENT, "validate_terminal")
-    @mock.patch.object(CLIENT, "validate_target")
+    @mock.patch.object(CLIENT, "validate_execution_host")
     @mock.patch.object(CLIENT, "proxy_influence_present", return_value=False)
     @mock.patch.object(CLIENT, "detect_websocket_client", return_value="PYTHON_WEBSOCKETS")
     @mock.patch.object(CLIENT, "parse_args")
     def test_rest_failure_stops_websocket(self, parse, dependency, proxy, target,
                                           terminal, prompt, rest, ws):
-        parse.return_value = CLIENT.Arguments("a0d7b954-ssh", "root", "192.168.100.251", 8123, "PI5_HA")
+        parse.return_value = CLIENT.Arguments("nutandpihole", "jazofv1", "192.168.100.252", "192.168.100.251", 8123, "PI5_HA")
         self.assertEqual(CLIENT.run(ARGS, list().append), 1)
         ws.assert_not_called()
 
@@ -332,6 +341,14 @@ class ClientTests(unittest.TestCase):
         for forbidden in ("/api/states", "subscribe_events", "config/device_registry/list",
                           ".storage/", "sqlite3", "mkdtemp", "NamedTemporaryFile"):
             self.assertNotIn(forbidden, source)
+
+    def test_pi5_local_execution_assumptions_are_absent(self):
+        source = PATH.read_text(encoding="utf-8")
+        self.assertNotIn('EXPECTED_HOSTNAME = "a0d7b954-ssh"', source)
+        self.assertNotIn('EXPECTED_OPERATOR = "root"', source)
+        self.assertIn('EXPECTED_EXECUTION_IPV4 = "192.168.100.252"', source)
+        self.assertIn('HA_IPV4 = "192.168.100.251"', source)
+        self.assertIn('WS_URI = "ws://192.168.100.251:8123/api/websocket"', source)
 
 
 if __name__ == "__main__":

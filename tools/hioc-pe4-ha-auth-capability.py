@@ -25,10 +25,11 @@ from dataclasses import dataclass
 from typing import Callable, Sequence
 
 
-EXPECTED_HOSTNAME = "a0d7b954-ssh"
-EXPECTED_OPERATOR = "root"
-TARGET_IPV4 = "192.168.100.251"
-TARGET_PORT = 8123
+EXPECTED_EXECUTION_HOSTNAME = "nutandpihole"
+EXPECTED_EXECUTION_OPERATOR = "jazofv1"
+EXPECTED_EXECUTION_IPV4 = "192.168.100.252"
+HA_IPV4 = "192.168.100.251"
+HA_PORT = 8123
 INSTANCE_LABEL = "PI5_HA"
 REST_PATH = "/api/"
 WS_URI = "ws://192.168.100.251:8123/api/websocket"
@@ -85,25 +86,31 @@ class ClosedArgumentParser(argparse.ArgumentParser):
 
 @dataclass(frozen=True)
 class Arguments:
-    expected_hostname: str
-    expected_operator: str
-    target_ipv4: str
-    target_port: int
+    expected_execution_hostname: str
+    expected_execution_operator: str
+    expected_execution_ipv4: str
+    ha_ipv4: str
+    ha_port: int
     instance_label: str
 
 
 def parse_args(argv: Sequence[str]) -> Arguments:
     parser = ClosedArgumentParser(add_help=False, allow_abbrev=False)
-    parser.add_argument("--expected-hostname", required=True)
-    parser.add_argument("--expected-operator", required=True)
-    parser.add_argument("--target-ipv4", required=True)
-    parser.add_argument("--target-port", required=True, type=int)
+    parser.add_argument("--expected-execution-hostname", required=True)
+    parser.add_argument("--expected-execution-operator", required=True)
+    parser.add_argument("--expected-execution-ipv4", required=True)
+    parser.add_argument("--ha-ipv4", required=True)
+    parser.add_argument("--ha-port", required=True, type=int)
     parser.add_argument("--instance-label", required=True)
     ns = parser.parse_args(argv)
-    args = Arguments(ns.expected_hostname, ns.expected_operator, ns.target_ipv4,
-                     ns.target_port, ns.instance_label)
-    if args != Arguments(EXPECTED_HOSTNAME, EXPECTED_OPERATOR, TARGET_IPV4,
-                         TARGET_PORT, INSTANCE_LABEL):
+    args = Arguments(
+        ns.expected_execution_hostname, ns.expected_execution_operator,
+        ns.expected_execution_ipv4, ns.ha_ipv4, ns.ha_port, ns.instance_label,
+    )
+    if args != Arguments(
+        EXPECTED_EXECUTION_HOSTNAME, EXPECTED_EXECUTION_OPERATOR,
+        EXPECTED_EXECUTION_IPV4, HA_IPV4, HA_PORT, INSTANCE_LABEL,
+    ):
         raise ContractFailure("INVALID_ARGUMENTS", "INPUT_VALIDATION")
     return args
 
@@ -157,11 +164,12 @@ def current_operator() -> str:
         return ""
 
 
-def validate_target(args: Arguments, *, hostname: str, operator: str,
-                    addresses: set[str], shell: str) -> None:
-    if hostname != args.expected_hostname or args.target_ipv4 not in addresses:
+def validate_execution_host(args: Arguments, *, hostname: str, operator: str,
+                            addresses: set[str], shell: str) -> None:
+    if (hostname != args.expected_execution_hostname
+            or args.expected_execution_ipv4 not in addresses):
         raise ContractFailure("WRONG_TARGET", "TARGET_IDENTITY")
-    if operator != args.expected_operator:
+    if operator != args.expected_execution_operator:
         raise ContractFailure("WRONG_OPERATOR", "TARGET_IDENTITY")
     shell_name = os.path.basename(shell).lower()
     if shell_name not in {"bash", "zsh", "ash"}:
@@ -211,7 +219,7 @@ def rest_check(token: str, connection_factory: Callable[..., object] = http.clie
     connection = None
     try:
         connection = connection_factory(
-            TARGET_IPV4, TARGET_PORT,
+            HA_IPV4, HA_PORT,
             timeout=remaining_timeout(deadline, CONNECT_TIMEOUT, "ENDPOINT"),
         )
         connection.request("GET", REST_PATH, headers={
@@ -291,7 +299,7 @@ async def _websockets_async_check(
     connected_socket = None
     try:
         connected_socket = socket.create_connection(
-            (TARGET_IPV4, TARGET_PORT),
+            (HA_IPV4, HA_PORT),
             timeout=remaining_timeout(deadline, CONNECT_TIMEOUT, "WEBSOCKET_CAPABILITY"),
         )
         async with connect(
@@ -394,7 +402,7 @@ def run(argv: Sequence[str], output: Callable[[str], None] = print) -> int:
     deadline = started + TOTAL_BUDGET
     try:
         args = parse_args(argv)
-        validate_target(
+        validate_execution_host(
             args, hostname=socket.gethostname(), operator=current_operator(),
             addresses=local_ipv4_addresses(), shell=os.environ.get("SHELL", ""),
         )

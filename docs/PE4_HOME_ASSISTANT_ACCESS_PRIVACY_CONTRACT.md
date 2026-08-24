@@ -8,6 +8,18 @@
 
 ## Repository-controlled 2a client
 
+The approved execution architecture is **PI3 HIOC consumer -> PI5 Home
+Assistant API source**. Execution-host identity and HA endpoint identity are
+independent gates. Repository-governed PI3 facts are short hostname
+`nutandpihole`, operator `jazofv1`, and local IPv4 `192.168.100.252`; the
+client proves those before asking for a credential. PI5 remains only logical
+instance `PI5_HA` at remote endpoint `192.168.100.251:8123`, which is not
+required in PI3's local address set. The abandoned PI5-local result
+`WEBSOCKET_DEPENDENCY=NONE`, `ERROR_CODE=WEBSOCKET_DEPENDENCY_UNAVAILABLE`,
+`FAILURE_STAGE=WEBSOCKET_DEPENDENCY` remains historical evidence, not a failure
+of this architecture. HIOC code and dependencies must not be installed in the
+PI5 Terminal add-on.
+
 The client corrects the **PE-4.0B.2A WEBSOCKETS REDIRECT-SUPPRESSION
 ENFORCEMENT DEFECT — CLIENT ACCEPTS A DEPENDENCY API THAT MAY FOLLOW HANDSHAKE
 REDIRECTS WITHOUT AN EXPLICIT ZERO-REDIRECT CONTROL** by creating one bounded
@@ -21,8 +33,9 @@ emit `REDIRECT_SUPPRESSION_CAPABILITY=PASS` or fail with
 
 `tools/hioc-pe4-ha-auth-capability.py` now implements this frozen contract in
 repository source. It requires the exact non-secret target tuple through
-`--expected-hostname a0d7b954-ssh --expected-operator root --target-ipv4
-192.168.100.251 --target-port 8123 --instance-label PI5_HA`; it accepts no URL,
+`--expected-execution-hostname nutandpihole --expected-execution-operator
+jazofv1 --expected-execution-ipv4 192.168.100.252 --ha-ipv4 192.168.100.251
+--ha-port 8123 --instance-label PI5_HA`; it accepts no URL,
 secret, evidence path, or command argument. It proves an approved installed
 Python WebSocket dependency before target-gated terminal credential acquisition.
 After correction of the post-materialization websocket-client bound defect, the
@@ -38,6 +51,30 @@ frozen at review. A separate checkpoint must decide whether governed source
 execution or a runtime deployment is appropriate and must prove the selected
 dependency identity before preparing any operator command. PE-4.0B.2a therefore
 remains **NOT STARTED**; implementation presence is not production PASS.
+
+## PI3 preflight and route-proof design
+
+The credential-free runtime preflight is local and network-free. It proves the
+exact source identity, PI3 tuple, interactive shell and controlling terminal,
+Python executable/version, required standard library, and an installed
+`websockets` API with `max_size`, `proxy`, timeout, pre-existing-socket,
+redirect-rejection, `PayloadTooBig`, and `InvalidStatus` capabilities. It also
+reports the intended release-managed runtime path, owner, group, and modes
+without changing anything. Python version/path, shell, dependency/version,
+virtual-environment support, and final deployed client path remain
+**REQUIRES_OPERATOR_PREFLIGHT**.
+
+Reachability is a later separate credential-free proof: open one bounded TCP
+connection from proven PI3 to exactly `192.168.100.251:8123`, send no
+application bytes, close immediately, use no DNS/proxy/retry/alternate endpoint,
+and emit only bounded PASS/FAIL markers. It is not authorized here.
+
+Dependency deployment follows the existing source/runtime split. Prefer a
+release-managed isolated environment if preflight proves it supportable; do not
+alter the production interpreter or blindly install latest. Exact dependency
+identity and runtime capability proof are mandatory. The 2a token remains an
+interactive Python `getpass` value held only in process memory; unattended
+adapter credential management is a later architecture checkpoint.
 
 ## Frozen PE-4.0B.2a official API contract
 

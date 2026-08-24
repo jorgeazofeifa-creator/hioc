@@ -54,6 +54,15 @@ class PE4AuthenticatedAPIContractTests(unittest.TestCase):
         self.require("REDIRECT-SUPPRESSION", "ENFORCEMENT DEFECT",
                      "REDIRECT_SUPPRESSION_CAPABILITY=PASS", "pre-existing socket")
 
+    def test_pi3_execution_and_pi5_endpoint_are_separate(self):
+        self.require("PI3 HIOC consumer -> PI5 Home", "`nutandpihole`",
+                     "`jazofv1`", "`192.168.100.252`",
+                     "remote endpoint `192.168.100.251:8123`")
+        self.require("REQUIRES_OPERATOR_PREFLIGHT", "network-free",
+                     "application bytes", "release-managed isolated environment")
+        self.require("WEBSOCKET_DEPENDENCY_UNAVAILABLE", "historical evidence")
+        self.assertIn("PE-4 Home Assistant API consumption belongs to the HIOC execution environment", MASTER)
+
     def test_status_remains_not_started(self):
         self.assertIn("PE-4.0B.2a remains **NOT\nSTARTED**", MASTER)
         self.assertNotIn("PE-4.0B.2a is **COMPLETE", MASTER)

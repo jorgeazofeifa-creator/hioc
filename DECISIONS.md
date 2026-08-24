@@ -1,5 +1,21 @@
 # HIOC Architecture Decisions
 
+## Decision: Execute PE-4 Home Assistant consumption on PI3
+
+HIOC is the consumer of Home Assistant data, so the PE-4 authenticated client
+belongs to PI3 NUT&PIHOLE. PI5 HA remains only the remote API source at exact
+`192.168.100.251:8123`. Execution-host identity (`nutandpihole`, `jazofv1`,
+`192.168.100.252`) is independent from endpoint identity (`PI5_HA`,
+`192.168.100.251:8123`). Previous PI5-local root/add-on assumptions are
+superseded; their dependency-unavailable precheck remains historical evidence.
+
+PI3 runtime/dependency preflight is credential-free, local, network-free, and
+fail-closed. Route proof is separately authorized and limited to one no-payload
+TCP connection to the exact endpoint. Dependencies must honor the existing
+release-source/non-Git-runtime contract and should be isolated when proved
+supportable. This decision authorizes no execution, installation, deployment,
+credentials, or PE-4.0B.2a run.
+
 ## Decision: Enforce zero WebSocket redirects with a target-bound socket
 
 The approved `websockets` dependency follows handshake redirects by default and
