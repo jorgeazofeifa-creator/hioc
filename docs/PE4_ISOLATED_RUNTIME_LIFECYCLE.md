@@ -13,6 +13,7 @@ ROUTE_PROOF_ORDER=BEFORE_DEPENDENCY_DEPLOYMENT
 PE4_0B2A=NOT_STARTED
 PE4_0B2B=NOT_STARTED
 PE4_0C=NOT_STARTED
+ACTION_A=ATTEMPTED_BUT_NOT_COMPLETE
 ```
 
 Every action is separately authorized, emits a bounded terminal result, and
@@ -50,6 +51,23 @@ boundary; every existing child component is rejected if it is a file, symlink,
 junction, mount point, or other reparse point. Each governed directory and file
 uses a protected DACL with inheritance removed and exactly the current user SID
 allowed Full Control. Windows security is proved by DACL, never POSIX mode.
+
+ACL persistence does not use `Get-Acl` or `Set-Acl`. A child-only environment
+passes the already validated path to Windows PowerShell; the helper loads the
+existing `DirectorySecurity` or `FileSecurity` access descriptor through
+`DirectoryInfo`/`FileInfo`, disables inheritance without retaining inherited
+rules, removes every remaining explicit Allow or Deny rule, adds exactly one
+current-user SID FullControl rule, persists the descriptor, and rereads it.
+Validation requires a protected DACL, exactly one non-inherited Allow ACE, the
+exact SID and FullControl rights, directory `ContainerInherit|ObjectInherit` or
+file `None`, and `PropagationFlags=None`. Read, protection, rule-update,
+application, reread, and each validation failure have bounded error codes.
+
+The first production attempt created only the expected `HIOC` directory and
+stopped at ACL application before acquisition. A retry after separate
+publication and authorization must reject it if it is a file or reparse point;
+otherwise it hardens that existing directory before creating or using any
+descendant. No operator deletion or manual ACL change is required or allowed.
 
 Action A uses a direct HTTPS connection to the single frozen
 `files.pythonhosted.org` host/path, with no proxy, redirect, retry, alternate

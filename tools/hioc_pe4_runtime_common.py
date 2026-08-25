@@ -136,18 +136,47 @@ def prepare_windows_hierarchy(trusted_root: pathlib.Path, relative_parts: Iterab
 
 
 def secure_workstation_path(path: pathlib.Path, is_directory: bool) -> None:
-    script = r'''$p=$args[0];$isDir=$args[1] -eq '1';$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
-if($isDir){$acl=New-Object Security.AccessControl.DirectorySecurity}else{$acl=New-Object Security.AccessControl.FileSecurity}
-$acl.SetAccessRuleProtection($true,$false)
-$inherit=if($isDir){'ContainerInherit,ObjectInherit'}else{'None'}
-$rule=New-Object Security.AccessControl.FileSystemAccessRule($sid,'FullControl',$inherit,'None','Allow')
-$acl.AddAccessRule($rule);Set-Acl -LiteralPath $p -AclObject $acl
-$check=Get-Acl -LiteralPath $p
-if(-not $check.AreAccessRulesProtected){exit 2}
-$rules=@($check.Access|Where-Object{$_.AccessControlType -eq 'Allow'})
-if($rules.Count -ne 1 -or $rules[0].IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value){exit 3}'''
-    run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script, str(path), "1" if is_directory else "0"],
-        "WORKSTATION_ACL", timeout=15)
+    script = r'''$p=$env:HIOC_PE4_ACL_PATH;$isDir=$env:HIOC_PE4_ACL_IS_DIRECTORY -eq '1';$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
+try{$item=if($isDir){[IO.DirectoryInfo]::new($p)}else{[IO.FileInfo]::new($p)}
+    $acl=$item.GetAccessControl([Security.AccessControl.AccessControlSections]::Access)}catch{exit 11}
+try{$acl.SetAccessRuleProtection($true,$false)}catch{exit 12}
+try{foreach($existing in @($acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]))){
+        [void]$acl.RemoveAccessRuleSpecific($existing)}
+    $inherit=if($isDir){[Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit}else{[Security.AccessControl.InheritanceFlags]::None}
+    $rule=New-Object Security.AccessControl.FileSystemAccessRule($sid,[Security.AccessControl.FileSystemRights]::FullControl,$inherit,[Security.AccessControl.PropagationFlags]::None,[Security.AccessControl.AccessControlType]::Allow)
+    $acl.AddAccessRule($rule)}catch{exit 13}
+try{$item.SetAccessControl($acl)}catch{exit 14}
+try{$check=$item.GetAccessControl([Security.AccessControl.AccessControlSections]::Access)
+    $rules=@($check.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]))}catch{exit 21}
+if(-not $check.AreAccessRulesProtected){exit 22}
+if($rules.Count -ne 1){exit 23}
+$actual=$rules[0]
+if($actual.IsInherited){exit 24}
+if($actual.IdentityReference.Value -ne $sid.Value){exit 25}
+if($actual.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow){exit 26}
+if($actual.FileSystemRights -ne [Security.AccessControl.FileSystemRights]::FullControl){exit 27}
+$expectedInheritance=if($isDir){[Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit}else{[Security.AccessControl.InheritanceFlags]::None}
+if($actual.InheritanceFlags -ne $expectedInheritance){exit 28}
+if($actual.PropagationFlags -ne [Security.AccessControl.PropagationFlags]::None){exit 29}'''
+    environment = os.environ.copy()
+    environment["HIOC_PE4_ACL_PATH"] = str(path)
+    environment["HIOC_PE4_ACL_IS_DIRECTORY"] = "1" if is_directory else "0"
+    run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+        "WORKSTATION_ACL", timeout=15, failure_codes={
+            11: "WORKSTATION_ACL_READ_FAILED",
+            12: "WORKSTATION_ACL_PROTECTION_FAILED",
+            13: "WORKSTATION_ACL_RULE_UPDATE_FAILED",
+            14: "WORKSTATION_ACL_APPLICATION_FAILED",
+            21: "WORKSTATION_ACL_VALIDATION_READ_FAILED",
+            22: "WORKSTATION_ACL_NOT_PROTECTED",
+            23: "WORKSTATION_ACL_RULE_COUNT_INVALID",
+            24: "WORKSTATION_ACL_INHERITED_RULE_REMAINS",
+            25: "WORKSTATION_ACL_IDENTITY_INVALID",
+            26: "WORKSTATION_ACL_RULE_TYPE_INVALID",
+            27: "WORKSTATION_ACL_RIGHTS_INVALID",
+            28: "WORKSTATION_ACL_INHERITANCE_INVALID",
+            29: "WORKSTATION_ACL_PROPAGATION_INVALID",
+        }, env=environment)
 
 
 def secure_workstation_directory(path: pathlib.Path) -> None:
@@ -206,13 +235,16 @@ def validated_active_target() -> pathlib.Path:
     return candidate
 
 
-def run(command: list[str], stage: str, *, timeout: int = 60, capture: bool = True) -> subprocess.CompletedProcess[str]:
+def run(command: list[str], stage: str, *, timeout: int = 60, capture: bool = True,
+        failure_codes: dict[int, str] | None = None,
+        env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     try:
-        result = subprocess.run(command, text=True, capture_output=capture, timeout=timeout, check=False)
+        result = subprocess.run(command, text=True, capture_output=capture, timeout=timeout,
+                                check=False, env=env)
     except (OSError, subprocess.TimeoutExpired):
         raise Failure("COMMAND_INVOCATION_FAILED", stage)
     if result.returncode != 0:
-        raise Failure("COMMAND_FAILED", stage)
+        raise Failure((failure_codes or {}).get(result.returncode, "COMMAND_FAILED"), stage)
     return result
 
 

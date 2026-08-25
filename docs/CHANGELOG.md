@@ -1,5 +1,15 @@
 # HIOC Changelog
 
+- Corrected the PE-4 Action A Windows ACL implementation after its first
+  production attempt stopped before network access at `WORKSTATION_ACL`. The
+  Python-launched Windows PowerShell process could not autoload the
+  `Microsoft.PowerShell.Security` cmdlets, and trailing `-Command` values were
+  not a governed `$args` transport. ACL hardening now passes the target through
+  a child-only environment, modifies the existing .NET security descriptor,
+  removes inherited and explicit ACEs, installs one SID-based FullControl rule,
+  persists through `DirectoryInfo`/`FileInfo`, and revalidates every invariant.
+  Action A remains attempted but not complete; no wheel was downloaded.
+
 - Corrected PE-4.0B.2a execution architecture: the client is an HIOC consumer
   on PI3 while PI5 HA remains the exact remote API source. Separated execution
   and endpoint identity in code/tests, retained endpoint/privacy/network bounds,

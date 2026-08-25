@@ -2156,3 +2156,19 @@ LocalApplicationData hierarchy, Windows DACL authority, Windows-safe result-last
 publication, explicit partial-success markers, a monotonic 20-second total
 deadline, reparse rejection, and bounded CLI parsing. Action A remains **NOT
 STARTED** pending correction review, commit, push, and fresh preparation.
+
+The first subsequently authorized Action A attempt stopped fail-closed while
+securing the newly created LocalApplicationData `HIOC` directory. No network
+request occurred and no artifact, cache, staging, or evidence content was
+created. Production established that the Python-launched `powershell.exe`
+could not autoload `Get-Acl`/`Set-Acl` from `Microsoft.PowerShell.Security`;
+the implementation also incorrectly treated trailing `-Command` values as
+`$args`. The corrected implementation uses no ACL cmdlets: it transports the
+validated target through child-only environment values, reads the existing
+.NET file/directory security descriptor, protects it without preserving
+inheritance, removes every remaining ACE, adds exactly one current-SID
+FullControl rule, persists it through `DirectoryInfo`/`FileInfo`, and rereads
+all DACL invariants. The existing ordinary `HIOC` directory is accepted only
+after file/reparse checks and hardened before descendants are created. Action A
+is **ATTEMPTED BUT NOT COMPLETE** and requires correction publication, fresh
+preparation, and separate execution authorization.

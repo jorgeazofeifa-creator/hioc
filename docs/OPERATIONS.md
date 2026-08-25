@@ -798,3 +798,12 @@ Action A is a Windows-only repository tool. Its result must include all five
 acquisition/publication state markers. A failure with
 `DURABLE_CACHE_PUBLISHED=TRUE` means preserve the cache and evidence state and
 STOP; never redownload, delete, or begin transfer without review.
+
+The first Action A attempt returned `COMMAND_FAILED/WORKSTATION_ACL` before
+network access and left only an ordinary inherited-ACL `HIOC` directory. Do not
+delete it or repair it manually. The corrected helper accepts it only as the
+expected real, non-reparse LocalApplicationData child, then uses .NET ACL APIs
+to remove inheritance and all prior Allow/Deny ACEs before installing and
+validating the single governed SID rule. Bounded ACL errors distinguish read,
+protection, rule update, application, validation read, and individual
+post-validation invariant failures. Any such result requires STOP.

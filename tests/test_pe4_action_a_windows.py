@@ -5,6 +5,8 @@ import io
 import json
 import os
 import pathlib
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -73,11 +75,15 @@ class ActionAWindowsTests(unittest.TestCase):
         self.assertIn("SetAccessRuleProtection($true,$false)",script)
         self.assertIn("$rules.Count -ne 1",script)
         self.assertIn("WindowsIdentity]::GetCurrent().User",script)
+        self.assertIn("GetAccessControl",script);self.assertIn("SetAccessControl",script)
+        self.assertNotIn("Get-Acl",script);self.assertNotIn("Set-Acl",script)
+        self.assertEqual(command[-1],script)
+        self.assertEqual(runner.call_args.kwargs["env"]["HIOC_PE4_ACL_PATH"],"C:\\fixture")
 
     def test_acl_distinguishes_directory_and_file(self):
         with mock.patch.object(COMMON,"run") as runner:
             COMMON.secure_workstation_path(pathlib.Path("C:/fixture"),False)
-        self.assertEqual(runner.call_args.args[0][-1],"0")
+        self.assertEqual(runner.call_args.kwargs["env"]["HIOC_PE4_ACL_IS_DIRECTORY"],"0")
 
     def test_acl_validation_requires_protected_dacl(self):
         source=(TOOLS/"hioc_pe4_runtime_common.py").read_text(encoding="utf-8")
@@ -86,6 +92,73 @@ class ActionAWindowsTests(unittest.TestCase):
     def test_acl_validation_rejects_additional_allow_aces(self):
         source=(TOOLS/"hioc_pe4_runtime_common.py").read_text(encoding="utf-8")
         self.assertIn("$rules.Count -ne 1",source)
+
+    def test_acl_validation_rejects_deny_inherited_and_wrong_flags(self):
+        source=(TOOLS/"hioc_pe4_runtime_common.py").read_text(encoding="utf-8")
+        self.assertIn("AccessControlType]::Allow",source)
+        self.assertIn("$actual.IsInherited",source)
+        self.assertIn("$actual.InheritanceFlags -ne $expectedInheritance",source)
+        self.assertIn("$actual.PropagationFlags",source)
+
+    def test_acl_application_and_validation_failures_are_bounded(self):
+        for returncode,expected in ((14,"WORKSTATION_ACL_APPLICATION_FAILED"),(23,"WORKSTATION_ACL_RULE_COUNT_INVALID")):
+            result=subprocess.CompletedProcess([],returncode,"","")
+            with self.subTest(returncode=returncode),mock.patch.object(COMMON.subprocess,"run",return_value=result):
+                with self.assertRaisesRegex(COMMON.Failure,expected):
+                    COMMON.secure_workstation_path(pathlib.Path("C:/fixture"),True)
+
+    @unittest.skipUnless(os.name == "nt" and shutil.which("powershell.exe"),"Windows ACL integration requires powershell.exe")
+    def test_real_windows_acl_hardens_inherited_production_shape(self):
+        seed_script=r'''$p=$env:HIOC_PE4_TEST_PATH;$item=[IO.DirectoryInfo]::new($p)
+$acl=$item.GetAccessControl([Security.AccessControl.AccessControlSections]::Access)
+$acl.SetAccessRuleProtection($true,$false)
+foreach($rule in @($acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]))){[void]$acl.RemoveAccessRuleSpecific($rule)}
+$inherit=[Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit
+$none=[Security.AccessControl.PropagationFlags]::None;$allow=[Security.AccessControl.AccessControlType]::Allow
+$user=[Security.Principal.WindowsIdentity]::GetCurrent().User;$system=[Security.Principal.SecurityIdentifier]::new('S-1-5-18')
+$acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($user,[Security.AccessControl.FileSystemRights]::FullControl,$inherit,$none,$allow)))
+$acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($system,[Security.AccessControl.FileSystemRights]::ReadAndExecute,$inherit,$none,$allow)))
+$acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($system,[Security.AccessControl.FileSystemRights]::ReadData,$inherit,$none,[Security.AccessControl.AccessControlType]::Deny)))
+$item.SetAccessControl($acl)'''
+        summary_script=r'''$p=$env:HIOC_PE4_TEST_PATH;$isDir=$env:HIOC_PE4_TEST_IS_DIRECTORY -eq '1'
+$item=if($isDir){[IO.DirectoryInfo]::new($p)}else{[IO.FileInfo]::new($p)}
+$acl=$item.GetAccessControl([Security.AccessControl.AccessControlSections]::Access)
+$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
+$rules=@($acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]))
+$mine=@($rules|Where-Object{$_.IdentityReference.Value -eq $sid.Value})
+Write-Output ('PROTECTED='+$acl.AreAccessRulesProtected)
+Write-Output ('RULES='+$rules.Count)
+Write-Output ('INHERITED='+@($rules|Where-Object{$_.IsInherited}).Count)
+Write-Output ('DENY='+@($rules|Where-Object{$_.AccessControlType -eq [Security.AccessControl.AccessControlType]::Deny}).Count)
+Write-Output ('MINE='+$mine.Count)
+Write-Output ('FULL='+@($mine|Where-Object{$_.FileSystemRights -eq [Security.AccessControl.FileSystemRights]::FullControl}).Count)
+if($rules.Count -eq 1){Write-Output ('INHERITANCE='+[int]$rules[0].InheritanceFlags);Write-Output ('PROPAGATION='+[int]$rules[0].PropagationFlags)}'''
+        def run_script(script,path,is_directory=True):
+            environment=os.environ.copy();environment["HIOC_PE4_TEST_PATH"]=str(path)
+            environment["HIOC_PE4_TEST_IS_DIRECTORY"]="1" if is_directory else "0"
+            return COMMON.run(["powershell.exe","-NoProfile","-NonInteractive","-Command",script],
+                              "TEST_ACL",env=environment).stdout.splitlines()
+        with tempfile.TemporaryDirectory() as temp:
+            parent=pathlib.Path(temp);run_script(seed_script,parent)
+            hioc=parent/"HIOC";hioc.mkdir();artifact=hioc/"artifact.whl";artifact.write_bytes(b"x")
+            before=run_script(summary_script,hioc)
+            self.assertIn("PROTECTED=False",before);self.assertIn("RULES=3",before);self.assertIn("DENY=1",before)
+            COMMON.secure_workstation_path(hioc,True)
+            after=run_script(summary_script,hioc)
+            for marker in ("PROTECTED=True","RULES=1","INHERITED=0","DENY=0","MINE=1","FULL=1","INHERITANCE=3","PROPAGATION=0"):
+                self.assertIn(marker,after)
+            COMMON.secure_workstation_path(artifact,False)
+            file_after=run_script(summary_script,artifact,False)
+            for marker in ("PROTECTED=True","RULES=1","INHERITED=0","DENY=0","MINE=1","FULL=1","INHERITANCE=0","PROPAGATION=0"):
+                self.assertIn(marker,file_after)
+            COMMON.secure_workstation_path(hioc,True)
+
+    @unittest.skipUnless(os.name == "nt" and shutil.which("powershell.exe"),"Windows ACL integration requires powershell.exe")
+    def test_existing_hioc_only_state_recovers_before_use(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trusted=pathlib.Path(temp);(trusted/"HIOC").mkdir();legacy=trusted/"HIOC/artifacts/pe4"
+            cache,staging,evidence=ACTION.roots(cache_resolver=lambda:legacy)
+            self.assertTrue(cache.is_dir());self.assertTrue(staging.is_dir());self.assertTrue(evidence.is_dir())
 
     def test_safe_existing_hierarchy(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -96,8 +169,10 @@ class ActionAWindowsTests(unittest.TestCase):
     def test_symlink_or_reparse_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
             root=pathlib.Path(temp);(root/"HIOC").mkdir()
+            secured=[]
             with self.assertRaises(COMMON.Failure):
-                COMMON.prepare_windows_hierarchy(root,("HIOC",),acl=lambda p,d:None,reparse=lambda p:True)
+                COMMON.prepare_windows_hierarchy(root,("HIOC",),acl=lambda p,d:secured.append(p),reparse=lambda p:True)
+            self.assertEqual(secured,[])
 
     def test_unexpected_file_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -195,6 +270,13 @@ class ActionAWindowsTests(unittest.TestCase):
                 cache_resolver=lambda:legacy,acl=lambda p,d:None,reparse=lambda p:False,evidence_writer=broken)
             self.assertEqual(status,1);self.assertIn("DURABLE_CACHE_PUBLISHED=TRUE",lines)
             self.assertIn("EVIDENCE_PUBLISHED=FALSE",lines);self.assertIn("ERROR_CODE=EVIDENCE_PUBLICATION_FAILED",lines)
+
+    def test_network_does_not_start_until_complete_hierarchy_is_secured(self):
+        failure=COMMON.Failure("WORKSTATION_ACL_APPLICATION_FAILED","WORKSTATION_ACL")
+        with mock.patch.object(ACTION,"verify_repository"),mock.patch.object(ACTION,"roots",side_effect=failure),mock.patch.object(ACTION,"download") as download:
+            lines,status=ACTION.execute("a"*40)
+        self.assertEqual(status,1);download.assert_not_called()
+        self.assertIn("ERROR_CODE=WORKSTATION_ACL_APPLICATION_FAILED",lines)
 
     def test_success_evidence_records_published_true(self):
         with tempfile.TemporaryDirectory() as temp:

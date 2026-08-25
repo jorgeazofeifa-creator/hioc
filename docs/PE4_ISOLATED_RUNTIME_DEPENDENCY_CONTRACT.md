@@ -121,3 +121,7 @@ cleanup, backup, and rollback rules are governed by
 `PE4_ISOLATED_RUNTIME_LIFECYCLE.md`. Implementation does not authorize use.
 Action A's Windows cache, evidence, DACL, reparse, deadline, partial-success,
 and bounded-CLI semantics are governed there; it never uses `/tmp`.
+The production ACL correction retains the same security invariant while
+removing PowerShell ACL-cmdlet dependence: existing descriptors are hardened
+and persisted through Windows .NET file/directory APIs. The first attempt did
+not acquire the wheel; Action A remains attempted but not complete.

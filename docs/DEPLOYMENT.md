@@ -221,3 +221,11 @@ The Action A Windows correction removes the former POSIX `/tmp`, mode, and
 directory-fsync assumptions. Cache and sanitized evidence now share the
 Known-Folder-rooted, current-user-only DACL hierarchy, while Actions B-G retain
 their Linux owner/mode/fsync contract.
+
+The first Action A attempt stopped before acquisition because its child
+Windows PowerShell process could not load the ACL cmdlets. The corrected
+deployment boundary uses .NET `DirectoryInfo`/`FileInfo` ACL methods, starting
+from the existing descriptor and validating protected, non-inherited,
+current-SID-only FullControl after persistence. The ordinary `HIOC` directory
+left by that attempt is hardened in place before `artifacts/pe4` is created.
+Action A remains incomplete and this correction authorizes no retry.

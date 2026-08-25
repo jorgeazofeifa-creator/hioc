@@ -1527,3 +1527,14 @@ HTTPS connection with a monotonic total deadline and bounded reads. Result-last
 publication flushes and atomically replaces the evidence file without claiming
 POSIX directory-fsync semantics. Explicit acquisition, verification, durable
 cache, reuse, and evidence states prevent ambiguous partial success.
+
+Production ACL correction: Action A must not depend on
+`Microsoft.PowerShell.Security` cmdlet autoloading or pass path values as
+trailing `powershell.exe -Command` tokens. The Windows ACL authority is the
+existing `DirectorySecurity`/`FileSecurity` descriptor obtained through
+`DirectoryInfo`/`FileInfo`. The implementation disables inheritance without
+preserving inherited ACEs, removes every remaining explicit Allow or Deny ACE,
+adds one current-user SID FullControl rule with exact file/directory flags,
+persists the modified descriptor, and rereads it for fail-closed validation.
+An existing non-reparse `HIOC` directory left by the failed attempt is hardened
+in place; manual deletion or ACL repair is prohibited.
