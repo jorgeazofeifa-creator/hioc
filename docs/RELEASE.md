@@ -1,5 +1,10 @@
 # HIOC Release Process
 
+The PE-4 identity evidence reconciliation correction is repository-only.
+Publication is not complete unless the exact final result confirms and the
+prepared `.result.tmp` is proven absent without following reparse targets.
+Publishing this source correction does not provision a key or execute Action B.
+
 The PE-4 Windows identity correction is repository governance only. It makes
 final collision checks non-following, uses Windows atomic no-replace key and
 evidence publication, and locks provisioning and Action B to the shared

@@ -2238,3 +2238,15 @@ intentional dedicated PE-4 pair; provisioning and Action B now have an explicit
 shared-contract regression. Action A remains **COMPLETE / PASS**. Windows
 identity provisioning and Action B remain **BLOCKED / NOT EXECUTED**. Action C,
 Actions D-G, PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain not started.
+
+Fresh provisioning readiness review then found an evidence reconciliation
+defect: after a no-replace collision, an independently created exact
+`result.json` could be accepted without proving that the invocation's own
+`.result.tmp` had been consumed. The correction requires exact final
+confirmation plus non-following true absence of the temporary source on both
+normal and uncertain-error paths. Retained files, dangling links, junctions,
+other reparse entries, and inspection errors fail closed; collided evidence is
+preserved without overwrite or a second result. Action A remains **COMPLETE /
+PASS**. Provisioning and Action B remain **BLOCKED / NOT EXECUTED** pending
+review, commit, push, and fresh execution preparation. Action C, Actions D-G,
+PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain not started.

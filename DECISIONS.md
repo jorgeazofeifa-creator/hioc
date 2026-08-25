@@ -1602,3 +1602,15 @@ was preparation-report drift, not an implementation decision. The generic name
 does not authorize personal-key reuse: discovery proved both paths absent, the
 pair may be created only by this PE-4 prerequisite, and Action B accepts exactly
 that governed output. Provisioning and Action B remain blocked and unexecuted.
+
+# Decision: Require evidence-source consumption before rename reconciliation
+
+The first no-replace evidence correction could accept a raced exact
+`result.json` after publication failed because it confirmed only the final file,
+not whether its own `.result.tmp` was consumed. Evidence reconciliation now
+requires both complete final content/type/reparse/DACL confirmation and true
+non-following absence of the prepared temporary source. A retained file,
+dangling link, junction, reparse entry, or indeterminate temporary path fails
+closed. Normal publication applies the same source-consumption invariant. No
+collision result is overwritten and no second result is attempted. Provisioning
+and Action B remain blocked and unexecuted pending publication and fresh review.

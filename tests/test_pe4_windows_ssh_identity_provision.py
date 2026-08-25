@@ -354,6 +354,37 @@ class IdentityProvisionTests(unittest.TestCase):
         temp, directory, error = self._evidence_fixture(replace_then_error)
         try:
             self.assertIsNone(error); self.assertTrue((directory / "result.json").is_file())
+            self.assertFalse((directory / ".result.tmp").exists())
+        finally: temp.cleanup()
+
+    def test_raced_exact_final_with_retained_temp_is_not_reconciled_or_overwritten(self):
+        calls = 0
+        def collide_with_exact(source, target):
+            nonlocal calls; calls += 1
+            pathlib.Path(target).write_bytes(pathlib.Path(source).read_bytes())
+            raise FileExistsError("raced collision")
+        temp, directory, error = self._evidence_fixture(collide_with_exact)
+        try:
+            self.assertIsInstance(error, PROVISION.Failure)
+            self.assertEqual(error.code, "EVIDENCE_RENAME_UNCERTAIN")
+            self.assertEqual(calls, 1)
+            self.assertTrue((directory / ".result.tmp").is_file())
+            self.assertEqual((directory / "result.json").read_bytes(),
+                             (directory / ".result.tmp").read_bytes())
+        finally: temp.cleanup()
+
+    def test_uncertain_error_with_dangling_reparse_temp_is_not_reconciled(self):
+        checks = 0
+        def moved_then_error(source, target): os.replace(source, target); raise OSError("uncertain")
+        def entry_exists(path):
+            nonlocal checks; checks += 1
+            # First check is final preflight; second represents a dangling
+            # reparse entry raced into the consumed temporary name.
+            return checks == 2 and pathlib.Path(path).name == ".result.tmp"
+        temp, _directory, error = self._evidence_fixture(moved_then_error, entry_exists=entry_exists)
+        try:
+            self.assertIsInstance(error, PROVISION.Failure)
+            self.assertEqual(error.code, "EVIDENCE_RENAME_UNCERTAIN")
         finally: temp.cleanup()
 
     def test_rename_error_with_wrong_final_result_fails_without_overwrite(self):
@@ -363,6 +394,19 @@ class IdentityProvisionTests(unittest.TestCase):
             self.assertIsInstance(error, PROVISION.Failure)
             self.assertEqual(error.code, "EVIDENCE_RENAME_UNCERTAIN")
             self.assertEqual((directory / "result.json").read_text(encoding="ascii"), "wrong")
+        finally: temp.cleanup()
+
+    def test_uncertain_error_with_unsafe_final_acl_is_not_reconciled(self):
+        validations = 0
+        def moved_then_error(source, target): os.replace(source, target); raise OSError("uncertain")
+        def acl_validate(*_):
+            nonlocal validations; validations += 1
+            if validations == 2: raise RuntimeError("unsafe final acl")
+        temp, directory, error = self._evidence_fixture(moved_then_error, acl_validate)
+        try:
+            self.assertIsInstance(error, PROVISION.Failure)
+            self.assertEqual(error.code, "EVIDENCE_RENAME_UNCERTAIN")
+            self.assertFalse((directory / ".result.tmp").exists())
         finally: temp.cleanup()
 
     def test_evidence_final_collision_is_rejected_for_non_following_entry(self):
@@ -394,6 +438,7 @@ class IdentityProvisionTests(unittest.TestCase):
             payload = __import__("json").loads((directory / "result.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["evidence_published"], "TRUE")
             self.assertEqual(payload["staging_cleanup"], "PASS")
+            self.assertFalse((directory / ".result.tmp").exists())
             state = PROVISION.initial_state(); state["EVIDENCE_PUBLISHED"] = "TRUE"; state["STAGING_CLEANUP"] = "PASS"
             terminal = "\n".join(PROVISION.terminal_lines(state, "PASS", "NONE", "COMPLETE", False, "SHA256:abc", directory))
             self.assertIn("EVIDENCE_PUBLISHED=TRUE", terminal); self.assertIn("STAGING_CLEANUP=PASS", terminal)

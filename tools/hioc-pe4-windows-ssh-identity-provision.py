@@ -175,10 +175,14 @@ def write_evidence(directory: pathlib.Path, state: dict[str, str], fingerprint: 
     except OSError:
         try:
             _confirm_evidence(final, payload, expected, acl_validate=acl_validate, reparse=reparse)
+            if entry_exists(temporary):
+                raise Failure("EVIDENCE_TEMP_RETAINED", "EVIDENCE_CONFIRMATION")
         except Exception:
             raise Failure("EVIDENCE_RENAME_UNCERTAIN", "EVIDENCE_PUBLICATION")
         return
     _confirm_evidence(final, payload, expected, acl_validate=acl_validate, reparse=reparse)
+    if entry_exists(temporary):
+        raise Failure("EVIDENCE_TEMP_RETAINED", "EVIDENCE_CONFIRMATION")
 
 
 def _confirm_evidence(path: pathlib.Path, payload: bytes, expected_digest: bytes, *,

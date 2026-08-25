@@ -842,3 +842,9 @@ non-following entry primitive; a dangling target is not absence. Key and
 evidence publication are valid only through the governed Windows atomic
 no-replace operation. The resulting private path is exactly Action B's fixed
 `IdentityFile`; no rename, migration, alternate name, or override is permitted.
+
+Provisioning remains blocked until the evidence reconciliation correction is
+published and freshly reviewed. Do not interpret exact final evidence alone as
+publication success after a move error. Success additionally requires proven
+non-following absence of `.result.tmp`; any retained or ambiguous entry requires
+STOP, preservation of both paths, and no overwrite, cleanup, or second result.

@@ -159,6 +159,16 @@ ambient SSH inputs were eliminated; a later preparation description naming
 `hioc_pe4_pi3_ed25519` was not repository governance. Provisioning and Action B
 derive the private name from the same shared constant and tests fail on drift.
 
+Evidence reconciliation additionally proves publisher ownership. If the
+no-replace move reports an error, exact final bytes, digest, type, non-reparse
+state, and DACL are necessary but not sufficient: `.result.tmp` must also be
+truly absent under the same non-following entry semantics. A retained file,
+dangling link, junction, mount point, other reparse entry, or inspection error
+means the prepared source was not proven consumed and publication remains
+FALSE. Normal success confirms the same absence after final readback. A raced
+exact result is preserved but neither accepted nor overwritten, and no second
+result is published.
+
 After staged validation the public file is atomically published first and the
 private file last. The private rename is the local completion marker because
 Action B consumes it, but PASS additionally requires complete final filesystem,

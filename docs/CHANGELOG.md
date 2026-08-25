@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Corrected PE-4 identity evidence no-replace reconciliation. An exact raced
+  `result.json` is no longer accepted while `.result.tmp` remains in any form;
+  post-error success requires exact final confirmation and proven non-following
+  temporary-source absence. Normal success enforces the same invariant, and no
+  collision triggers overwrite or a second result publication.
+
 - Corrected the PE-4 Windows SSH identity collision and path contracts before
   execution. Non-following entry inspection rejects files, directories,
   dangling links, junctions, mount points, and all other reparse entries;

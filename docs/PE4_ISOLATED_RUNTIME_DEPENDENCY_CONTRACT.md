@@ -162,3 +162,10 @@ uses an atomic write-through move without replacement for both keys and final
 evidence. The shared `.ssh/id_ed25519` constant is authoritative for both the
 provisioning output and Action B `IdentityFile`; `id_ed25519.pub` is the sole
 public-key output for the later authorization checkpoint.
+
+Result reconciliation requires proof that the governed publication consumed
+its prepared source. After either normal return or an uncertain move error, the
+exact final result must confirm and `.result.tmp` must be truly absent according
+to the non-following entry primitive. Retained or indeterminate temporary state
+fails closed even when an independently created final file has identical bytes
+and ACL. Such a collision is preserved without overwrite or a second result.

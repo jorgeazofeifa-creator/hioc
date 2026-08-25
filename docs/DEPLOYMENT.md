@@ -266,3 +266,9 @@ replacement. It preserves the historically governed dedicated pair
 `.ssh/id_ed25519`/`.ssh/id_ed25519.pub`, which is the exact Action B identity
 contract. Publication of this repository correction does not provision a key,
 authorize it on PI3, or execute Action B.
+
+Evidence deployment semantics now distinguish uncertain completed publication
+from a no-replace collision. Exact final confirmation reconciles an error only
+when `.result.tmp` is also proven absent without following reparse targets.
+Retained or indeterminate temporary state leaves publication false and does not
+authorize overwrite, cleanup, a second result, key provisioning, or Action B.
