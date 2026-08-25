@@ -1,5 +1,20 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a dedicated Action B identity governance
+
+Read-only Windows discovery established `CASE C`: no suitable existing private
+key exists at the fixed Action B identity path. The repository now implements
+the separately gated provisioning lifecycle at
+`tools/hioc-pe4-windows-ssh-identity-provision.py`. It fixes system
+`ssh-keygen.exe`, Ed25519, the exact comment and empty-passphrase contract,
+current-profile paths, protected current-operator DACLs, invocation-owned
+staging, public-first/private-last publication, bounded fingerprint evidence,
+and fail-closed partial-publication behavior. This repository implementation is
+not execution. Action A remains **COMPLETE / PASS**; Action B remains **BLOCKED
+/ NOT EXECUTED** on the missing identity; Action C, Actions D-G, PE-4.0B.2a,
+PE-4.0B.2b, and PE-4.0C remain **NOT STARTED**. PI3 public-key authorization and
+Action B execution remain distinct future checkpoints.
+
 ## PE-4.0B.2a PI3 execution architecture
 
 PE-4 Home Assistant API consumption belongs to the HIOC execution environment

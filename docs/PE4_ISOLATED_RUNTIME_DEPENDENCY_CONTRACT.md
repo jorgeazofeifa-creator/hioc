@@ -135,3 +135,15 @@ It pins numeric PI3 port 22, disables proxy/jump/canonicalization behavior, and
 uses fixed non-reparse current-profile `known_hosts` and `id_ed25519` files.
 Result-last evidence is complete only after exact post-rename digest, owner,
 mode, file-fsync, and directory-fsync confirmation.
+
+The required Action B private identity is provisioned only by
+`tools/hioc-pe4-windows-ssh-identity-provision.py`. The tool fixes the current
+Known Folder profile's `.ssh/id_ed25519` pair, Ed25519, the
+`hioc-pe4-action-b-windows` comment, an empty passphrase, and the reviewed
+system `ssh-keygen.exe` digest. It refuses every existing final target and all
+reparse traversal. Generation is isolated in a current-SID-only staging child;
+the pair, comment, algorithm, ACL, and bounded SHA-256 fingerprint are validated
+before public-first/private-last atomic publication and repeated afterward.
+Sanitized Windows result-last evidence contains no key material. Identity
+provisioning, PI3 public-key authorization, and Action B transfer are three
+separate authorizations and STOP boundaries.

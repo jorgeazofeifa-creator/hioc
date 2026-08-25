@@ -14,7 +14,7 @@ PE4_0B2A=NOT_STARTED
 PE4_0B2B=NOT_STARTED
 PE4_0C=NOT_STARTED
 ACTION_A=COMPLETE
-ACTION_B=BLOCKED_PENDING_GOVERNANCE_CORRECTION
+ACTION_B=BLOCKED_SSH_IDENTITY_FILE_MISSING
 ```
 
 Every action is separately authorized, emits a bounded terminal result, and
@@ -24,6 +24,7 @@ stops. PASS never chains the next action.
 
 | Action | Repository entrypoint | Network boundary | Mutation boundary |
 | --- | --- | --- | --- |
+| Windows identity prerequisite | `tools/hioc-pe4-windows-ssh-identity-provision.py` | None | One invocation-owned `.ssh` staging directory, the fixed public/private identity pair, and private Windows evidence only |
 | PE-4.0B.2a-A | `tools/hioc-pe4-artifact-acquire.py` | Exact governed HTTPS `files.pythonhosted.org` wheel URL only | Private workstation staging and durable off-device cache only |
 | PE-4.0B.2a-B | `tools/hioc-pe4-artifact-transfer.py` | SSH/SCP only to `jazofv1@192.168.100.252`, strict known-host checking | One private `/tmp/hioc-pe4-artifact-transfer-XXXXXXXX` directory only |
 | PE-4.0B.2a-C | `tools/hioc-pe4-route-proof.py` | One TCP connection to `192.168.100.251:8123`; no HTTP, WebSocket, credentials, proxy, DNS, redirect, or retry | None |
@@ -100,8 +101,9 @@ and lock transfer separately into one private, owner/mode-validated PI3 staging
 directory and are independently verified before atomic rename. Result-last
 sanitized evidence records partial state. The directory is reported and
 preserved on PASS or any post-creation failure; there is no automatic cleanup.
-Action B remains blocked until this correction is published and separately
-prepared and authorized.
+Action B remains blocked until its dedicated identity is separately provisioned,
+the public key is separately authorized on PI3, and transfer is then prepared
+and authorized.
 
 The first published transfer correction remained blocked during final review:
 OpenSSH still accepted user/system configuration capable of substituting
@@ -115,6 +117,44 @@ is prepared and fsynced, atomically renamed, then independently digest-, mode-,
 owner-, file-, and directory-fsync-confirmed. A rename command failure is
 accepted only when that exact confirmation succeeds. Action B remains
 **BLOCKED / NOT EXECUTED** pending publication and fresh preparation.
+
+## Dedicated Windows SSH identity prerequisite
+
+Read-only discovery found no suitable private key: `.ssh` is a real directory,
+the fixed numeric-PI3 `known_hosts` prerequisite exists, and both `id_ed25519`
+and `id_ed25519.pub` are absent. This is CASE C discovery and CASE B lifecycle
+governance: provisioning is a new repository-controlled operation, not an ad
+hoc operator command. Its implementation does not authorize execution.
+
+`tools/hioc-pe4-windows-ssh-identity-provision.py` accepts only the governance
+commit. It derives the current profile with the Windows Known Folder API and
+fixes `.ssh/id_ed25519`, `.ssh/id_ed25519.pub`, Ed25519, comment
+`hioc-pe4-action-b-windows`, and system
+`C:/Windows/System32/OpenSSH/ssh-keygen.exe` with reviewed SHA-256
+`44c6809b7bbc917f1310ba92857f983e2788e9b0015aa7896fa0362eddb6338b`.
+No caller may override a path, algorithm, comment, executable, or host. The key
+has an empty passphrase because Action B disables agents and prompts through
+`BatchMode=yes`, `IdentityAgent=none`, and `IdentitiesOnly=yes`.
+
+Both final names must remain absent at preflight, immediately before generation,
+and immediately before their respective publications. Generation occurs only
+in an invocation-owned, protected, non-reparse child of `.ssh`. The directory
+must contain exactly the generated pair. Each file receives and independently
+rereads the protected current-SID-only FullControl DACL. The public record must
+be exactly `ssh-ed25519`, carry the fixed comment, match public material derived
+from the private file, and yield only a parsed bounded `SHA256:` fingerprint.
+No key material enters terminal output or evidence.
+
+After staged validation the public file is atomically published first and the
+private file last. The private rename is the local completion marker because
+Action B consumes it, but PASS additionally requires complete final filesystem,
+ACL, pair, comment, algorithm, fingerprint, and result-last evidence validation.
+Evidence is an invocation-owned protected child of the existing Windows PE-4
+evidence hierarchy. Failure before publication may clean only the proven staging
+child. Any public-only or private-published state is preserved and reported;
+final keys are never automatically deleted, and reconciliation/rollback requires
+separate authorization. Provisioning PASS stops before PI3 public-key
+authorization and before Action B.
 
 ## Construction and validation
 

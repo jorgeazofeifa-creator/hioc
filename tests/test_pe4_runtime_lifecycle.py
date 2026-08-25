@@ -18,6 +18,7 @@ spec.loader.exec_module(COMMON)
 class PE4RuntimeLifecycleTests(unittest.TestCase):
     def test_all_action_entrypoints_exist_and_are_separate(self):
         names = (
+            "hioc-pe4-windows-ssh-identity-provision.py",
             "hioc-pe4-artifact-acquire.py", "hioc-pe4-artifact-transfer.py",
             "hioc-pe4-route-proof.py", "hioc-pe4-runtime-construct.py",
             "hioc-pe4-dependency-validate.py", "hioc-pe4-runtime-publish.py",
@@ -48,10 +49,12 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
         self.assertNotIn("--upgrade",source)
 
     def test_network_boundaries_are_separate(self):
+        identity=(TOOLS/"hioc-pe4-windows-ssh-identity-provision.py").read_text(encoding="utf-8")
         acquire=(TOOLS/"hioc-pe4-artifact-acquire.py").read_text(encoding="utf-8")
         transfer=(TOOLS/"hioc-pe4-artifact-transfer.py").read_text(encoding="utf-8")
         route=(TOOLS/"hioc-pe4-route-proof.py").read_text(encoding="utf-8")
         self.assertIn("files.pythonhosted.org",acquire); self.assertNotIn("192.168.100.251",acquire)
+        self.assertNotIn("PI3_IPV4",identity); self.assertNotIn("hioc-pe4-artifact-transfer.py",identity)
         self.assertIn("StrictHostKeyChecking=yes",transfer); self.assertIn("PI3_IPV4",transfer)
         self.assertIn("(HA_IPV4,HA_PORT)",route); self.assertNotIn("urllib",route)
 

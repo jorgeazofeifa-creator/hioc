@@ -242,3 +242,13 @@ numeric PI3 port 22 transport, and uses only fixed profile known-hosts and
 Ed25519 identity files. It never changes source/runtime deployment trees.
 Result publication is complete only after exact post-rename digest and
 durability confirmation; repository correction still authorizes no transfer.
+## PE-4 Action B Windows identity prerequisite
+
+Before Action B can be prepared, execute only the separately published and
+authorized `tools/hioc-pe4-windows-ssh-identity-provision.py` from the governed
+Windows repository with its sole `--governance-commit <40-hex>` argument. It
+does not contact PI3. PASS establishes the fixed local Ed25519 pair and a
+sanitized fingerprint; the operator must STOP. PI3 authorization of that exact
+public key and Action B transfer require later separate checkpoints. Manual key
+generation, target overrides, agent use, identity reuse, and cleanup of a
+partial published state are prohibited.

@@ -312,3 +312,11 @@ Action B transport isolation is part of release identity: ambient SSH config,
 agents, proxies, jump hosts, canonicalization, alternate ports, and alternate
 known-host/identity files are excluded. Its remote result becomes governed
 evidence only after exact digest and durability confirmation following rename.
+## PE-4 Action B identity release boundary
+
+Publishing the provisioning implementation does not provision an identity.
+Provisioning execution, PI3 authorization of the reviewed public fingerprint,
+and Action B artifact transfer are independently authorized checkpoints. The
+private/public key pair and Windows evidence are operator-local protected state,
+not release content, and must never be committed, packaged, transferred by the
+release process, or recreated during rollback.

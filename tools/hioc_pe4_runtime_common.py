@@ -35,6 +35,7 @@ PI3_IPV4 = "192.168.100.252"
 SSH_PORT = 22
 SSH_KNOWN_HOSTS_NAME = "known_hosts"
 SSH_IDENTITY_NAME = "id_ed25519"
+SSH_KEYGEN_SHA256 = "44c6809b7bbc917f1310ba92857f983e2788e9b0015aa7896fa0362eddb6338b"
 HA_IPV4 = "192.168.100.251"
 HA_PORT = 8123
 WHEEL_NAME = "websockets-16.1.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl"
@@ -119,7 +120,7 @@ def windows_reparse_point(path: pathlib.Path) -> bool:
 
 def windows_openssh_tool(name: str) -> pathlib.Path:
     """Resolve the Windows system OpenSSH client without consulting PATH."""
-    if name not in {"ssh", "scp"} or os.name != "nt":
+    if name not in {"ssh", "scp", "ssh-keygen"} or os.name != "nt":
         raise Failure("OPENSSH_TOOL_INVALID", "OPENSSH_IDENTITY")
     import ctypes
     buffer = ctypes.create_unicode_buffer(32768)

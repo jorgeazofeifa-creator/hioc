@@ -1557,3 +1557,16 @@ and explicitly uses only the current Windows Known Folder profile's real,
 non-reparse `.ssh/known_hosts` and `.ssh/id_ed25519`. Evidence publication is a
 three-step prepare, atomic rename, and exact digest/durability confirmation; a
 rename error is reconciled only by successful confirmation of the exact file.
+
+# Decision: Govern the dedicated Action B Windows identity lifecycle
+
+Read-only discovery found no existing private key suitable for Action B. The
+fixed `.ssh/id_ed25519` pair is therefore created only through a separate
+repository-controlled Windows prerequisite, never an ad hoc command. The tool
+pins system `ssh-keygen.exe`, Ed25519, an empty passphrase required by Action B's
+agent-free batch contract, and comment `hioc-pe4-action-b-windows`. It rejects
+collisions and reparse traversal, generates under protected invocation staging,
+validates DACL and pair identity, publishes the public key first and private key
+last, and records only a sanitized fingerprint in result-last evidence. It
+never installs the public key on PI3 or chains Action B. Partial publication is
+preserved for separately authorized reconciliation, never automatically erased.

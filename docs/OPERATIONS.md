@@ -820,3 +820,12 @@ to remove inheritance and all prior Allow/Deny ACEs before installing and
 validating the single governed SID rule. Bounded ACL errors distinguish read,
 protection, rule update, application, validation read, and individual
 post-validation invariant failures. Any such result requires STOP.
+## PE-4 dedicated Windows SSH identity
+
+Action B remains blocked while `.ssh/id_ed25519` is absent. The governed
+provisioning entrypoint is a Windows-only, non-network prerequisite. It accepts
+only a governance commit and emits bounded state, a public SHA-256 fingerprint,
+and a protected evidence directory. On PASS or failure, STOP and preserve the
+reported evidence. A public-only or private-published failure is not cleaned up
+manually; reconciliation and rollback require separate authorization. Never
+copy key material into logs, tickets, or repository content.

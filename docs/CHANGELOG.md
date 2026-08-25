@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Added the repository-governed Windows prerequisite for Action B's dedicated
+  Ed25519 identity. It fixes Known Folder paths, system `ssh-keygen.exe`, empty
+  passphrase and comment, rejects collisions/reparse traversal, applies and
+  rereads current-operator-only DACLs, validates the pair and sanitized
+  fingerprint, publishes public-first/private-last, and stops before PI3 or
+  Action B. No production identity has been generated; Action B remains blocked.
+
 - Corrected the remaining PE-4 Action B OpenSSH configuration-isolation and
   evidence-publication defects. Action B now ignores user/system SSH config,
   pins numeric PI3 and port 22, disables proxies/canonicalization/agents, uses
