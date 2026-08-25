@@ -119,3 +119,5 @@ Home Assistant access, client execution, PE-4.0B.2b, or PE-4.0C.
 The executable lifecycle, separate A-G authorization boundaries, evidence,
 cleanup, backup, and rollback rules are governed by
 `PE4_ISOLATED_RUNTIME_LIFECYCLE.md`. Implementation does not authorize use.
+Action A's Windows cache, evidence, DACL, reparse, deadline, partial-success,
+and bounded-CLI semantics are governed there; it never uses `/tmp`.

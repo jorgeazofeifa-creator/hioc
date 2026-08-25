@@ -2147,3 +2147,12 @@ before dependency deployment. This repository checkpoint does not acquire or
 transfer the artifact, contact PI3/PI5, construct an environment, deploy the
 client, run preflight, or authorize production. Each action still requires its
 own post-publication preparation, authorization, Evidence Report, and STOP.
+
+Action A preparation subsequently found a Windows contract defect: evidence
+used `/tmp` and POSIX modes/directory fsync, cache ancestors lacked reparse-point
+validation, network timeout was not a total deadline, and argparse bypassed the
+bounded terminal result. The repository correction uses a protected
+LocalApplicationData hierarchy, Windows DACL authority, Windows-safe result-last
+publication, explicit partial-success markers, a monotonic 20-second total
+deadline, reparse rejection, and bounded CLI parsing. Action A remains **NOT
+STARTED** pending correction review, commit, push, and fresh preparation.

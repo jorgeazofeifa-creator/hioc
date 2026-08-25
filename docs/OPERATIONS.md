@@ -793,3 +793,8 @@ Lifecycle actions A-G and rollback are defined in
 sanitized Evidence Report and STOP for the next authorization. General release
 rollback is not PE-4 environment rollback; use only the separately governed
 PE-4 pointer rollback after exact eligibility review.
+
+Action A is a Windows-only repository tool. Its result must include all five
+acquisition/publication state markers. A failure with
+`DURABLE_CACHE_PUBLISHED=TRUE` means preserve the cache and evidence state and
+STOP; never redownload, delete, or begin transfer without review.

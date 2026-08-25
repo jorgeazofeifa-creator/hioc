@@ -107,18 +107,51 @@ def workstation_cache_root() -> pathlib.Path:
     return pathlib.Path(root) / "HIOC/artifacts/pe4"
 
 
-def secure_workstation_directory(path: pathlib.Path) -> None:
-    script = r'''$p=$args[0];$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
-$acl=New-Object Security.AccessControl.DirectorySecurity
+def windows_reparse_point(path: pathlib.Path) -> bool:
+    info = path.lstat()
+    attributes = getattr(info, "st_file_attributes", 0)
+    return path.is_symlink() or bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
+
+
+def prepare_windows_hierarchy(trusted_root: pathlib.Path, relative_parts: Iterable[str],
+                              *, acl=None, reparse=None) -> pathlib.Path:
+    acl = secure_workstation_path if acl is None else acl
+    reparse = windows_reparse_point if reparse is None else reparse
+    if not trusted_root.is_absolute() or not trusted_root.is_dir():
+        raise Failure("WORKSTATION_PATH_INVALID", "WORKSTATION_PATH")
+    current = trusted_root
+    for part in relative_parts:
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", part):
+            raise Failure("WORKSTATION_PATH_INVALID", "WORKSTATION_PATH")
+        current = current / part
+        if current.exists() or current.is_symlink():
+            if reparse(current):
+                raise Failure("WORKSTATION_REPARSE_POINT", "WORKSTATION_PATH")
+            if not current.is_dir():
+                raise Failure("WORKSTATION_PATH_NOT_DIRECTORY", "WORKSTATION_PATH")
+        else:
+            current.mkdir()
+        acl(current, True)
+    return current
+
+
+def secure_workstation_path(path: pathlib.Path, is_directory: bool) -> None:
+    script = r'''$p=$args[0];$isDir=$args[1] -eq '1';$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
+if($isDir){$acl=New-Object Security.AccessControl.DirectorySecurity}else{$acl=New-Object Security.AccessControl.FileSecurity}
 $acl.SetAccessRuleProtection($true,$false)
-$rule=New-Object Security.AccessControl.FileSystemAccessRule($sid,'FullControl','ContainerInherit,ObjectInherit','None','Allow')
+$inherit=if($isDir){'ContainerInherit,ObjectInherit'}else{'None'}
+$rule=New-Object Security.AccessControl.FileSystemAccessRule($sid,'FullControl',$inherit,'None','Allow')
 $acl.AddAccessRule($rule);Set-Acl -LiteralPath $p -AclObject $acl
 $check=Get-Acl -LiteralPath $p
 if(-not $check.AreAccessRulesProtected){exit 2}
 $rules=@($check.Access|Where-Object{$_.AccessControlType -eq 'Allow'})
 if($rules.Count -ne 1 -or $rules[0].IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value){exit 3}'''
-    run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script, str(path)],
+    run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script, str(path), "1" if is_directory else "0"],
         "WORKSTATION_ACL", timeout=15)
+
+
+def secure_workstation_directory(path: pathlib.Path) -> None:
+    secure_workstation_path(path, True)
 
 
 def verify_pi3() -> None:

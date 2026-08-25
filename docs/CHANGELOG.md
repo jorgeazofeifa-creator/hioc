@@ -776,3 +776,9 @@ Initial real HIOC core foundation.
   construction, capability validation, atomic pointer publication, bounded
   cleanup, sanitized evidence, durable artifact-cache recovery, and dedicated
   rollback. No tool was executed against PI3, PI5, or Home Assistant.
+
+- Corrected the PE-4.0B.2a-A Windows acquisition contract: removed POSIX `/tmp`
+  evidence assumptions, added protected Known-Folder cache/evidence DACLs and
+  reparse rejection, enforced a monotonic total download deadline, bounded CLI
+  failures, and recorded explicit durable-cache/evidence partial-success state.
+  Action A remains unexecuted.

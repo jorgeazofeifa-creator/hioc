@@ -44,6 +44,28 @@ size, and SHA-256 before same-root durable-cache publication. The cache is
 off-device recovery input and is never Git content. Failure removes only the
 invocation directory after proving its parent and type.
 
+The exact Windows layout is the Known Folder `LocalApplicationData` followed by
+`HIOC/artifacts/pe4/{cache,staging,evidence}`. The Known Folder is the trusted
+boundary; every existing child component is rejected if it is a file, symlink,
+junction, mount point, or other reparse point. Each governed directory and file
+uses a protected DACL with inheritance removed and exactly the current user SID
+allowed Full Control. Windows security is proved by DACL, never POSIX mode.
+
+Action A uses a direct HTTPS connection to the single frozen
+`files.pythonhosted.org` host/path, with no proxy, redirect, retry, alternate
+endpoint, or URL resolution. A monotonic 20-second total deadline is propagated
+as the maximum remaining timeout for connection, response, and every bounded
+read. At most 188096 bytes are read. Result-last evidence is an invocation-owned
+child under the governed evidence root: a same-directory temporary file is
+flushed, atomically replaced as `result.json`, and ACL-validated. Windows does
+not claim POSIX directory-fsync durability.
+
+Terminal and evidence state explicitly report `ARTIFACT_ACQUIRED`,
+`ARTIFACT_VERIFIED`, `DURABLE_CACHE_PUBLISHED`, `CACHE_REUSED`, and
+`EVIDENCE_PUBLISHED`. Evidence failure after durable publication therefore
+cannot be mistaken for non-publication. Invalid CLI input emits only bounded
+failure markers. Action A PASS stops before Action B.
+
 Action B consumes only that exact cached wheel and the repository lock. SSH and
 SCP use batch mode, strict known-host verification, a five-second connection
 timeout, the numeric PI3 address, and the governed operator. PI3 creates the

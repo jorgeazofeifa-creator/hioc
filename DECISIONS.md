@@ -1517,3 +1517,13 @@ is externalized from general release backup/rollback and recovered from the
 frozen artifact cache plus retained immutable environments. Dedicated rollback
 changes only the validated active pointer. Implementation alone authorizes no
 network or production action.
+
+# Decision: Make Action A evidence and acquisition native to Windows
+
+Action A uses the Windows Local Application Data Known Folder as its trusted
+boundary, rejects reparse traversal below it, and protects cache, staging, and
+evidence with a current-user-only protected DACL. It uses a direct exact-host
+HTTPS connection with a monotonic total deadline and bounded reads. Result-last
+publication flushes and atomically replaces the evidence file without claiming
+POSIX directory-fsync semantics. Explicit acquisition, verification, durable
+cache, reuse, and evidence states prevent ambiguous partial success.

@@ -216,3 +216,8 @@ in `PE4_ISOLATED_RUNTIME_LIFECYCLE.md`. General release deployment must preserve
 `runtime/pe4` unchanged; PE-4 tools alone own its immutable environments and
 active pointer. Route proof precedes mutation, transfer stops before install,
 and publication stops before any authenticated execution.
+
+The Action A Windows correction removes the former POSIX `/tmp`, mode, and
+directory-fsync assumptions. Cache and sanitized evidence now share the
+Known-Folder-rooted, current-user-only DACL hierarchy, while Actions B-G retain
+their Linux owner/mode/fsync contract.

@@ -51,7 +51,7 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
         acquire=(TOOLS/"hioc-pe4-artifact-acquire.py").read_text(encoding="utf-8")
         transfer=(TOOLS/"hioc-pe4-artifact-transfer.py").read_text(encoding="utf-8")
         route=(TOOLS/"hioc-pe4-route-proof.py").read_text(encoding="utf-8")
-        self.assertIn("WHEEL_URL",acquire); self.assertNotIn("192.168.100.251",acquire)
+        self.assertIn("files.pythonhosted.org",acquire); self.assertNotIn("192.168.100.251",acquire)
         self.assertIn("StrictHostKeyChecking=yes",transfer); self.assertIn("PI3_IPV4",transfer)
         self.assertIn("(HA_IPV4,HA_PORT)",route); self.assertNotIn("urllib",route)
 
