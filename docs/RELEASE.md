@@ -320,3 +320,8 @@ and Action B artifact transfer are independently authorized checkpoints. The
 private/public key pair and Windows evidence are operator-local protected state,
 not release content, and must never be committed, packaged, transferred by the
 release process, or recreated during rollback.
+
+The initial provisioning implementation is not executable release authority:
+its evidence-ordering and invocation-child ownership defect required correction.
+Only a committed and published tool identity with final-cleanup-before-evidence
+and exact post-rename confirmation may proceed to a fresh preparation checkpoint.

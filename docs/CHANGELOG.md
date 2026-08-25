@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Corrected the PE-4 Windows SSH identity provisioning evidence lifecycle.
+  Invocation children remain known across ACL initialization failure, cleanup
+  reaches its final state before failure evidence, and one prepare/publish/
+  confirm attempt reconciles rename uncertainty through exact content and DACL
+  readback. Ambiguous results remain unaccepted and are not overwritten.
+  Provisioning and Action B remain unexecuted.
+
 - Added the repository-governed Windows prerequisite for Action B's dedicated
   Ed25519 identity. It fixes Known Folder paths, system `ssh-keygen.exe`, empty
   passphrase and comment, rejects collisions/reparse traversal, applies and

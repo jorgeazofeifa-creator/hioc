@@ -147,3 +147,10 @@ before public-first/private-last atomic publication and repeated afterward.
 Sanitized Windows result-last evidence contains no key material. Identity
 provisioning, PI3 public-key authorization, and Action B transfer are three
 separate authorizations and STOP boundaries.
+
+Provisioning evidence is accepted only after all represented cleanup is final
+and after exact post-rename content, digest, regular-file, non-reparse, and
+protected-DACL confirmation. Invocation-child identity is retained before ACL
+hardening so initialization failure cannot orphan an unknown cleanup target.
+Rename uncertainty is reconciled only by full confirmation; an unexpected or
+ambiguous result remains unaccepted and is never overwritten by a second result.

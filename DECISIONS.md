@@ -1570,3 +1570,16 @@ validates DACL and pair identity, publishes the public key first and private key
 last, and records only a sanitized fingerprint in result-last evidence. It
 never installs the public key on PI3 or chains Action B. Partial publication is
 preserved for separately authorized reconciliation, never automatically erased.
+
+# Decision: Confirm SSH identity evidence only after final cleanup state
+
+The first published provisioning lifecycle could write failure evidence before
+staging cleanup, could leave a renamed result semantically stronger than its
+confirmed ACL/readback state, and could lose a newly created child path when
+initial ACL hardening failed. Invocation ownership is now recorded immediately
+after directory creation. Failure cleanup reaches its final bounded state before
+the payload is constructed. Evidence is prepared with its final state, flushed,
+ACL-validated, atomically renamed once, and accepted only after exact bytes,
+digest, file type, reparse, and DACL reread confirmation. Rename uncertainty is
+reconciled by that same confirmation; wrong or ambiguous results remain
+unaccepted and are never overwritten by a contradictory result.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import getpass
+import hashlib
 import json
 import os
 import pathlib
@@ -28,7 +29,7 @@ STAGING_PREFIX = ".hioc-pe4-identity-stage-"
 EVIDENCE_PREFIX = "identity-provision-evidence-"
 STATE_KEYS = ("PRIVATE_KEY_ACL", "PUBLIC_KEY_ACL", "PRIVATE_KEY_PUBLIC_MATCH",
               "PUBLIC_KEY_PUBLISHED", "PRIVATE_KEY_PUBLISHED", "IDENTITY_CONFIRMED",
-              "STAGING_CLEANUP", "EVIDENCE_PUBLISHED")
+              "STAGING_CLEANUP", "EVIDENCE_DIRECTORY_CLEANUP", "EVIDENCE_PUBLISHED")
 
 
 def initial_state() -> dict[str, str]:
@@ -75,8 +76,10 @@ def governed_keygen(*, resolver=windows_openssh_tool) -> pathlib.Path:
 
 
 def create_private_child(parent: pathlib.Path, prefix: str, *, acl=secure_workstation_path,
-                         reparse=windows_reparse_point) -> pathlib.Path:
+                         reparse=windows_reparse_point, created=None) -> pathlib.Path:
     path = pathlib.Path(tempfile.mkdtemp(prefix=prefix, dir=parent))
+    if created is not None:
+        created(path)
     if path.parent != parent or reparse(path) or not path.is_dir():
         raise Failure("REPARSE_TRAVERSAL", "STAGING_PATH")
     acl(path, True)
@@ -143,25 +146,59 @@ def validate_pair(private: pathlib.Path, public: pathlib.Path, keygen: pathlib.P
 def write_evidence(directory: pathlib.Path, state: dict[str, str], fingerprint: str,
                    private: pathlib.Path, public: pathlib.Path, result: str, code: str,
                    stage: str, rollback: bool, *, acl=secure_workstation_path,
-                   replace=os.replace) -> None:
+                   acl_validate=validate_workstation_path_acl,
+                   reparse=windows_reparse_point, replace=os.replace) -> None:
+    published_state = dict(state)
+    published_state["EVIDENCE_PUBLISHED"] = "TRUE"
     document = {"schema_version": "1.0", "action": ACTION, "algorithm": "ED25519",
                 "private_key_path": str(private), "public_key_path": str(public),
                 "public_key_fingerprint": fingerprint, "public_key_comment": KEY_COMMENT,
-                **{key.lower(): value for key, value in state.items()}, "result": result,
+                **{key.lower(): value for key, value in published_state.items()}, "result": result,
                 "error_code": code, "failure_stage": stage,
                 "rollback_recommended": rollback}
-    temporary = directory / ".result.tmp"
+    payload = (json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    expected = hashlib.sha256(payload).digest()
+    temporary, final = directory / ".result.tmp", directory / "result.json"
+    if final.exists() or final.is_symlink():
+        raise Failure("EVIDENCE_FINAL_EXISTS", "EVIDENCE_PREPARATION")
     with temporary.open("x", encoding="utf-8", newline="\n") as handle:
-        json.dump(document, handle, sort_keys=True, separators=(",", ":")); handle.write("\n")
+        handle.write(payload.decode("utf-8"))
         handle.flush(); os.fsync(handle.fileno())
     acl(temporary, False)
-    replace(temporary, directory / "result.json")
-    acl(directory / "result.json", False)
+    _confirm_evidence(temporary, payload, expected, acl_validate=acl_validate, reparse=reparse)
+    try:
+        replace(temporary, final)
+    except OSError:
+        try:
+            _confirm_evidence(final, payload, expected, acl_validate=acl_validate, reparse=reparse)
+        except Exception:
+            raise Failure("EVIDENCE_RENAME_UNCERTAIN", "EVIDENCE_PUBLICATION")
+        return
+    _confirm_evidence(final, payload, expected, acl_validate=acl_validate, reparse=reparse)
 
 
-def safe_cleanup(path: pathlib.Path, ssh: pathlib.Path, *, reparse=windows_reparse_point) -> None:
-    suffix = path.name[len(STAGING_PREFIX):] if path.name.startswith(STAGING_PREFIX) else ""
-    if path.parent != ssh or path == ssh or not re.fullmatch(r"[a-z0-9_]{8}", suffix) or reparse(path):
+def _confirm_evidence(path: pathlib.Path, payload: bytes, expected_digest: bytes, *,
+                      acl_validate=validate_workstation_path_acl,
+                      reparse=windows_reparse_point) -> None:
+    if not path.is_file() or path.is_symlink() or reparse(path):
+        raise Failure("EVIDENCE_FINAL_UNSAFE", "EVIDENCE_CONFIRMATION")
+    try:
+        with path.open("rb") as handle:
+            actual = handle.read(len(payload) + 1)
+    except OSError:
+        raise Failure("EVIDENCE_REREAD_FAILED", "EVIDENCE_CONFIRMATION")
+    if actual != payload or hashlib.sha256(actual).digest() != expected_digest:
+        raise Failure("EVIDENCE_IDENTITY_MISMATCH", "EVIDENCE_CONFIRMATION")
+    try:
+        acl_validate(path, False)
+    except Exception:
+        raise Failure("EVIDENCE_ACL_INVALID", "EVIDENCE_CONFIRMATION")
+
+
+def safe_cleanup(path: pathlib.Path, parent: pathlib.Path, prefix: str = STAGING_PREFIX, *,
+                 reparse=windows_reparse_point) -> None:
+    suffix = path.name[len(prefix):] if path.name.startswith(prefix) else ""
+    if path.parent != parent or path == parent or not re.fullmatch(r"[a-z0-9_]{8}", suffix) or reparse(path):
         raise Failure("CLEANUP_PATH_INVALID", "CLEANUP")
     for item in path.iterdir():
         if item.is_dir() or item.is_symlink() or reparse(item):
@@ -196,6 +233,8 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
             keygen_resolver=windows_openssh_tool, evidence_resolver=workstation_cache_root,
             evidence_writer=write_evidence, replace=os.replace) -> tuple[list[str], int]:
     state, staging, evidence, fingerprint = initial_state(), None, None, ""
+    children: dict[str, pathlib.Path] = {}
+    evidence_ready = evidence_attempted = False
     private = public = pathlib.Path("UNAVAILABLE")
     primary: Failure | None = None
     try:
@@ -207,8 +246,11 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
         collision_check(private, public)
         keygen = governed_keygen(resolver=keygen_resolver)
         root = evidence_root(resolver=evidence_resolver, acl=acl, reparse=reparse)
-        evidence = create_private_child(root, EVIDENCE_PREFIX, acl=acl, reparse=reparse)
-        staging = create_private_child(ssh, STAGING_PREFIX, acl=acl, reparse=reparse)
+        evidence = create_private_child(root, EVIDENCE_PREFIX, acl=acl, reparse=reparse,
+                                        created=lambda path: children.__setitem__("evidence", path))
+        evidence_ready = True
+        staging = create_private_child(ssh, STAGING_PREFIX, acl=acl, reparse=reparse,
+                                       created=lambda path: children.__setitem__("staging", path))
         collision_check(private, public)
         staged_private, staged_public = staging / SSH_IDENTITY_NAME, staging / (SSH_IDENTITY_NAME + ".pub")
         try:
@@ -248,31 +290,47 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
                                   acl_validate=acl_validate)
         if confirmed != fingerprint: raise Failure("FINAL_IDENTITY_CONFIRMATION_FAILED", "FINAL_CONFIRMATION", True)
         state["IDENTITY_CONFIRMED"] = "TRUE"
-        try: safe_cleanup(staging, ssh, reparse=reparse)
+        try: safe_cleanup(staging, ssh, STAGING_PREFIX, reparse=reparse)
         except Exception: raise Failure("STAGING_CLEANUP_FAILED", "CLEANUP", True)
         state["STAGING_CLEANUP"] = "PASS"; staging = None
-        state["EVIDENCE_PUBLISHED"] = "TRUE"
-        try: evidence_writer(evidence, state, fingerprint, private, public, "PASS", "NONE", "COMPLETE", False, acl=acl)
+        evidence_attempted = True
+        try:
+            evidence_writer(evidence, state, fingerprint, private, public, "PASS", "NONE",
+                            "COMPLETE", False, acl=acl, acl_validate=acl_validate,
+                            reparse=reparse, replace=replace)
         except Exception:
-            state["EVIDENCE_PUBLISHED"] = "FALSE"
             raise Failure("EVIDENCE_PUBLICATION_FAILED", "EVIDENCE_PUBLICATION", True)
+        state["EVIDENCE_PUBLISHED"] = "TRUE"
         return terminal_lines(state, "PASS", "NONE", "COMPLETE", False, fingerprint, evidence), 0
     except Failure as failure: primary = failure
     except Exception: primary = Failure("UNEXPECTED_ERROR", "UNEXPECTED", state["PRIVATE_KEY_PUBLISHED"] == "TRUE")
     assert primary is not None
     rollback = primary.rollback or state["PUBLIC_KEY_PUBLISHED"] == "TRUE" or state["PRIVATE_KEY_PUBLISHED"] == "TRUE"
-    if evidence is not None and state["EVIDENCE_PUBLISHED"] == "FALSE":
-        try:
-            state["EVIDENCE_PUBLISHED"] = "TRUE"
-            evidence_writer(evidence, state, fingerprint, private, public, "FAIL", primary.code,
-                            primary.stage, rollback, acl=acl)
-        except Exception: state["EVIDENCE_PUBLISHED"] = "FALSE"
+    staging = staging or children.get("staging")
+    evidence = evidence or children.get("evidence")
     if staging is not None and state["PUBLIC_KEY_PUBLISHED"] == "FALSE" and state["PRIVATE_KEY_PUBLISHED"] == "FALSE":
         try:
-            safe_cleanup(staging, staging.parent, reparse=reparse)
+            safe_cleanup(staging, staging.parent, STAGING_PREFIX, reparse=reparse)
             state["STAGING_CLEANUP"] = "PASS"
+            staging = None
         except Exception:
-            state["STAGING_CLEANUP"] = "FAILED"  # The primary failure remains authoritative.
+            state["STAGING_CLEANUP"] = "FAILED"
+    if evidence is not None and not evidence_ready:
+        try:
+            safe_cleanup(evidence, evidence.parent, EVIDENCE_PREFIX, reparse=reparse)
+            state["EVIDENCE_DIRECTORY_CLEANUP"] = "PASS"
+            evidence = None
+        except Exception:
+            state["EVIDENCE_DIRECTORY_CLEANUP"] = "FAILED"
+    if evidence_ready and evidence is not None and not evidence_attempted:
+        evidence_attempted = True
+        try:
+            evidence_writer(evidence, state, fingerprint, private, public, "FAIL", primary.code,
+                            primary.stage, rollback, acl=acl, acl_validate=acl_validate,
+                            reparse=reparse, replace=replace)
+            state["EVIDENCE_PUBLISHED"] = "TRUE"
+        except Exception:
+            state["EVIDENCE_PUBLISHED"] = "FALSE"
     return terminal_lines(state, "FAIL", primary.code, primary.stage, rollback, fingerprint, evidence), 1
 
 

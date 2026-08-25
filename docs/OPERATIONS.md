@@ -829,3 +829,9 @@ and a protected evidence directory. On PASS or failure, STOP and preserve the
 reported evidence. A public-only or private-published failure is not cleaned up
 manually; reconciliation and rollback require separate authorization. Never
 copy key material into logs, tickets, or repository content.
+
+The provisioning result is governed evidence only when `EVIDENCE_PUBLISHED` is
+TRUE after exact final reread and ACL confirmation. Failure cleanup occurs before
+the failure payload is constructed. If confirmation fails, preserve the reported
+evidence directory and filesystem state; do not overwrite `result.json`, create
+a contradictory result, remove a published key, or manually reconcile it.

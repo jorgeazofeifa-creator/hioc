@@ -252,3 +252,10 @@ sanitized fingerprint; the operator must STOP. PI3 authorization of that exact
 public key and Action B transfer require later separate checkpoints. Manual key
 generation, target overrides, agent use, identity reuse, and cleanup of a
 partial published state are prohibited.
+
+Provisioning remains blocked until the corrected evidence lifecycle is
+published and separately prepared. A result rename alone is not success: the
+exact payload, digest, file type, non-reparse state, and protected DACL must be
+reread and confirmed after publication. Cleanup state is finalized before any
+failure result is constructed, and rename uncertainty never authorizes an
+overwrite or a second contradictory result.

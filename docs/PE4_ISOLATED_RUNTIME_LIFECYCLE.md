@@ -156,6 +156,26 @@ final keys are never automatically deleted, and reconciliation/rollback requires
 separate authorization. Provisioning PASS stops before PI3 public-key
 authorization and before Action B.
 
+Execution preparation subsequently found that failure evidence could precede
+staging cleanup, post-rename ACL failure could leave an unconfirmed result, and
+child creation could lose its cleanup identity when ACL initialization failed.
+The corrected lifecycle records each invocation child through an explicit
+creation callback before hardening. It cleans only a confirmed invocation child
+and finalizes cleanup state before building failure evidence, preserving the
+primary error while separately recording cleanup failure.
+
+Evidence now has one prepare/publish/confirm attempt. Preparation serializes the
+final bounded state deterministically, computes its digest, flushes a private
+temporary file, applies the DACL, and validates exact bytes, digest, type,
+non-reparse status, and ACL. Publication refuses an existing `result.json` and
+uses atomic same-directory replacement. Confirmation independently repeats all
+invariants on the final path. A rename error is reconciled only if the exact
+intended final result fully confirms. Otherwise publication remains FALSE; the
+unexpected result is not overwritten and no contradictory second result is
+published. Confirmed persistent and terminal state agree for key publication,
+pair confirmation, staging/evidence-child cleanup, evidence publication,
+result, error, stage, and rollback recommendation.
+
 ## Construction and validation
 
 Action D requires the exact transferred directory, owner, `0700` mode, wheel,

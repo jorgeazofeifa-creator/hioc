@@ -1,5 +1,22 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a SSH identity evidence-lifecycle correction
+
+Execution preparation found the **PE-4 WINDOWS SSH IDENTITY PROVISIONING
+FAILURE-EVIDENCE ORDERING AND INVOCATION-CLEANUP DEFECT**. The corrected
+repository lifecycle retains every invocation child immediately after creation,
+even if ACL initialization fails; completes governed cleanup before constructing
+failure evidence; and publishes evidence through one prepare, atomic publish,
+and exact content/DACL reread confirmation attempt. A reported rename failure is
+accepted only when the exact intended final result independently confirms.
+Unexpected or ambiguous results are never overwritten, and no second
+contradictory result is published. Terminal and confirmed persistent state now
+share the final publication, pair-confirmation, cleanup, result, error, stage,
+and rollback fields. This correction is repository-only. Provisioning remains
+**NOT EXECUTED**, Action B remains **BLOCKED / NOT EXECUTED**, and Action C and
+all later PE-4 actions remain **NOT STARTED** pending publication and a fresh
+execution-preparation checkpoint.
+
 ## PE-4.0B.2a dedicated Action B identity governance
 
 Read-only Windows discovery established `CASE C`: no suitable existing private
