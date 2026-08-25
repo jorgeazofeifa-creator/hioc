@@ -124,4 +124,8 @@ and bounded-CLI semantics are governed there; it never uses `/tmp`.
 The production ACL correction retains the same security invariant while
 removing PowerShell ACL-cmdlet dependence: existing descriptors are hardened
 and persisted through Windows .NET file/directory APIs. The first attempt did
-not acquire the wheel; Action A remains attempted but not complete.
+not acquire the wheel. The corrected retry established Action A production
+PASS and the durable cache. Action B derives that fixed cache internally,
+validates its DACL/reparse boundary and exact artifact/lock identities, uses
+bounded system OpenSSH, records partial states in result-last evidence,
+preserves its private PI3 directory, and stops.

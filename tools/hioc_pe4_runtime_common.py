@@ -11,6 +11,7 @@ import re
 import stat
 import subprocess
 import tempfile
+import threading
 from typing import Iterable
 
 REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -113,6 +114,23 @@ def windows_reparse_point(path: pathlib.Path) -> bool:
     return path.is_symlink() or bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
 
 
+def windows_openssh_tool(name: str) -> pathlib.Path:
+    """Resolve the Windows system OpenSSH client without consulting PATH."""
+    if name not in {"ssh", "scp"} or os.name != "nt":
+        raise Failure("OPENSSH_TOOL_INVALID", "OPENSSH_IDENTITY")
+    import ctypes
+    buffer = ctypes.create_unicode_buffer(32768)
+    length = ctypes.windll.kernel32.GetWindowsDirectoryW(buffer, len(buffer))
+    if length == 0 or length >= len(buffer):
+        raise Failure("WINDOWS_DIRECTORY_UNAVAILABLE", "OPENSSH_IDENTITY")
+    candidate = pathlib.Path(buffer.value) / "System32" / "OpenSSH" / f"{name}.exe"
+    if not candidate.is_absolute() or not candidate.exists() or candidate.is_symlink():
+        raise Failure("OPENSSH_TOOL_MISSING", "OPENSSH_IDENTITY")
+    if windows_reparse_point(candidate) or not candidate.is_file():
+        raise Failure("OPENSSH_TOOL_UNSAFE", "OPENSSH_IDENTITY")
+    return candidate
+
+
 def prepare_windows_hierarchy(trusted_root: pathlib.Path, relative_parts: Iterable[str],
                               *, acl=None, reparse=None) -> pathlib.Path:
     acl = secure_workstation_path if acl is None else acl
@@ -132,6 +150,25 @@ def prepare_windows_hierarchy(trusted_root: pathlib.Path, relative_parts: Iterab
         else:
             current.mkdir()
         acl(current, True)
+    return current
+
+
+def validate_windows_hierarchy(trusted_root: pathlib.Path, relative_parts: Iterable[str],
+                               *, reparse=None) -> pathlib.Path:
+    reparse = windows_reparse_point if reparse is None else reparse
+    if not trusted_root.is_absolute() or not trusted_root.is_dir():
+        raise Failure("WORKSTATION_PATH_INVALID", "WORKSTATION_PATH")
+    current = trusted_root
+    for part in relative_parts:
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", part):
+            raise Failure("WORKSTATION_PATH_INVALID", "WORKSTATION_PATH")
+        current = current / part
+        if not current.exists() or current.is_symlink():
+            raise Failure("WORKSTATION_PATH_MISSING", "WORKSTATION_PATH")
+        if reparse(current):
+            raise Failure("WORKSTATION_REPARSE_POINT", "WORKSTATION_PATH")
+        if not current.is_dir():
+            raise Failure("WORKSTATION_PATH_NOT_DIRECTORY", "WORKSTATION_PATH")
     return current
 
 
@@ -181,6 +218,38 @@ if($actual.PropagationFlags -ne [Security.AccessControl.PropagationFlags]::None)
 
 def secure_workstation_directory(path: pathlib.Path) -> None:
     secure_workstation_path(path, True)
+
+
+def validate_workstation_path_acl(path: pathlib.Path, is_directory: bool) -> None:
+    script = r'''$p=$env:HIOC_PE4_ACL_PATH;$isDir=$env:HIOC_PE4_ACL_IS_DIRECTORY -eq '1';$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
+try{$item=if($isDir){[IO.DirectoryInfo]::new($p)}else{[IO.FileInfo]::new($p)}
+    $acl=$item.GetAccessControl([Security.AccessControl.AccessControlSections]::Access)
+    $rules=@($acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]))}catch{exit 21}
+if(-not $acl.AreAccessRulesProtected){exit 22}
+if($rules.Count -ne 1){exit 23}
+$actual=$rules[0]
+if($actual.IsInherited){exit 24}
+if($actual.IdentityReference.Value -ne $sid.Value){exit 25}
+if($actual.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow){exit 26}
+if($actual.FileSystemRights -ne [Security.AccessControl.FileSystemRights]::FullControl){exit 27}
+$expectedInheritance=if($isDir){[Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit}else{[Security.AccessControl.InheritanceFlags]::None}
+if($actual.InheritanceFlags -ne $expectedInheritance){exit 28}
+if($actual.PropagationFlags -ne [Security.AccessControl.PropagationFlags]::None){exit 29}'''
+    environment = os.environ.copy()
+    environment["HIOC_PE4_ACL_PATH"] = str(path)
+    environment["HIOC_PE4_ACL_IS_DIRECTORY"] = "1" if is_directory else "0"
+    run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+        "WORKSTATION_ACL", timeout=15, failure_codes={
+            21: "WORKSTATION_ACL_VALIDATION_READ_FAILED",
+            22: "WORKSTATION_ACL_NOT_PROTECTED",
+            23: "WORKSTATION_ACL_RULE_COUNT_INVALID",
+            24: "WORKSTATION_ACL_INHERITED_RULE_REMAINS",
+            25: "WORKSTATION_ACL_IDENTITY_INVALID",
+            26: "WORKSTATION_ACL_RULE_TYPE_INVALID",
+            27: "WORKSTATION_ACL_RIGHTS_INVALID",
+            28: "WORKSTATION_ACL_INHERITANCE_INVALID",
+            29: "WORKSTATION_ACL_PROPAGATION_INVALID",
+        }, env=environment)
 
 
 def verify_pi3() -> None:
@@ -246,6 +315,63 @@ def run(command: list[str], stage: str, *, timeout: int = 60, capture: bool = Tr
     if result.returncode != 0:
         raise Failure((failure_codes or {}).get(result.returncode, "COMMAND_FAILED"), stage)
     return result
+
+
+def run_bounded(command: list[str], stage: str, *, timeout: int,
+                max_output: int = 65536,
+                failure_codes: dict[int, str] | None = None) -> subprocess.CompletedProcess[str]:
+    try:
+        process = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+    except OSError:
+        raise Failure("COMMAND_INVOCATION_FAILED", stage)
+    chunks: list[list[bytes]] = [[], []]
+    total = 0
+    lock = threading.Lock()
+    overflow = threading.Event()
+
+    def collect(stream, target: list[bytes]) -> None:
+        nonlocal total
+        while True:
+            block = stream.read(4096)
+            if not block:
+                return
+            with lock:
+                remaining = max_output - total
+                if remaining > 0:
+                    target.append(block[:remaining])
+                total += len(block)
+                if total > max_output:
+                    overflow.set()
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+
+    readers = [threading.Thread(target=collect, args=(process.stdout, chunks[0]), daemon=True),
+               threading.Thread(target=collect, args=(process.stderr, chunks[1]), daemon=True)]
+    for reader in readers:
+        reader.start()
+    timed_out = False
+    try:
+        returncode = process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        process.kill()
+        returncode = process.wait()
+    for reader in readers:
+        reader.join()
+    process.stdout.close()
+    process.stderr.close()
+    stdout = b"".join(chunks[0]).decode("utf-8", "replace")
+    stderr = b"".join(chunks[1]).decode("utf-8", "replace")
+    if timed_out:
+        raise Failure("COMMAND_TIMEOUT", stage)
+    if overflow.is_set():
+        raise Failure("COMMAND_OUTPUT_TOO_LARGE", stage)
+    if returncode != 0:
+        raise Failure((failure_codes or {}).get(returncode, "COMMAND_FAILED"), stage)
+    return subprocess.CompletedProcess(command, returncode, stdout, stderr)
 
 
 def write_evidence(directory: pathlib.Path, action: str, fields: dict[str, object], result: str,

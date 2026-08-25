@@ -302,3 +302,8 @@ release backup, deployment, and rollback. Its recovery basis is the Git lock
 and tooling, exact frozen identity, durable workstation artifact cache, and
 retained prior immutable environment. PE-4 publication and pointer rollback are
 performed only by the dedicated tools in `PE4_ISOLATED_RUNTIME_LIFECYCLE.md`.
+
+Action A's durable cache is production-proven. Action B transfers only the
+identity-checked wheel and lock into invocation-owned PI3 staging; it does not
+modify Git source or the non-Git runtime. Partial-transfer evidence and the
+preserved directory are review inputs, not release deployment.

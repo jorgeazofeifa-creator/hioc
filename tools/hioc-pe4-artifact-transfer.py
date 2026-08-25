@@ -1,25 +1,84 @@
 #!/usr/bin/env python3
-"""PE-4.0B.2a-B: transfer one cached wheel and lock to PI3, verify, then STOP."""
-import argparse, pathlib, re
+"""PE-4.0B.2a-B: transfer the frozen wheel and lock to private PI3 staging."""
+from __future__ import annotations
+import json, pathlib, re, shlex, sys
 from hioc_pe4_runtime_common import *
 
-def main():
-    parser=argparse.ArgumentParser();parser.add_argument("--governance-commit",required=True);args=parser.parse_args()
-    verify_repository(REPOSITORY_ROOT,args.governance_commit,("tools/hioc-pe4-artifact-transfer.py","tools/hioc_pe4_runtime_common.py","requirements-pe4.lock"))
-    cache=workstation_cache_root(); wheel=cache/WHEEL_NAME
-    if wheel.stat().st_size != WHEEL_SIZE or sha256(wheel)!=WHEEL_SHA256:raise Failure("ARTIFACT_IDENTITY_MISMATCH","ARTIFACT_IDENTITY")
-    require_regular(LOCAL_LOCK)
-    if sha256(LOCAL_LOCK)!=LOCK_SHA256:raise Failure("LOCK_IDENTITY_MISMATCH","ARTIFACT_IDENTITY")
-    ssh=["ssh","-oBatchMode=yes","-oStrictHostKeyChecking=yes","-oConnectTimeout=5",f"{OWNER}@{PI3_IPV4}"]
-    remote=run(ssh+["umask 077; mktemp -d /tmp/hioc-pe4-artifact-transfer-XXXXXXXX"],"REMOTE_STAGING",timeout=15).stdout.strip()
-    if not TRANSFER_RE.fullmatch(remote): raise Failure("REMOTE_STAGING_INVALID","REMOTE_STAGING")
-    opts=["-oBatchMode=yes","-oStrictHostKeyChecking=yes","-oConnectTimeout=5"]
-    run(["scp",*opts,str(wheel),str(LOCAL_LOCK),f"{OWNER}@{PI3_IPV4}:{remote}/"],"TRANSFER",timeout=60)
-    verify=f"chmod 600 {remote}/{WHEEL_NAME} {remote}/requirements-pe4.lock && test $(stat -c %s {remote}/{WHEEL_NAME}) -eq {WHEEL_SIZE} && test $(sha256sum {remote}/{WHEEL_NAME} | cut -d' ' -f1) = {WHEEL_SHA256} && test $(sha256sum {remote}/requirements-pe4.lock | cut -d' ' -f1) = {LOCK_SHA256} && printf '%s\\n' '{{\"action\":\"PE-4.0B.2a-B\",\"result\":\"PASS\",\"error_code\":\"NONE\",\"failure_stage\":\"COMPLETE\",\"rollback_recommended\":false}}' > {remote}/.result.tmp && chmod 600 {remote}/.result.tmp && sync -f {remote}/.result.tmp && mv {remote}/.result.tmp {remote}/result.json && sync -f {remote}/result.json && sync -f {remote}"
-    run(ssh+[verify],"REMOTE_IDENTITY",timeout=20)
-    terminal("PASS","NONE","COMPLETE",False); print(f"TRANSFER_DIRECTORY={remote}")
+TOOL_RELATIVE="tools/hioc-pe4-artifact-transfer.py"
+SOURCE_RELATIVES=(TOOL_RELATIVE,"tools/hioc_pe4_runtime_common.py","requirements-pe4.lock")
+STATE_KEYS=("REMOTE_STAGING_CREATED","WHEEL_TRANSFERRED","LOCK_TRANSFERRED","REMOTE_ARTIFACT_VERIFIED","REMOTE_LOCK_VERIFIED","EVIDENCE_PUBLISHED")
+SSH_OPTIONS=("-oBatchMode=yes","-oStrictHostKeyChecking=yes","-oConnectTimeout=5","-oConnectionAttempts=1","-oNumberOfPasswordPrompts=0","-oPasswordAuthentication=no","-oKbdInteractiveAuthentication=no","-oPreferredAuthentications=publickey","-oIdentitiesOnly=yes","-oLogLevel=ERROR")
 
-if __name__ == "__main__":
-    try: main()
-    except Failure as exc: terminal("FAIL",exc.code,exc.stage,exc.rollback); raise SystemExit(1)
-    except Exception: terminal("FAIL","UNEXPECTED_ERROR","UNEXPECTED",False); raise SystemExit(1)
+def parse_cli(argv):
+    if len(argv)!=2 or argv[0]!="--governance-commit" or not re.fullmatch(r"[0-9a-f]{40}",argv[1]):
+        raise Failure("INVALID_ARGUMENTS","INPUT_VALIDATION")
+    return argv[1]
+
+def local_inputs(commit):
+    verify_repository(REPOSITORY_ROOT,commit,SOURCE_RELATIVES)
+    pe4=workstation_cache_root(); trusted=pe4.parents[2]
+    cache=validate_windows_hierarchy(trusted,("HIOC","artifacts","pe4","cache"))
+    for directory in (trusted/"HIOC",trusted/"HIOC/artifacts",pe4,cache): validate_workstation_path_acl(directory,True)
+    wheel=cache/WHEEL_NAME
+    if not wheel.exists() or wheel.is_symlink() or windows_reparse_point(wheel) or not wheel.is_file():
+        raise Failure("ARTIFACT_PATH_UNSAFE","ARTIFACT_IDENTITY")
+    validate_workstation_path_acl(wheel,False)
+    if wheel.stat().st_size!=WHEEL_SIZE: raise Failure("ARTIFACT_SIZE_MISMATCH","ARTIFACT_IDENTITY")
+    if sha256(wheel)!=WHEEL_SHA256: raise Failure("ARTIFACT_SHA256_MISMATCH","ARTIFACT_IDENTITY")
+    require_regular(LOCAL_LOCK)
+    if sha256(LOCAL_LOCK)!=LOCK_SHA256: raise Failure("LOCK_IDENTITY_MISMATCH","ARTIFACT_IDENTITY")
+    return wheel,LOCAL_LOCK
+
+def remote_guard(remote):
+    q=shlex.quote(remote)
+    return f"test -d {q} || exit 41; test ! -L {q} || exit 42; test \"$(stat -c %U -- {q})\" = {OWNER} || exit 43; test \"$(stat -c %a -- {q})\" = 700 || exit 44"
+
+def evidence_command(remote,states,result,code,stage):
+    doc={"schema_version":"1.0","action":"PE-4.0B.2a-B",**{k.lower():states[k] for k in STATE_KEYS},"result":result,"error_code":code,"failure_stage":stage,"rollback_recommended":False}
+    payload=json.dumps(doc,sort_keys=True,separators=(",",":"))
+    qdir,qresult,qtemp=map(shlex.quote,(remote,f"{remote}/result.json",f"{remote}/.{'result' if result=='PASS' else 'failure-result'}.tmp"))
+    return remote_guard(remote)+f"; test ! -e {qresult} || exit 71; test ! -e {qtemp} || exit 72; printf '%s\\n' {shlex.quote(payload)} > {qtemp} || exit 73; chmod 600 {qtemp} || exit 74; sync -f {qtemp} || exit 75; mv -- {qtemp} {qresult} || exit 76; sync -f {qresult} || exit 77; sync -f {qdir} || exit 78"
+
+def execute(commit,runner=run_bounded,resolver=windows_openssh_tool):
+    states={k:False for k in STATE_KEYS}; remote=""
+    ssh=[str(resolver("ssh")),*SSH_OPTIONS,f"{OWNER}@{PI3_IPV4}"]; scp=[str(resolver("scp")),*SSH_OPTIONS]
+    try:
+        wheel,lock=local_inputs(commit)
+        create=("umask 077; d=$(mktemp -d /tmp/hioc-pe4-artifact-transfer-XXXXXXXX) || exit 31; test -d \"$d\" || exit 32; test ! -L \"$d\" || exit 33; "+f"test \"$(stat -c %U -- \"$d\")\" = {OWNER} || exit 34; "+"test \"$(stat -c %a -- \"$d\")\" = 700 || exit 35; test -z \"$(find \"$d\" -mindepth 1 -maxdepth 1 -print -quit)\" || exit 36; printf '%s\\n' \"$d\"")
+        remote=runner(ssh+[create],"REMOTE_STAGING",timeout=15,max_output=4096).stdout.strip()
+        if not TRANSFER_RE.fullmatch(remote): raise Failure("REMOTE_STAGING_INVALID","REMOTE_STAGING")
+        states["REMOTE_STAGING_CREATED"]=True
+        runner(scp+[str(wheel),f"{OWNER}@{PI3_IPV4}:{remote}/.wheel.part"],"WHEEL_TRANSFER",timeout=60,max_output=8192); states["WHEEL_TRANSFERRED"]=True
+        runner(scp+[str(lock),f"{OWNER}@{PI3_IPV4}:{remote}/.lock.part"],"LOCK_TRANSFER",timeout=30,max_output=8192); states["LOCK_TRANSFERRED"]=True
+        qpart,qfinal=map(shlex.quote,(f"{remote}/.wheel.part",f"{remote}/{WHEEL_NAME}"))
+        check=remote_guard(remote)+f"; test -f {qpart} || exit 51; test ! -L {qpart} || exit 52; chmod 600 {qpart} || exit 53; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 54; test \"$(stat -c %a -- {qpart})\" = 600 || exit 55; test \"$(stat -c %s -- {qpart})\" = {WHEEL_SIZE} || exit 56; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {WHEEL_SHA256} || exit 57; test ! -e {qfinal} || exit 58; mv -- {qpart} {qfinal} || exit 59; sync -f {qfinal} || exit 60"
+        runner(ssh+[check],"REMOTE_ARTIFACT_IDENTITY",timeout=30,max_output=4096); states["REMOTE_ARTIFACT_VERIFIED"]=True
+        qpart,qfinal=map(shlex.quote,(f"{remote}/.lock.part",f"{remote}/requirements-pe4.lock"))
+        check=remote_guard(remote)+f"; test -f {qpart} || exit 61; test ! -L {qpart} || exit 62; chmod 600 {qpart} || exit 63; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 64; test \"$(stat -c %a -- {qpart})\" = 600 || exit 65; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {LOCK_SHA256} || exit 66; test ! -e {qfinal} || exit 67; mv -- {qpart} {qfinal} || exit 68; sync -f {qfinal} || exit 69"
+        runner(ssh+[check],"REMOTE_LOCK_IDENTITY",timeout=20,max_output=4096); states["REMOTE_LOCK_VERIFIED"]=True
+        published={**states,"EVIDENCE_PUBLISHED":True}
+        runner(ssh+[evidence_command(remote,published,"PASS","NONE","COMPLETE")],"EVIDENCE_PUBLICATION",timeout=20,max_output=4096); states["EVIDENCE_PUBLISHED"]=True
+        return states,remote
+    except Failure as exc:
+        if remote and states["REMOTE_STAGING_CREATED"]:
+            try:
+                published={**states,"EVIDENCE_PUBLISHED":True}
+                runner(ssh+[evidence_command(remote,published,"FAIL",exc.code,exc.stage)],"FAILURE_EVIDENCE_PUBLICATION",timeout=20,max_output=4096); states["EVIDENCE_PUBLISHED"]=True
+            except Failure: pass
+        exc.states,exc.remote=states,remote; raise
+
+def emit(states,result,code,stage,remote=""):
+    for key in STATE_KEYS: print(f"{key}={'TRUE' if states[key] else 'FALSE'}")
+    print(f"ACTION_B={'COMPLETE' if result=='PASS' else 'NOT_COMPLETE'}"); terminal(result,code,stage,False)
+    if remote: print(f"TRANSFER_DIRECTORY={remote}")
+
+def main():
+    states={k:False for k in STATE_KEYS}
+    try:
+        states,remote=execute(parse_cli(sys.argv[1:])); emit(states,"PASS","NONE","COMPLETE",remote)
+    except Failure as exc:
+        emit(getattr(exc,"states",states),"FAIL",exc.code,exc.stage,getattr(exc,"remote","")); raise SystemExit(1)
+    except Exception:
+        emit(states,"FAIL","UNEXPECTED_ERROR","UNEXPECTED"); raise SystemExit(1)
+
+if __name__=="__main__": main()

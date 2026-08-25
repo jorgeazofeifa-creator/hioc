@@ -794,6 +794,12 @@ sanitized Evidence Report and STOP for the next authorization. General release
 rollback is not PE-4 environment rollback; use only the separately governed
 PE-4 pointer rollback after exact eligibility review.
 
+Action A production PASS establishes the durable cache prerequisite. Action B
+accepts neither the Action A evidence path nor an operator-selected artifact.
+It independently verifies the fixed cache and preserves its PI3 transfer
+directory on every post-creation outcome. Return every bounded state marker and
+`TRANSFER_DIRECTORY`, then STOP; never chain cleanup, route proof, or install.
+
 Action A is a Windows-only repository tool. Its result must include all five
 acquisition/publication state markers. A failure with
 `DURABLE_CACHE_PUBLISHED=TRUE` means preserve the cache and evidence state and

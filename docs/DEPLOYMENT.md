@@ -229,3 +229,10 @@ from the existing descriptor and validating protected, non-inherited,
 current-SID-only FullControl after persistence. The ordinary `HIOC` directory
 left by that attempt is hardened in place before `artifacts/pe4` is created.
 Action A remains incomplete and this correction authorizes no retry.
+
+Action A later completed with production PASS. Action B creates only one
+private PI3 `/tmp` directory and transfers the exact frozen wheel and lock; it
+does not synchronize or alter either source or runtime tree. The corrected tool
+uses the fixed durable cache, system OpenSSH, strict noninteractive identity,
+separate partial names, remote owner/mode/digest validation, and result-last
+partial-state evidence. Separate publication and authorization remain required.

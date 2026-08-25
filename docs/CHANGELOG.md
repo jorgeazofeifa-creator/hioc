@@ -1,5 +1,11 @@
 # HIOC Changelog
 
+- Accepted PE-4 Action A production PASS and corrected Action B before any
+  transfer. Action B now derives the exact durable cache, validates Windows
+  reparse/DACL boundaries, uses system OpenSSH with strict noninteractive
+  bounded options, separately transfers and validates wheel and lock, and
+  publishes result-last partial-state evidence. Action B remains unexecuted.
+
 - Corrected the PE-4 Action A Windows ACL implementation after its first
   production attempt stopped before network access at `WORKSTATION_ACL`. The
   Python-launched Windows PowerShell process could not autoload the

@@ -2172,3 +2172,13 @@ all DACL invariants. The existing ordinary `HIOC` directory is accepted only
 after file/reparse checks and hardened before descendants are created. Action A
 is **ATTEMPTED BUT NOT COMPLETE** and requires correction publication, fresh
 preparation, and separate execution authorization.
+
+The corrected retry completed Action A with production PASS. Action B
+preparation then found the committed transfer tool unsafe before PI3 access: it
+selected the wrong cache level, relied on `PATH` OpenSSH, captured unbounded
+diagnostics, and could not distinguish partial transfer state. The correction
+uses the fixed durable cache, Windows reparse/DACL validation, bounded system
+OpenSSH, separate wheel/lock stages, remote owner/mode/digest validation, and
+sanitized result-last evidence. Action A is **COMPLETE / PASS**. Action B is
+**BLOCKED / NOT EXECUTED** pending commit, push, preparation, and authorization.
+Actions C-G remain not started.

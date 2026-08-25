@@ -1538,3 +1538,12 @@ adds one current-user SID FullControl rule with exact file/directory flags,
 persists the modified descriptor, and rereads it for fail-closed validation.
 An existing non-reparse `HIOC` directory left by the failed attempt is hardened
 in place; manual deletion or ACL repair is prohibited.
+
+# Decision: Make Action B transfer input and partial state deterministic
+
+Action B derives the frozen wheel only from the governed durable Windows cache;
+it accepts no path and does not rely on Action A evidence. It uses only Windows
+system OpenSSH, numeric PI3 identity, strict public-key-only batch authentication,
+and bounded output. Wheel and lock are separately transferred and verified in
+one private PI3 directory. Sanitized result-last evidence records partial state,
+and the directory is preserved and reported rather than automatically cleaned.

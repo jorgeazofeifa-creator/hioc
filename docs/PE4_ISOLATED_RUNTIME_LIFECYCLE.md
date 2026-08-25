@@ -13,7 +13,8 @@ ROUTE_PROOF_ORDER=BEFORE_DEPENDENCY_DEPLOYMENT
 PE4_0B2A=NOT_STARTED
 PE4_0B2B=NOT_STARTED
 PE4_0C=NOT_STARTED
-ACTION_A=ATTEMPTED_BUT_NOT_COMPLETE
+ACTION_A=COMPLETE
+ACTION_B=BLOCKED_PENDING_GOVERNANCE_CORRECTION
 ```
 
 Every action is separately authorized, emits a bounded terminal result, and
@@ -84,12 +85,23 @@ Terminal and evidence state explicitly report `ARTIFACT_ACQUIRED`,
 cannot be mistaken for non-publication. Invalid CLI input emits only bounded
 failure markers. Action A PASS stops before Action B.
 
-Action B consumes only that exact cached wheel and the repository lock. SSH and
-SCP use batch mode, strict known-host verification, a five-second connection
-timeout, the numeric PI3 address, and the governed operator. PI3 creates the
-private remote directory; the tool accepts only the governed prefix and exact
-random suffix. It verifies mode, byte count, and SHA-256, then stops. It neither
-installs nor publishes runtime content.
+Action A production evidence records fresh acquisition, exact verification,
+durable publication, result-last evidence, and PASS. Action B consumes only the
+exact wheel at the fixed `LocalApplicationData/HIOC/artifacts/pe4/cache` path
+and the repository lock; it accepts no caller-selected path and does not consume
+Action A evidence. It validates cache components as non-reparse directories
+with governed protected DACLs and independently verifies filename, size,
+SHA-256, lock identity, governance commit, and source identities.
+
+Action B resolves only Windows system OpenSSH executables, never `PATH`. It uses
+strict known-host verification, numeric PI3 addressing, bounded attempts/time/
+output, public-key-only batch authentication, and no password fallback. Wheel
+and lock transfer separately into one private, owner/mode-validated PI3 staging
+directory and are independently verified before atomic rename. Result-last
+sanitized evidence records partial state. The directory is reported and
+preserved on PASS or any post-creation failure; there is no automatic cleanup.
+Action B remains blocked until this correction is published and separately
+prepared and authorized.
 
 ## Construction and validation
 
