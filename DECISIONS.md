@@ -1583,3 +1583,22 @@ ACL-validated, atomically renamed once, and accepted only after exact bytes,
 digest, file type, reparse, and DACL reread confirmation. Rename uncertainty is
 reconciled by that same confirmation; wrong or ambiguous results remain
 unaccepted and are never overwritten by a contradictory result.
+
+# Decision: Treat every Windows path entry as a collision and retain id_ed25519
+
+Execution preparation found that `Path.exists()` plus `Path.is_symlink()` did
+not prove true absence of a dangling junction or another non-symlink reparse
+entry. Provisioning now uses non-following `lstat` semantics: only a
+`FileNotFoundError` is absence, every observed or indeterminate entry is a
+collision. Key and evidence publication use Windows `MoveFileExW` with
+write-through and without replacement, so the publication operation itself
+cannot overwrite an entry raced into place after inspection.
+
+History also confirms that `.ssh/id_ed25519` and `.ssh/id_ed25519.pub` were
+explicitly frozen as the dedicated PE-4 Action B identity when ambient OpenSSH
+configuration was isolated. The provisioning tool intentionally consumes that
+same shared repository constant; the later `hioc_pe4_pi3_ed25519` description
+was preparation-report drift, not an implementation decision. The generic name
+does not authorize personal-key reuse: discovery proved both paths absent, the
+pair may be created only by this PE-4 prerequisite, and Action B accepts exactly
+that governed output. Provisioning and Action B remain blocked and unexecuted.

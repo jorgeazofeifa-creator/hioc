@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Corrected the PE-4 Windows SSH identity collision and path contracts before
+  execution. Non-following entry inspection rejects files, directories,
+  dangling links, junctions, mount points, and all other reparse entries;
+  Windows no-replace publication closes the remaining race for keys and
+  evidence. Provisioning and Action B now have regression-locked shared
+  `.ssh/id_ed25519` paths. Neither operation has executed.
+
 - Corrected the PE-4 Windows SSH identity provisioning evidence lifecycle.
   Invocation children remain known across ACL initialization failure, cleanup
   reaches its final state before failure evidence, and one prepare/publish/

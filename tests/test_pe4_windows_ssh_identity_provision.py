@@ -58,6 +58,64 @@ class IdentityProvisionTests(unittest.TestCase):
                 self.assertEqual(caught.exception.code, "TARGET_COLLISION")
                 target.unlink()
 
+    def test_collision_uses_non_following_entry_primitive_for_every_object_type(self):
+        private, public = pathlib.Path("private"), pathlib.Path("public")
+        for object_type in ("file", "directory", "symlink", "dangling-symlink",
+                            "junction", "dangling-junction", "mount-point", "other-reparse"):
+            seen = []
+            def entry_exists(path):
+                seen.append((path, object_type))
+                return path == private
+            with self.subTest(object_type=object_type), self.assertRaises(PROVISION.Failure):
+                PROVISION.collision_check(private, public, entry_exists=entry_exists)
+            self.assertEqual(seen, [(private, object_type)])
+
+    def test_non_following_entry_primitive_distinguishes_only_true_absence(self):
+        with mock.patch.object(PROVISION.os, "lstat", return_value=object()):
+            self.assertTrue(PROVISION.windows_path_entry_exists(pathlib.Path("junction")))
+        with mock.patch.object(PROVISION.os, "lstat", side_effect=FileNotFoundError):
+            self.assertFalse(PROVISION.windows_path_entry_exists(pathlib.Path("absent")))
+        with mock.patch.object(PROVISION.os, "lstat", side_effect=PermissionError):
+            with self.assertRaises(PROVISION.Failure) as caught:
+                PROVISION.windows_path_entry_exists(pathlib.Path("indeterminate"))
+        self.assertEqual(caught.exception.code, "PATH_ENTRY_INSPECTION_FAILED")
+
+    @unittest.skipUnless(os.name == "nt", "Windows reparse integration")
+    def test_real_windows_dangling_symlink_is_still_a_collision(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp); target = root / "missing"; link = root / "link"
+            try: os.symlink(target, link)
+            except OSError as exc: self.skipTest(f"symlink fixture unavailable: {exc}")
+            self.assertTrue(PROVISION.windows_path_entry_exists(link))
+            with self.assertRaises(PROVISION.Failure):
+                PROVISION.collision_check(link, root / "absent")
+
+    @unittest.skipUnless(os.name == "nt", "Windows reparse integration")
+    def test_real_windows_dangling_junction_is_still_a_collision(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp); target = root / "target"; junction = root / "junction"
+            target.mkdir()
+            created = subprocess.run(["cmd.exe", "/d", "/c", "mklink", "/J", str(junction), str(target)],
+                                     text=True, capture_output=True, check=False)
+            if created.returncode != 0: self.skipTest("junction fixture unavailable")
+            target.rmdir()
+            try:
+                self.assertTrue(PROVISION.windows_path_entry_exists(junction))
+                with self.assertRaises(PROVISION.Failure):
+                    PROVISION.collision_check(junction, root / "absent")
+            finally: os.rmdir(junction)
+
+    @unittest.skipUnless(os.name == "nt", "Windows no-replace integration")
+    def test_real_windows_publication_primitive_never_replaces_destination(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp); source = root / "source"; destination = root / "destination"
+            source.write_text("governed", encoding="ascii")
+            destination.write_text("hostile", encoding="ascii")
+            with self.assertRaises(OSError):
+                PROVISION.windows_publish_no_replace(source, destination)
+            self.assertEqual(source.read_text(encoding="ascii"), "governed")
+            self.assertEqual(destination.read_text(encoding="ascii"), "hostile")
+
     def test_keygen_identity_is_pinned(self):
         with tempfile.TemporaryDirectory() as temp:
             tool = pathlib.Path(temp) / "ssh-keygen.exe"; tool.write_bytes(b"wrong")
@@ -124,7 +182,7 @@ class IdentityProvisionTests(unittest.TestCase):
             PROVISION.write_evidence(directory, state, "SHA256:abc", pathlib.Path("C:/x/id_ed25519"),
                                      pathlib.Path("C:/x/id_ed25519.pub"), "PASS", "NONE", "COMPLETE", False,
                                      acl=lambda *_: None, acl_validate=lambda *_: None,
-                                     reparse=lambda _: False)
+                                     reparse=lambda _: False, publish=os.replace)
             payload = (directory / "result.json").read_text(encoding="utf-8")
             self.assertIn('"public_key_fingerprint":"SHA256:abc"', payload)
             self.assertNotIn("private_key_material", payload)
@@ -138,13 +196,13 @@ class IdentityProvisionTests(unittest.TestCase):
 
     def test_publication_order_is_public_then_private_and_no_chaining(self):
         source = (TOOLS / "hioc-pe4-windows-ssh-identity-provision.py").read_text(encoding="utf-8")
-        self.assertLess(source.index("replace(staged_public, public)"), source.index("replace(staged_private, private)"))
+        self.assertLess(source.index("publish(staged_public, public)"), source.index("publish(staged_private, private)"))
         self.assertNotIn("hioc-pe4-artifact-transfer.py", source)
 
     def _execute_fixture(self, root, *, replace_failure=0, confirmation_failure=False,
                          generation_failure=False, evidence_failure=False,
                          cleanup_failure=False, real_evidence=False,
-                         staging_acl_failure=False):
+                         staging_acl_failure=False, entry_exists=None):
         ssh = root / ".ssh"; ssh.mkdir(); private = ssh / "id_ed25519"; public = ssh / "id_ed25519.pub"
         evidence_root = root / "evidence"; evidence_root.mkdir()
         calls, validations = [], 0
@@ -160,7 +218,7 @@ class IdentityProvisionTests(unittest.TestCase):
             if confirmation_failure and validations == 2:
                 raise PROVISION.Failure("FINAL_IDENTITY_CONFIRMATION_FAILED", "FINAL_CONFIRMATION", True)
             return "SHA256:fixture"
-        def replace(source, target):
+        def publish(source, target):
             calls.append(pathlib.Path(target).name)
             if replace_failure and len(calls) == replace_failure: raise OSError("simulated")
             os.replace(source, target)
@@ -180,8 +238,27 @@ class IdentityProvisionTests(unittest.TestCase):
              mock.patch.object(PROVISION, "safe_cleanup", side_effect=cleanup):
             lines, status = PROVISION.execute("a" * 40, runner=runner, acl=acl,
                 acl_validate=lambda *_: None, reparse=lambda _: False,
-                evidence_writer=evidence_writer, replace=replace)
+                evidence_writer=evidence_writer, publish=publish,
+                entry_exists=PROVISION.windows_path_entry_exists if entry_exists is None else entry_exists)
         return "\n".join(lines), status, calls, private.exists(), public.exists(), evidence_writer
+
+    def test_collision_rechecks_cover_initial_pregeneration_and_each_publication(self):
+        # Private/public checks occur initially, before generation, and before
+        # public publication; private is checked once more before its publication.
+        for collision_call, expected_calls, expected_public in (
+                (1, [], False), (3, [], False), (6, [], False), (7, ["id_ed25519.pub"], True)):
+            seen = 0
+            def entry_exists(_path):
+                nonlocal seen
+                seen += 1
+                return seen == collision_call
+            with self.subTest(collision_call=collision_call), tempfile.TemporaryDirectory() as temp:
+                output, status, calls, private, public, _writer = self._execute_fixture(
+                    pathlib.Path(temp), entry_exists=entry_exists)
+            self.assertEqual(status, 1)
+            self.assertEqual(calls, expected_calls)
+            self.assertFalse(private); self.assertEqual(public, expected_public)
+            self.assertIn("ERROR_CODE=TARGET_COLLISION", output)
 
     def test_failure_before_publication_cleans_staging_and_preserves_primary(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -247,14 +324,15 @@ class IdentityProvisionTests(unittest.TestCase):
         self.assertIn("STAGING_CLEANUP=PASS", output)
         self.assertEqual(writer.call_args.args[1]["STAGING_CLEANUP"], "PASS")
 
-    def _evidence_fixture(self, replace, acl_validate=lambda *_: None):
+    def _evidence_fixture(self, publish, acl_validate=lambda *_: None,
+                          entry_exists=PROVISION.windows_path_entry_exists):
         temp = tempfile.TemporaryDirectory(); directory = pathlib.Path(temp.name)
         state = PROVISION.initial_state(); state["STAGING_CLEANUP"] = "PASS"
         try:
             PROVISION.write_evidence(directory, state, "SHA256:abc", pathlib.Path("C:/x/id_ed25519"),
                 pathlib.Path("C:/x/id_ed25519.pub"), "PASS", "NONE", "COMPLETE", False,
                 acl=lambda *_: None, acl_validate=acl_validate, reparse=lambda _: False,
-                replace=replace)
+                entry_exists=entry_exists, publish=publish)
             error = None
         except Exception as exc: error = exc
         return temp, directory, error
@@ -286,6 +364,28 @@ class IdentityProvisionTests(unittest.TestCase):
             self.assertEqual(error.code, "EVIDENCE_RENAME_UNCERTAIN")
             self.assertEqual((directory / "result.json").read_text(encoding="ascii"), "wrong")
         finally: temp.cleanup()
+
+    def test_evidence_final_collision_is_rejected_for_non_following_entry(self):
+        temp, directory, error = self._evidence_fixture(
+            os.replace, entry_exists=lambda path: pathlib.Path(path).name == "result.json")
+        try:
+            self.assertIsInstance(error, PROVISION.Failure)
+            self.assertEqual(error.code, "EVIDENCE_FINAL_EXISTS")
+            self.assertFalse((directory / ".result.tmp").exists())
+        finally: temp.cleanup()
+
+    def test_publication_primitive_refuses_raced_destination_without_overwrite(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp); source = root / "source"; destination = root / "destination"
+            source.write_text("governed", encoding="ascii")
+            destination.write_text("hostile", encoding="ascii")
+            def portable_no_replace(src, dst):
+                if PROVISION.windows_path_entry_exists(dst):
+                    raise FileExistsError(str(dst))
+                os.rename(src, dst)
+            with self.assertRaises(FileExistsError): portable_no_replace(source, destination)
+            self.assertEqual(destination.read_text(encoding="ascii"), "hostile")
+            self.assertEqual(source.read_text(encoding="ascii"), "governed")
 
     def test_pass_evidence_requires_full_confirmation_and_agrees_with_terminal(self):
         temp, directory, error = self._evidence_fixture(os.replace)

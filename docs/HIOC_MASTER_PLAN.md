@@ -2226,3 +2226,15 @@ owner, mode, file fsync, and directory fsync confirmation, including recovery
 from an uncertain rename command. Action A remains **COMPLETE / PASS**. Action
 B remains **BLOCKED / NOT EXECUTED**. Actions C-G and PE-4.0B.2a remain not
 started pending commit, push, and fresh preparation.
+
+Final Windows identity execution preparation then found two coupled governance
+defects before key generation. `Path.exists()`/`Path.is_symlink()` could mistake
+a dangling non-symlink reparse entry for absence, and a prior report named a key
+path inconsistent with the repository's dedicated Action B contract. The
+correction uses non-following entry inspection at every key/evidence collision
+boundary and Windows atomic write-through publication without replacement.
+Repository history confirms `.ssh/id_ed25519`/`.ssh/id_ed25519.pub` as the
+intentional dedicated PE-4 pair; provisioning and Action B now have an explicit
+shared-contract regression. Action A remains **COMPLETE / PASS**. Windows
+identity provisioning and Action B remain **BLOCKED / NOT EXECUTED**. Action C,
+Actions D-G, PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain not started.

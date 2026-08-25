@@ -13,6 +13,10 @@ sys.path.insert(0, str(TOOLS))
 spec = importlib.util.spec_from_file_location("pe4_action_b", TOOLS / "hioc-pe4-artifact-transfer.py")
 ACTION_B = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ACTION_B)
+provision_spec = importlib.util.spec_from_file_location(
+    "identity_provision_contract", TOOLS / "hioc-pe4-windows-ssh-identity-provision.py")
+PROVISION = importlib.util.module_from_spec(provision_spec)
+provision_spec.loader.exec_module(PROVISION)
 
 
 class Runner:
@@ -115,6 +119,20 @@ class PE4ActionBTransferTests(unittest.TestCase):
                 identity.write_bytes(b"")
                 with self.assertRaises(ACTION_B.Failure):
                     ACTION_B.windows_openssh_material()
+
+    def test_action_b_and_provisioning_share_the_dedicated_identity_contract(self):
+        self.assertEqual(ACTION_B.SSH_IDENTITY_NAME, "id_ed25519")
+        self.assertEqual(PROVISION.SSH_IDENTITY_NAME, ACTION_B.SSH_IDENTITY_NAME)
+        with tempfile.TemporaryDirectory() as temp:
+            profile = pathlib.Path(temp); (profile / ".ssh").mkdir()
+            with mock.patch.object(PROVISION.os, "name", "nt"), \
+                 mock.patch.object(PROVISION, "EXPECTED_PROFILE", pathlib.PureWindowsPath(str(profile))):
+                _ssh, private, public = PROVISION.target_paths(
+                    profile_resolver=lambda: profile,
+                    operator_resolver=lambda: PROVISION.EXPECTED_OPERATOR,
+                    reparse=lambda _: False)
+        self.assertEqual(private.name, ACTION_B.SSH_IDENTITY_NAME)
+        self.assertEqual(public.name, ACTION_B.SSH_IDENTITY_NAME + ".pub")
 
     @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
     def test_post_rename_failure_is_reconciled_by_exact_confirmation(self, _inputs):

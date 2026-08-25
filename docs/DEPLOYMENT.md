@@ -259,3 +259,10 @@ exact payload, digest, file type, non-reparse state, and protected DACL must be
 reread and confirmed after publication. Cleanup state is finalized before any
 failure result is constructed, and rename uncertainty never authorizes an
 overwrite or a second contradictory result.
+
+The next provisioning release also rejects every existing Windows directory
+entry without following reparse targets and atomically publishes without
+replacement. It preserves the historically governed dedicated pair
+`.ssh/id_ed25519`/`.ssh/id_ed25519.pub`, which is the exact Action B identity
+contract. Publication of this repository correction does not provision a key,
+authorize it on PI3, or execute Action B.

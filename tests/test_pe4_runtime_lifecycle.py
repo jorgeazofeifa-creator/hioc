@@ -35,6 +35,14 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
         self.assertEqual(COMMON.WHEEL_SHA256, "86d7f0f8bdb25d2c632b72527325e4776430fd5bc61b9118de4e2b8ddb5f5b01")
         self.assertEqual(COMMON.CLIENT_BLOB, "09d66b041796dd6ec2efdb88f7a71b3f99e9a27a")
         self.assertEqual(COMMON.CLIENT_SHA256, "5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e")
+        self.assertEqual(COMMON.SSH_IDENTITY_NAME, "id_ed25519")
+
+    def test_windows_publication_primitive_is_atomic_and_no_replace(self):
+        source=(TOOLS/"hioc_pe4_runtime_common.py").read_text(encoding="utf-8")
+        body=source[source.index("def windows_publish_no_replace"):source.index("def windows_openssh_tool")]
+        self.assertIn("MoveFileExW",body)
+        self.assertIn("0x8",body)
+        self.assertNotIn("MOVEFILE_REPLACE_EXISTING",body)
 
     def test_wheel_validator_fails_closed_and_passes_exact_bytes(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -1,5 +1,11 @@
 # HIOC Release Process
 
+The PE-4 Windows identity correction is repository governance only. It makes
+final collision checks non-following, uses Windows atomic no-replace key and
+evidence publication, and locks provisioning and Action B to the shared
+`.ssh/id_ed25519` identity. Release does not generate or migrate a key, modify
+`.ssh`, contact PI3, authorize a public key, or execute Action B.
+
 The PE-4 client follows the established PI3 source/runtime boundary:
 `/home/jazofv1/hioc-release-source` is authoritative Git source and
 `/home/jazofv1/hioc` is the non-Git deployed runtime. PI5 HA remains a remote

@@ -118,6 +118,31 @@ def windows_reparse_point(path: pathlib.Path) -> bool:
     return path.is_symlink() or bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
 
 
+def windows_path_entry_exists(path: pathlib.Path) -> bool:
+    """Detect any Windows directory entry without following a reparse target."""
+    try:
+        os.lstat(path)
+    except FileNotFoundError:
+        return False
+    except OSError:
+        # An unreadable or otherwise indeterminate entry is not proven absent.
+        raise Failure("PATH_ENTRY_INSPECTION_FAILED", "COLLISION_CHECK")
+    return True
+
+
+def windows_publish_no_replace(source: pathlib.Path, destination: pathlib.Path) -> None:
+    """Atomically move a Windows file while refusing every existing destination."""
+    if os.name != "nt":
+        raise OSError("Windows no-replace publication is unavailable")
+    import ctypes
+    # MoveFileEx with only WRITE_THROUGH is an atomic no-replace move.
+    # WRITE_THROUGH requests completion of the move before the call returns.
+    if windows_path_entry_exists(destination):
+        raise FileExistsError(str(destination))
+    if not ctypes.windll.kernel32.MoveFileExW(str(source), str(destination), 0x8):
+        raise ctypes.WinError()
+
+
 def windows_openssh_tool(name: str) -> pathlib.Path:
     """Resolve the Windows system OpenSSH client without consulting PATH."""
     if name not in {"ssh", "scp", "ssh-keygen"} or os.name != "nt":

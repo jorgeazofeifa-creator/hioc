@@ -154,3 +154,11 @@ protected-DACL confirmation. Invocation-child identity is retained before ACL
 hardening so initialization failure cannot orphan an unknown cleanup target.
 Rename uncertainty is reconciled only by full confirmation; an unexpected or
 ambiguous result remains unaccepted and is never overwritten by a second result.
+
+Final-target absence is non-following and entry-based, not target-based. Only a
+not-found result is absence; every file, directory, link, junction, mount point,
+other reparse entry, or inspection error is a collision. Windows publication
+uses an atomic write-through move without replacement for both keys and final
+evidence. The shared `.ssh/id_ed25519` constant is authoritative for both the
+provisioning output and Action B `IdentityFile`; `id_ed25519.pub` is the sole
+public-key output for the later authorization checkpoint.

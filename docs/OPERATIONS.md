@@ -835,3 +835,10 @@ TRUE after exact final reread and ACL confirmation. Failure cleanup occurs befor
 the failure payload is constructed. If confirmation fails, preserve the reported
 evidence directory and filesystem state; do not overwrite `result.json`, create
 a contradictory result, remove a published key, or manually reconcile it.
+
+Execution remains blocked pending publication of the collision/path correction.
+The tool must observe true absence of both `.ssh/id_ed25519` names through its
+non-following entry primitive; a dangling target is not absence. Key and
+evidence publication are valid only through the governed Windows atomic
+no-replace operation. The resulting private path is exactly Action B's fixed
+`IdentityFile`; no rename, migration, alternate name, or override is permitted.

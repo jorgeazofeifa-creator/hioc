@@ -17,7 +17,8 @@ from hioc_pe4_runtime_common import (
     Failure, REPOSITORY_ROOT, SSH_IDENTITY_NAME, SSH_KEYGEN_SHA256,
     prepare_windows_hierarchy, run_bounded, secure_workstation_path, sha256,
     validate_workstation_path_acl, verify_repository, windows_openssh_tool,
-    windows_profile_root, windows_reparse_point, workstation_cache_root,
+    windows_path_entry_exists, windows_profile_root, windows_publish_no_replace,
+    windows_reparse_point, workstation_cache_root,
 )
 
 ACTION = "PE4_WINDOWS_SSH_IDENTITY_PROVISION"
@@ -60,8 +61,9 @@ def target_paths(*, profile_resolver=windows_profile_root,
     return ssh, ssh / SSH_IDENTITY_NAME, ssh / (SSH_IDENTITY_NAME + ".pub")
 
 
-def collision_check(private: pathlib.Path, public: pathlib.Path) -> None:
-    if private.exists() or private.is_symlink() or public.exists() or public.is_symlink():
+def collision_check(private: pathlib.Path, public: pathlib.Path, *,
+                    entry_exists=windows_path_entry_exists) -> None:
+    if entry_exists(private) or entry_exists(public):
         raise Failure("TARGET_COLLISION", "COLLISION_CHECK")
 
 
@@ -147,7 +149,9 @@ def write_evidence(directory: pathlib.Path, state: dict[str, str], fingerprint: 
                    private: pathlib.Path, public: pathlib.Path, result: str, code: str,
                    stage: str, rollback: bool, *, acl=secure_workstation_path,
                    acl_validate=validate_workstation_path_acl,
-                   reparse=windows_reparse_point, replace=os.replace) -> None:
+                   reparse=windows_reparse_point,
+                   entry_exists=windows_path_entry_exists,
+                   publish=windows_publish_no_replace) -> None:
     published_state = dict(state)
     published_state["EVIDENCE_PUBLISHED"] = "TRUE"
     document = {"schema_version": "1.0", "action": ACTION, "algorithm": "ED25519",
@@ -159,7 +163,7 @@ def write_evidence(directory: pathlib.Path, state: dict[str, str], fingerprint: 
     payload = (json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
     expected = hashlib.sha256(payload).digest()
     temporary, final = directory / ".result.tmp", directory / "result.json"
-    if final.exists() or final.is_symlink():
+    if entry_exists(final):
         raise Failure("EVIDENCE_FINAL_EXISTS", "EVIDENCE_PREPARATION")
     with temporary.open("x", encoding="utf-8", newline="\n") as handle:
         handle.write(payload.decode("utf-8"))
@@ -167,7 +171,7 @@ def write_evidence(directory: pathlib.Path, state: dict[str, str], fingerprint: 
     acl(temporary, False)
     _confirm_evidence(temporary, payload, expected, acl_validate=acl_validate, reparse=reparse)
     try:
-        replace(temporary, final)
+        publish(temporary, final)
     except OSError:
         try:
             _confirm_evidence(final, payload, expected, acl_validate=acl_validate, reparse=reparse)
@@ -231,7 +235,8 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
             acl_validate=validate_workstation_path_acl, reparse=windows_reparse_point,
             profile_resolver=windows_profile_root, operator_resolver=getpass.getuser,
             keygen_resolver=windows_openssh_tool, evidence_resolver=workstation_cache_root,
-            evidence_writer=write_evidence, replace=os.replace) -> tuple[list[str], int]:
+            evidence_writer=write_evidence, entry_exists=windows_path_entry_exists,
+            publish=windows_publish_no_replace) -> tuple[list[str], int]:
     state, staging, evidence, fingerprint = initial_state(), None, None, ""
     children: dict[str, pathlib.Path] = {}
     evidence_ready = evidence_attempted = False
@@ -243,7 +248,7 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
                            "tools/hioc_pe4_runtime_common.py"))
         ssh, private, public = target_paths(profile_resolver=profile_resolver,
                                              operator_resolver=operator_resolver, reparse=reparse)
-        collision_check(private, public)
+        collision_check(private, public, entry_exists=entry_exists)
         keygen = governed_keygen(resolver=keygen_resolver)
         root = evidence_root(resolver=evidence_resolver, acl=acl, reparse=reparse)
         evidence = create_private_child(root, EVIDENCE_PREFIX, acl=acl, reparse=reparse,
@@ -251,7 +256,7 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
         evidence_ready = True
         staging = create_private_child(ssh, STAGING_PREFIX, acl=acl, reparse=reparse,
                                        created=lambda path: children.__setitem__("staging", path))
-        collision_check(private, public)
+        collision_check(private, public, entry_exists=entry_exists)
         staged_private, staged_public = staging / SSH_IDENTITY_NAME, staging / (SSH_IDENTITY_NAME + ".pub")
         try:
             runner([str(keygen), "-q", "-t", "ed25519", "-N", "", "-C", KEY_COMMENT,
@@ -265,8 +270,8 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
         fingerprint = validate_pair(staged_private, staged_public, keygen, runner=runner,
                                     reparse=reparse, acl_validate=acl_validate)
         state["PRIVATE_KEY_PUBLIC_MATCH"] = "PASS"
-        collision_check(private, public)
-        try: replace(staged_public, public)
+        collision_check(private, public, entry_exists=entry_exists)
+        try: publish(staged_public, public)
         except OSError:
             if public.is_file() and not public.is_symlink() and not reparse(public) and not staged_public.exists():
                 if validate_pair(staged_private, public, keygen, runner=runner, reparse=reparse,
@@ -274,9 +279,9 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
                     state["PUBLIC_KEY_PUBLISHED"] = "TRUE"
             raise Failure("PUBLIC_KEY_PUBLICATION_FAILED", "PUBLIC_KEY_PUBLICATION", state["PUBLIC_KEY_PUBLISHED"] == "TRUE")
         state["PUBLIC_KEY_PUBLISHED"] = "TRUE"
-        if private.exists() or private.is_symlink():
+        if entry_exists(private):
             raise Failure("TARGET_COLLISION", "COLLISION_CHECK")
-        try: replace(staged_private, private)
+        try: publish(staged_private, private)
         except OSError:
             if private.is_file() and not private.is_symlink() and not reparse(private) and not staged_private.exists():
                 if validate_pair(private, public, keygen, runner=runner, reparse=reparse,
@@ -297,7 +302,7 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
         try:
             evidence_writer(evidence, state, fingerprint, private, public, "PASS", "NONE",
                             "COMPLETE", False, acl=acl, acl_validate=acl_validate,
-                            reparse=reparse, replace=replace)
+                            reparse=reparse, entry_exists=entry_exists, publish=publish)
         except Exception:
             raise Failure("EVIDENCE_PUBLICATION_FAILED", "EVIDENCE_PUBLICATION", True)
         state["EVIDENCE_PUBLISHED"] = "TRUE"
@@ -327,7 +332,7 @@ def execute(governance_commit: str, *, runner=run_bounded, acl=secure_workstatio
         try:
             evidence_writer(evidence, state, fingerprint, private, public, "FAIL", primary.code,
                             primary.stage, rollback, acl=acl, acl_validate=acl_validate,
-                            reparse=reparse, replace=replace)
+                            reparse=reparse, entry_exists=entry_exists, publish=publish)
             state["EVIDENCE_PUBLISHED"] = "TRUE"
         except Exception:
             state["EVIDENCE_PUBLISHED"] = "FALSE"

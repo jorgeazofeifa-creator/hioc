@@ -145,6 +145,20 @@ be exactly `ssh-ed25519`, carry the fixed comment, match public material derived
 from the private file, and yield only a parsed bounded `SHA256:` fingerprint.
 No key material enters terminal output or evidence.
 
+Absence is established with a non-following directory-entry probe. Only the
+operating system's not-found result is accepted; a regular file or directory,
+symlink, dangling symlink, junction, dangling junction, mount point, another
+reparse entry, or an indeterminate inspection result is a collision. Final key
+and `result.json` publication uses same-directory Windows `MoveFileExW` with
+write-through and no replacement flag. Thus a destination created after the
+last inspection is rejected atomically rather than overwritten.
+
+The authoritative pair remains `.ssh/id_ed25519` and `.ssh/id_ed25519.pub`.
+That pair was deliberately frozen as Action B's dedicated identity when its
+ambient SSH inputs were eliminated; a later preparation description naming
+`hioc_pe4_pi3_ed25519` was not repository governance. Provisioning and Action B
+derive the private name from the same shared constant and tests fail on drift.
+
 After staged validation the public file is atomically published first and the
 private file last. The private rename is the local completion marker because
 Action B consumes it, but PASS additionally requires complete final filesystem,
