@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Corrected the remaining PE-4 Action B OpenSSH configuration-isolation and
+  evidence-publication defects. Action B now ignores user/system SSH config,
+  pins numeric PI3 and port 22, disables proxies/canonicalization/agents, uses
+  fixed non-reparse known-hosts and Ed25519 identity files, and reconciles any
+  post-rename evidence failure through exact durable read-back confirmation.
+  Action B remains blocked and unexecuted pending publication and preparation.
+
 - Accepted PE-4 Action A production PASS and corrected Action B before any
   transfer. Action B now derives the exact durable cache, validates Windows
   reparse/DACL boundaries, uses system OpenSSH with strict noninteractive

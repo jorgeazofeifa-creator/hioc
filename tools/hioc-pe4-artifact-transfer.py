@@ -1,13 +1,27 @@
 #!/usr/bin/env python3
 """PE-4.0B.2a-B: transfer the frozen wheel and lock to private PI3 staging."""
 from __future__ import annotations
-import json, pathlib, re, shlex, sys
+import hashlib, json, pathlib, re, shlex, sys
 from hioc_pe4_runtime_common import *
 
 TOOL_RELATIVE="tools/hioc-pe4-artifact-transfer.py"
 SOURCE_RELATIVES=(TOOL_RELATIVE,"tools/hioc_pe4_runtime_common.py","requirements-pe4.lock")
 STATE_KEYS=("REMOTE_STAGING_CREATED","WHEEL_TRANSFERRED","LOCK_TRANSFERRED","REMOTE_ARTIFACT_VERIFIED","REMOTE_LOCK_VERIFIED","EVIDENCE_PUBLISHED")
-SSH_OPTIONS=("-oBatchMode=yes","-oStrictHostKeyChecking=yes","-oConnectTimeout=5","-oConnectionAttempts=1","-oNumberOfPasswordPrompts=0","-oPasswordAuthentication=no","-oKbdInteractiveAuthentication=no","-oPreferredAuthentications=publickey","-oIdentitiesOnly=yes","-oLogLevel=ERROR")
+SSH_STATIC_OPTIONS=("-F","none",f"-oHostname={PI3_IPV4}",f"-oPort={SSH_PORT}",
+                    "-oCanonicalizeHostname=no","-oCanonicalizeFallbackLocal=no",
+                    "-oProxyCommand=none","-oProxyJump=none","-oGlobalKnownHostsFile=none",
+                    f"-oHostKeyAlias={PI3_IPV4}","-oCheckHostIP=yes",
+                    "-oBatchMode=yes","-oStrictHostKeyChecking=yes","-oConnectTimeout=5",
+                    "-oConnectionAttempts=1","-oNumberOfPasswordPrompts=0",
+                    "-oPasswordAuthentication=no","-oKbdInteractiveAuthentication=no",
+                    "-oPreferredAuthentications=publickey","-oPubkeyAuthentication=yes",
+                    "-oHostbasedAuthentication=no","-oGSSAPIAuthentication=no",
+                    "-oIdentitiesOnly=yes","-oIdentityAgent=none","-oAddKeysToAgent=no",
+                    "-oForwardAgent=no","-oForwardX11=no","-oClearAllForwardings=yes",
+                    "-oPermitLocalCommand=no","-oLogLevel=ERROR")
+
+def transport_options(known_hosts,identity):
+    return (*SSH_STATIC_OPTIONS,f"-oUserKnownHostsFile={known_hosts}",f"-oIdentityFile={identity}")
 
 def parse_cli(argv):
     if len(argv)!=2 or argv[0]!="--governance-commit" or not re.fullmatch(r"[0-9a-f]{40}",argv[1]):
@@ -33,15 +47,38 @@ def remote_guard(remote):
     q=shlex.quote(remote)
     return f"test -d {q} || exit 41; test ! -L {q} || exit 42; test \"$(stat -c %U -- {q})\" = {OWNER} || exit 43; test \"$(stat -c %a -- {q})\" = 700 || exit 44"
 
-def evidence_command(remote,states,result,code,stage):
+def evidence_payload(states,result,code,stage):
     doc={"schema_version":"1.0","action":"PE-4.0B.2a-B",**{k.lower():states[k] for k in STATE_KEYS},"result":result,"error_code":code,"failure_stage":stage,"rollback_recommended":False}
-    payload=json.dumps(doc,sort_keys=True,separators=(",",":"))
-    qdir,qresult,qtemp=map(shlex.quote,(remote,f"{remote}/result.json",f"{remote}/.{'result' if result=='PASS' else 'failure-result'}.tmp"))
-    return remote_guard(remote)+f"; test ! -e {qresult} || exit 71; test ! -e {qtemp} || exit 72; printf '%s\\n' {shlex.quote(payload)} > {qtemp} || exit 73; chmod 600 {qtemp} || exit 74; sync -f {qtemp} || exit 75; mv -- {qtemp} {qresult} || exit 76; sync -f {qresult} || exit 77; sync -f {qdir} || exit 78"
+    return json.dumps(doc,sort_keys=True,separators=(",",":"))+"\n"
 
-def execute(commit,runner=run_bounded,resolver=windows_openssh_tool):
+def evidence_prepare_command(remote,payload,temp_name):
+    qresult,qtemp=map(shlex.quote,(f"{remote}/result.json",f"{remote}/{temp_name}"))
+    return remote_guard(remote)+f"; test ! -e {qresult} || exit 71; test ! -e {qtemp} || exit 72; printf %s {shlex.quote(payload)} > {qtemp} || exit 73; chmod 600 {qtemp} || exit 74; sync -f {qtemp} || exit 75"
+
+def evidence_publish_command(remote,temp_name):
+    qresult,qtemp=map(shlex.quote,(f"{remote}/result.json",f"{remote}/{temp_name}"))
+    return remote_guard(remote)+f"; test ! -e {qresult} || exit 76; test -f {qtemp} || exit 77; test ! -L {qtemp} || exit 78; mv -- {qtemp} {qresult} || exit 79"
+
+def evidence_confirm_command(remote,payload_sha256):
+    qdir,qresult=map(shlex.quote,(remote,f"{remote}/result.json"))
+    return remote_guard(remote)+f"; test -f {qresult} || exit 81; test ! -L {qresult} || exit 82; test \"$(stat -c %U -- {qresult})\" = {OWNER} || exit 83; test \"$(stat -c %a -- {qresult})\" = 600 || exit 84; test \"$(sha256sum -- {qresult} | cut -d' ' -f1)\" = {payload_sha256} || exit 85; sync -f {qresult} || exit 86; sync -f {qdir} || exit 87"
+
+def publish_evidence(runner,ssh,remote,states,result,code,stage,temp_name):
+    published={**states,"EVIDENCE_PUBLISHED":True}
+    payload=evidence_payload(published,result,code,stage)
+    digest=hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    runner(ssh+[evidence_prepare_command(remote,payload,temp_name)],"EVIDENCE_PREPARATION",timeout=20,max_output=4096)
+    try:
+        runner(ssh+[evidence_publish_command(remote,temp_name)],"EVIDENCE_RENAME",timeout=20,max_output=4096)
+    except Failure:
+        runner(ssh+[evidence_confirm_command(remote,digest)],"EVIDENCE_CONFIRMATION",timeout=20,max_output=4096)
+        return
+    runner(ssh+[evidence_confirm_command(remote,digest)],"EVIDENCE_CONFIRMATION",timeout=20,max_output=4096)
+
+def execute(commit,runner=run_bounded,resolver=windows_openssh_tool,material_resolver=windows_openssh_material):
     states={k:False for k in STATE_KEYS}; remote=""
-    ssh=[str(resolver("ssh")),*SSH_OPTIONS,f"{OWNER}@{PI3_IPV4}"]; scp=[str(resolver("scp")),*SSH_OPTIONS]
+    known_hosts,identity=material_resolver(); options=transport_options(known_hosts,identity)
+    ssh=[str(resolver("ssh")),*options,f"{OWNER}@{PI3_IPV4}"]; scp=[str(resolver("scp")),*options]
     try:
         wheel,lock=local_inputs(commit)
         create=("umask 077; d=$(mktemp -d /tmp/hioc-pe4-artifact-transfer-XXXXXXXX) || exit 31; test -d \"$d\" || exit 32; test ! -L \"$d\" || exit 33; "+f"test \"$(stat -c %U -- \"$d\")\" = {OWNER} || exit 34; "+"test \"$(stat -c %a -- \"$d\")\" = 700 || exit 35; test -z \"$(find \"$d\" -mindepth 1 -maxdepth 1 -print -quit)\" || exit 36; printf '%s\\n' \"$d\"")
@@ -56,14 +93,12 @@ def execute(commit,runner=run_bounded,resolver=windows_openssh_tool):
         qpart,qfinal=map(shlex.quote,(f"{remote}/.lock.part",f"{remote}/requirements-pe4.lock"))
         check=remote_guard(remote)+f"; test -f {qpart} || exit 61; test ! -L {qpart} || exit 62; chmod 600 {qpart} || exit 63; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 64; test \"$(stat -c %a -- {qpart})\" = 600 || exit 65; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {LOCK_SHA256} || exit 66; test ! -e {qfinal} || exit 67; mv -- {qpart} {qfinal} || exit 68; sync -f {qfinal} || exit 69"
         runner(ssh+[check],"REMOTE_LOCK_IDENTITY",timeout=20,max_output=4096); states["REMOTE_LOCK_VERIFIED"]=True
-        published={**states,"EVIDENCE_PUBLISHED":True}
-        runner(ssh+[evidence_command(remote,published,"PASS","NONE","COMPLETE")],"EVIDENCE_PUBLICATION",timeout=20,max_output=4096); states["EVIDENCE_PUBLISHED"]=True
+        publish_evidence(runner,ssh,remote,states,"PASS","NONE","COMPLETE",".result.tmp"); states["EVIDENCE_PUBLISHED"]=True
         return states,remote
     except Failure as exc:
         if remote and states["REMOTE_STAGING_CREATED"]:
             try:
-                published={**states,"EVIDENCE_PUBLISHED":True}
-                runner(ssh+[evidence_command(remote,published,"FAIL",exc.code,exc.stage)],"FAILURE_EVIDENCE_PUBLICATION",timeout=20,max_output=4096); states["EVIDENCE_PUBLISHED"]=True
+                publish_evidence(runner,ssh,remote,states,"FAIL",exc.code,exc.stage,".failure-result.tmp"); states["EVIDENCE_PUBLISHED"]=True
             except Failure: pass
         exc.states,exc.remote=states,remote; raise
 

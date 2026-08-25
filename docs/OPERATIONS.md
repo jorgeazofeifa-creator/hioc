@@ -800,6 +800,13 @@ It independently verifies the fixed cache and preserves its PI3 transfer
 directory on every post-creation outcome. Return every bounded state marker and
 `TRANSFER_DIRECTORY`, then STOP; never chain cleanup, route proof, or install.
 
+Do not add SSH config, proxy, jump-host, identity, or known-host overrides around
+Action B. The tool deliberately reads no SSH configuration and uses only the
+fixed current-profile `.ssh/known_hosts` and `.ssh/id_ed25519` after rejecting
+missing, empty, symlinked, or reparse-point material. Missing prerequisites are
+a bounded STOP, not permission to generate keys, scan hosts, or change files.
+Evidence is accepted only after exact post-rename confirmation.
+
 Action A is a Windows-only repository tool. Its result must include all five
 acquisition/publication state markers. A failure with
 `DURABLE_CACHE_PUBLISHED=TRUE` means preserve the cache and evidence state and

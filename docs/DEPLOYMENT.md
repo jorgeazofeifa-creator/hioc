@@ -236,3 +236,9 @@ does not synchronize or alter either source or runtime tree. The corrected tool
 uses the fixed durable cache, system OpenSSH, strict noninteractive identity,
 separate partial names, remote owner/mode/digest validation, and result-last
 partial-state evidence. Separate publication and authorization remain required.
+
+Action B additionally ignores ambient OpenSSH configuration, pins direct
+numeric PI3 port 22 transport, and uses only fixed profile known-hosts and
+Ed25519 identity files. It never changes source/runtime deployment trees.
+Result publication is complete only after exact post-rename digest and
+durability confirmation; repository correction still authorizes no transfer.

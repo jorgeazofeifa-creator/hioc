@@ -32,6 +32,9 @@ OWNER = "jazofv1"
 GROUP = "jazofv1"
 PI3_HOST = "nutandpihole"
 PI3_IPV4 = "192.168.100.252"
+SSH_PORT = 22
+SSH_KNOWN_HOSTS_NAME = "known_hosts"
+SSH_IDENTITY_NAME = "id_ed25519"
 HA_IPV4 = "192.168.100.251"
 HA_PORT = 8123
 WHEEL_NAME = "websockets-16.1.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl"
@@ -129,6 +132,38 @@ def windows_openssh_tool(name: str) -> pathlib.Path:
     if windows_reparse_point(candidate) or not candidate.is_file():
         raise Failure("OPENSSH_TOOL_UNSAFE", "OPENSSH_IDENTITY")
     return candidate
+
+
+def windows_profile_root() -> pathlib.Path:
+    """Resolve the current profile through the Windows Known Folder API."""
+    if os.name != "nt":
+        raise Failure("WINDOWS_PROFILE_UNAVAILABLE", "OPENSSH_IDENTITY")
+    import ctypes
+    buffer = ctypes.create_unicode_buffer(32768)
+    # CSIDL_PROFILE is the current user's profile and does not trust environment variables.
+    result = ctypes.windll.shell32.SHGetFolderPathW(None, 0x0028, None, 0, buffer)
+    profile = pathlib.Path(buffer.value) if result == 0 and buffer.value else pathlib.Path()
+    if not profile.is_absolute() or not profile.is_dir() or profile.is_symlink():
+        raise Failure("WINDOWS_PROFILE_UNAVAILABLE", "OPENSSH_IDENTITY")
+    if windows_reparse_point(profile):
+        raise Failure("WINDOWS_PROFILE_UNSAFE", "OPENSSH_IDENTITY")
+    return profile
+
+
+def windows_openssh_material() -> tuple[pathlib.Path, pathlib.Path]:
+    """Return fixed known-hosts and private-identity paths without reading secrets."""
+    ssh_directory = windows_profile_root() / ".ssh"
+    if (not ssh_directory.is_dir() or ssh_directory.is_symlink()
+            or windows_reparse_point(ssh_directory)):
+        raise Failure("OPENSSH_DIRECTORY_UNSAFE", "OPENSSH_IDENTITY")
+    known_hosts = ssh_directory / SSH_KNOWN_HOSTS_NAME
+    identity = ssh_directory / SSH_IDENTITY_NAME
+    for path, code in ((known_hosts, "KNOWN_HOSTS_UNSAFE"),
+                       (identity, "SSH_IDENTITY_UNSAFE")):
+        if (not path.is_file() or path.is_symlink() or windows_reparse_point(path)
+                or path.stat().st_size <= 0):
+            raise Failure(code, "OPENSSH_IDENTITY")
+    return known_hosts, identity
 
 
 def prepare_windows_hierarchy(trusted_root: pathlib.Path, relative_parts: Iterable[str],

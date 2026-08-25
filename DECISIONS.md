@@ -1547,3 +1547,13 @@ system OpenSSH, numeric PI3 identity, strict public-key-only batch authenticatio
 and bounded output. Wheel and lock are separately transferred and verified in
 one private PI3 directory. Sanitized result-last evidence records partial state,
 and the directory is preserved and reported rather than automatically cleaned.
+
+# Decision: Isolate Action B from ambient OpenSSH configuration
+
+Action B treats ambient user/system SSH configuration and agent identities as
+untrusted. It reads no SSH config, pins numeric PI3 and port 22, disables
+hostname canonicalization, proxies, jump hosts, forwarding, and local commands,
+and explicitly uses only the current Windows Known Folder profile's real,
+non-reparse `.ssh/known_hosts` and `.ssh/id_ed25519`. Evidence publication is a
+three-step prepare, atomic rename, and exact digest/durability confirmation; a
+rename error is reconciled only by successful confirmation of the exact file.

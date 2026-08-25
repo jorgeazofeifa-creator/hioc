@@ -307,3 +307,8 @@ Action A's durable cache is production-proven. Action B transfers only the
 identity-checked wheel and lock into invocation-owned PI3 staging; it does not
 modify Git source or the non-Git runtime. Partial-transfer evidence and the
 preserved directory are review inputs, not release deployment.
+
+Action B transport isolation is part of release identity: ambient SSH config,
+agents, proxies, jump hosts, canonicalization, alternate ports, and alternate
+known-host/identity files are excluded. Its remote result becomes governed
+evidence only after exact digest and durability confirmation following rename.

@@ -129,3 +129,9 @@ PASS and the durable cache. Action B derives that fixed cache internally,
 validates its DACL/reparse boundary and exact artifact/lock identities, uses
 bounded system OpenSSH, records partial states in result-last evidence,
 preserves its private PI3 directory, and stops.
+
+The final transport gate does not inherit OpenSSH configuration or agent state.
+It pins numeric PI3 port 22, disables proxy/jump/canonicalization behavior, and
+uses fixed non-reparse current-profile `known_hosts` and `id_ed25519` files.
+Result-last evidence is complete only after exact post-rename digest, owner,
+mode, file-fsync, and directory-fsync confirmation.

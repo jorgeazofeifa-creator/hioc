@@ -103,6 +103,19 @@ preserved on PASS or any post-creation failure; there is no automatic cleanup.
 Action B remains blocked until this correction is published and separately
 prepared and authorized.
 
+The first published transfer correction remained blocked during final review:
+OpenSSH still accepted user/system configuration capable of substituting
+`Hostname`, port, proxy/jump routing, known-hosts, or identity inputs, and a
+post-rename evidence error could leave terminal and persisted publication state
+ambiguous. The corrected transport uses `-F none`, pins numeric hostname and
+port 22, disables proxy/jump/canonicalization, pins the current Windows profile's
+non-reparse `.ssh/known_hosts` and `.ssh/id_ed25519`, disables agent/configured
+identity selection, and retains strict public-key-only authentication. Evidence
+is prepared and fsynced, atomically renamed, then independently digest-, mode-,
+owner-, file-, and directory-fsync-confirmed. A rename command failure is
+accepted only when that exact confirmation succeeds. Action B remains
+**BLOCKED / NOT EXECUTED** pending publication and fresh preparation.
+
 ## Construction and validation
 
 Action D requires the exact transferred directory, owner, `0700` mode, wheel,

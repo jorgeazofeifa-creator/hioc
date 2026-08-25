@@ -2182,3 +2182,15 @@ OpenSSH, separate wheel/lock stages, remote owner/mode/digest validation, and
 sanitized result-last evidence. Action A is **COMPLETE / PASS**. Action B is
 **BLOCKED / NOT EXECUTED** pending commit, push, preparation, and authorization.
 Actions C-G remain not started.
+
+Final Action B preparation found a second repository defect before execution:
+ambient OpenSSH configuration could still redirect the effective hostname,
+port, proxy/jump route, known-hosts, or identity source, and failure after
+evidence rename could disagree with terminal publication state. The repository
+correction disables all SSH configuration files and agents, pins numeric PI3,
+port 22, proxy/canonicalization suppression, and exact non-reparse profile
+known-hosts/Ed25519 paths. Evidence now requires exact post-rename digest,
+owner, mode, file fsync, and directory fsync confirmation, including recovery
+from an uncertain rename command. Action A remains **COMPLETE / PASS**. Action
+B remains **BLOCKED / NOT EXECUTED**. Actions C-G and PE-4.0B.2a remain not
+started pending commit, push, and fresh preparation.
