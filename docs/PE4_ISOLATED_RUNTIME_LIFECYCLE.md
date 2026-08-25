@@ -28,7 +28,7 @@ stops. PASS never chains the next action.
 | --- | --- | --- | --- |
 | Windows identity prerequisite | `tools/hioc-pe4-windows-ssh-identity-provision.py` | None | One invocation-owned `.ssh` staging directory, the fixed public/private identity pair, and private Windows evidence only |
 | PE-4.0B.2a-A | `tools/hioc-pe4-artifact-acquire.py` | Exact governed HTTPS `files.pythonhosted.org` wheel URL only | Private workstation staging and durable off-device cache only |
-| PE-4.0B.2a-B | `tools/hioc-pe4-artifact-transfer.py` | SSH/SCP only to `jazofv1@192.168.100.252`, strict known-host checking | One private `/tmp/hioc-pe4-artifact-transfer-XXXXXXXX` directory only |
+| PE-4.0B.2a-B | `tools/hioc-pe4-artifact-transfer.py` | Bounded SSH command streaming only to `jazofv1@192.168.100.252`, strict pinned known-host checking; no SCP | One private `/tmp/hioc-pe4-artifact-transfer-XXXXXXXX` directory only |
 | PE-4.0B.2a-C | `tools/hioc-pe4-route-proof.py` | One TCP connection to `192.168.100.251:8123`; no HTTP, WebSocket, credentials, proxy, DNS, redirect, or retry | None |
 | PE-4.0B.2a-D | `tools/hioc-pe4-runtime-construct.py` | None | One private construction directory and offline venv installation |
 | PE-4.0B.2a-E | `tools/hioc-pe4-dependency-validate.py` | None | None; isolation, distribution, and API behavior validation only |
@@ -38,8 +38,12 @@ stops. PASS never chains the next action.
 
 ## Action B publication boundary
 
-SCP writes only invocation-owned `.wheel.part` and `.lock.part` names. After
-their bounded identity checks, the tool publishes each final artifact through
+The tool streams each fixed local artifact on SSH stdin to a bounded remote
+Python sink. A no-follow directory descriptor anchors the private staging
+directory; `O_CREAT|O_EXCL|O_NOFOLLOW` creates only `.wheel.part` or
+`.lock.part` relative to that descriptor. Size and SHA-256 are checked while
+reading bounded input and the owned partial is fsynced. After independent
+identity checks, the tool publishes each final artifact through
 Linux `renameat2` with `RENAME_NOREPLACE`; an existing regular file, directory,
 symlink, dangling symlink, or any other directory entry is a collision. The
 tool never removes or replaces the collided entry. Publication is complete only
@@ -53,6 +57,13 @@ publication and requires exact payload digest, metadata, durability, and
 temporary-source consumption. A reported rename error is reconciled by that
 complete proof only. Once evidence publication is attempted, failure cannot
 trigger a second result publication.
+
+Local preflight requires Windows operator `JorgeAzofeifaCastill`, the exact
+Known Folder profile, the governed `ssh.exe` and `ssh-keygen.exe` digests, the
+reviewed Ed25519 pair/comment/fingerprint, and the reviewed numeric PI3 host-key
+fingerprint. No key or known-host bytes are emitted. Evidence terminal state is
+`NOT_PUBLISHED`, `CONFIRMED`, or `UNCERTAIN`; the immutable payload says
+`AWAITING_CONFIRMATION` because it is written before independent confirmation.
 
 The tools share `tools/hioc_pe4_runtime_common.py`. The shared module freezes
 paths, identities, modes, evidence fields, cleanup boundaries, exact installed

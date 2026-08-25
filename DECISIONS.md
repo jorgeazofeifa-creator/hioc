@@ -1647,3 +1647,23 @@ entry is overwritten or removed and an attempted result publication never
 chains a contradictory second result. Identity provisioning and PI3 public-key
 authorization remain **COMPLETE / PASS**; Action B remains **BLOCKED / NOT
 EXECUTED** during this repository-only correction.
+
+# Decision: Make Action B ingress exclusive and transport identity complete
+
+Direct SCP-to-file ingress is retired because Windows OpenSSH does not expose a
+governed exclusive, non-following destination-open guarantee. Action B now
+streams each fixed local artifact over its isolated SSH command channel to a
+bounded remote Python sink. The sink opens the already validated private
+staging directory with `O_DIRECTORY|O_NOFOLLOW`, creates only `.wheel.part` or
+`.lock.part` relative to that directory descriptor with
+`O_CREAT|O_EXCL|O_NOFOLLOW`, validates size and SHA-256 while reading bounded
+stdin, and fsyncs the owned file. No raced entry is overwritten or followed.
+
+The same preflight pins the Windows operator and Known Folder profile, the
+system `ssh.exe` digest, the Ed25519 public algorithm/comment/fingerprint and
+private/public correspondence through pinned `ssh-keygen.exe`, and the numeric
+PI3 known-host fingerprint without emitting key material. Evidence now reports
+`NOT_PUBLISHED`, `CONFIRMED`, or `UNCERTAIN`; its persistent payload records
+`AWAITING_CONFIRMATION`, so loss of the independent confirmation channel does
+not falsely assert either confirmed success or definite absence. Action B
+remains blocked and unexecuted.

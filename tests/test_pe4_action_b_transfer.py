@@ -1,5 +1,7 @@
 import importlib.util
 import base64
+import hashlib
+import os
 import pathlib
 import shlex
 import subprocess
@@ -20,21 +22,52 @@ provision_spec = importlib.util.spec_from_file_location(
 PROVISION = importlib.util.module_from_spec(provision_spec)
 provision_spec.loader.exec_module(PROVISION)
 
+def fake_transport():
+    return pathlib.Path("ssh.exe"), pathlib.Path("known_hosts"), pathlib.Path("id_ed25519")
+
 
 class Runner:
-    def __init__(self, fail_stage=None):
+    def __init__(self, fail_stage=None, outputs=None):
         self.calls = []
         self.fail_stages = {fail_stage} if isinstance(fail_stage, str) else set(fail_stage or ())
+        self.outputs = outputs or {}
 
     def __call__(self, command, stage, **kwargs):
         self.calls.append((command, stage, kwargs))
         if stage in self.fail_stages:
             raise ACTION_B.Failure("SIMULATED_FAILURE", stage)
-        output = "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34\n" if stage == "REMOTE_STAGING" else ""
+        output = self.outputs.get(stage, "CONFIRMED\n" if stage == "EVIDENCE_CONFIRMATION" else
+                                  "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34\n" if stage == "REMOTE_STAGING" else "")
         return subprocess.CompletedProcess(command, 0, output, "")
 
 
 class PE4ActionBTransferTests(unittest.TestCase):
+    def transport_fixture(self, root, *, operator=None, ssh_digest=None, fingerprint=None,
+                          derived=None, known_record=None):
+        profile = pathlib.Path(root); ssh_dir = profile / ".ssh"; ssh_dir.mkdir()
+        public_fields = ["ssh-ed25519", "AQID", ACTION_B.EXPECTED_PUBLIC_COMMENT]
+        (ssh_dir / "id_ed25519.pub").write_text(" ".join(public_fields)+"\n", encoding="ascii")
+        (ssh_dir / "id_ed25519").write_text("opaque-private\n", encoding="ascii")
+        (ssh_dir / "known_hosts").write_text("opaque-known-host\n", encoding="ascii")
+        host_fingerprint = "SHA256:"+base64.b64encode(hashlib.sha256(b"\x01\x02\x03").digest()).decode().rstrip("=")
+        outputs = {
+            "-lf": fingerprint or f"256 {ACTION_B.EXPECTED_PUBLIC_FINGERPRINT} comment (ED25519)\n",
+            "-y": derived or "ssh-ed25519 AQID\n",
+            "-F": known_record or "192.168.100.252 ssh-ed25519 AQID\n",
+        }
+        def runner(command, stage, **kwargs):
+            key = next(flag for flag in ("-lf", "-y", "-F") if flag in command)
+            return subprocess.CompletedProcess(command, 0, outputs[key], "")
+        def resolver(name): return profile / (name+".exe")
+        def hasher(path):
+            if path.name == "ssh.exe": return ssh_digest or ACTION_B.SSH_CLIENT_SHA256
+            return ACTION_B.SSH_KEYGEN_SHA256
+        patches = (mock.patch.object(ACTION_B.os,"name","nt"),
+                   mock.patch.object(ACTION_B,"EXPECTED_WINDOWS_PROFILE",pathlib.PureWindowsPath(profile)),
+                   mock.patch.object(ACTION_B,"EXPECTED_HOST_FINGERPRINT",host_fingerprint),
+                   mock.patch.object(ACTION_B,"windows_reparse_point",return_value=False))
+        return profile, runner, resolver, hasher, patches, operator or ACTION_B.EXPECTED_WINDOWS_OPERATOR
+
     def test_cli_is_exact_and_bounded(self):
         commit = "a" * 40
         self.assertEqual(ACTION_B.parse_cli(["--governance-commit", commit]), commit)
@@ -45,10 +78,9 @@ class PE4ActionBTransferTests(unittest.TestCase):
     @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
     def test_exact_host_options_separate_transfers_and_stop_after_evidence(self, _inputs):
         runner = Runner()
-        states, remote = ACTION_B.execute("a" * 40, runner=runner,
-            resolver=lambda name: pathlib.Path(f"C:/Windows/System32/OpenSSH/{name}.exe"),
-            material_resolver=lambda: (pathlib.Path("C:/.ssh/known_hosts"),pathlib.Path("C:/.ssh/id_ed25519")))
-        self.assertTrue(all(states.values()))
+        states, remote = ACTION_B.execute("a" * 40, runner=runner, transport_validator=fake_transport)
+        self.assertTrue(all(states[key] for key in ACTION_B.STATE_KEYS))
+        self.assertEqual(states["EVIDENCE_STATE"], "CONFIRMED")
         self.assertEqual(remote, "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34")
         flattened = [item for call, _, _ in runner.calls for item in call]
         for option in ACTION_B.SSH_STATIC_OPTIONS:
@@ -57,9 +89,10 @@ class PE4ActionBTransferTests(unittest.TestCase):
         self.assertNotIn("scp", flattened)
         self.assertTrue(all("192.168.100.251" not in item for item in flattened))
         stages = [stage for _, stage, _ in runner.calls]
-        self.assertEqual(stages, ["REMOTE_STAGING", "WHEEL_TRANSFER", "LOCK_TRANSFER",
+        self.assertEqual(stages, ["REMOTE_STAGING", "WHEEL_TRANSFER",
                                   "REMOTE_ARTIFACT_PARTIAL", "REMOTE_ARTIFACT_PUBLICATION",
-                                  "REMOTE_ARTIFACT_CONFIRMATION", "REMOTE_LOCK_PARTIAL",
+                                  "REMOTE_ARTIFACT_CONFIRMATION", "LOCK_TRANSFER",
+                                  "REMOTE_LOCK_PARTIAL",
                                   "REMOTE_LOCK_PUBLICATION", "REMOTE_LOCK_CONFIRMATION",
                                   "EVIDENCE_PREPARATION", "EVIDENCE_RENAME",
                                   "EVIDENCE_CONFIRMATION"])
@@ -70,8 +103,7 @@ class PE4ActionBTransferTests(unittest.TestCase):
     def test_partial_transfer_failure_publishes_sanitized_state_and_preserves_directory(self, _inputs):
         runner = Runner("LOCK_TRANSFER")
         with self.assertRaises(ACTION_B.Failure) as caught:
-            ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
-                material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
+            ACTION_B.execute("a" * 40, runner=runner, transport_validator=fake_transport)
         exc = caught.exception
         self.assertTrue(exc.states["REMOTE_STAGING_CREATED"])
         self.assertTrue(exc.states["WHEEL_TRANSFERRED"])
@@ -89,6 +121,7 @@ class PE4ActionBTransferTests(unittest.TestCase):
     def test_evidence_is_result_last_and_contains_only_bounded_state(self):
         states = {key: False for key in ACTION_B.STATE_KEYS}
         payload = ACTION_B.evidence_payload(states, "FAIL", "TRANSFER_FAILED", "WHEEL_TRANSFER")
+        self.assertIn('"evidence_state":"AWAITING_CONFIRMATION"',payload)
         prepare = ACTION_B.evidence_prepare_command("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
                                                     payload, ".failure-result.tmp")
         publish = ACTION_B.evidence_publish_command("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
@@ -97,12 +130,103 @@ class PE4ActionBTransferTests(unittest.TestCase):
         self.assertNotIn("mv --", publish)
         self.assertIn("O_EXCL", prepare)
         self.assertIn("O_NOFOLLOW", prepare)
-        self.assertIn("os.lstat(path)", prepare)
+        self.assertIn("follow_symlinks=False", prepare)
         self.assertIn("renameat2", publish)
         self.assertIn("destination),1", publish)
         command = prepare + publish
         for forbidden in ("token", "credential", "Authorization", "manufacturer", "inventory"):
             self.assertNotIn(forbidden, command)
+
+    def test_transport_identity_validates_operator_tools_pair_fingerprint_and_host(self):
+        with tempfile.TemporaryDirectory() as temp:
+            profile,runner,resolver,hasher,patches,operator=self.transport_fixture(temp)
+            with patches[0],patches[1],patches[2],patches[3]:
+                ssh,known,private=ACTION_B.validate_local_transport(
+                    resolver=resolver,runner=runner,operator_resolver=lambda:operator,
+                    profile_resolver=lambda:profile,hasher=hasher)
+            self.assertEqual((ssh.name,known.name,private.name),("ssh.exe","known_hosts","id_ed25519"))
+
+    def test_transport_identity_rejects_wrong_operator_and_ssh_digest(self):
+        for defect in ("operator","ssh"):
+            with self.subTest(defect=defect), tempfile.TemporaryDirectory() as temp:
+                profile,runner,resolver,hasher,patches,operator=self.transport_fixture(
+                    temp,operator="intruder" if defect=="operator" else None,
+                    ssh_digest="0"*64 if defect=="ssh" else None)
+                with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
+                    ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
+                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher)
+
+    def test_transport_identity_rejects_wrong_pair_fingerprint_and_known_host(self):
+        variants=(
+            {"derived":"ssh-ed25519 BAUG\n"},
+            {"fingerprint":"256 SHA256:wrong comment (ED25519)\n"},
+            {"known_record":"192.168.100.252 ssh-rsa AQID\n"},
+        )
+        for variant in variants:
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as temp:
+                profile,runner,resolver,hasher,patches,operator=self.transport_fixture(temp,**variant)
+                with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
+                    ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
+                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher)
+
+    def test_ingress_uses_exclusive_nofollow_directory_fd_and_streamed_input(self):
+        command=ACTION_B.ingress_command("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
+                                         ".wheel.part",3,hashlib.sha256(b"abc").hexdigest())
+        for required in ("O_EXCL","O_NOFOLLOW","dir_fd=directory_fd","sys.stdin.buffer",
+                         "directory_info.st_uid!=os.getuid()","hashlib.sha256"):
+            self.assertIn(required,command)
+        self.assertNotIn("scp",command)
+
+    @unittest.skipUnless(os.name=="posix" and hasattr(os,"O_DIRECTORY") and hasattr(os,"O_NOFOLLOW"),
+                         "Linux exclusive-ingress primitive requires POSIX O_DIRECTORY/O_NOFOLLOW")
+    def test_linux_ingress_primitive_real_success_and_all_collision_types(self):
+        data=b"governed-bytes"; digest=hashlib.sha256(data).hexdigest()
+        for kind in ("regular","directory","symlink","dangling"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temp:
+                root=pathlib.Path(temp); os.chmod(root,0o700); target=root/".wheel.part"
+                if kind=="regular": target.write_bytes(b"foreign")
+                elif kind=="directory": target.mkdir()
+                elif kind=="symlink": target.symlink_to(root/"outside")
+                else: target.symlink_to(root/"missing")
+                result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_EXCLUSIVE_INGRESS,
+                    str(root),target.name,str(len(data)),digest],input=data,capture_output=True)
+                self.assertNotEqual(result.returncode,0)
+        with tempfile.TemporaryDirectory() as temp:
+            root=pathlib.Path(temp); os.chmod(root,0o700)
+            result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_EXCLUSIVE_INGRESS,
+                str(root),".wheel.part",str(len(data)),digest],input=data,capture_output=True)
+            self.assertEqual(result.returncode,0)
+            self.assertEqual((root/".wheel.part").read_bytes(),data)
+
+    @unittest.skipUnless(os.name=="posix", "Linux renameat2 integration fixture")
+    def test_linux_renameat2_real_no_replace_and_source_consumption(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=pathlib.Path(temp); source=root/"source"; final=root/"final"
+            source.write_bytes(b"owned")
+            result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_NO_REPLACE,
+                                   str(source),str(final)],capture_output=True)
+            self.assertEqual(result.returncode,0)
+            self.assertFalse(source.exists()); self.assertEqual(final.read_bytes(),b"owned")
+        with tempfile.TemporaryDirectory() as temp:
+            root=pathlib.Path(temp); source=root/"source"; final=root/"final"
+            source.write_bytes(b"owned"); final.write_bytes(b"foreign")
+            result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_NO_REPLACE,
+                                   str(source),str(final)],capture_output=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertEqual(source.read_bytes(),b"owned"); self.assertEqual(final.read_bytes(),b"foreign")
+
+    def test_evidence_terminal_states_are_confirmed_not_published_or_uncertain(self):
+        base={key:False for key in ACTION_B.STATE_KEYS}; base["EVIDENCE_STATE"]="NOT_PUBLISHED"
+        for marker,raises in (("CONFIRMED\n",False),("NOT_PUBLISHED\n",True),("UNCERTAIN\n",True)):
+            states=dict(base); runner=Runner(outputs={"EVIDENCE_CONFIRMATION":marker})
+            if raises:
+                with self.assertRaises(ACTION_B.Failure):
+                    ACTION_B.publish_evidence(runner,["ssh"],"/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
+                                              states,"PASS","NONE","COMPLETE",".result.tmp")
+            else:
+                ACTION_B.publish_evidence(runner,["ssh"],"/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
+                                          states,"PASS","NONE","COMPLETE",".result.tmp")
+            self.assertEqual(states["EVIDENCE_STATE"],marker.strip())
 
     def test_hostile_ssh_configuration_cannot_change_transport(self):
         options = ACTION_B.transport_options(pathlib.Path("C:/.ssh/known_hosts"),
@@ -147,18 +271,16 @@ class PE4ActionBTransferTests(unittest.TestCase):
     @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
     def test_post_rename_failure_is_reconciled_by_exact_confirmation(self, _inputs):
         runner = Runner("EVIDENCE_RENAME")
-        states, _ = ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
-            material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
-        self.assertTrue(states["EVIDENCE_PUBLISHED"])
+        states, _ = ACTION_B.execute("a" * 40, runner=runner, transport_validator=fake_transport)
+        self.assertEqual(states["EVIDENCE_STATE"], "CONFIRMED")
         self.assertEqual([stage for _,stage,_ in runner.calls][-2:],
                          ["EVIDENCE_RENAME","EVIDENCE_CONFIRMATION"])
-        self.assertIn("os.lstat(sys.argv[1])", runner.calls[-1][0][-1])
+        self.assertIn("follow_symlinks=False", runner.calls[-1][0][-1])
 
     @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
     def test_artifact_rename_failure_requires_final_identity_and_consumed_source(self, _inputs):
         runner = Runner("REMOTE_ARTIFACT_PUBLICATION")
-        states, _ = ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
-            material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
+        states, _ = ACTION_B.execute("a" * 40, runner=runner, transport_validator=fake_transport)
         self.assertTrue(states["REMOTE_ARTIFACT_VERIFIED"])
         command = next(call[-1] for call,stage,_ in runner.calls
                        if stage == "REMOTE_ARTIFACT_CONFIRMATION")
@@ -170,8 +292,7 @@ class PE4ActionBTransferTests(unittest.TestCase):
     def test_retained_artifact_partial_or_bad_final_fails_closed(self, _inputs):
         runner = Runner(("REMOTE_ARTIFACT_PUBLICATION", "REMOTE_ARTIFACT_CONFIRMATION"))
         with self.assertRaises(ACTION_B.Failure) as caught:
-            ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
-                material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
+            ACTION_B.execute("a" * 40, runner=runner, transport_validator=fake_transport)
         self.assertFalse(caught.exception.states["REMOTE_ARTIFACT_VERIFIED"])
 
     def test_all_publications_use_atomic_no_replace_and_never_delete_collisions(self):
@@ -216,8 +337,8 @@ class PE4ActionBTransferTests(unittest.TestCase):
     def test_evidence_confirmation_requires_exact_final_and_consumed_temporary(self):
         command = ACTION_B.evidence_confirm_command(
             "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34", "f" * 64, ".result.tmp")
-        for required in ("result.json", "sha256sum", "stat -c %U", "stat -c %a",
-                         "sync -f", ".result.tmp", "os.lstat(sys.argv[1])"):
+        for required in ("result.json", "hashlib.sha256", "stat.S_ISREG",
+                         "stat.S_IMODE", "os.fsync", ".result.tmp", "follow_symlinks=False"):
             self.assertIn(required, command)
 
     def test_wrong_final_digest_or_unsafe_metadata_cannot_confirm(self):
@@ -226,13 +347,15 @@ class PE4ActionBTransferTests(unittest.TestCase):
             "/tmp/x/final.whl", 123, "a" * 64)
         evidence = ACTION_B.evidence_confirm_command(
             "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34", "b" * 64, ".result.tmp")
-        for command in (artifact, evidence):
+        for command in (artifact,):
             self.assertIn("test -f", command)
             self.assertIn("test ! -L", command)
             self.assertIn("stat -c %U", command)
             self.assertIn("stat -c %a", command)
             self.assertIn("sha256sum", command)
         self.assertIn("stat -c %s", artifact)
+        for required in ("stat.S_ISREG", "stat.S_IMODE", "hashlib.sha256", "os.O_NOFOLLOW"):
+            self.assertIn(required, evidence)
 
     def test_unrelated_remote_content_is_never_removed_or_enumerated(self):
         source = (TOOLS / "hioc-pe4-artifact-transfer.py").read_text(encoding="utf-8")
@@ -243,9 +366,8 @@ class PE4ActionBTransferTests(unittest.TestCase):
     def test_identical_independent_final_with_retained_evidence_temp_fails_closed(self, _inputs):
         runner = Runner(("EVIDENCE_RENAME", "EVIDENCE_CONFIRMATION"))
         with self.assertRaises(ACTION_B.Failure) as caught:
-            ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
-                material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
-        self.assertFalse(caught.exception.states["EVIDENCE_PUBLISHED"])
+            ACTION_B.execute("a" * 40, runner=runner, transport_validator=fake_transport)
+        self.assertEqual(caught.exception.states["EVIDENCE_STATE"], "UNCERTAIN")
         stages = [stage for _,stage,_ in runner.calls]
         self.assertEqual(stages.count("EVIDENCE_PREPARATION"), 1)
         self.assertEqual(stages.count("EVIDENCE_RENAME"), 1)
@@ -254,23 +376,21 @@ class PE4ActionBTransferTests(unittest.TestCase):
     def test_failed_pass_evidence_does_not_publish_contradictory_failure_result(self, _inputs):
         runner = Runner("EVIDENCE_CONFIRMATION")
         with self.assertRaises(ACTION_B.Failure):
-            ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
-                material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
+            ACTION_B.execute("a" * 40, runner=runner, transport_validator=fake_transport)
         evidence_stages = [stage for _,stage,_ in runner.calls if stage.startswith("EVIDENCE_")]
         self.assertEqual(evidence_stages,
                          ["EVIDENCE_PREPARATION", "EVIDENCE_RENAME", "EVIDENCE_CONFIRMATION"])
-        joined = "\n".join(call[-1] for call,stage,_ in runner.calls if stage.startswith("EVIDENCE_"))
-        self.assertNotIn(".failure-result.tmp", joined)
+        prepare_command=next(call[-1] for call,stage,_ in runner.calls if stage=="EVIDENCE_PREPARATION")
+        self.assertIn(".result.tmp result.json",prepare_command)
 
     @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
     def test_unconfirmed_evidence_never_sets_terminal_publication_state(self, _inputs):
         runner = Runner("EVIDENCE_CONFIRMATION")
         with self.assertRaises(ACTION_B.Failure) as caught:
-            ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
-                material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
-        self.assertFalse(caught.exception.states["EVIDENCE_PUBLISHED"])
+            ACTION_B.execute("a" * 40, runner=runner, transport_validator=fake_transport)
+        self.assertEqual(caught.exception.states["EVIDENCE_STATE"], "UNCERTAIN")
         confirm = next(call[-1] for call,stage,_ in runner.calls if stage == "EVIDENCE_CONFIRMATION")
-        for required in ("sha256sum", "stat -c %U", "stat -c %a", "sync -f"):
+        for required in ("hashlib.sha256", "stat.S_ISREG", "stat.S_IMODE", "os.fsync"):
             self.assertIn(required, confirm)
 
     def test_source_has_no_path_selected_artifact_or_lifecycle_chaining(self):
@@ -288,8 +408,30 @@ class PE4ActionBTransferTests(unittest.TestCase):
         self.assertEqual((caught.exception.code, caught.exception.stage),
                          ("COMMAND_OUTPUT_TOO_LARGE", "TEST_BOUNDARY"))
 
+    def test_bounded_runner_streams_exact_file_stdin_and_times_out_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source=pathlib.Path(temp)/"source.bin"; source.write_bytes(b"streamed")
+            result=ACTION_B.run_bounded([sys.executable,"-c",
+                "import sys;sys.stdout.buffer.write(sys.stdin.buffer.read())"],
+                "STREAM",timeout=5,max_output=32,stdin_path=source)
+            self.assertEqual(result.stdout,"streamed")
+        with self.assertRaises(ACTION_B.Failure) as caught:
+            ACTION_B.run_bounded([sys.executable,"-c","import time;time.sleep(2)"],
+                                 "TIMEOUT",timeout=1,max_output=32)
+        self.assertEqual((caught.exception.code,caught.exception.stage),("COMMAND_TIMEOUT","TIMEOUT"))
+
+    @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
+    def test_transfer_failure_never_marks_unconfirmed_ingress_complete(self, _inputs):
+        runner=Runner("WHEEL_TRANSFER")
+        with self.assertRaises(ACTION_B.Failure) as caught:
+            ACTION_B.execute("a"*40,runner=runner,transport_validator=fake_transport)
+        self.assertFalse(caught.exception.states["WHEEL_TRANSFERRED"])
+        transfer=next((call,kwargs) for call,stage,kwargs in runner.calls if stage=="WHEEL_TRANSFER")
+        self.assertEqual(transfer[1]["stdin_path"],pathlib.Path("C:/cache/wheel.whl"))
+
     def test_terminal_order_is_bounded_and_includes_partial_directory(self):
         states = {key: False for key in ACTION_B.STATE_KEYS}
+        states["EVIDENCE_STATE"] = "NOT_PUBLISHED"
         states["REMOTE_STAGING_CREATED"] = True
         output = io.StringIO()
         with mock.patch("sys.stdout", output):

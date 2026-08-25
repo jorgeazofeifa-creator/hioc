@@ -354,3 +354,14 @@ to the wheel, lock, and result-last evidence. Existing or raced destination
 objects remain untouched; exclusive evidence creation cannot follow a link;
 and a result publication attempt never falls through to a second,
 contradictory result. This repository correction does not execute Action B.
+
+## PE-4 Action B ingress identity boundary
+
+Release identity now includes the reviewed Windows operator/profile, system
+`ssh.exe` digest, pinned key generator, Ed25519 pair/fingerprint/comment, and
+numeric PI3 host-key fingerprint. Direct SCP partial ingress is excluded.
+Bounded SSH stdin feeds an exclusive, no-follow, directory-fd-relative sink;
+the existing no-replace final publication remains unchanged. Persistent result
+evidence records `AWAITING_CONFIRMATION`, while terminal state distinguishes
+confirmed, definitely unpublished, and indeterminate publication. Publication
+of this source does not authorize Action B execution.

@@ -36,6 +36,7 @@ SSH_PORT = 22
 SSH_KNOWN_HOSTS_NAME = "known_hosts"
 SSH_IDENTITY_NAME = "id_ed25519"
 SSH_KEYGEN_SHA256 = "44c6809b7bbc917f1310ba92857f983e2788e9b0015aa7896fa0362eddb6338b"
+SSH_CLIENT_SHA256 = "6250fd52163fe99a0dc49403ed1b4bbef9b764bdb7bada017a93d057d9376a42"
 HA_IPV4 = "192.168.100.251"
 HA_PORT = 8123
 WHEEL_NAME = "websockets-16.1.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl"
@@ -145,7 +146,7 @@ def windows_publish_no_replace(source: pathlib.Path, destination: pathlib.Path) 
 
 def windows_openssh_tool(name: str) -> pathlib.Path:
     """Resolve the Windows system OpenSSH client without consulting PATH."""
-    if name not in {"ssh", "scp", "ssh-keygen"} or os.name != "nt":
+    if name not in {"ssh", "ssh-keygen"} or os.name != "nt":
         raise Failure("OPENSSH_TOOL_INVALID", "OPENSSH_IDENTITY")
     import ctypes
     buffer = ctypes.create_unicode_buffer(32768)
@@ -380,11 +381,15 @@ def run(command: list[str], stage: str, *, timeout: int = 60, capture: bool = Tr
 
 def run_bounded(command: list[str], stage: str, *, timeout: int,
                 max_output: int = 65536,
-                failure_codes: dict[int, str] | None = None) -> subprocess.CompletedProcess[str]:
+                failure_codes: dict[int, str] | None = None,
+                stdin_path: pathlib.Path | None = None) -> subprocess.CompletedProcess[str]:
+    source = None
     try:
-        process = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+        source = stdin_path.open("rb") if stdin_path is not None else subprocess.DEVNULL
+        process = subprocess.Popen(command, stdin=source, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
     except OSError:
+        if source not in (None, subprocess.DEVNULL): source.close()
         raise Failure("COMMAND_INVOCATION_FAILED", stage)
     chunks: list[list[bytes]] = [[], []]
     total = 0
@@ -424,6 +429,7 @@ def run_bounded(command: list[str], stage: str, *, timeout: int,
         reader.join()
     process.stdout.close()
     process.stderr.close()
+    if source not in (None, subprocess.DEVNULL): source.close()
     stdout = b"".join(chunks[0]).decode("utf-8", "replace")
     stderr = b"".join(chunks[1]).decode("utf-8", "replace")
     if timed_out:

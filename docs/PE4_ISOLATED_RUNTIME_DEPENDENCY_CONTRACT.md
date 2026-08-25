@@ -140,6 +140,15 @@ publication also requires proof that the corresponding invocation source was
 consumed. No collision is deleted, replaced, or reconciled into a second
 result.
 
+Artifact ingress does not use SCP. Each governed source is supplied as bounded
+stdin to the fixed remote SSH command. The remote sink anchors the `0700`
+staging directory through a non-following directory descriptor and exclusively
+creates the fixed partial basename relative to it. Size and digest are checked
+during the stream; mismatch, interruption, timeout, collision, or an unsafe
+directory leaves transfer state false and preserves the invocation directory.
+Action B additionally pins the reviewed Windows operator/profile, system SSH
+digest, Ed25519 key identity, and numeric PI3 host trust before any connection.
+
 The final transport gate does not inherit OpenSSH configuration or agent state.
 It pins numeric PI3 port 22, disables proxy/jump/canonicalization behavior, and
 uses fixed non-reparse current-profile `known_hosts` and `id_ed25519` files.

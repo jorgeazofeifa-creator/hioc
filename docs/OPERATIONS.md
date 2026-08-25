@@ -810,6 +810,15 @@ non-following inspection. Retained source state, wrong content or metadata, or
 indeterminate absence requires STOP with the preserved transfer directory.
 After any result publication attempt, no second result may be attempted.
 
+Do not substitute SCP or an operator-created partial file. Action B sends the
+wheel and lock as bounded SSH stdin to its exclusive remote sink; collision or
+interruption preserves the private directory and leaves the corresponding
+transfer marker false. Preflight must pass the fixed Windows operator/profile,
+SSH executable digest, key pair/fingerprint/comment, and numeric PI3 host-key
+fingerprint. Evidence state `UNCERTAIN` means publication may have completed
+but confirmation was unavailable: preserve everything and STOP. It is neither
+confirmed success nor proof that no result exists.
+
 Do not add SSH config, proxy, jump-host, identity, or known-host overrides around
 Action B. The tool deliberately reads no SSH configuration and uses only the
 fixed current-profile `.ssh/known_hosts` and `.ssh/id_ed25519` after rejecting

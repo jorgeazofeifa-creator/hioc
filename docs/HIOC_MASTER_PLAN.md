@@ -1,5 +1,18 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a Action B ingress and confirmation correction
+
+Fresh readiness review rejected direct SCP-to-predictable-partial ingress,
+path-only local transport trust, and binary evidence publication state. The
+repository now streams the fixed wheel and lock over isolated SSH into
+exclusive, non-following, directory-fd-relative sinks; pins the reviewed
+Windows operator/profile, SSH executable, key pair/fingerprint/comment, and
+numeric PI3 host trust; and reports evidence as **NOT_PUBLISHED**,
+**CONFIRMED**, or **UNCERTAIN** with a persistent **AWAITING_CONFIRMATION**
+marker. This is repository-only. Action A, identity provisioning, and PI3
+authorization remain **COMPLETE / PASS**. Action B remains **BLOCKED / NOT
+EXECUTED** and all later PE-4 actions remain **NOT STARTED**.
+
 ## PE-4.0B.2a Action B remote publication correction
 
 Fresh Action B preparation found that temporary evidence creation could follow

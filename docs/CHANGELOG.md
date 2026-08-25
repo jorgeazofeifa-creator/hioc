@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Replaced Action B's predictable SCP partial destinations with bounded SSH
+  streaming into directory-fd-relative `O_EXCL|O_NOFOLLOW` sinks. Runtime
+  preflight now pins the Windows operator/profile, `ssh.exe`, reviewed key pair
+  and fingerprint, and numeric PI3 host trust. Evidence terminal state now
+  distinguishes not published, confirmed, and uncertain while persistent
+  result-last evidence records its pre-confirmation state. Action B remains
+  blocked and unexecuted.
+
 - Corrected PE-4 Action B remote publication before execution. Wheel, lock, and
   result evidence now use `renameat2(RENAME_NOREPLACE)` rather than ordinary
   `mv`; every raced destination object is a collision. Evidence preparation is

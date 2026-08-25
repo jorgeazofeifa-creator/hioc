@@ -289,3 +289,12 @@ types fail closed. Deployment state advances only after exact final metadata,
 identity, durability, and disappearance of the invocation-owned partial or
 temporary source confirm. A reported rename error uses the same proof and can
 never authorize overwrite, cleanup, or a contradictory result.
+
+Action B ingress is SSH streaming, not SCP publication. The remote Python sink
+uses a no-follow directory descriptor and exclusive, no-follow partial creation
+before accepting bytes; it validates the exact length and digest and fsyncs the
+owned partial. Local deployment preflight pins the reviewed operator/profile,
+`ssh.exe`, SSH key pair and fingerprint, and numeric PI3 trust identity.
+Evidence confirmation is three-state: `NOT_PUBLISHED`, `CONFIRMED`, or
+`UNCERTAIN`; uncertain state preserves the directory and authorizes no later
+action.
