@@ -148,6 +148,13 @@ Sanitized Windows result-last evidence contains no key material. Identity
 provisioning, PI3 public-key authorization, and Action B transfer are three
 separate authorizations and STOP boundaries.
 
+Public-record parsing is compatible with the pinned Windows generator's native
+single-record CRLF output. One optional LF or CRLF terminator is accepted;
+embedded or repeated line endings, bare CR, malformed fields, invalid Base64,
+wrong algorithm/comment, and oversized records remain fail-closed inputs. The
+same rule consumes the actual three-field derived-public record without adding
+a synthetic comment field.
+
 Provisioning evidence is accepted only after all represented cleanup is final
 and after exact post-rename content, digest, regular-file, non-reparse, and
 protected-DACL confirmation. Invocation-child identity is retained before ACL

@@ -145,6 +145,14 @@ be exactly `ssh-ed25519`, carry the fixed comment, match public material derived
 from the private file, and yield only a parsed bounded `SHA256:` fingerprint.
 No key material enters terminal output or evidence.
 
+The pinned Windows OpenSSH implementation writes that one public record with a
+CRLF terminator. Validation accepts exactly one optional LF or CRLF terminator,
+then applies the algorithm, Base64, comment, pair, and fingerprint checks to the
+single record. Bare CR, embedded line endings, multiple records, extra blank
+lines, and oversized or malformed input remain invalid. The derived-public
+record is parsed in that same native form, including its governed comment; no
+synthetic field is appended.
+
 Absence is established with a non-following directory-entry probe. Only the
 operating system's not-found result is accepted; a regular file or directory,
 symlink, dangling symlink, junction, dangling junction, mount point, another

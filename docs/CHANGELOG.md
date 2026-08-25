@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Corrected the PE-4 Windows SSH identity public-record parser after the first
+  governed production attempt failed safely. The pinned Windows OpenSSH
+  generator emits its single public-key record with a CRLF terminator; the
+  parser now accepts exactly one LF or CRLF terminator while continuing to
+  reject embedded, bare-CR, multiline, malformed, or oversized records. Pair
+  validation consumes the pinned generator's real derived record and comment
+  instead of appending a synthetic fourth field.
+
 - Corrected PE-4 identity evidence no-replace reconciliation. An exact raced
   `result.json` is no longer accepted while `.result.tmp` remains in any form;
   post-error success requires exact final confirmation and proven non-following

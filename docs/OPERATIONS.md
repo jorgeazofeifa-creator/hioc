@@ -848,3 +848,12 @@ published and freshly reviewed. Do not interpret exact final evidence alone as
 publication success after a move error. Success additionally requires proven
 non-following absence of `.result.tmp`; any retained or ambiguous entry requires
 STOP, preservation of both paths, and no overwrite, cleanup, or second result.
+
+The first authorized attempt failed safely at `KEY_VALIDATION` with
+`PUBLIC_KEY_INVALID`: native Windows OpenSSH used CRLF while the published
+parser rejected every carriage return. Neither final key was published and
+rollback was not recommended. The corrected parser accepts exactly one terminal
+LF or CRLF while retaining the structural, algorithm, Base64, comment, pair,
+ACL, and fingerprint gates. Derived-public validation consumes the pinned
+generator's native commented record without appending a fourth field. Do not
+retry until publication and fresh review.

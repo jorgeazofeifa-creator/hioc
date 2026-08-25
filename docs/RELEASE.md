@@ -336,3 +336,11 @@ The initial provisioning implementation is not executable release authority:
 its evidence-ordering and invocation-child ownership defect required correction.
 Only a committed and published tool identity with final-cleanup-before-evidence
 and exact post-rename confirmation may proceed to a fresh preparation checkpoint.
+
+The first authorized run of that published identity failed safely before key
+publication because its parser rejected the CRLF terminator produced by pinned
+Windows OpenSSH. A releasable correction accepts exactly one native LF or CRLF
+record terminator, retains every other identity gate, and carries a realistic
+Windows-output regression for both generated and derived records. It must not
+append a synthetic comment to the already-commented derived record. Publication
+alone does not authorize a retry.

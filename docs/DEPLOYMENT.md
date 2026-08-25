@@ -272,3 +272,10 @@ from a no-replace collision. Exact final confirmation reconciles an error only
 when `.result.tmp` is also proven absent without following reparse targets.
 Retained or indeterminate temporary state leaves publication false and does not
 authorize overwrite, cleanup, a second result, key provisioning, or Action B.
+
+The initial production provisioning attempt also exposed a Windows-format
+compatibility defect before either key was published: system OpenSSH emits a
+single CRLF-terminated public record. The corrected release accepts that native
+terminator but rejects bare, embedded, or repeated line endings and malformed
+records, and parses the native commented derived-public record without a
+synthetic field. Retry requires correction publication and separate preparation.

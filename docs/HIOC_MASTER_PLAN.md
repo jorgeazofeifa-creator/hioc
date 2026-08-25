@@ -2250,3 +2250,17 @@ preserved without overwrite or a second result. Action A remains **COMPLETE /
 PASS**. Provisioning and Action B remain **BLOCKED / NOT EXECUTED** pending
 review, commit, push, and fresh execution preparation. Action C, Actions D-G,
 PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain not started.
+
+The first separately authorized provisioning attempt then failed safely after
+generation and staged ACL validation but before pair validation or publication.
+Forensics reproduced the exact cause with disposable material: pinned Windows
+OpenSSH emits its public record with CRLF, while the published parser rejected
+every carriage return. The corrected contract accepts one optional LF or CRLF
+terminator and still rejects bare, embedded, or repeated line endings and
+malformed records. Complete real-output reproduction also proved that the
+pinned derived-public command already emits the governed comment; the corrected
+path parses that native three-field record rather than adding a fourth field.
+No production key was published, rollback remains not recommended, and
+provisioning plus Action B remain **BLOCKED / NOT EXECUTED**
+pending review, commit, push, and fresh preparation. Action C, Actions D-G,
+PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain not started.

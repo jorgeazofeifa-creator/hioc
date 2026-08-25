@@ -89,12 +89,17 @@ def create_private_child(parent: pathlib.Path, prefix: str, *, acl=secure_workst
 
 
 def parse_public(value: str) -> tuple[str, str, str]:
-    if len(value.encode("utf-8")) > 4096 or "\r" in value:
+    if len(value.encode("utf-8")) > 4096:
         raise Failure("PUBLIC_KEY_INVALID", "KEY_VALIDATION")
-    lines = value.splitlines()
-    if len(lines) != 1:
+    if value.endswith("\r\n"):
+        record = value[:-2]
+    elif value.endswith("\n"):
+        record = value[:-1]
+    else:
+        record = value
+    if not record or "\r" in record or "\n" in record:
         raise Failure("PUBLIC_KEY_INVALID", "KEY_VALIDATION")
-    parts = lines[0].split(" ")
+    parts = record.split(" ")
     if len(parts) != 3 or not all(parts):
         raise Failure("PUBLIC_KEY_INVALID", "KEY_VALIDATION")
     key_type, encoded, comment = parts
@@ -134,7 +139,9 @@ def validate_pair(private: pathlib.Path, public: pathlib.Path, keygen: pathlib.P
         raise Failure("PUBLIC_KEY_COMMENT_MISMATCH", "KEY_VALIDATION")
     derived = runner([str(keygen), "-y", "-f", str(private)], "PAIR_VALIDATION",
                      timeout=10, max_output=4096)
-    derived_type, derived_encoded, _ = parse_public(derived.stdout.strip() + " derived")
+    derived_type, derived_encoded, derived_comment = parse_public(derived.stdout)
+    if derived_comment != KEY_COMMENT:
+        raise Failure("PUBLIC_KEY_COMMENT_MISMATCH", "KEY_VALIDATION")
     if (derived_type, derived_encoded) != (key_type, encoded):
         raise Failure("PRIVATE_PUBLIC_MISMATCH", "KEY_VALIDATION")
     fingerprint = runner([str(keygen), "-lf", str(public), "-E", "sha256"],

@@ -1614,3 +1614,16 @@ dangling link, junction, reparse entry, or indeterminate temporary path fails
 closed. Normal publication applies the same source-consumption invariant. No
 collision result is overwritten and no second result is attempted. Provisioning
 and Action B remain blocked and unexecuted pending publication and fresh review.
+
+# Decision: Accept the native Windows OpenSSH public-record terminator
+
+The first authorized identity-provisioning attempt generated and ACL-hardened
+the staged pair but failed before publication because Windows OpenSSH terminated
+the public record with CRLF and the parser rejected every carriage return. The
+record contract now accepts one optional LF or CRLF terminator and nothing
+else: embedded line endings, a bare CR, multiple records, malformed fields, and
+oversized input still fail closed. Derived-public validation parses the pinned
+generator's actual three-field record and governed comment rather than adding a
+synthetic field. The failed attempt published no key, requires no rollback, and
+does not authorize a retry until this correction is published and freshly
+prepared.

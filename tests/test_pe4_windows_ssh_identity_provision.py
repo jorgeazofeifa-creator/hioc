@@ -129,6 +129,20 @@ class IdentityProvisionTests(unittest.TestCase):
         for value in ("x" * 4097, "ssh-ed25519 invalid! comment", "ssh-ed25519 two-fields"):
             with self.assertRaises(PROVISION.Failure): PROVISION.parse_public(value)
 
+    def test_public_parser_accepts_real_windows_openssh_crlf_record(self):
+        encoded = "AAAAC3NzaC1lZDI1NTE5AAAAIEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        record = f"ssh-ed25519 {encoded} {PROVISION.KEY_COMMENT}\r\n"
+        self.assertEqual(PROVISION.parse_public(record),
+                         ("ssh-ed25519", encoded, PROVISION.KEY_COMMENT))
+
+    def test_public_parser_rejects_embedded_or_multiple_line_endings(self):
+        encoded = "AAAAC3NzaC1lZDI1NTE5AAAAIEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        record = f"ssh-ed25519 {encoded} {PROVISION.KEY_COMMENT}"
+        for value in (record + "\r", record + "\r\n\r\n", record + "\nsecond",
+                      record + "\rsecond"):
+            with self.subTest(value=repr(value)), self.assertRaises(PROVISION.Failure):
+                PROVISION.parse_public(value)
+
     def test_pair_validation_and_fingerprint_are_sanitized(self):
         encoded = "AAAAC3NzaC1lZDI1NTE5AAAAIEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         public_text = f"ssh-ed25519 {encoded} {PROVISION.KEY_COMMENT}\n"
@@ -136,7 +150,8 @@ class IdentityProvisionTests(unittest.TestCase):
             root = pathlib.Path(temp); private = root / "id_ed25519"; public = root / "id_ed25519.pub"
             private.write_text("opaque-private", encoding="ascii"); public.write_text(public_text, encoding="ascii")
             def runner(command, stage, **_):
-                if "-y" in command: return Result(f"ssh-ed25519 {encoded}\n")
+                if "-y" in command:
+                    return Result(f"ssh-ed25519 {encoded} {PROVISION.KEY_COMMENT}\r\n")
                 return Result("256 SHA256:AbCdEf0123456789 comment (ED25519)\n")
             value = PROVISION.validate_pair(private, public, pathlib.Path("ssh-keygen"), runner=runner,
                                             reparse=lambda _: False, acl_validate=lambda *_: None)
