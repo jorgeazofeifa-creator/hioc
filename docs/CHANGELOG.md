@@ -1,5 +1,10 @@
 # HIOC Changelog
 
+- Corrected PE-4 Action B so every independent SSH command proves the exact
+  staging device/inode/UID/mode identity before descriptor-relative child
+  access; duplicate numeric host records and unsafe SSH-material ACLs now fail
+  closed. Action B remains unexecuted pending publication and PI3 preflight.
+
 - Replaced Action B's predictable SCP partial destinations with bounded SSH
   streaming into directory-fd-relative `O_EXCL|O_NOFOLLOW` sinks. Runtime
   preflight now pins the Windows operator/profile, `ssh.exe`, reviewed key pair

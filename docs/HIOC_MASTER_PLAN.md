@@ -1,5 +1,16 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a Action B invocation-identity correction
+
+Fresh readiness review found whole-directory substitution, duplicate numeric
+known-host ambiguity, and missing runtime ACL enforcement. The corrected tool
+binds every remote command to the creation-time device/inode/UID/mode
+token through a no-follow directory descriptor, requires exactly one governed
+numeric PI3 host record, and validates the strict ACL contract for `.ssh`, the
+key pair, and `known_hosts`. This is repository-only. Action B remains
+**BLOCKED / NOT EXECUTED**. The production PI3 primitive preflight remains a
+separate future checkpoint.
+
 ## PE-4.0B.2a Action B ingress and confirmation correction
 
 Fresh readiness review rejected direct SCP-to-predictable-partial ingress,

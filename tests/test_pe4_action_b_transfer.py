@@ -25,6 +25,7 @@ provision_spec.loader.exec_module(PROVISION)
 def fake_transport():
     return pathlib.Path("ssh.exe"), pathlib.Path("known_hosts"), pathlib.Path("id_ed25519")
 
+STAGING_ID=("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",11,22,1000,0o700)
 
 class Runner:
     def __init__(self, fail_stage=None, outputs=None):
@@ -37,11 +38,17 @@ class Runner:
         if stage in self.fail_stages:
             raise ACTION_B.Failure("SIMULATED_FAILURE", stage)
         output = self.outputs.get(stage, "CONFIRMED\n" if stage == "EVIDENCE_CONFIRMATION" else
-                                  "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34\n" if stage == "REMOTE_STAGING" else "")
+                                  "|".join(map(str,STAGING_ID))+"\n" if stage == "REMOTE_STAGING" else "")
         return subprocess.CompletedProcess(command, 0, output, "")
 
 
 class PE4ActionBTransferTests(unittest.TestCase):
+    def test_all_embedded_remote_programs_compile(self):
+        for name in ("REMOTE_CREATE_STAGING","REMOTE_NO_REPLACE","REMOTE_EXCLUSIVE_WRITE",
+                     "REMOTE_EXCLUSIVE_INGRESS","REMOTE_EVIDENCE_PROBE",
+                     "REMOTE_ARTIFACT_VALIDATE","REMOTE_ARTIFACT_CONFIRM"):
+            compile(getattr(ACTION_B,name),name,"exec")
+
     def transport_fixture(self, root, *, operator=None, ssh_digest=None, fingerprint=None,
                           derived=None, known_record=None):
         profile = pathlib.Path(root); ssh_dir = profile / ".ssh"; ssh_dir.mkdir()
@@ -122,9 +129,9 @@ class PE4ActionBTransferTests(unittest.TestCase):
         states = {key: False for key in ACTION_B.STATE_KEYS}
         payload = ACTION_B.evidence_payload(states, "FAIL", "TRANSFER_FAILED", "WHEEL_TRANSFER")
         self.assertIn('"evidence_state":"AWAITING_CONFIRMATION"',payload)
-        prepare = ACTION_B.evidence_prepare_command("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
+        prepare = ACTION_B.evidence_prepare_command(STAGING_ID,
                                                     payload, ".failure-result.tmp")
-        publish = ACTION_B.evidence_publish_command("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
+        publish = ACTION_B.evidence_publish_command(STAGING_ID,
                                                     ".failure-result.tmp")
         self.assertNotIn("mv --", prepare)
         self.assertNotIn("mv --", publish)
@@ -143,7 +150,7 @@ class PE4ActionBTransferTests(unittest.TestCase):
             with patches[0],patches[1],patches[2],patches[3]:
                 ssh,known,private=ACTION_B.validate_local_transport(
                     resolver=resolver,runner=runner,operator_resolver=lambda:operator,
-                    profile_resolver=lambda:profile,hasher=hasher)
+                    profile_resolver=lambda:profile,hasher=hasher,acl_validator=lambda *_:None)
             self.assertEqual((ssh.name,known.name,private.name),("ssh.exe","known_hosts","id_ed25519"))
 
     def test_transport_identity_rejects_wrong_operator_and_ssh_digest(self):
@@ -154,7 +161,7 @@ class PE4ActionBTransferTests(unittest.TestCase):
                     ssh_digest="0"*64 if defect=="ssh" else None)
                 with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
                     ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
-                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher)
+                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,acl_validator=lambda *_:None)
 
     def test_transport_identity_rejects_wrong_pair_fingerprint_and_known_host(self):
         variants=(
@@ -167,13 +174,55 @@ class PE4ActionBTransferTests(unittest.TestCase):
                 profile,runner,resolver,hasher,patches,operator=self.transport_fixture(temp,**variant)
                 with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
                     ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
-                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher)
+                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,acl_validator=lambda *_:None)
+
+    def test_numeric_known_host_requires_exactly_one_record(self):
+        valid="192.168.100.252 ssh-ed25519 AQID\n"
+        for value in (valid+valid, valid+"192.168.100.252 ssh-ed25519 BAUG\n",
+                      valid+"192.168.100.252 ssh-rsa AQID\n", "# no numeric match\n"):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as temp:
+                profile,runner,resolver,hasher,patches,operator=self.transport_fixture(temp,known_record=value)
+                with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
+                    ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
+                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,
+                        hasher=hasher,acl_validator=lambda *_:None)
+
+    def test_transport_acl_is_required_for_directory_and_all_three_files(self):
+        with tempfile.TemporaryDirectory() as temp:
+            profile,runner,resolver,hasher,patches,operator=self.transport_fixture(temp)
+            calls=[]
+            with patches[0],patches[1],patches[2],patches[3]:
+                ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
+                    operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,
+                    acl_validator=lambda path,is_dir:calls.append((path.name,is_dir)))
+            self.assertEqual(calls,[(".ssh",True),("known_hosts",False),("id_ed25519",False),("id_ed25519.pub",False)])
+        for failed_name in (".ssh","known_hosts","id_ed25519","id_ed25519.pub"):
+            with self.subTest(failed_name=failed_name), tempfile.TemporaryDirectory() as temp:
+                profile,runner,resolver,hasher,patches,operator=self.transport_fixture(temp)
+                def reject(path,_is_dir):
+                    if path.name==failed_name: raise ACTION_B.Failure("WORKSTATION_ACL_UNSAFE","WORKSTATION_ACL")
+                with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
+                    ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
+                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,
+                        hasher=hasher,acl_validator=reject)
+
+    def test_shared_acl_contract_covers_read_protection_principal_rights_and_inheritance(self):
+        captured={}
+        def fake_run(_command,_stage,**kwargs): captured.update(kwargs)
+        with mock.patch.dict(ACTION_B.validate_workstation_path_acl.__globals__,{"run":fake_run}):
+            ACTION_B.validate_workstation_path_acl(pathlib.Path("C:/fixture/.ssh"),True)
+        self.assertEqual(captured["failure_codes"],{
+            21:"WORKSTATION_ACL_VALIDATION_READ_FAILED",22:"WORKSTATION_ACL_NOT_PROTECTED",
+            23:"WORKSTATION_ACL_RULE_COUNT_INVALID",24:"WORKSTATION_ACL_INHERITED_RULE_REMAINS",
+            25:"WORKSTATION_ACL_IDENTITY_INVALID",26:"WORKSTATION_ACL_RULE_TYPE_INVALID",
+            27:"WORKSTATION_ACL_RIGHTS_INVALID",28:"WORKSTATION_ACL_INHERITANCE_INVALID",
+            29:"WORKSTATION_ACL_PROPAGATION_INVALID"})
 
     def test_ingress_uses_exclusive_nofollow_directory_fd_and_streamed_input(self):
-        command=ACTION_B.ingress_command("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
+        command=ACTION_B.ingress_command(STAGING_ID,
                                          ".wheel.part",3,hashlib.sha256(b"abc").hexdigest())
         for required in ("O_EXCL","O_NOFOLLOW","dir_fd=directory_fd","sys.stdin.buffer",
-                         "directory_info.st_uid!=os.getuid()","hashlib.sha256"):
+                         "actual!=expected","hashlib.sha256"):
             self.assertIn(required,command)
         self.assertNotIn("scp",command)
 
@@ -189,29 +238,54 @@ class PE4ActionBTransferTests(unittest.TestCase):
                 elif kind=="symlink": target.symlink_to(root/"outside")
                 else: target.symlink_to(root/"missing")
                 result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_EXCLUSIVE_INGRESS,
-                    str(root),target.name,str(len(data)),digest],input=data,capture_output=True)
+                    str(root),str(root.stat().st_dev),str(root.stat().st_ino),str(root.stat().st_uid),str(0o700),target.name,str(len(data)),digest],input=data,capture_output=True)
                 self.assertNotEqual(result.returncode,0)
         with tempfile.TemporaryDirectory() as temp:
             root=pathlib.Path(temp); os.chmod(root,0o700)
             result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_EXCLUSIVE_INGRESS,
-                str(root),".wheel.part",str(len(data)),digest],input=data,capture_output=True)
+                str(root),str(root.stat().st_dev),str(root.stat().st_ino),str(root.stat().st_uid),str(0o700),".wheel.part",str(len(data)),digest],input=data,capture_output=True)
             self.assertEqual(result.returncode,0)
             self.assertEqual((root/".wheel.part").read_bytes(),data)
+
+    @unittest.skipUnless(os.name=="posix" and hasattr(os,"O_DIRECTORY") and hasattr(os,"O_NOFOLLOW"),
+                         "Linux directory-substitution integration requires POSIX directory identity")
+    def test_linux_whole_directory_replacement_rejects_same_mode_owner_and_content(self):
+        data=b"governed-bytes"; digest=hashlib.sha256(data).hexdigest()
+        with tempfile.TemporaryDirectory() as temp:
+            parent=pathlib.Path(temp); original=parent/"transaction"; original.mkdir(); os.chmod(original,0o700)
+            info=original.stat(); moved=parent/"moved"; original.rename(moved)
+            original.mkdir(); os.chmod(original,0o700); (original/".wheel.part").write_bytes(data)
+            result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_EXCLUSIVE_INGRESS,
+                str(original),str(info.st_dev),str(info.st_ino),str(info.st_uid),str(0o700),
+                ".lock.part",str(len(data)),digest],input=data,capture_output=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertFalse((original/".lock.part").exists())
+            self.assertEqual((original/".wheel.part").read_bytes(),data)
+
+    def test_every_remote_primitive_enforces_creation_token_before_child_access(self):
+        for primitive in (ACTION_B.REMOTE_EXCLUSIVE_INGRESS,ACTION_B.REMOTE_EXCLUSIVE_WRITE,
+                          ACTION_B.REMOTE_NO_REPLACE,ACTION_B.REMOTE_ARTIFACT_VALIDATE,
+                          ACTION_B.REMOTE_ARTIFACT_CONFIRM,ACTION_B.REMOTE_EVIDENCE_PROBE):
+            self.assertIn("actual!=expected",primitive)
+            self.assertIn("os.O_DIRECTORY|os.O_NOFOLLOW",primitive)
+            self.assertLess(primitive.index("actual!=expected"),primitive.index("dir_fd=directory_fd"))
 
     @unittest.skipUnless(os.name=="posix", "Linux renameat2 integration fixture")
     def test_linux_renameat2_real_no_replace_and_source_consumption(self):
         with tempfile.TemporaryDirectory() as temp:
-            root=pathlib.Path(temp); source=root/"source"; final=root/"final"
+            root=pathlib.Path(temp); os.chmod(root,0o700); source=root/".wheel.part"; final=root/ACTION_B.WHEEL_NAME
             source.write_bytes(b"owned")
+            info=root.stat()
             result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_NO_REPLACE,
-                                   str(source),str(final)],capture_output=True)
+                                   str(root),str(info.st_dev),str(info.st_ino),str(info.st_uid),str(0o700),source.name,final.name],capture_output=True)
             self.assertEqual(result.returncode,0)
             self.assertFalse(source.exists()); self.assertEqual(final.read_bytes(),b"owned")
         with tempfile.TemporaryDirectory() as temp:
-            root=pathlib.Path(temp); source=root/"source"; final=root/"final"
+            root=pathlib.Path(temp); os.chmod(root,0o700); source=root/".wheel.part"; final=root/ACTION_B.WHEEL_NAME
             source.write_bytes(b"owned"); final.write_bytes(b"foreign")
+            info=root.stat()
             result=subprocess.run([sys.executable,"-c",ACTION_B.REMOTE_NO_REPLACE,
-                                   str(source),str(final)],capture_output=True)
+                                   str(root),str(info.st_dev),str(info.st_ino),str(info.st_uid),str(0o700),source.name,final.name],capture_output=True)
             self.assertNotEqual(result.returncode,0)
             self.assertEqual(source.read_bytes(),b"owned"); self.assertEqual(final.read_bytes(),b"foreign")
 
@@ -221,10 +295,10 @@ class PE4ActionBTransferTests(unittest.TestCase):
             states=dict(base); runner=Runner(outputs={"EVIDENCE_CONFIRMATION":marker})
             if raises:
                 with self.assertRaises(ACTION_B.Failure):
-                    ACTION_B.publish_evidence(runner,["ssh"],"/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
+                    ACTION_B.publish_evidence(runner,["ssh"],STAGING_ID,
                                               states,"PASS","NONE","COMPLETE",".result.tmp")
             else:
-                ACTION_B.publish_evidence(runner,["ssh"],"/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
+                ACTION_B.publish_evidence(runner,["ssh"],STAGING_ID,
                                           states,"PASS","NONE","COMPLETE",".result.tmp")
             self.assertEqual(states["EVIDENCE_STATE"],marker.strip())
 
@@ -284,8 +358,8 @@ class PE4ActionBTransferTests(unittest.TestCase):
         self.assertTrue(states["REMOTE_ARTIFACT_VERIFIED"])
         command = next(call[-1] for call,stage,_ in runner.calls
                        if stage == "REMOTE_ARTIFACT_CONFIRMATION")
-        for required in (ACTION_B.WHEEL_NAME, ACTION_B.WHEEL_SHA256, "stat -c %s",
-                         "stat -c %U", "stat -c %a", "os.lstat(sys.argv[1])"):
+        for required in (ACTION_B.WHEEL_NAME, ACTION_B.WHEEL_SHA256, "info.st_size",
+                         "info.st_uid", "stat.S_IMODE", "follow_symlinks=False"):
             self.assertIn(str(required), command)
 
     @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
@@ -302,8 +376,8 @@ class PE4ActionBTransferTests(unittest.TestCase):
         for forbidden in ("mv --", "mv -n", "unlink(", "os.remove", "rm -", "shutil.rmtree"):
             self.assertNotIn(forbidden, source)
         self.assertIn("renameat2", ACTION_B.REMOTE_NO_REPLACE)
-        self.assertIn("os.lstat(destination)", ACTION_B.REMOTE_NO_REPLACE)
-        self.assertIn("else: raise SystemExit(94)", ACTION_B.REMOTE_NO_REPLACE)
+        self.assertIn("os.stat(destination", ACTION_B.REMOTE_NO_REPLACE)
+        self.assertIn("else: os.close(directory_fd); raise SystemExit(94)", ACTION_B.REMOTE_NO_REPLACE)
         self.assertIn("errno.EEXIST", ACTION_B.REMOTE_NO_REPLACE)
 
     def test_every_existing_destination_object_is_a_collision(self):
@@ -312,50 +386,42 @@ class PE4ActionBTransferTests(unittest.TestCase):
         contract = ACTION_B.REMOTE_NO_REPLACE
         for hostile_kind in ("regular", "directory", "symlink", "dangling-symlink", "other"):
             with self.subTest(hostile_kind=hostile_kind):
-                self.assertLess(contract.index("os.lstat(destination)"),
-                                contract.index("else: raise SystemExit(94)"))
+                self.assertLess(contract.index("os.stat(destination"),
+                                contract.index("else: os.close(directory_fd); raise SystemExit(94)"))
 
     def test_destination_raced_in_after_absence_check_is_rejected_atomically(self):
         contract = ACTION_B.REMOTE_NO_REPLACE
-        self.assertLess(contract.index("os.lstat(destination)"), contract.index("renameat2("))
-        self.assertIn("renameat2(-100,os.fsencode(source),-100,os.fsencode(destination),1)", contract)
+        self.assertLess(contract.index("os.stat(destination"), contract.index("renameat2("))
+        self.assertIn("renameat2(directory_fd,os.fsencode(source),directory_fd,os.fsencode(destination),1)", contract)
         self.assertIn("errno.EEXIST", contract)
         self.assertNotIn("replace(", contract)
 
     def test_wheel_lock_and_result_publication_commands_are_no_replace(self):
-        remote = "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34"
         commands = (
-            ACTION_B.no_replace_publish_command(remote, remote+"/.wheel.part", remote+"/"+ACTION_B.WHEEL_NAME),
-            ACTION_B.no_replace_publish_command(remote, remote+"/.lock.part", remote+"/requirements-pe4.lock"),
-            ACTION_B.evidence_publish_command(remote, ".result.tmp"),
+            ACTION_B.no_replace_publish_command(STAGING_ID, ".wheel.part", ACTION_B.WHEEL_NAME),
+            ACTION_B.no_replace_publish_command(STAGING_ID, ".lock.part", "requirements-pe4.lock"),
+            ACTION_B.evidence_publish_command(STAGING_ID, ".result.tmp"),
         )
         for command in commands:
             self.assertIn("renameat2", command)
-            self.assertIn("os.lstat(destination)", command)
+            self.assertIn("os.stat(destination", command)
             self.assertNotIn("mv ", command)
 
     def test_evidence_confirmation_requires_exact_final_and_consumed_temporary(self):
         command = ACTION_B.evidence_confirm_command(
-            "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34", "f" * 64, ".result.tmp")
+            STAGING_ID, "f" * 64, ".result.tmp")
         for required in ("result.json", "hashlib.sha256", "stat.S_ISREG",
                          "stat.S_IMODE", "os.fsync", ".result.tmp", "follow_symlinks=False"):
             self.assertIn(required, command)
 
     def test_wrong_final_digest_or_unsafe_metadata_cannot_confirm(self):
         artifact = ACTION_B.artifact_confirm_command(
-            "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34", "/tmp/x/.wheel.part",
-            "/tmp/x/final.whl", 123, "a" * 64)
+            STAGING_ID, ".wheel.part", ACTION_B.WHEEL_NAME, 123, "a" * 64)
         evidence = ACTION_B.evidence_confirm_command(
-            "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34", "b" * 64, ".result.tmp")
-        for command in (artifact,):
-            self.assertIn("test -f", command)
-            self.assertIn("test ! -L", command)
-            self.assertIn("stat -c %U", command)
-            self.assertIn("stat -c %a", command)
-            self.assertIn("sha256sum", command)
-        self.assertIn("stat -c %s", artifact)
-        for required in ("stat.S_ISREG", "stat.S_IMODE", "hashlib.sha256", "os.O_NOFOLLOW"):
-            self.assertIn(required, evidence)
+            STAGING_ID, "b" * 64, ".result.tmp")
+        for command in (artifact,evidence):
+            for required in ("stat.S_ISREG", "stat.S_IMODE", "hashlib.sha256", "os.O_NOFOLLOW"):
+                self.assertIn(required, command)
 
     def test_unrelated_remote_content_is_never_removed_or_enumerated(self):
         source = (TOOLS / "hioc-pe4-artifact-transfer.py").read_text(encoding="utf-8")

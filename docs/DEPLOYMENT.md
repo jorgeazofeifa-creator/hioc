@@ -1,5 +1,12 @@
 # HIOC Deployment
 
+PE-4 Action B staging paths are not sufficient identity. Operators must retain
+the bounded creation token, and every ingress, validation, publication, and
+evidence command must match it through `open(O_DIRECTORY|O_NOFOLLOW)` plus
+`fstat`. Any mismatch blocks deployment and is preserved without cleanup. The
+fixed numeric host trust must contain exactly one accepted record, and Windows
+SSH-material ACL validation is mandatory before SSH starts.
+
 PE-4 client execution is governed on PI3, not in the PI5 Home Assistant
 Terminal add-on. `/home/jazofv1/hioc-release-source` remains authoritative clean
 release source and `/home/jazofv1/hioc` remains the non-Git deployed runtime.

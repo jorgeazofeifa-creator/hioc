@@ -1,5 +1,11 @@
 # HIOC Release Process
 
+The Action B staging-identity/known-host/ACL correction must be published before
+any new execution review. Publication alone does not authorize Action B. A
+separate read-only PI3 preflight must then verify Python, filesystem flags,
+file/directory fsync, libc `renameat2(RENAME_NOREPLACE)`, account identity,
+`/tmp`, and required fixed utilities.
+
 The PE-4 identity evidence reconciliation correction is repository-only.
 Publication is not complete unless the exact final result confirms and the
 prepared `.result.tmp` is proven absent without following reparse targets.

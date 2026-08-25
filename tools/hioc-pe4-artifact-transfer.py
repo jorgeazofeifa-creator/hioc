@@ -70,7 +70,7 @@ def _fingerprint_record(output,code):
 
 def validate_local_transport(resolver=windows_openssh_tool,runner=run_bounded,
                              operator_resolver=getpass.getuser,profile_resolver=windows_profile_root,
-                             hasher=sha256):
+                             hasher=sha256,acl_validator=validate_workstation_path_acl):
     if os.name!="nt" or operator_resolver()!=EXPECTED_WINDOWS_OPERATOR:
         raise Failure("WINDOWS_OPERATOR_MISMATCH","OPENSSH_IDENTITY")
     profile=profile_resolver()
@@ -85,6 +85,7 @@ def validate_local_transport(resolver=windows_openssh_tool,runner=run_bounded,
         expected=stat.S_ISDIR(info.st_mode) if index==0 else stat.S_ISREG(info.st_mode)
         if not expected or path.is_symlink() or windows_reparse_point(path) or (index and info.st_size<=0):
             raise Failure("OPENSSH_MATERIAL_UNSAFE","OPENSSH_IDENTITY")
+        acl_validator(path,index==0)
     known_hosts,identity,public=paths[1:]
     ssh,keygen=resolver("ssh"),resolver("ssh-keygen")
     if hasher(ssh)!=SSH_CLIENT_SHA256 or hasher(keygen)!=SSH_KEYGEN_SHA256:
@@ -109,40 +110,61 @@ def validate_local_transport(resolver=windows_openssh_tool,runner=run_bounded,
         try: raw=base64.b64decode(parts[2],validate=True)
         except Exception: raise Failure("KNOWN_HOSTS_INVALID","OPENSSH_IDENTITY")
         fingerprints.append("SHA256:"+base64.b64encode(hashlib.sha256(raw).digest()).decode().rstrip("="))
-    if not fingerprints or set(fingerprints)!={EXPECTED_HOST_FINGERPRINT}:
+    if len(fingerprints)!=1 or fingerprints[0]!=EXPECTED_HOST_FINGERPRINT:
         raise Failure("KNOWN_HOSTS_IDENTITY_MISMATCH","OPENSSH_IDENTITY")
     return ssh,known_hosts,identity
 
-def remote_guard(remote):
-    q=shlex.quote(remote)
-    return f"test -d {q} || exit 41; test ! -L {q} || exit 42; test \"$(stat -c %U -- {q})\" = {OWNER} || exit 43; test \"$(stat -c %a -- {q})\" = 700 || exit 44"
+REMOTE_CREATE_STAGING = """import os,stat,sys,tempfile
+try: directory=tempfile.mkdtemp(prefix='hioc-pe4-artifact-transfer-',dir='/tmp')
+except OSError: raise SystemExit(31)
+try: os.chmod(directory,0o700); descriptor=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+except OSError: raise SystemExit(32)
+try:
+    info=os.fstat(descriptor)
+    if not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode)!=0o700 or info.st_uid!=os.getuid(): raise SystemExit(33)
+    if os.listdir(descriptor): raise SystemExit(34)
+    os.fsync(descriptor)
+    print('|'.join((directory,str(info.st_dev),str(info.st_ino),str(info.st_uid),str(stat.S_IMODE(info.st_mode)))))
+finally: os.close(descriptor)
+"""
+
+REMOTE_IDENTITY_OPEN = """directory,dev_text,ino_text,uid_text,mode_text=sys.argv[1:6]
+try:
+    expected=(int(dev_text),int(ino_text),int(uid_text),int(mode_text))
+    directory_fd=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+except (OSError,ValueError): raise SystemExit(41)
+directory_info=os.fstat(directory_fd)
+actual=(directory_info.st_dev,directory_info.st_ino,directory_info.st_uid,stat.S_IMODE(directory_info.st_mode))
+if not stat.S_ISDIR(directory_info.st_mode) or actual!=expected or expected[2]!=os.getuid() or expected[3]!=0o700:
+    os.close(directory_fd); raise SystemExit(42)
+"""
 
 REMOTE_NO_REPLACE = """import ctypes,errno,os,stat,sys
-source,destination=sys.argv[1:3]
-try: source_info=os.lstat(source)
-except OSError: raise SystemExit(91)
-if not stat.S_ISREG(source_info.st_mode): raise SystemExit(92)
-try: os.lstat(destination)
+"""+REMOTE_IDENTITY_OPEN+"""source,destination=sys.argv[6:8]
+if '/' in source or '/' in destination or source not in ('.wheel.part','.lock.part','.result.tmp','.failure-result.tmp') or destination not in ('result.json','requirements-pe4.lock','websockets-16.1.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl'):
+    os.close(directory_fd); raise SystemExit(90)
+try: source_info=os.stat(source,dir_fd=directory_fd,follow_symlinks=False)
+except OSError: os.close(directory_fd); raise SystemExit(91)
+if not stat.S_ISREG(source_info.st_mode): os.close(directory_fd); raise SystemExit(92)
+try: os.stat(destination,dir_fd=directory_fd,follow_symlinks=False)
 except FileNotFoundError: pass
-except OSError: raise SystemExit(93)
-else: raise SystemExit(94)
+except OSError: os.close(directory_fd); raise SystemExit(93)
+else: os.close(directory_fd); raise SystemExit(94)
 libc=ctypes.CDLL(None,use_errno=True)
 renameat2=getattr(libc,'renameat2',None)
-if renameat2 is None: raise SystemExit(95)
+if renameat2 is None: os.close(directory_fd); raise SystemExit(95)
 renameat2.argtypes=(ctypes.c_int,ctypes.c_char_p,ctypes.c_int,ctypes.c_char_p,ctypes.c_uint)
 renameat2.restype=ctypes.c_int
-if renameat2(-100,os.fsencode(source),-100,os.fsencode(destination),1)!=0:
+if renameat2(directory_fd,os.fsencode(source),directory_fd,os.fsencode(destination),1)!=0:
     error=ctypes.get_errno()
+    os.close(directory_fd)
     raise SystemExit(96 if error in (errno.EEXIST,errno.ENOENT) else 97)
+os.fsync(directory_fd); os.close(directory_fd)
 """
 
 REMOTE_EXCLUSIVE_WRITE = """import base64,os,stat,sys
-directory,temporary,final,payload=sys.argv[1:5]
+"""+REMOTE_IDENTITY_OPEN+"""temporary,final,payload=sys.argv[6:9]
 if temporary not in ('.result.tmp','.failure-result.tmp') or final!='result.json': raise SystemExit(101)
-try: directory_fd=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
-except OSError: raise SystemExit(102)
-directory_info=os.fstat(directory_fd)
-if not stat.S_ISDIR(directory_info.st_mode) or stat.S_IMODE(directory_info.st_mode)!=0o700 or directory_info.st_uid!=os.getuid(): raise SystemExit(103)
 for path in (temporary,final):
     try: os.stat(path,dir_fd=directory_fd,follow_symlinks=False)
     except FileNotFoundError: pass
@@ -167,15 +189,10 @@ os.close(directory_fd)
 """
 
 REMOTE_EXCLUSIVE_INGRESS = """import hashlib,os,stat,sys
-directory,name,size_text,digest=sys.argv[1:5]
+"""+REMOTE_IDENTITY_OPEN+"""name,size_text,digest=sys.argv[6:9]
 if name not in ('.wheel.part','.lock.part'): raise SystemExit(131)
 size=int(size_text)
-flags=os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW
-try: directory_fd=os.open(directory,flags)
-except OSError: raise SystemExit(132)
 try:
-    directory_info=os.fstat(directory_fd)
-    if not stat.S_ISDIR(directory_info.st_mode) or stat.S_IMODE(directory_info.st_mode)!=0o700 or directory_info.st_uid!=os.getuid(): raise SystemExit(133)
     try: descriptor=os.open(name,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=directory_fd)
     except OSError: raise SystemExit(134)
     total=0; calculated=hashlib.sha256()
@@ -197,21 +214,12 @@ try:
 finally: os.close(directory_fd)
 """
 
-REMOTE_SOURCE_ABSENT = """import os,sys
-try: os.lstat(sys.argv[1])
-except FileNotFoundError: raise SystemExit(0)
-except OSError: raise SystemExit(111)
-raise SystemExit(112)
-"""
-
 REMOTE_EVIDENCE_PROBE = """import hashlib,os,stat,sys
-directory,temporary,final,digest=sys.argv[1:5]
+"""+REMOTE_IDENTITY_OPEN+"""temporary,final,digest=sys.argv[6:9]
 def entry(name,fd):
     try: return os.stat(name,dir_fd=fd,follow_symlinks=False)
     except FileNotFoundError: return None
     except OSError: return False
-try: directory_fd=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
-except OSError: print('UNCERTAIN'); raise SystemExit(0)
 try:
     temp_info=entry(temporary,directory_fd); final_info=entry(final,directory_fd)
     if temp_info is False or final_info is False:
@@ -234,52 +242,103 @@ try:
 finally: os.close(directory_fd)
 """
 
+REMOTE_ARTIFACT_VALIDATE = """import hashlib,os,stat,sys
+"""+REMOTE_IDENTITY_OPEN+"""name,size_text,digest=sys.argv[6:9]
+try:
+    info=os.stat(name,dir_fd=directory_fd,follow_symlinks=False)
+    if not stat.S_ISREG(info.st_mode) or info.st_uid!=os.getuid() or stat.S_IMODE(info.st_mode)!=0o600 or info.st_size!=int(size_text): raise SystemExit(151)
+    descriptor=os.open(name,os.O_RDONLY|os.O_NOFOLLOW,dir_fd=directory_fd)
+    calculated=hashlib.sha256()
+    try:
+        while True:
+            block=os.read(descriptor,65536)
+            if not block: break
+            calculated.update(block)
+        os.fsync(descriptor)
+    finally: os.close(descriptor)
+    if calculated.hexdigest()!=digest: raise SystemExit(152)
+    os.fsync(directory_fd)
+finally: os.close(directory_fd)
+"""
+
+REMOTE_ARTIFACT_CONFIRM = """import hashlib,os,stat,sys
+"""+REMOTE_IDENTITY_OPEN+"""source,final,size_text,digest=sys.argv[6:10]
+try:
+    try: os.stat(source,dir_fd=directory_fd,follow_symlinks=False)
+    except FileNotFoundError: pass
+    except OSError: raise SystemExit(161)
+    else: raise SystemExit(162)
+    info=os.stat(final,dir_fd=directory_fd,follow_symlinks=False)
+    if not stat.S_ISREG(info.st_mode) or info.st_uid!=os.getuid() or stat.S_IMODE(info.st_mode)!=0o600 or info.st_size!=int(size_text): raise SystemExit(163)
+    descriptor=os.open(final,os.O_RDONLY|os.O_NOFOLLOW,dir_fd=directory_fd); calculated=hashlib.sha256()
+    try:
+        while True:
+            block=os.read(descriptor,65536)
+            if not block: break
+            calculated.update(block)
+        os.fsync(descriptor)
+    finally: os.close(descriptor)
+    if calculated.hexdigest()!=digest: raise SystemExit(164)
+    os.fsync(directory_fd)
+finally: os.close(directory_fd)
+"""
+
 def remote_python(code,*arguments):
     return " ".join(map(shlex.quote,("/usr/bin/python3","-c",code,*arguments)))
 
-def no_replace_publish_command(remote,source,destination):
-    return remote_guard(remote)+"; "+remote_python(REMOTE_NO_REPLACE,source,destination)
+def identity_args(identity):
+    return tuple(map(str,identity))
 
-def source_absent_command(path):
-    return remote_python(REMOTE_SOURCE_ABSENT,path)
+def parse_staging_identity(output):
+    fields=output.strip().split("|")
+    if len(fields)!=5 or not TRANSFER_RE.fullmatch(fields[0]) or any(not re.fullmatch(r"[0-9]+",v) for v in fields[1:]):
+        raise Failure("REMOTE_STAGING_IDENTITY_INVALID","REMOTE_STAGING")
+    values=tuple(map(int,fields[1:]))
+    if values[2]<0 or values[3]!=0o700: raise Failure("REMOTE_STAGING_IDENTITY_INVALID","REMOTE_STAGING")
+    return (fields[0],*values)
 
-def ingress_command(remote,name,size,digest):
-    return remote_guard(remote)+"; "+remote_python(REMOTE_EXCLUSIVE_INGRESS,remote,name,str(size),digest)
+def no_replace_publish_command(identity,source,destination):
+    return remote_python(REMOTE_NO_REPLACE,*identity_args(identity),source,destination)
+
+def ingress_command(identity,name,size,digest):
+    return remote_python(REMOTE_EXCLUSIVE_INGRESS,*identity_args(identity),name,str(size),digest)
 
 def evidence_payload(states,result,code,stage):
     doc={"schema_version":"1.0","action":"PE-4.0B.2a-B",**{k.lower():states[k] for k in STATE_KEYS},"evidence_state":"AWAITING_CONFIRMATION","result":result,"error_code":code,"failure_stage":stage,"rollback_recommended":False}
     return json.dumps(doc,sort_keys=True,separators=(",",":"))+"\n"
 
-def evidence_prepare_command(remote,payload,temp_name):
+def evidence_prepare_command(identity,payload,temp_name):
     encoded=base64.b64encode(payload.encode("utf-8")).decode("ascii")
-    return remote_guard(remote)+"; "+remote_python(REMOTE_EXCLUSIVE_WRITE,remote,temp_name,"result.json",encoded)
+    return remote_python(REMOTE_EXCLUSIVE_WRITE,*identity_args(identity),temp_name,"result.json",encoded)
 
-def evidence_publish_command(remote,temp_name):
-    return no_replace_publish_command(remote,f"{remote}/{temp_name}",f"{remote}/result.json")
+def evidence_publish_command(identity,temp_name):
+    return no_replace_publish_command(identity,temp_name,"result.json")
 
-def evidence_confirm_command(remote,payload_sha256,temp_name):
-    return remote_guard(remote)+"; "+remote_python(REMOTE_EVIDENCE_PROBE,remote,temp_name,"result.json",payload_sha256)
+def evidence_confirm_command(identity,payload_sha256,temp_name):
+    return remote_python(REMOTE_EVIDENCE_PROBE,*identity_args(identity),temp_name,"result.json",payload_sha256)
 
-def artifact_confirm_command(remote,partial,final,size,digest):
-    qpartial,qfinal,qdir=map(shlex.quote,(partial,final,remote))
-    return remote_guard(remote)+f"; test -f {qfinal} || exit 121; test ! -L {qfinal} || exit 122; test \"$(stat -c %U -- {qfinal})\" = {OWNER} || exit 123; test \"$(stat -c %a -- {qfinal})\" = 600 || exit 124; test \"$(stat -c %s -- {qfinal})\" = {size} || exit 125; test \"$(sha256sum -- {qfinal} | cut -d' ' -f1)\" = {digest} || exit 126; sync -f {qfinal} || exit 127; sync -f {qdir} || exit 128; "+source_absent_command(partial)
+def artifact_validate_command(identity,name,size,digest):
+    return remote_python(REMOTE_ARTIFACT_VALIDATE,*identity_args(identity),name,str(size),digest)
 
-def publish_and_confirm(runner,ssh,remote,partial,final,size,digest,stage):
+def artifact_confirm_command(identity,partial,final,size,digest):
+    return remote_python(REMOTE_ARTIFACT_CONFIRM,*identity_args(identity),partial,final,str(size),digest)
+
+def publish_and_confirm(runner,ssh,identity,partial,final,size,digest,stage):
     try:
-        runner(ssh+[no_replace_publish_command(remote,partial,final)],stage+"_PUBLICATION",timeout=20,max_output=4096)
+        runner(ssh+[no_replace_publish_command(identity,partial,final)],stage+"_PUBLICATION",timeout=20,max_output=4096)
     except Failure:
-        runner(ssh+[artifact_confirm_command(remote,partial,final,size,digest)],stage+"_CONFIRMATION",timeout=20,max_output=4096)
+        runner(ssh+[artifact_confirm_command(identity,partial,final,size,digest)],stage+"_CONFIRMATION",timeout=20,max_output=4096)
         return
-    runner(ssh+[artifact_confirm_command(remote,partial,final,size,digest)],stage+"_CONFIRMATION",timeout=20,max_output=4096)
+    runner(ssh+[artifact_confirm_command(identity,partial,final,size,digest)],stage+"_CONFIRMATION",timeout=20,max_output=4096)
 
-def publish_evidence(runner,ssh,remote,states,result,code,stage,temp_name):
+def publish_evidence(runner,ssh,identity,states,result,code,stage,temp_name):
     payload=evidence_payload(states,result,code,stage)
     digest=hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    runner(ssh+[evidence_prepare_command(remote,payload,temp_name)],"EVIDENCE_PREPARATION",timeout=20,max_output=4096)
-    try: runner(ssh+[evidence_publish_command(remote,temp_name)],"EVIDENCE_RENAME",timeout=20,max_output=4096)
+    runner(ssh+[evidence_prepare_command(identity,payload,temp_name)],"EVIDENCE_PREPARATION",timeout=20,max_output=4096)
+    try: runner(ssh+[evidence_publish_command(identity,temp_name)],"EVIDENCE_RENAME",timeout=20,max_output=4096)
     except Failure: pass
     try:
-        confirmation=runner(ssh+[evidence_confirm_command(remote,digest,temp_name)],"EVIDENCE_CONFIRMATION",timeout=20,max_output=4096).stdout.strip()
+        confirmation=runner(ssh+[evidence_confirm_command(identity,digest,temp_name)],"EVIDENCE_CONFIRMATION",timeout=20,max_output=4096).stdout.strip()
     except Failure as exc:
         states["EVIDENCE_STATE"]="UNCERTAIN"
         raise Failure("EVIDENCE_PUBLICATION_UNCERTAIN",exc.stage)
@@ -289,32 +348,27 @@ def publish_evidence(runner,ssh,remote,states,result,code,stage,temp_name):
         raise Failure("EVIDENCE_NOT_PUBLISHED" if confirmation=="NOT_PUBLISHED" else "EVIDENCE_PUBLICATION_UNCERTAIN","EVIDENCE_CONFIRMATION")
 
 def execute(commit,runner=run_bounded,transport_validator=validate_local_transport):
-    states={k:False for k in STATE_KEYS}; states["EVIDENCE_STATE"]="NOT_PUBLISHED"; remote=""; evidence_attempted=False
+    states={k:False for k in STATE_KEYS}; states["EVIDENCE_STATE"]="NOT_PUBLISHED"; remote=""; staging_identity=None; evidence_attempted=False
     ssh_tool,known_hosts,identity=transport_validator(); options=transport_options(known_hosts,identity)
     ssh=[str(ssh_tool),*options,f"{OWNER}@{PI3_IPV4}"]
     try:
         wheel,lock=local_inputs(commit)
-        create=("umask 077; d=$(mktemp -d /tmp/hioc-pe4-artifact-transfer-XXXXXXXX) || exit 31; test -d \"$d\" || exit 32; test ! -L \"$d\" || exit 33; "+f"test \"$(stat -c %U -- \"$d\")\" = {OWNER} || exit 34; "+"test \"$(stat -c %a -- \"$d\")\" = 700 || exit 35; test -z \"$(find \"$d\" -mindepth 1 -maxdepth 1 -print -quit)\" || exit 36; printf '%s\\n' \"$d\"")
-        remote=runner(ssh+[create],"REMOTE_STAGING",timeout=15,max_output=4096).stdout.strip()
-        if not TRANSFER_RE.fullmatch(remote): raise Failure("REMOTE_STAGING_INVALID","REMOTE_STAGING")
+        staging_identity=parse_staging_identity(runner(ssh+[remote_python(REMOTE_CREATE_STAGING)],"REMOTE_STAGING",timeout=15,max_output=4096).stdout)
+        remote=staging_identity[0]
         states["REMOTE_STAGING_CREATED"]=True
-        runner(ssh+[ingress_command(remote,".wheel.part",WHEEL_SIZE,WHEEL_SHA256)],"WHEEL_TRANSFER",timeout=60,max_output=8192,stdin_path=wheel)
-        qpart=shlex.quote(f"{remote}/.wheel.part")
-        check=remote_guard(remote)+f"; test -f {qpart} || exit 51; test ! -L {qpart} || exit 52; chmod 600 {qpart} || exit 53; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 54; test \"$(stat -c %a -- {qpart})\" = 600 || exit 55; test \"$(stat -c %s -- {qpart})\" = {WHEEL_SIZE} || exit 56; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {WHEEL_SHA256} || exit 57; sync -f {qpart} || exit 58"
-        runner(ssh+[check],"REMOTE_ARTIFACT_PARTIAL",timeout=30,max_output=4096); states["WHEEL_TRANSFERRED"]=True
-        publish_and_confirm(runner,ssh,remote,f"{remote}/.wheel.part",f"{remote}/{WHEEL_NAME}",WHEEL_SIZE,WHEEL_SHA256,"REMOTE_ARTIFACT"); states["REMOTE_ARTIFACT_VERIFIED"]=True
-        runner(ssh+[ingress_command(remote,".lock.part",LOCAL_LOCK.stat().st_size,LOCK_SHA256)],"LOCK_TRANSFER",timeout=30,max_output=8192,stdin_path=lock)
-        qpart=shlex.quote(f"{remote}/.lock.part")
-        check=remote_guard(remote)+f"; test -f {qpart} || exit 61; test ! -L {qpart} || exit 62; chmod 600 {qpart} || exit 63; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 64; test \"$(stat -c %a -- {qpart})\" = 600 || exit 65; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {LOCK_SHA256} || exit 66; sync -f {qpart} || exit 67"
-        runner(ssh+[check],"REMOTE_LOCK_PARTIAL",timeout=20,max_output=4096); states["LOCK_TRANSFERRED"]=True
-        publish_and_confirm(runner,ssh,remote,f"{remote}/.lock.part",f"{remote}/requirements-pe4.lock",LOCAL_LOCK.stat().st_size,LOCK_SHA256,"REMOTE_LOCK"); states["REMOTE_LOCK_VERIFIED"]=True
-        evidence_attempted=True; publish_evidence(runner,ssh,remote,states,"PASS","NONE","COMPLETE",".result.tmp")
+        runner(ssh+[ingress_command(staging_identity,".wheel.part",WHEEL_SIZE,WHEEL_SHA256)],"WHEEL_TRANSFER",timeout=60,max_output=8192,stdin_path=wheel)
+        runner(ssh+[artifact_validate_command(staging_identity,".wheel.part",WHEEL_SIZE,WHEEL_SHA256)],"REMOTE_ARTIFACT_PARTIAL",timeout=30,max_output=4096); states["WHEEL_TRANSFERRED"]=True
+        publish_and_confirm(runner,ssh,staging_identity,".wheel.part",WHEEL_NAME,WHEEL_SIZE,WHEEL_SHA256,"REMOTE_ARTIFACT"); states["REMOTE_ARTIFACT_VERIFIED"]=True
+        runner(ssh+[ingress_command(staging_identity,".lock.part",LOCAL_LOCK.stat().st_size,LOCK_SHA256)],"LOCK_TRANSFER",timeout=30,max_output=8192,stdin_path=lock)
+        runner(ssh+[artifact_validate_command(staging_identity,".lock.part",LOCAL_LOCK.stat().st_size,LOCK_SHA256)],"REMOTE_LOCK_PARTIAL",timeout=20,max_output=4096); states["LOCK_TRANSFERRED"]=True
+        publish_and_confirm(runner,ssh,staging_identity,".lock.part","requirements-pe4.lock",LOCAL_LOCK.stat().st_size,LOCK_SHA256,"REMOTE_LOCK"); states["REMOTE_LOCK_VERIFIED"]=True
+        evidence_attempted=True; publish_evidence(runner,ssh,staging_identity,states,"PASS","NONE","COMPLETE",".result.tmp")
         return states,remote
     except Failure as exc:
-        if remote and states["REMOTE_STAGING_CREATED"] and not evidence_attempted:
+        if staging_identity and states["REMOTE_STAGING_CREATED"] and not evidence_attempted:
             try:
-                evidence_attempted=True; publish_evidence(runner,ssh,remote,states,"FAIL",exc.code,exc.stage,".failure-result.tmp")
-            except Failure: pass
+                evidence_attempted=True; publish_evidence(runner,ssh,staging_identity,states,"FAIL",exc.code,exc.stage,".failure-result.tmp")
+            except Failure: states["EVIDENCE_STATE"]="UNCERTAIN"
         exc.states,exc.remote=states,remote; raise
 
 def emit(states,result,code,stage,remote=""):

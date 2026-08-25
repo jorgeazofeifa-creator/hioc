@@ -1667,3 +1667,17 @@ PI3 known-host fingerprint without emitting key material. Evidence now reports
 `AWAITING_CONFIRMATION`, so loss of the independent confirmation channel does
 not falsely assert either confirmed success or definite absence. Action B
 remains blocked and unexecuted.
+
+# Decision: Bind every Action B command to the created staging inode
+
+The fresh post-publication review found that owner/mode/path validation could
+still adopt a same-account replacement directory. Action B now returns a
+bounded creation token containing path, device, inode, UID, and mode.
+Every later remote primitive opens that path with `O_DIRECTORY|O_NOFOLLOW`,
+uses `fstat`, and requires the complete token before touching a child. Child
+validation, ingress, no-replace publication, and evidence are descriptor
+relative. Identity loss preserves an uncertain state and never cleans or
+adopts the replacement. Runtime trust also requires exactly one numeric PI3
+known-host record and revalidates the governed ACL on `.ssh`, both keys, and
+`known_hosts`. Action B remains **BLOCKED / NOT EXECUTED** pending publication
+and a separate PI3 primitive preflight.

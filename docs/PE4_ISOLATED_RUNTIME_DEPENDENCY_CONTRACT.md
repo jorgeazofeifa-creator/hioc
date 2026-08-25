@@ -1,5 +1,14 @@
 # PE-4 Isolated Runtime and Dependency Contract
 
+Action B's invocation-owned staging identity is the tuple of its governed path,
+device, inode, UID, and mode `0700`. Each independent
+remote primitive must open the directory non-followingly, compare `fstat` to
+the complete tuple, and use descriptor-relative fixed child names. A pathname
+replacement is never equivalent, even with the same owner, mode, and expected
+bytes. Numeric PI3 trust requires exactly one accepted Ed25519 record. The
+Windows transport directory and all three material files must satisfy the
+shared protected, single-operator, full-control ACL validator at runtime.
+
 ## Status and authority
 
 This repository-only checkpoint governs the future PI3 runtime for the

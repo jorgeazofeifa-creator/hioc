@@ -1,5 +1,14 @@
 # PE-4.0B.2a Isolated Runtime Lifecycle
 
+The staging creation result includes bounded device, inode, UID, and mode
+identity. Every subsequent command independently opens the governed
+path with `O_DIRECTORY|O_NOFOLLOW`, verifies the complete tuple using `fstat`,
+and performs child operations relative to that descriptor. Replacement,
+renaming, inode mismatch, or indeterminate inspection blocks all state advance;
+no replacement directory is adopted or cleaned. Runtime preflight also applies
+the shared strict ACL validator to `.ssh`, both key files, and `known_hosts`,
+and accepts exactly one numeric PI3 host-key record.
+
 ## Authority and status
 
 This document governs repository-controlled execution of the already-selected
