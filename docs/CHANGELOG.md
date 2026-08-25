@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Corrected PE-4 Action B remote publication before execution. Wheel, lock, and
+  result evidence now use `renameat2(RENAME_NOREPLACE)` rather than ordinary
+  `mv`; every raced destination object is a collision. Evidence preparation is
+  exclusive and non-following. Normal and uncertain-error success both require
+  exact durable final confirmation plus proven consumption of the
+  invocation-owned source. A failed result attempt cannot publish a second,
+  contradictory result. Action B remains blocked and unexecuted.
+
 - Corrected the PE-4 Windows SSH identity public-record parser after the first
   governed production attempt failed safely. The pinned Windows OpenSSH
   generator emits its single public-key record with a CRLF terminator; the

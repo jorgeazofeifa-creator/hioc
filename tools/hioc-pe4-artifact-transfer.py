@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """PE-4.0B.2a-B: transfer the frozen wheel and lock to private PI3 staging."""
 from __future__ import annotations
-import hashlib, json, pathlib, re, shlex, sys
+import base64, hashlib, json, pathlib, re, shlex, sys
 from hioc_pe4_runtime_common import *
 
 TOOL_RELATIVE="tools/hioc-pe4-artifact-transfer.py"
@@ -47,21 +47,96 @@ def remote_guard(remote):
     q=shlex.quote(remote)
     return f"test -d {q} || exit 41; test ! -L {q} || exit 42; test \"$(stat -c %U -- {q})\" = {OWNER} || exit 43; test \"$(stat -c %a -- {q})\" = 700 || exit 44"
 
+REMOTE_NO_REPLACE = """import ctypes,errno,os,stat,sys
+source,destination=sys.argv[1:3]
+try: source_info=os.lstat(source)
+except OSError: raise SystemExit(91)
+if not stat.S_ISREG(source_info.st_mode): raise SystemExit(92)
+try: os.lstat(destination)
+except FileNotFoundError: pass
+except OSError: raise SystemExit(93)
+else: raise SystemExit(94)
+libc=ctypes.CDLL(None,use_errno=True)
+renameat2=getattr(libc,'renameat2',None)
+if renameat2 is None: raise SystemExit(95)
+renameat2.argtypes=(ctypes.c_int,ctypes.c_char_p,ctypes.c_int,ctypes.c_char_p,ctypes.c_uint)
+renameat2.restype=ctypes.c_int
+if renameat2(-100,os.fsencode(source),-100,os.fsencode(destination),1)!=0:
+    error=ctypes.get_errno()
+    raise SystemExit(96 if error in (errno.EEXIST,errno.ENOENT) else 97)
+"""
+
+REMOTE_EXCLUSIVE_WRITE = """import base64,os,stat,sys
+directory,temporary,final,payload=sys.argv[1:5]
+try: directory_info=os.lstat(directory)
+except OSError: raise SystemExit(101)
+if not stat.S_ISDIR(directory_info.st_mode): raise SystemExit(102)
+for path in (temporary,final):
+    try: os.lstat(path)
+    except FileNotFoundError: pass
+    except OSError: raise SystemExit(103)
+    else: raise SystemExit(104)
+try: nofollow=os.O_NOFOLLOW
+except AttributeError: raise SystemExit(105)
+flags=os.O_WRONLY|os.O_CREAT|os.O_EXCL|nofollow
+try: descriptor=os.open(temporary,flags,0o600)
+except OSError: raise SystemExit(106)
+try:
+    data=base64.b64decode(payload,validate=True)
+    view=memoryview(data)
+    while view:
+        written=os.write(descriptor,view)
+        if written<=0: raise OSError()
+        view=view[written:]
+    os.fchmod(descriptor,0o600)
+    os.fsync(descriptor)
+finally: os.close(descriptor)
+"""
+
+REMOTE_SOURCE_ABSENT = """import os,sys
+try: os.lstat(sys.argv[1])
+except FileNotFoundError: raise SystemExit(0)
+except OSError: raise SystemExit(111)
+raise SystemExit(112)
+"""
+
+def remote_python(code,*arguments):
+    return " ".join(map(shlex.quote,("/usr/bin/python3","-c",code,*arguments)))
+
+def no_replace_publish_command(remote,source,destination):
+    return remote_guard(remote)+"; "+remote_python(REMOTE_NO_REPLACE,source,destination)
+
+def source_absent_command(path):
+    return remote_python(REMOTE_SOURCE_ABSENT,path)
+
 def evidence_payload(states,result,code,stage):
     doc={"schema_version":"1.0","action":"PE-4.0B.2a-B",**{k.lower():states[k] for k in STATE_KEYS},"result":result,"error_code":code,"failure_stage":stage,"rollback_recommended":False}
     return json.dumps(doc,sort_keys=True,separators=(",",":"))+"\n"
 
 def evidence_prepare_command(remote,payload,temp_name):
-    qresult,qtemp=map(shlex.quote,(f"{remote}/result.json",f"{remote}/{temp_name}"))
-    return remote_guard(remote)+f"; test ! -e {qresult} || exit 71; test ! -e {qtemp} || exit 72; printf %s {shlex.quote(payload)} > {qtemp} || exit 73; chmod 600 {qtemp} || exit 74; sync -f {qtemp} || exit 75"
+    temporary,final=f"{remote}/{temp_name}",f"{remote}/result.json"
+    encoded=base64.b64encode(payload.encode("utf-8")).decode("ascii")
+    return remote_guard(remote)+"; "+remote_python(REMOTE_EXCLUSIVE_WRITE,remote,temporary,final,encoded)
 
 def evidence_publish_command(remote,temp_name):
-    qresult,qtemp=map(shlex.quote,(f"{remote}/result.json",f"{remote}/{temp_name}"))
-    return remote_guard(remote)+f"; test ! -e {qresult} || exit 76; test -f {qtemp} || exit 77; test ! -L {qtemp} || exit 78; mv -- {qtemp} {qresult} || exit 79"
+    return no_replace_publish_command(remote,f"{remote}/{temp_name}",f"{remote}/result.json")
 
-def evidence_confirm_command(remote,payload_sha256):
+def evidence_confirm_command(remote,payload_sha256,temp_name):
     qdir,qresult=map(shlex.quote,(remote,f"{remote}/result.json"))
-    return remote_guard(remote)+f"; test -f {qresult} || exit 81; test ! -L {qresult} || exit 82; test \"$(stat -c %U -- {qresult})\" = {OWNER} || exit 83; test \"$(stat -c %a -- {qresult})\" = 600 || exit 84; test \"$(sha256sum -- {qresult} | cut -d' ' -f1)\" = {payload_sha256} || exit 85; sync -f {qresult} || exit 86; sync -f {qdir} || exit 87"
+    temporary=f"{remote}/{temp_name}"
+    return remote_guard(remote)+f"; test -f {qresult} || exit 81; test ! -L {qresult} || exit 82; test \"$(stat -c %U -- {qresult})\" = {OWNER} || exit 83; test \"$(stat -c %a -- {qresult})\" = 600 || exit 84; test \"$(sha256sum -- {qresult} | cut -d' ' -f1)\" = {payload_sha256} || exit 85; sync -f {qresult} || exit 86; sync -f {qdir} || exit 87; "+source_absent_command(temporary)
+
+def artifact_confirm_command(remote,partial,final,size,digest):
+    qpartial,qfinal,qdir=map(shlex.quote,(partial,final,remote))
+    return remote_guard(remote)+f"; test -f {qfinal} || exit 121; test ! -L {qfinal} || exit 122; test \"$(stat -c %U -- {qfinal})\" = {OWNER} || exit 123; test \"$(stat -c %a -- {qfinal})\" = 600 || exit 124; test \"$(stat -c %s -- {qfinal})\" = {size} || exit 125; test \"$(sha256sum -- {qfinal} | cut -d' ' -f1)\" = {digest} || exit 126; sync -f {qfinal} || exit 127; sync -f {qdir} || exit 128; "+source_absent_command(partial)
+
+def publish_and_confirm(runner,ssh,remote,partial,final,size,digest,stage):
+    try:
+        runner(ssh+[no_replace_publish_command(remote,partial,final)],stage+"_PUBLICATION",timeout=20,max_output=4096)
+    except Failure:
+        runner(ssh+[artifact_confirm_command(remote,partial,final,size,digest)],stage+"_CONFIRMATION",timeout=20,max_output=4096)
+        return
+    runner(ssh+[artifact_confirm_command(remote,partial,final,size,digest)],stage+"_CONFIRMATION",timeout=20,max_output=4096)
 
 def publish_evidence(runner,ssh,remote,states,result,code,stage,temp_name):
     published={**states,"EVIDENCE_PUBLISHED":True}
@@ -71,12 +146,12 @@ def publish_evidence(runner,ssh,remote,states,result,code,stage,temp_name):
     try:
         runner(ssh+[evidence_publish_command(remote,temp_name)],"EVIDENCE_RENAME",timeout=20,max_output=4096)
     except Failure:
-        runner(ssh+[evidence_confirm_command(remote,digest)],"EVIDENCE_CONFIRMATION",timeout=20,max_output=4096)
+        runner(ssh+[evidence_confirm_command(remote,digest,temp_name)],"EVIDENCE_CONFIRMATION",timeout=20,max_output=4096)
         return
-    runner(ssh+[evidence_confirm_command(remote,digest)],"EVIDENCE_CONFIRMATION",timeout=20,max_output=4096)
+    runner(ssh+[evidence_confirm_command(remote,digest,temp_name)],"EVIDENCE_CONFIRMATION",timeout=20,max_output=4096)
 
 def execute(commit,runner=run_bounded,resolver=windows_openssh_tool,material_resolver=windows_openssh_material):
-    states={k:False for k in STATE_KEYS}; remote=""
+    states={k:False for k in STATE_KEYS}; remote=""; evidence_attempted=False
     known_hosts,identity=material_resolver(); options=transport_options(known_hosts,identity)
     ssh=[str(resolver("ssh")),*options,f"{OWNER}@{PI3_IPV4}"]; scp=[str(resolver("scp")),*options]
     try:
@@ -87,18 +162,20 @@ def execute(commit,runner=run_bounded,resolver=windows_openssh_tool,material_res
         states["REMOTE_STAGING_CREATED"]=True
         runner(scp+[str(wheel),f"{OWNER}@{PI3_IPV4}:{remote}/.wheel.part"],"WHEEL_TRANSFER",timeout=60,max_output=8192); states["WHEEL_TRANSFERRED"]=True
         runner(scp+[str(lock),f"{OWNER}@{PI3_IPV4}:{remote}/.lock.part"],"LOCK_TRANSFER",timeout=30,max_output=8192); states["LOCK_TRANSFERRED"]=True
-        qpart,qfinal=map(shlex.quote,(f"{remote}/.wheel.part",f"{remote}/{WHEEL_NAME}"))
-        check=remote_guard(remote)+f"; test -f {qpart} || exit 51; test ! -L {qpart} || exit 52; chmod 600 {qpart} || exit 53; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 54; test \"$(stat -c %a -- {qpart})\" = 600 || exit 55; test \"$(stat -c %s -- {qpart})\" = {WHEEL_SIZE} || exit 56; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {WHEEL_SHA256} || exit 57; test ! -e {qfinal} || exit 58; mv -- {qpart} {qfinal} || exit 59; sync -f {qfinal} || exit 60"
-        runner(ssh+[check],"REMOTE_ARTIFACT_IDENTITY",timeout=30,max_output=4096); states["REMOTE_ARTIFACT_VERIFIED"]=True
-        qpart,qfinal=map(shlex.quote,(f"{remote}/.lock.part",f"{remote}/requirements-pe4.lock"))
-        check=remote_guard(remote)+f"; test -f {qpart} || exit 61; test ! -L {qpart} || exit 62; chmod 600 {qpart} || exit 63; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 64; test \"$(stat -c %a -- {qpart})\" = 600 || exit 65; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {LOCK_SHA256} || exit 66; test ! -e {qfinal} || exit 67; mv -- {qpart} {qfinal} || exit 68; sync -f {qfinal} || exit 69"
-        runner(ssh+[check],"REMOTE_LOCK_IDENTITY",timeout=20,max_output=4096); states["REMOTE_LOCK_VERIFIED"]=True
-        publish_evidence(runner,ssh,remote,states,"PASS","NONE","COMPLETE",".result.tmp"); states["EVIDENCE_PUBLISHED"]=True
+        qpart=shlex.quote(f"{remote}/.wheel.part")
+        check=remote_guard(remote)+f"; test -f {qpart} || exit 51; test ! -L {qpart} || exit 52; chmod 600 {qpart} || exit 53; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 54; test \"$(stat -c %a -- {qpart})\" = 600 || exit 55; test \"$(stat -c %s -- {qpart})\" = {WHEEL_SIZE} || exit 56; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {WHEEL_SHA256} || exit 57; sync -f {qpart} || exit 58"
+        runner(ssh+[check],"REMOTE_ARTIFACT_PARTIAL",timeout=30,max_output=4096)
+        publish_and_confirm(runner,ssh,remote,f"{remote}/.wheel.part",f"{remote}/{WHEEL_NAME}",WHEEL_SIZE,WHEEL_SHA256,"REMOTE_ARTIFACT"); states["REMOTE_ARTIFACT_VERIFIED"]=True
+        qpart=shlex.quote(f"{remote}/.lock.part")
+        check=remote_guard(remote)+f"; test -f {qpart} || exit 61; test ! -L {qpart} || exit 62; chmod 600 {qpart} || exit 63; test \"$(stat -c %U -- {qpart})\" = {OWNER} || exit 64; test \"$(stat -c %a -- {qpart})\" = 600 || exit 65; test \"$(sha256sum -- {qpart} | cut -d' ' -f1)\" = {LOCK_SHA256} || exit 66; sync -f {qpart} || exit 67"
+        runner(ssh+[check],"REMOTE_LOCK_PARTIAL",timeout=20,max_output=4096)
+        publish_and_confirm(runner,ssh,remote,f"{remote}/.lock.part",f"{remote}/requirements-pe4.lock",LOCAL_LOCK.stat().st_size,LOCK_SHA256,"REMOTE_LOCK"); states["REMOTE_LOCK_VERIFIED"]=True
+        evidence_attempted=True; publish_evidence(runner,ssh,remote,states,"PASS","NONE","COMPLETE",".result.tmp"); states["EVIDENCE_PUBLISHED"]=True
         return states,remote
     except Failure as exc:
-        if remote and states["REMOTE_STAGING_CREATED"]:
+        if remote and states["REMOTE_STAGING_CREATED"] and not evidence_attempted:
             try:
-                publish_evidence(runner,ssh,remote,states,"FAIL",exc.code,exc.stage,".failure-result.tmp"); states["EVIDENCE_PUBLISHED"]=True
+                evidence_attempted=True; publish_evidence(runner,ssh,remote,states,"FAIL",exc.code,exc.stage,".failure-result.tmp"); states["EVIDENCE_PUBLISHED"]=True
             except Failure: pass
         exc.states,exc.remote=states,remote; raise
 

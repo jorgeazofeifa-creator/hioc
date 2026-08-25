@@ -1627,3 +1627,23 @@ generator's actual three-field record and governed comment rather than adding a
 synthetic field. The failed attempt published no key, requires no rollback, and
 does not authorize a retry until this correction is published and freshly
 prepared.
+
+# Decision: Require atomic no-replace publication and source consumption in Action B
+
+Action B may publish the wheel, lock, and `result.json` only with Linux
+`renameat2(RENAME_NOREPLACE)`. A non-following `lstat` rejects every existing
+destination entry before the atomic operation, while the kernel no-replace
+flag closes the race between inspection and rename. Ordinary `mv` and `mv -n`
+are not publication guarantees. Evidence temporary creation uses
+`O_CREAT|O_EXCL|O_NOFOLLOW` and refuses both an existing temporary name and an
+existing final name.
+
+Publication is accepted only after the exact final regular file, owner, mode,
+content identity, and durability confirm and the invocation-owned source is
+proven absent with non-following inspection. The same combined proof is
+required to reconcile a reported rename error. Thus an independently created
+identical final while the source remains is a collision, not success. No raced
+entry is overwritten or removed and an attempted result publication never
+chains a contradictory second result. Identity provisioning and PI3 public-key
+authorization remain **COMPLETE / PASS**; Action B remains **BLOCKED / NOT
+EXECUTED** during this repository-only correction.

@@ -279,3 +279,13 @@ single CRLF-terminated public record. The corrected release accepts that native
 terminator but rejects bare, embedded, or repeated line endings and malformed
 records, and parses the native commented derived-public record without a
 synthetic field. Retry requires correction publication and separate preparation.
+
+## PE-4 Action B remote publication gate
+
+The final wheel, lock, and `result.json` use Linux
+`renameat2(RENAME_NOREPLACE)` inside the private staging directory. Evidence
+temporary creation is `O_EXCL|O_NOFOLLOW`; all existing destination object
+types fail closed. Deployment state advances only after exact final metadata,
+identity, durability, and disappearance of the invocation-owned partial or
+temporary source confirm. A reported rename error uses the same proof and can
+never authorize overwrite, cleanup, or a contradictory result.

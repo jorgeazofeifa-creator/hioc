@@ -14,7 +14,9 @@ PE4_0B2A=NOT_STARTED
 PE4_0B2B=NOT_STARTED
 PE4_0C=NOT_STARTED
 ACTION_A=COMPLETE
-ACTION_B=BLOCKED_SSH_IDENTITY_FILE_MISSING
+WINDOWS_SSH_IDENTITY_PROVISIONING=COMPLETE_PASS
+PI3_PUBLIC_KEY_AUTHORIZATION=COMPLETE_PASS
+ACTION_B=BLOCKED_NOT_EXECUTED
 ```
 
 Every action is separately authorized, emits a bounded terminal result, and
@@ -33,6 +35,24 @@ stops. PASS never chains the next action.
 | PE-4.0B.2a-F | `tools/hioc-pe4-runtime-publish.py` | None | Exact client, versioned environment, and active pointer only |
 | PE-4.0B.2a-G | `tools/hioc-pe4-runtime-preflight.py` | None | None; complete credential-free runtime preflight only |
 | Rollback | `tools/hioc-pe4-runtime-rollback.py` | None | Atomic active-pointer restoration to a retained eligible environment only |
+
+## Action B publication boundary
+
+SCP writes only invocation-owned `.wheel.part` and `.lock.part` names. After
+their bounded identity checks, the tool publishes each final artifact through
+Linux `renameat2` with `RENAME_NOREPLACE`; an existing regular file, directory,
+symlink, dangling symlink, or any other directory entry is a collision. The
+tool never removes or replaces the collided entry. Publication is complete only
+after final filename, regular/non-symlink type, owner `jazofv1`, mode `0600`,
+size where governed, SHA-256, file/directory durability, and non-following
+absence of the partial source all confirm.
+
+Result-last evidence is prepared with `O_CREAT|O_EXCL|O_NOFOLLOW` after both its
+temporary and final names are observed absent. It uses the same no-replace
+publication and requires exact payload digest, metadata, durability, and
+temporary-source consumption. A reported rename error is reconciled by that
+complete proof only. Once evidence publication is attempted, failure cannot
+trigger a second result publication.
 
 The tools share `tools/hioc_pe4_runtime_common.py`. The shared module freezes
 paths, identities, modes, evidence fields, cleanup boundaries, exact installed

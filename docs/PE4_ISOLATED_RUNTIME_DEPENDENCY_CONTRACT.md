@@ -130,6 +130,16 @@ validates its DACL/reparse boundary and exact artifact/lock identities, uses
 bounded system OpenSSH, records partial states in result-last evidence,
 preserves its private PI3 directory, and stops.
 
+Remote publication is fail-closed and no-replace. The wheel, frozen lock, and
+result evidence are moved within the invocation-owned PI3 directory only by
+`renameat2(RENAME_NOREPLACE)`. Every destination entry detected by non-following
+inspection, including dangling links, is a collision; a race is rejected by
+the kernel operation. Evidence temporary creation is exclusive and
+non-following. Exact final identity and durability never suffice alone:
+publication also requires proof that the corresponding invocation source was
+consumed. No collision is deleted, replaced, or reconciled into a second
+result.
+
 The final transport gate does not inherit OpenSSH configuration or agent state.
 It pins numeric PI3 port 22, disables proxy/jump/canonicalization behavior, and
 uses fixed non-reparse current-profile `known_hosts` and `id_ed25519` files.

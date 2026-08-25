@@ -344,3 +344,13 @@ record terminator, retains every other identity gate, and carries a realistic
 Windows-output regression for both generated and derived records. It must not
 append a synthetic comment to the already-commented derived record. Publication
 alone does not authorize a retry.
+
+## PE-4 Action B no-replace release boundary
+
+Action B publication is complete only through Linux
+`renameat2(RENAME_NOREPLACE)`, exact final identity/durability confirmation,
+and proof that the invocation source was consumed. This applies independently
+to the wheel, lock, and result-last evidence. Existing or raced destination
+objects remain untouched; exclusive evidence creation cannot follow a link;
+and a result publication attempt never falls through to a second,
+contradictory result. This repository correction does not execute Action B.

@@ -1,5 +1,7 @@
 import importlib.util
+import base64
 import pathlib
+import shlex
 import subprocess
 import sys
 import io
@@ -22,11 +24,11 @@ provision_spec.loader.exec_module(PROVISION)
 class Runner:
     def __init__(self, fail_stage=None):
         self.calls = []
-        self.fail_stage = fail_stage
+        self.fail_stages = {fail_stage} if isinstance(fail_stage, str) else set(fail_stage or ())
 
     def __call__(self, command, stage, **kwargs):
         self.calls.append((command, stage, kwargs))
-        if stage == self.fail_stage:
+        if stage in self.fail_stages:
             raise ACTION_B.Failure("SIMULATED_FAILURE", stage)
         output = "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34\n" if stage == "REMOTE_STAGING" else ""
         return subprocess.CompletedProcess(command, 0, output, "")
@@ -56,7 +58,9 @@ class PE4ActionBTransferTests(unittest.TestCase):
         self.assertTrue(all("192.168.100.251" not in item for item in flattened))
         stages = [stage for _, stage, _ in runner.calls]
         self.assertEqual(stages, ["REMOTE_STAGING", "WHEEL_TRANSFER", "LOCK_TRANSFER",
-                                  "REMOTE_ARTIFACT_IDENTITY", "REMOTE_LOCK_IDENTITY",
+                                  "REMOTE_ARTIFACT_PARTIAL", "REMOTE_ARTIFACT_PUBLICATION",
+                                  "REMOTE_ARTIFACT_CONFIRMATION", "REMOTE_LOCK_PARTIAL",
+                                  "REMOTE_LOCK_PUBLICATION", "REMOTE_LOCK_CONFIRMATION",
                                   "EVIDENCE_PREPARATION", "EVIDENCE_RENAME",
                                   "EVIDENCE_CONFIRMATION"])
         self.assertNotIn("pip", " ".join(flattened))
@@ -76,9 +80,10 @@ class PE4ActionBTransferTests(unittest.TestCase):
         self.assertEqual([stage for _,stage,_ in runner.calls][-3:],
                          ["EVIDENCE_PREPARATION","EVIDENCE_RENAME","EVIDENCE_CONFIRMATION"])
         evidence = runner.calls[-3][0][-1]
-        self.assertIn('"wheel_transferred":true', evidence)
-        self.assertIn('"lock_transferred":false', evidence)
-        self.assertNotIn("SIMULATED_FAILURE\n", evidence)
+        payload = base64.b64decode(shlex.split(evidence)[-1], validate=True).decode("utf-8")
+        self.assertIn('"wheel_transferred":true', payload)
+        self.assertIn('"lock_transferred":false', payload)
+        self.assertNotIn("SIMULATED_FAILURE\n", payload)
         self.assertNotIn("rm ", evidence)
 
     def test_evidence_is_result_last_and_contains_only_bounded_state(self):
@@ -89,7 +94,12 @@ class PE4ActionBTransferTests(unittest.TestCase):
         publish = ACTION_B.evidence_publish_command("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",
                                                     ".failure-result.tmp")
         self.assertNotIn("mv --", prepare)
-        self.assertIn("mv --", publish)
+        self.assertNotIn("mv --", publish)
+        self.assertIn("O_EXCL", prepare)
+        self.assertIn("O_NOFOLLOW", prepare)
+        self.assertIn("os.lstat(path)", prepare)
+        self.assertIn("renameat2", publish)
+        self.assertIn("destination),1", publish)
         command = prepare + publish
         for forbidden in ("token", "credential", "Authorization", "manufacturer", "inventory"):
             self.assertNotIn(forbidden, command)
@@ -142,6 +152,115 @@ class PE4ActionBTransferTests(unittest.TestCase):
         self.assertTrue(states["EVIDENCE_PUBLISHED"])
         self.assertEqual([stage for _,stage,_ in runner.calls][-2:],
                          ["EVIDENCE_RENAME","EVIDENCE_CONFIRMATION"])
+        self.assertIn("os.lstat(sys.argv[1])", runner.calls[-1][0][-1])
+
+    @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
+    def test_artifact_rename_failure_requires_final_identity_and_consumed_source(self, _inputs):
+        runner = Runner("REMOTE_ARTIFACT_PUBLICATION")
+        states, _ = ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
+            material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
+        self.assertTrue(states["REMOTE_ARTIFACT_VERIFIED"])
+        command = next(call[-1] for call,stage,_ in runner.calls
+                       if stage == "REMOTE_ARTIFACT_CONFIRMATION")
+        for required in (ACTION_B.WHEEL_NAME, ACTION_B.WHEEL_SHA256, "stat -c %s",
+                         "stat -c %U", "stat -c %a", "os.lstat(sys.argv[1])"):
+            self.assertIn(str(required), command)
+
+    @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
+    def test_retained_artifact_partial_or_bad_final_fails_closed(self, _inputs):
+        runner = Runner(("REMOTE_ARTIFACT_PUBLICATION", "REMOTE_ARTIFACT_CONFIRMATION"))
+        with self.assertRaises(ACTION_B.Failure) as caught:
+            ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
+                material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
+        self.assertFalse(caught.exception.states["REMOTE_ARTIFACT_VERIFIED"])
+
+    def test_all_publications_use_atomic_no_replace_and_never_delete_collisions(self):
+        source = (TOOLS / "hioc-pe4-artifact-transfer.py").read_text(encoding="utf-8")
+        for destination in ("WHEEL_NAME", "requirements-pe4.lock", "result.json"):
+            self.assertIn(destination, source)
+        for forbidden in ("mv --", "mv -n", "unlink(", "os.remove", "rm -", "shutil.rmtree"):
+            self.assertNotIn(forbidden, source)
+        self.assertIn("renameat2", ACTION_B.REMOTE_NO_REPLACE)
+        self.assertIn("os.lstat(destination)", ACTION_B.REMOTE_NO_REPLACE)
+        self.assertIn("else: raise SystemExit(94)", ACTION_B.REMOTE_NO_REPLACE)
+        self.assertIn("errno.EEXIST", ACTION_B.REMOTE_NO_REPLACE)
+
+    def test_every_existing_destination_object_is_a_collision(self):
+        # lstat observes regular files, directories, symlinks, dangling symlinks,
+        # and other directory entries without following them; every success exits 94.
+        contract = ACTION_B.REMOTE_NO_REPLACE
+        for hostile_kind in ("regular", "directory", "symlink", "dangling-symlink", "other"):
+            with self.subTest(hostile_kind=hostile_kind):
+                self.assertLess(contract.index("os.lstat(destination)"),
+                                contract.index("else: raise SystemExit(94)"))
+
+    def test_destination_raced_in_after_absence_check_is_rejected_atomically(self):
+        contract = ACTION_B.REMOTE_NO_REPLACE
+        self.assertLess(contract.index("os.lstat(destination)"), contract.index("renameat2("))
+        self.assertIn("renameat2(-100,os.fsencode(source),-100,os.fsencode(destination),1)", contract)
+        self.assertIn("errno.EEXIST", contract)
+        self.assertNotIn("replace(", contract)
+
+    def test_wheel_lock_and_result_publication_commands_are_no_replace(self):
+        remote = "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34"
+        commands = (
+            ACTION_B.no_replace_publish_command(remote, remote+"/.wheel.part", remote+"/"+ACTION_B.WHEEL_NAME),
+            ACTION_B.no_replace_publish_command(remote, remote+"/.lock.part", remote+"/requirements-pe4.lock"),
+            ACTION_B.evidence_publish_command(remote, ".result.tmp"),
+        )
+        for command in commands:
+            self.assertIn("renameat2", command)
+            self.assertIn("os.lstat(destination)", command)
+            self.assertNotIn("mv ", command)
+
+    def test_evidence_confirmation_requires_exact_final_and_consumed_temporary(self):
+        command = ACTION_B.evidence_confirm_command(
+            "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34", "f" * 64, ".result.tmp")
+        for required in ("result.json", "sha256sum", "stat -c %U", "stat -c %a",
+                         "sync -f", ".result.tmp", "os.lstat(sys.argv[1])"):
+            self.assertIn(required, command)
+
+    def test_wrong_final_digest_or_unsafe_metadata_cannot_confirm(self):
+        artifact = ACTION_B.artifact_confirm_command(
+            "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34", "/tmp/x/.wheel.part",
+            "/tmp/x/final.whl", 123, "a" * 64)
+        evidence = ACTION_B.evidence_confirm_command(
+            "/tmp/hioc-pe4-artifact-transfer-Ab12Cd34", "b" * 64, ".result.tmp")
+        for command in (artifact, evidence):
+            self.assertIn("test -f", command)
+            self.assertIn("test ! -L", command)
+            self.assertIn("stat -c %U", command)
+            self.assertIn("stat -c %a", command)
+            self.assertIn("sha256sum", command)
+        self.assertIn("stat -c %s", artifact)
+
+    def test_unrelated_remote_content_is_never_removed_or_enumerated(self):
+        source = (TOOLS / "hioc-pe4-artifact-transfer.py").read_text(encoding="utf-8")
+        for forbidden in ("rm --", "rm -rf", "unlink", "rmdir", "find \"$d\" -delete"):
+            self.assertNotIn(forbidden, source)
+
+    @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
+    def test_identical_independent_final_with_retained_evidence_temp_fails_closed(self, _inputs):
+        runner = Runner(("EVIDENCE_RENAME", "EVIDENCE_CONFIRMATION"))
+        with self.assertRaises(ACTION_B.Failure) as caught:
+            ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
+                material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
+        self.assertFalse(caught.exception.states["EVIDENCE_PUBLISHED"])
+        stages = [stage for _,stage,_ in runner.calls]
+        self.assertEqual(stages.count("EVIDENCE_PREPARATION"), 1)
+        self.assertEqual(stages.count("EVIDENCE_RENAME"), 1)
+
+    @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
+    def test_failed_pass_evidence_does_not_publish_contradictory_failure_result(self, _inputs):
+        runner = Runner("EVIDENCE_CONFIRMATION")
+        with self.assertRaises(ACTION_B.Failure):
+            ACTION_B.execute("a" * 40, runner=runner, resolver=lambda name: pathlib.Path(name),
+                material_resolver=lambda: (pathlib.Path("known_hosts"),pathlib.Path("id_ed25519")))
+        evidence_stages = [stage for _,stage,_ in runner.calls if stage.startswith("EVIDENCE_")]
+        self.assertEqual(evidence_stages,
+                         ["EVIDENCE_PREPARATION", "EVIDENCE_RENAME", "EVIDENCE_CONFIRMATION"])
+        joined = "\n".join(call[-1] for call,stage,_ in runner.calls if stage.startswith("EVIDENCE_"))
+        self.assertNotIn(".failure-result.tmp", joined)
 
     @mock.patch.object(ACTION_B, "local_inputs", return_value=(pathlib.Path("C:/cache/wheel.whl"), pathlib.Path("C:/repo/requirements-pe4.lock")))
     def test_unconfirmed_evidence_never_sets_terminal_publication_state(self, _inputs):

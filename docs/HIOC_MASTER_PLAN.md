@@ -1,5 +1,19 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a Action B remote publication correction
+
+Fresh Action B preparation found that temporary evidence creation could follow
+a raced link and that ordinary `mv` could replace a destination raced into
+place. Wheel, lock, and result publication now use the governed Linux
+`renameat2(RENAME_NOREPLACE)` primitive. Evidence creation uses exclusive,
+non-following creation. Every success path, including rename-error
+reconciliation, requires the exact durable final object and true non-following
+absence of the invocation-owned source. Collisions are preserved without
+overwrite, deletion, or a second result attempt. Action A, Windows SSH identity
+provisioning, and PI3 public-key authorization remain **COMPLETE / PASS**.
+Action B remains **BLOCKED / NOT EXECUTED**; Action C, Actions D-G,
+PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain **NOT STARTED**.
+
 ## PE-4.0B.2a SSH identity evidence-lifecycle correction
 
 Execution preparation found the **PE-4 WINDOWS SSH IDENTITY PROVISIONING

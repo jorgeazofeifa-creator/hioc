@@ -800,6 +800,16 @@ It independently verifies the fixed cache and preserves its PI3 transfer
 directory on every post-creation outcome. Return every bounded state marker and
 `TRANSFER_DIRECTORY`, then STOP; never chain cleanup, route proof, or install.
 
+Do not manually move, rename, delete, or reconcile Action B remote content.
+The tool exclusively creates its result temporary file with no-follow semantics
+and publishes the wheel, lock, and result with
+`renameat2(RENAME_NOREPLACE)`. Every destination entry is a collision. Accept a
+normal return or uncertain rename error only when the exact final object and
+durability confirm and the invocation-owned source is absent under
+non-following inspection. Retained source state, wrong content or metadata, or
+indeterminate absence requires STOP with the preserved transfer directory.
+After any result publication attempt, no second result may be attempted.
+
 Do not add SSH config, proxy, jump-host, identity, or known-host overrides around
 Action B. The tool deliberately reads no SSH configuration and uses only the
 fixed current-profile `.ssh/known_hosts` and `.ssh/id_ed25519` after rejecting
