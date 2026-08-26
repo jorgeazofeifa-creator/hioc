@@ -314,6 +314,122 @@ if($actual.PropagationFlags -ne [Security.AccessControl.PropagationFlags]::None)
         }, env=environment)
 
 
+WINDOWS_SYSTEM_SID = "S-1-5-18"
+WINDOWS_ADMINISTRATORS_SID = "S-1-5-32-544"
+WINDOWS_FULL_CONTROL = 2032127
+WINDOWS_MODIFY_SYNCHRONIZE = 1245631
+
+
+def validate_windows_ssh_acl_policy(role: str, metadata: dict) -> None:
+    """Validate sanitized Windows SSH ACL metadata without changing the ACL."""
+    if role not in {"directory", "known_hosts", "key"} or not isinstance(metadata, dict):
+        raise Failure("SSH_ACL_METADATA_INVALID", "OPENSSH_IDENTITY")
+    current = metadata.get("current_sid")
+    owner = metadata.get("owner_sid")
+    rules = metadata.get("rules")
+    if (not isinstance(current, str) or not current.startswith("S-")
+            or not isinstance(owner, str) or not isinstance(rules, list)
+            or not isinstance(metadata.get("protected"), bool)
+            or not isinstance(metadata.get("is_directory"), bool)
+            or not isinstance(metadata.get("reparse"), bool) or len(rules) > 8):
+        raise Failure("SSH_ACL_METADATA_INVALID", "OPENSSH_IDENTITY")
+    expected_directory = role == "directory"
+    if metadata["is_directory"] != expected_directory:
+        raise Failure("SSH_ACL_OBJECT_TYPE_INVALID", "OPENSSH_IDENTITY")
+    if metadata["reparse"]:
+        raise Failure("SSH_ACL_REPARSE_POINT", "OPENSSH_IDENTITY")
+    if role == "directory":
+        allowed_owners = {current, WINDOWS_ADMINISTRATORS_SID}
+        expected_protected = False
+        expected = {
+            current: (WINDOWS_FULL_CONTROL, True, 3),
+            WINDOWS_SYSTEM_SID: (WINDOWS_FULL_CONTROL, True, 3),
+            WINDOWS_ADMINISTRATORS_SID: (WINDOWS_FULL_CONTROL, True, 3),
+        }
+    elif role == "known_hosts":
+        allowed_owners = {current}
+        expected_protected = True
+        expected = {
+            current: (WINDOWS_MODIFY_SYNCHRONIZE, False, 0),
+            WINDOWS_SYSTEM_SID: (WINDOWS_FULL_CONTROL, False, 0),
+            WINDOWS_ADMINISTRATORS_SID: (WINDOWS_FULL_CONTROL, False, 0),
+        }
+    else:
+        allowed_owners = {current}
+        expected_protected = True
+        expected = {current: (WINDOWS_FULL_CONTROL, False, 0)}
+    if owner not in allowed_owners:
+        raise Failure("SSH_ACL_OWNER_INVALID", "OPENSSH_IDENTITY")
+    if metadata["protected"] != expected_protected:
+        raise Failure("SSH_ACL_PROTECTION_INVALID", "OPENSSH_IDENTITY")
+    if len(rules) != len(expected):
+        raise Failure("SSH_ACL_RULE_COUNT_INVALID", "OPENSSH_IDENTITY")
+    seen = set()
+    for rule in rules:
+        if not isinstance(rule, dict) or set(rule) != {
+                "sid", "allow", "rights", "inherited", "inheritance", "propagation"}:
+            raise Failure("SSH_ACL_RULE_INVALID", "OPENSSH_IDENTITY")
+        sid = rule.get("sid")
+        if sid not in expected or sid in seen:
+            raise Failure("SSH_ACL_PRINCIPAL_INVALID", "OPENSSH_IDENTITY")
+        seen.add(sid)
+        if rule.get("allow") is not True:
+            raise Failure("SSH_ACL_DENY_RULE", "OPENSSH_IDENTITY")
+        rights, inherited, inheritance = expected[sid]
+        if rule.get("rights") != rights:
+            raise Failure("SSH_ACL_RIGHTS_INVALID", "OPENSSH_IDENTITY")
+        if rule.get("inherited") is not inherited:
+            raise Failure("SSH_ACL_INHERITED_STATE_INVALID", "OPENSSH_IDENTITY")
+        if rule.get("inheritance") != inheritance:
+            raise Failure("SSH_ACL_INHERITANCE_INVALID", "OPENSSH_IDENTITY")
+        if rule.get("propagation") != 0:
+            raise Failure("SSH_ACL_PROPAGATION_INVALID", "OPENSSH_IDENTITY")
+
+
+def validate_windows_ssh_acl(path: pathlib.Path, role: str, *, runner=None) -> None:
+    """Read bounded, SID-only ACL metadata and apply the role-specific policy."""
+    script = r'''$p=$env:HIOC_PE4_ACL_PATH
+try {
+  $attributes=[IO.File]::GetAttributes($p)
+  $isDirectory=($attributes -band [IO.FileAttributes]::Directory) -ne 0
+  $reparse=($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0
+  $item=if($isDirectory){[IO.DirectoryInfo]::new($p)}else{[IO.FileInfo]::new($p)}
+  $section=[Security.AccessControl.AccessControlSections]::Owner -bor [Security.AccessControl.AccessControlSections]::Access
+  $acl=$item.GetAccessControl($section)
+  $current=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+  $owner=$acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
+  $rules=@($acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]) | ForEach-Object {
+    [ordered]@{sid=$_.IdentityReference.Value;allow=$_.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow;rights=[int]$_.FileSystemRights;inherited=[bool]$_.IsInherited;inheritance=[int]$_.InheritanceFlags;propagation=[int]$_.PropagationFlags}
+  })
+  [ordered]@{current_sid=$current;owner_sid=$owner;protected=[bool]$acl.AreAccessRulesProtected;is_directory=[bool]$isDirectory;reparse=[bool]$reparse;rules=$rules} | ConvertTo-Json -Compress -Depth 4
+} catch { exit 31 }'''
+    runner = run_bounded if runner is None else runner
+    environment = os.environ.copy()
+    environment["HIOC_PE4_ACL_PATH"] = str(path)
+    result = runner(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+                    "OPENSSH_IDENTITY", timeout=15, max_output=16384,
+                    failure_codes={31: "SSH_ACL_READ_FAILED"}, env=environment)
+    if len(result.stdout) > 16384:
+        raise Failure("SSH_ACL_METADATA_INVALID", "OPENSSH_IDENTITY")
+    try:
+        metadata = json.loads(result.stdout)
+    except (TypeError, json.JSONDecodeError):
+        raise Failure("SSH_ACL_METADATA_INVALID", "OPENSSH_IDENTITY")
+    validate_windows_ssh_acl_policy(role, metadata)
+
+
+def validate_windows_ssh_directory_acl(path: pathlib.Path) -> None:
+    validate_windows_ssh_acl(path, "directory")
+
+
+def validate_windows_known_hosts_acl(path: pathlib.Path) -> None:
+    validate_windows_ssh_acl(path, "known_hosts")
+
+
+def validate_windows_ssh_key_acl(path: pathlib.Path) -> None:
+    validate_windows_ssh_acl(path, "key")
+
+
 def verify_pi3() -> None:
     import getpass, socket
     if socket.gethostname().split(".", 1)[0] != PI3_HOST or getpass.getuser() != OWNER:
@@ -382,12 +498,13 @@ def run(command: list[str], stage: str, *, timeout: int = 60, capture: bool = Tr
 def run_bounded(command: list[str], stage: str, *, timeout: int,
                 max_output: int = 65536,
                 failure_codes: dict[int, str] | None = None,
-                stdin_path: pathlib.Path | None = None) -> subprocess.CompletedProcess[str]:
+                stdin_path: pathlib.Path | None = None,
+                env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     source = None
     try:
         source = stdin_path.open("rb") if stdin_path is not None else subprocess.DEVNULL
         process = subprocess.Popen(command, stdin=source, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+                                   stderr=subprocess.PIPE, env=env)
     except OSError:
         if source not in (None, subprocess.DEVNULL): source.close()
         raise Failure("COMMAND_INVOCATION_FAILED", stage)

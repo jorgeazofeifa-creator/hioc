@@ -1,5 +1,10 @@
 # HIOC Release Process
 
+Action B release identity includes three independent, read-only Windows SSH ACL
+contracts: the shared `.ssh` compatibility layout, the protected `known_hosts`
+trust-file layout, and the strict protected dedicated-key layout. Publication
+does not normalize workstation ACLs or authorize Action B execution.
+
 The Action B staging-identity/known-host/ACL correction must be published before
 any new execution review. Publication alone does not authorize Action B. A
 separate read-only PI3 preflight must then verify Python, filesystem flags,

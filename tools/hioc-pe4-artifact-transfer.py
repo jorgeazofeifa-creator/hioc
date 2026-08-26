@@ -70,7 +70,10 @@ def _fingerprint_record(output,code):
 
 def validate_local_transport(resolver=windows_openssh_tool,runner=run_bounded,
                              operator_resolver=getpass.getuser,profile_resolver=windows_profile_root,
-                             hasher=sha256,acl_validator=validate_workstation_path_acl):
+                             hasher=sha256,
+                             directory_acl_validator=validate_windows_ssh_directory_acl,
+                             known_hosts_acl_validator=validate_windows_known_hosts_acl,
+                             key_acl_validator=validate_windows_ssh_key_acl):
     if os.name!="nt" or operator_resolver()!=EXPECTED_WINDOWS_OPERATOR:
         raise Failure("WINDOWS_OPERATOR_MISMATCH","OPENSSH_IDENTITY")
     profile=profile_resolver()
@@ -85,7 +88,10 @@ def validate_local_transport(resolver=windows_openssh_tool,runner=run_bounded,
         expected=stat.S_ISDIR(info.st_mode) if index==0 else stat.S_ISREG(info.st_mode)
         if not expected or path.is_symlink() or windows_reparse_point(path) or (index and info.st_size<=0):
             raise Failure("OPENSSH_MATERIAL_UNSAFE","OPENSSH_IDENTITY")
-        acl_validator(path,index==0)
+    directory_acl_validator(ssh_directory)
+    known_hosts_acl_validator(paths[1])
+    key_acl_validator(paths[2])
+    key_acl_validator(paths[3])
     known_hosts,identity,public=paths[1:]
     ssh,keygen=resolver("ssh"),resolver("ssh-keygen")
     if hasher(ssh)!=SSH_CLIENT_SHA256 or hasher(keygen)!=SSH_KEYGEN_SHA256:

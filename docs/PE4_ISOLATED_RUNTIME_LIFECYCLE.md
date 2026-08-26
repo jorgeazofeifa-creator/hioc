@@ -5,9 +5,11 @@ identity. Every subsequent command independently opens the governed
 path with `O_DIRECTORY|O_NOFOLLOW`, verifies the complete tuple using `fstat`,
 and performs child operations relative to that descriptor. Replacement,
 renaming, inode mismatch, or indeterminate inspection blocks all state advance;
-no replacement directory is adopted or cleaned. Runtime preflight also applies
-the shared strict ACL validator to `.ssh`, both key files, and `known_hosts`,
-and accepts exactly one numeric PI3 host-key record.
+no replacement directory is adopted or cleaned. Runtime preflight applies
+role-specific, read-only Windows ACL validation: `.ssh` must have its governed
+inherited compatibility layout; `known_hosts` its governed protected trust-file
+layout; and both dedicated keys the strict protected private-object layout.
+It also accepts exactly one numeric PI3 host-key record.
 
 ## Authority and status
 

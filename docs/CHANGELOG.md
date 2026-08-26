@@ -1,5 +1,10 @@
 # HIOC Changelog
 
+- Corrected PE-4 Action B's Windows SSH ACL preflight. Shared `.ssh`, protected
+  `known_hosts`, and dedicated key files now use independent fail-closed
+  ownership and ACE policies derived from the reviewed Windows layouts. No live
+  ACL or SSH material was changed; Action B remains blocked and unexecuted.
+
 - Corrected PE-4 Action B so every independent SSH command proves the exact
   staging device/inode/UID/mode identity before descriptor-relative child
   access; duplicate numeric host records and unsafe SSH-material ACLs now fail

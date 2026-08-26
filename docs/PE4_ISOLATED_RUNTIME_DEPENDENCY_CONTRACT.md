@@ -6,8 +6,14 @@ remote primitive must open the directory non-followingly, compare `fstat` to
 the complete tuple, and use descriptor-relative fixed child names. A pathname
 replacement is never equivalent, even with the same owner, mode, and expected
 bytes. Numeric PI3 trust requires exactly one accepted Ed25519 record. The
-Windows transport directory and all three material files must satisfy the
-shared protected, single-operator, full-control ACL validator at runtime.
+Windows transport material is validated by role. The shared `.ssh` directory
+must be non-reparse, owned by the current operator or Administrators, inherit
+only FullControl Allow ACEs for SYSTEM, Administrators, and the current
+operator, and have no other ACE. The protected `known_hosts` file must be owned
+by the current operator and contain only explicit SYSTEM/Administrators
+FullControl plus current-operator Modify/Synchronize Allow ACEs. Each dedicated
+key remains protected, current-operator-owned, and governed by exactly one
+explicit current-operator FullControl Allow ACE.
 
 ## Status and authority
 

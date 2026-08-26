@@ -1,5 +1,19 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a Action B Windows SSH ACL compatibility correction
+
+Read-only workstation forensics proved that Action B incorrectly applied the
+HIOC private-object ACL model to shared Windows OpenSSH objects. The corrected
+preflight now uses three fail-closed roles: `.ssh` accepts only the governed
+inherited SYSTEM, Administrators, and current-operator FullControl layout;
+`known_hosts` accepts only the governed protected explicit SYSTEM and
+Administrators FullControl plus current-operator Modify/Synchronize layout;
+and both dedicated key files retain the protected, explicit,
+current-operator-only FullControl model. Ownership, object type, reparse state,
+ACE principals, rights, inheritance, and propagation are independently checked
+for every role. No ACL is normalized or changed. Action B remains **BLOCKED /
+NOT EXECUTED** and the PI3 primitive preflight remains **NOT STARTED**.
+
 ## PE-4.0B.2a Action B invocation-identity correction
 
 Fresh readiness review found whole-directory substitution, duplicate numeric

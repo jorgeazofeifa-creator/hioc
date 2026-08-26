@@ -4,8 +4,10 @@ Action B fails closed if the staging pathname no longer resolves to its exact
 creation-time device, inode, UID, and mode. Do not search for, adopt,
 or clean a renamed or substituted directory. Treat failed identity proof as
 ambiguous and preserve it for a separately authorized investigation. Duplicate
-numeric PI3 known-host records or any ACL deviation on `.ssh`, `known_hosts`,
-`id_ed25519`, or `id_ed25519.pub` are preflight failures, not repair requests.
+numeric PI3 known-host records or any role-specific ACL deviation on `.ssh`,
+`known_hosts`, `id_ed25519`, or `id_ed25519.pub` are preflight failures, not
+repair requests. Operators must not force shared OpenSSH objects into the HIOC
+private-object ACL model.
 
 The PE-4 authenticated client is an HIOC consumer on PI3 NUT&PIHOLE; PI5 HA is
 only the remote API endpoint. Before credentials, a future local, network-free

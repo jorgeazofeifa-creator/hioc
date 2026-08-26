@@ -5,7 +5,10 @@ the bounded creation token, and every ingress, validation, publication, and
 evidence command must match it through `open(O_DIRECTORY|O_NOFOLLOW)` plus
 `fstat`. Any mismatch blocks deployment and is preserved without cleanup. The
 fixed numeric host trust must contain exactly one accepted record, and Windows
-SSH-material ACL validation is mandatory before SSH starts.
+SSH-material ACL validation is mandatory before SSH starts. It is
+role-specific: shared `.ssh` inheritance, the protected `known_hosts` trust
+file, and protected dedicated keys each have an independent ownership and ACE
+contract. Validation is read-only and never normalizes a live ACL.
 
 PE-4 client execution is governed on PI3, not in the PI5 Home Assistant
 Terminal add-on. `/home/jazofv1/hioc-release-source` remains authoritative clean

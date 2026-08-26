@@ -25,6 +25,38 @@ provision_spec.loader.exec_module(PROVISION)
 def fake_transport():
     return pathlib.Path("ssh.exe"), pathlib.Path("known_hosts"), pathlib.Path("id_ed25519")
 
+def no_acl(_path):
+    return None
+
+def acl_metadata(role, *, current="S-1-12-1-1", owner=None):
+    full=ACTION_B.WINDOWS_FULL_CONTROL
+    if role=="directory":
+        owner=owner or ACTION_B.WINDOWS_ADMINISTRATORS_SID
+        rules=[
+            {"sid":sid,"allow":True,"rights":full,"inherited":True,
+             "inheritance":3,"propagation":0}
+            for sid in (ACTION_B.WINDOWS_SYSTEM_SID,
+                        ACTION_B.WINDOWS_ADMINISTRATORS_SID,current)]
+        return {"current_sid":current,"owner_sid":owner,"protected":False,
+                "is_directory":True,"reparse":False,"rules":rules}
+    if role=="known_hosts":
+        owner=owner or current
+        rules=[
+            {"sid":ACTION_B.WINDOWS_SYSTEM_SID,"allow":True,"rights":full,
+             "inherited":False,"inheritance":0,"propagation":0},
+            {"sid":ACTION_B.WINDOWS_ADMINISTRATORS_SID,"allow":True,"rights":full,
+             "inherited":False,"inheritance":0,"propagation":0},
+            {"sid":current,"allow":True,"rights":ACTION_B.WINDOWS_MODIFY_SYNCHRONIZE,
+             "inherited":False,"inheritance":0,"propagation":0},
+        ]
+        return {"current_sid":current,"owner_sid":owner,"protected":True,
+                "is_directory":False,"reparse":False,"rules":rules}
+    owner=owner or current
+    return {"current_sid":current,"owner_sid":owner,"protected":True,
+            "is_directory":False,"reparse":False,"rules":[
+                {"sid":current,"allow":True,"rights":full,"inherited":False,
+                 "inheritance":0,"propagation":0}]}
+
 STAGING_ID=("/tmp/hioc-pe4-artifact-transfer-Ab12Cd34",11,22,1000,0o700)
 
 class Runner:
@@ -150,7 +182,9 @@ class PE4ActionBTransferTests(unittest.TestCase):
             with patches[0],patches[1],patches[2],patches[3]:
                 ssh,known,private=ACTION_B.validate_local_transport(
                     resolver=resolver,runner=runner,operator_resolver=lambda:operator,
-                    profile_resolver=lambda:profile,hasher=hasher,acl_validator=lambda *_:None)
+                    profile_resolver=lambda:profile,hasher=hasher,
+                    directory_acl_validator=no_acl,known_hosts_acl_validator=no_acl,
+                    key_acl_validator=no_acl)
             self.assertEqual((ssh.name,known.name,private.name),("ssh.exe","known_hosts","id_ed25519"))
 
     def test_transport_identity_rejects_wrong_operator_and_ssh_digest(self):
@@ -161,7 +195,8 @@ class PE4ActionBTransferTests(unittest.TestCase):
                     ssh_digest="0"*64 if defect=="ssh" else None)
                 with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
                     ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
-                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,acl_validator=lambda *_:None)
+                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,
+                        directory_acl_validator=no_acl,known_hosts_acl_validator=no_acl,key_acl_validator=no_acl)
 
     def test_transport_identity_rejects_wrong_pair_fingerprint_and_known_host(self):
         variants=(
@@ -174,7 +209,8 @@ class PE4ActionBTransferTests(unittest.TestCase):
                 profile,runner,resolver,hasher,patches,operator=self.transport_fixture(temp,**variant)
                 with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
                     ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
-                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,acl_validator=lambda *_:None)
+                        operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,
+                        directory_acl_validator=no_acl,known_hosts_acl_validator=no_acl,key_acl_validator=no_acl)
 
     def test_numeric_known_host_requires_exactly_one_record(self):
         valid="192.168.100.252 ssh-ed25519 AQID\n"
@@ -185,7 +221,8 @@ class PE4ActionBTransferTests(unittest.TestCase):
                 with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
                     ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
                         operator_resolver=lambda:operator,profile_resolver=lambda:profile,
-                        hasher=hasher,acl_validator=lambda *_:None)
+                        hasher=hasher,directory_acl_validator=no_acl,
+                        known_hosts_acl_validator=no_acl,key_acl_validator=no_acl)
 
     def test_transport_acl_is_required_for_directory_and_all_three_files(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -194,29 +231,70 @@ class PE4ActionBTransferTests(unittest.TestCase):
             with patches[0],patches[1],patches[2],patches[3]:
                 ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
                     operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,
-                    acl_validator=lambda path,is_dir:calls.append((path.name,is_dir)))
-            self.assertEqual(calls,[(".ssh",True),("known_hosts",False),("id_ed25519",False),("id_ed25519.pub",False)])
+                    directory_acl_validator=lambda path:calls.append((path.name,"directory")),
+                    known_hosts_acl_validator=lambda path:calls.append((path.name,"known_hosts")),
+                    key_acl_validator=lambda path:calls.append((path.name,"key")))
+            self.assertEqual(calls,[(".ssh","directory"),("known_hosts","known_hosts"),
+                                    ("id_ed25519","key"),("id_ed25519.pub","key")])
         for failed_name in (".ssh","known_hosts","id_ed25519","id_ed25519.pub"):
             with self.subTest(failed_name=failed_name), tempfile.TemporaryDirectory() as temp:
                 profile,runner,resolver,hasher,patches,operator=self.transport_fixture(temp)
-                def reject(path,_is_dir):
+                def reject(path):
                     if path.name==failed_name: raise ACTION_B.Failure("WORKSTATION_ACL_UNSAFE","WORKSTATION_ACL")
                 with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
                     ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
                         operator_resolver=lambda:operator,profile_resolver=lambda:profile,
-                        hasher=hasher,acl_validator=reject)
+                        hasher=hasher,directory_acl_validator=reject,
+                        known_hosts_acl_validator=reject,key_acl_validator=reject)
 
-    def test_shared_acl_contract_covers_read_protection_principal_rights_and_inheritance(self):
-        captured={}
-        def fake_run(_command,_stage,**kwargs): captured.update(kwargs)
-        with mock.patch.dict(ACTION_B.validate_workstation_path_acl.__globals__,{"run":fake_run}):
-            ACTION_B.validate_workstation_path_acl(pathlib.Path("C:/fixture/.ssh"),True)
-        self.assertEqual(captured["failure_codes"],{
-            21:"WORKSTATION_ACL_VALIDATION_READ_FAILED",22:"WORKSTATION_ACL_NOT_PROTECTED",
-            23:"WORKSTATION_ACL_RULE_COUNT_INVALID",24:"WORKSTATION_ACL_INHERITED_RULE_REMAINS",
-            25:"WORKSTATION_ACL_IDENTITY_INVALID",26:"WORKSTATION_ACL_RULE_TYPE_INVALID",
-            27:"WORKSTATION_ACL_RIGHTS_INVALID",28:"WORKSTATION_ACL_INHERITANCE_INVALID",
-            29:"WORKSTATION_ACL_PROPAGATION_INVALID"})
+    def test_observed_role_specific_acl_layouts_pass(self):
+        for role in ("directory","known_hosts","key"):
+            with self.subTest(role=role):
+                ACTION_B.validate_windows_ssh_acl_policy(role,acl_metadata(role))
+
+    def test_shared_objects_do_not_require_private_object_acl(self):
+        directory=acl_metadata("directory")
+        known=acl_metadata("known_hosts")
+        ACTION_B.validate_windows_ssh_acl_policy("directory",directory)
+        ACTION_B.validate_windows_ssh_acl_policy("known_hosts",known)
+        with self.assertRaises(ACTION_B.Failure):
+            ACTION_B.validate_windows_ssh_acl_policy("key",directory)
+        with self.assertRaises(ACTION_B.Failure):
+            ACTION_B.validate_windows_ssh_acl_policy("key",known)
+
+    def test_acl_policy_rejects_hostile_principals_deny_rights_and_inheritance(self):
+        mutations=(
+            lambda m:m["rules"][0].update(sid="S-1-1-0"),
+            lambda m:m["rules"].append({"sid":"S-1-5-11","allow":True,"rights":2,
+                "inherited":True,"inheritance":3,"propagation":0}),
+            lambda m:m["rules"][0].update(allow=False),
+            lambda m:m["rules"][-1].update(rights=1),
+            lambda m:m["rules"][0].update(inherited=False),
+            lambda m:m["rules"][0].update(inheritance=0),
+        )
+        for mutate in mutations:
+            metadata=acl_metadata("directory"); mutate(metadata)
+            with self.assertRaises(ACTION_B.Failure):
+                ACTION_B.validate_windows_ssh_acl_policy("directory",metadata)
+
+    def test_acl_policy_rejects_wrong_owner_type_reparse_and_malformed_rule(self):
+        variants=[]
+        wrong_owner=acl_metadata("known_hosts",owner="S-1-5-21-999"); variants.append(("known_hosts",wrong_owner))
+        wrong_type=acl_metadata("directory"); wrong_type["is_directory"]=False; variants.append(("directory",wrong_type))
+        reparse=acl_metadata("key"); reparse["reparse"]=True; variants.append(("key",reparse))
+        malformed=acl_metadata("key"); malformed["rules"][0].pop("rights"); variants.append(("key",malformed))
+        for role,metadata in variants:
+            with self.subTest(role=role),self.assertRaises(ACTION_B.Failure):
+                ACTION_B.validate_windows_ssh_acl_policy(role,metadata)
+
+    def test_acl_read_failure_and_malformed_output_fail_closed(self):
+        def failed(*_args,**_kwargs): raise ACTION_B.Failure("SSH_ACL_READ_FAILED","OPENSSH_IDENTITY")
+        with self.assertRaises(ACTION_B.Failure):
+            ACTION_B.validate_windows_ssh_acl(pathlib.Path("C:/.ssh"),"directory",runner=failed)
+        def malformed(command,_stage,**_kwargs):
+            return subprocess.CompletedProcess(command,0,"not-json","")
+        with self.assertRaises(ACTION_B.Failure):
+            ACTION_B.validate_windows_ssh_acl(pathlib.Path("C:/.ssh"),"directory",runner=malformed)
 
     def test_ingress_uses_exclusive_nofollow_directory_fd_and_streamed_input(self):
         command=ACTION_B.ingress_command(STAGING_ID,

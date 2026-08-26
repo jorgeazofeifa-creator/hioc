@@ -1681,3 +1681,10 @@ adopts the replacement. Runtime trust also requires exactly one numeric PI3
 known-host record and revalidates the governed ACL on `.ssh`, both keys, and
 `known_hosts`. Action B remains **BLOCKED / NOT EXECUTED** pending publication
 and a separate PI3 primitive preflight.
+# PE-4 Action B Windows SSH ACL roles
+
+Action B validates Windows OpenSSH material by object role rather than applying
+the HIOC-owned private-object ACL policy to the shared `.ssh` directory and
+`known_hosts`. The accepted principal, ownership, rights, protection, and
+inheritance sets are exact and fail closed. Validation is read-only; an
+incompatible ACL blocks execution and is never repaired implicitly.
