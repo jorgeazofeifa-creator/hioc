@@ -308,3 +308,12 @@ owned partial. Local deployment preflight pins the reviewed operator/profile,
 Evidence confirmation is three-state: `NOT_PUBLISHED`, `CONFIRMED`, or
 `UNCERTAIN`; uncertain state preserves the directory and authorizes no later
 action.
+
+Action D must not consume the Action B transfer by ordinary pathname. The
+published tool creates and validates its own private input snapshot, retains
+directory identities through construction and cleanup, and runs venv/pip with
+an explicit network-free environment. The snapshot is never a deployment
+artifact and is removed after confirmed installation. A retained construction
+may proceed to Action E only with the exact confirmed Action D evidence and
+`.hioc-action-d-eligibility.json` marker. This correction does not authorize
+Action D, Action E, or any production deployment.

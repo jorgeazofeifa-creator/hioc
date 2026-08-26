@@ -2303,6 +2303,16 @@ PASS**. Provisioning and Action B remain **BLOCKED / NOT EXECUTED** pending
 review, commit, push, and fresh execution preparation. Action C, Actions D-G,
 PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain not started.
 
+Action D readiness after Action B and Action C production PASS identified a
+repository defect: transferred inputs, construction pathname, environment
+root, pip environment, cleanup target and evidence-to-Action-E handoff were not
+continuously identity-bound. The correction adds a descriptor-bound input
+snapshot and construction, explicit offline Python/pip isolation, accurate
+`lib64 -> lib` venv policy, exact distribution governance, descriptor-relative
+cleanup, confirmed result-last evidence and mandatory Action E eligibility.
+Action D remains **BLOCKED / NOT EXECUTED**; Actions E-G and later PE-4 phases
+remain **NOT STARTED** pending commit, push, PI3 synchronization and review.
+
 The first separately authorized provisioning attempt then failed safely after
 generation and staged ACL validation but before pair validation or publication.
 Forensics reproduced the exact cause with disposable material: pinned Windows

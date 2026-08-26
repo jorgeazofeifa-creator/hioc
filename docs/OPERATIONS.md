@@ -885,3 +885,12 @@ LF or CRLF while retaining the structural, algorithm, Base64, comment, pair,
 ACL, and fingerprint gates. Derived-public validation consumes the pinned
 generator's native commented record without appending a fourth field. Do not
 retry until publication and fresh review.
+
+For Action D, operators supply only the published governance commit and the
+preserved Action B transfer directory. The tool itself snapshots verified
+wheel/lock bytes and never asks pip to consume the transfer pathname. It emits
+bounded construction, snapshot, evidence, eligibility, retention and cleanup
+states. Every PASS or FAIL is a STOP. Preserve any reported evidence directory
+or retained construction unchanged. Do not invoke Action E unless Action D
+reports confirmed evidence and confirmed eligibility; visual similarity of a
+construction directory is not acceptance.

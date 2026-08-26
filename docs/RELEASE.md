@@ -376,3 +376,12 @@ the existing no-replace final publication remains unchanged. Persistent result
 evidence records `AWAITING_CONFIRMATION`, while terminal state distinguishes
 confirmed, definitely unpublished, and indeterminate publication. Publication
 of this source does not authorize Action B execution.
+
+The Action D correction is source governance only. Publication must be followed
+by PI3 release-source synchronization and a fresh readiness review before any
+construction authorization. The corrected release source binds verified Action
+B inputs into a private snapshot, constructs through retained directory
+descriptors, isolates pip offline, and publishes confirmed evidence plus an
+Action E eligibility marker. A failed or ambiguous evidence handoff cannot be
+promoted merely because a construction tree exists. Action D remains blocked
+and Actions E-G remain not started.

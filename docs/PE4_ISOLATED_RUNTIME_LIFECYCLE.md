@@ -252,22 +252,50 @@ result, error, stage, and rollback recommendation.
 
 ## Construction and validation
 
-Action D requires the exact transferred directory, owner, `0700` mode, wheel,
-and lock. `/usr/bin/python3 -m venv --copies` creates one non-existing private
-sibling under the governed environment root. `--copies` prevents internal venv
-symlinks under the contract that permits only the managed active pointer.
-System-site packages are not enabled. The exact CPython 3.11.2, Linux AArch64
-SOABI, and isolated prefix are proved before pip runs.
+Action D opens the exact transferred directory without following links and
+copies only the independently verified wheel and lock into an invocation-owned
+`/tmp/hioc-pe4-runtime-input-*` snapshot. Source and destination descriptors,
+metadata, byte counts, and SHA-256 digests remain bound through the copy; pip
+uses only `/proc/self/fd` references to that snapshot. The requirements lock is
+also copied into a write-sealed anonymous descriptor, and pip reads that exact
+descriptor; the governed hash in that sealed lock protects wheel consumption
+against a same-account directory-entry race. The Action B directory is never
+modified. The snapshot is removed by descriptor on every successful
+construction and on ordinary failure; cleanup failure is reported separately.
 
-Installation uses the isolated interpreter and exactly:
+The runtime root and `environments` child are opened without following links,
+validated for exact owner, group and `0750` mode, and retained by descriptor.
+Action D exclusively creates its construction child relative to that descriptor
+and never discards this identity before venv construction. The venv is created
+in the already-existing directory with `/usr/bin/python3 -I -m venv --copies .`.
+The directory and parent identities are revalidated afterward. Standard CPython
+POSIX `lib64 -> lib` is the sole permitted internal symlink; every other symlink,
+including an escaping link, fails closed.
+
+Before installation Action D proves CPython 3.11.2, the `/usr/bin/python3` base
+interpreter, isolated prefix, disabled user/system sites, the Linux AArch64
+SOABI, and required pip options. Installation uses a minimal explicit
+environment, ignores ambient Python, pip, proxy and index configuration, sets
+`PIP_CONFIG_FILE=/dev/null`, disables input, keyring and version checks, and
+uses exactly:
 
 ```text
---no-index --no-deps --require-hashes --only-binary=:all: --no-cache-dir
+--isolated --no-index --no-deps --require-hashes --only-binary=:all: --no-cache-dir
 ```
 
-The transferred private directory is the sole `--find-links` source. Pip isn't
-upgraded. Failure deletes only the proven invocation-owned construction tree;
-symlinks, an active target, unexpected owner, parent, name, or mode stop cleanup.
+The private snapshot descriptor is the sole `--find-links` source. Pip isn't
+upgraded. The final set contains exactly one pip, no more than one setuptools,
+exactly `websockets==16.1.1`, and nothing else. Failure cleanup is
+descriptor-relative and may delete only the retained invocation-owned tree.
+
+Action D publishes private result-last evidence with atomic no-replace linking,
+fsync, exact reread and digest/metadata confirmation. After a confirmed
+construction, evidence or handoff failure intentionally retains the tree but
+leaves it ineligible. Only confirmed evidence permits a read-only
+`.hioc-action-d-eligibility.json` marker binding the construction, commit,
+artifacts and evidence digest. Action E validates both records before inspecting
+distributions. Terminal markers separately report construction, snapshot,
+evidence, eligibility, retention and cleanup state.
 
 Action E independently proves the installed distribution set is limited to
 venv bootstrap components plus exactly `websockets==16.1.1`. It proves canonical

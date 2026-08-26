@@ -866,3 +866,10 @@ Initial real HIOC core foundation.
   reparse rejection, enforced a monotonic total download deadline, bounded CLI
   failures, and recorded explicit durable-cache/evidence partial-success state.
   Action A remains unexecuted.
+
+- Corrected the PE-4 Action D transfer-consumption, environment/construction
+  identity, offline pip isolation, cleanup and evidence-lifecycle defect.
+  Action D now uses an invocation-owned verified snapshot, descriptor-anchored
+  construction, explicit Python/pip isolation, exact distributions,
+  no-replace confirmed evidence and an Action E eligibility marker. Action D
+  remains blocked and not executed pending publication and fresh review.

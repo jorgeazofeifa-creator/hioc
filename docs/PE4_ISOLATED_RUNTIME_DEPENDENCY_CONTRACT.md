@@ -210,3 +210,14 @@ exact final result must confirm and `.result.tmp` must be truly absent according
 to the non-following entry primitive. Retained or indeterminate temporary state
 fails closed even when an independently created final file has identical bytes
 and ACL. Such a collision is preserved without overwrite or a second result.
+
+Action D consumes Action B through an invocation-owned immutable input
+snapshot, never through repeated pathname checks. It retains descriptor
+identity for the runtime root, `environments` child, construction child and
+cleanup target. The explicit Python/pip environment permits no caller-selected
+index, proxy, configuration, keyring, user site or package source. Standard
+bounded `lib64 -> lib` is the only allowed venv symlink. The accepted
+distribution set is one pip, optional single setuptools, exactly
+`websockets==16.1.1`, and nothing else. Action E requires the confirmed Action
+D evidence digest and construction eligibility marker. Action D remains
+**BLOCKED / NOT EXECUTED** and Actions E-G remain not started.

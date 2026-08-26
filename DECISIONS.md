@@ -1688,3 +1688,14 @@ the HIOC-owned private-object ACL policy to the shared `.ssh` directory and
 `known_hosts`. The accepted principal, ownership, rights, protection, and
 inheritance sets are exact and fail closed. Validation is read-only; an
 incompatible ACL blocks execution and is never repaired implicitly.
+
+## PE-4 Action D construction trust boundary
+
+Action D owns a private descriptor-bound snapshot of the verified Action B
+wheel and lock, retains descriptors for the runtime root, environment root and
+exclusive construction child, and gives pip only `/proc/self/fd` inputs under a
+minimal offline environment. Cleanup is descriptor-relative. A confirmed
+construction is eligible for Action E only when no-replace result evidence and
+its read-only digest-bound eligibility marker both confirm. Evidence failure
+retains but does not authorize the construction. The standard bounded venv
+`lib64 -> lib` link is permitted; no other venv symlink is.

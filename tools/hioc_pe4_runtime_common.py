@@ -12,6 +12,12 @@ import stat
 import subprocess
 import tempfile
 import threading
+import secrets
+import string
+try:
+    import fcntl
+except ImportError:  # Windows repository validation; Action D itself is PI3-only.
+    fcntl = None
 from typing import Iterable
 
 REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -48,6 +54,8 @@ CLIENT_BLOB = "09d66b041796dd6ec2efdb88f7a71b3f99e9a27a"
 CLIENT_SHA256 = "5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e"
 TRANSFER_RE = re.compile(r"^/tmp/hioc-pe4-artifact-transfer-[A-Za-z0-9]{8}$")
 CONSTRUCTION_RE = re.compile(r"^\.construct-" + re.escape(VERSIONED_NAME) + r"-[A-Za-z0-9]{8}$")
+ACTION_D_INPUT_RE = re.compile(r"^hioc-pe4-runtime-input-[A-Za-z0-9]{8}$")
+ACTION_D_ELIGIBILITY = ".hioc-action-d-eligibility.json"
 CAPABILITY_PROBE = r'''import inspect,sys
 import websockets
 from websockets.exceptions import InvalidStatus,PayloadTooBig
@@ -69,6 +77,182 @@ class Failure(RuntimeError):
     def __init__(self, code: str, stage: str, rollback: bool = False):
         self.code, self.stage, self.rollback = code, stage, rollback
         super().__init__(code)
+
+
+class OwnedDirectory:
+    def __init__(self, path: pathlib.Path, fd: int, dev: int, ino: int, uid: int,
+                 gid: int, mode: int, parent: "OwnedDirectory | None" = None):
+        self.path, self.fd, self.dev, self.ino = path, fd, dev, ino
+        self.uid, self.gid, self.mode, self.parent = uid, gid, mode, parent
+
+    def close(self) -> None:
+        if self.fd >= 0:
+            os.close(self.fd)
+            self.fd = -1
+
+
+def _directory_token(fd: int) -> tuple[int, int, int, int, int]:
+    info = os.fstat(fd)
+    if not stat.S_ISDIR(info.st_mode):
+        raise Failure("DIRECTORY_TYPE_INVALID", "DIRECTORY_IDENTITY")
+    return info.st_dev, info.st_ino, info.st_uid, info.st_gid, stat.S_IMODE(info.st_mode)
+
+
+def open_owned_directory(path: pathlib.Path, mode: int, stage: str,
+                         parent: OwnedDirectory | None = None,
+                         expected_uid: int | None = None,
+                         expected_gid: int | None = None) -> OwnedDirectory:
+    if os.name != "posix" or not hasattr(os, "O_DIRECTORY") or not hasattr(os, "O_NOFOLLOW"):
+        raise Failure("POSIX_DIRECTORY_PRIMITIVES_UNAVAILABLE", stage)
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    except OSError:
+        raise Failure("DIRECTORY_OPEN_FAILED", stage)
+    try:
+        dev, ino, uid, gid, actual_mode = _directory_token(fd)
+        wanted_uid = os.getuid() if expected_uid is None else expected_uid
+        wanted_gid = os.getgid() if expected_gid is None else expected_gid
+        if uid != wanted_uid or gid != wanted_gid or actual_mode != mode:
+            raise Failure("DIRECTORY_IDENTITY_MISMATCH", stage)
+        if parent is not None:
+            revalidate_owned_directory(parent, stage)
+            child = os.stat(path.name, dir_fd=parent.fd, follow_symlinks=False)
+            if (child.st_dev, child.st_ino, child.st_uid, child.st_gid,
+                    stat.S_IMODE(child.st_mode)) != (dev, ino, uid, gid, actual_mode):
+                raise Failure("DIRECTORY_PARENT_IDENTITY_MISMATCH", stage)
+            if dev != parent.dev:
+                raise Failure("DIRECTORY_MOUNT_SUBSTITUTION", stage)
+        return OwnedDirectory(path, fd, dev, ino, uid, gid, actual_mode, parent)
+    except Exception:
+        os.close(fd)
+        raise
+
+
+def revalidate_owned_directory(directory: OwnedDirectory, stage: str) -> None:
+    if directory.fd < 0:
+        raise Failure("DIRECTORY_HANDLE_CLOSED", stage)
+    if _directory_token(directory.fd) != (directory.dev, directory.ino, directory.uid,
+                                           directory.gid, directory.mode):
+        raise Failure("DIRECTORY_IDENTITY_LOST", stage)
+    if directory.parent is not None:
+        parent = directory.parent
+        if _directory_token(parent.fd) != (parent.dev, parent.ino, parent.uid,
+                                            parent.gid, parent.mode):
+            raise Failure("DIRECTORY_PARENT_IDENTITY_LOST", stage)
+        try:
+            info = os.stat(directory.path.name, dir_fd=parent.fd, follow_symlinks=False)
+        except OSError:
+            raise Failure("DIRECTORY_NAME_LOST", stage)
+        if (info.st_dev, info.st_ino, info.st_uid, info.st_gid,
+                stat.S_IMODE(info.st_mode)) != (directory.dev, directory.ino,
+                                                directory.uid, directory.gid,
+                                                directory.mode):
+            raise Failure("DIRECTORY_NAME_SUBSTITUTED", stage)
+
+
+def create_owned_child(parent: OwnedDirectory, prefix: str, mode: int,
+                       stage: str) -> OwnedDirectory:
+    alphabet = string.ascii_letters + string.digits
+    for _ in range(32):
+        name = prefix + "".join(secrets.choice(alphabet) for _ in range(8))
+        try:
+            os.mkdir(name, mode=mode, dir_fd=parent.fd)
+        except FileExistsError:
+            continue
+        except OSError:
+            raise Failure("DIRECTORY_CREATION_FAILED", stage)
+        path = parent.path / name
+        try:
+            fd = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                         dir_fd=parent.fd)
+            os.fchmod(fd, mode)
+            dev, ino, uid, gid, actual_mode = _directory_token(fd)
+            if (uid, gid, actual_mode, dev) != (os.getuid(), os.getgid(), mode, parent.dev):
+                raise Failure("CREATED_DIRECTORY_IDENTITY_INVALID", stage)
+            child = OwnedDirectory(path, fd, dev, ino, uid, gid, actual_mode, parent)
+            revalidate_owned_directory(child, stage)
+            os.fsync(fd); os.fsync(parent.fd)
+            return child
+        except Exception:
+            try: os.rmdir(name, dir_fd=parent.fd)
+            except OSError: pass
+            raise
+    raise Failure("DIRECTORY_NAME_EXHAUSTED", stage)
+
+
+def open_tmp_root(stage: str) -> OwnedDirectory:
+    info = os.lstat("/tmp")
+    if not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode):
+        raise Failure("TEMP_ROOT_INVALID", stage)
+    return open_owned_directory(pathlib.Path("/tmp"), stat.S_IMODE(info.st_mode), stage,
+                                expected_uid=info.st_uid, expected_gid=info.st_gid)
+
+
+def open_trusted_owned_parent(path: pathlib.Path, stage: str) -> OwnedDirectory:
+    current = pathlib.Path(path.anchor)
+    for part in path.parts[1:]:
+        current /= part
+        info = os.lstat(current)
+        if (not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode)
+                or info.st_uid not in (0, os.getuid()) or stat.S_IMODE(info.st_mode) & 0o022):
+            raise Failure("UNSAFE_PARENT_CHAIN", stage)
+    info = os.lstat(path)
+    if info.st_uid != os.getuid() or info.st_gid != os.getgid():
+        raise Failure("PARENT_OWNERSHIP_INVALID", stage)
+    return open_owned_directory(path, stat.S_IMODE(info.st_mode), stage,
+                                expected_uid=info.st_uid, expected_gid=info.st_gid)
+
+
+def publish_owned_json(directory: OwnedDirectory, name: str, document: dict[str, object],
+                       stage: str, mode: int = 0o600) -> str:
+    revalidate_owned_directory(directory, stage)
+    if "/" in name or name in ("", ".", ".."):
+        raise Failure("EVIDENCE_NAME_INVALID", stage)
+    payload = (json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    if len(payload) > 65536:
+        raise Failure("EVIDENCE_TOO_LARGE", stage)
+    temporary = "." + name + "." + "".join(secrets.choice(string.ascii_letters)
+                                                for _ in range(8))
+    fd = -1
+    try:
+        fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                     mode, dir_fd=directory.fd)
+        view = memoryview(payload)
+        while view:
+            written = os.write(fd, view)
+            if written <= 0:
+                raise Failure("EVIDENCE_WRITE_FAILED", stage)
+            view = view[written:]
+        os.fchmod(fd, mode); os.fsync(fd); os.close(fd); fd = -1
+        os.link(temporary, name, src_dir_fd=directory.fd, dst_dir_fd=directory.fd,
+                follow_symlinks=False)
+        os.unlink(temporary, dir_fd=directory.fd); os.fsync(directory.fd)
+        check = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory.fd)
+        try:
+            info = os.fstat(check)
+            actual = b""
+            while len(actual) <= 65536:
+                block = os.read(check, 65536)
+                if not block: break
+                actual += block
+            if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+                    or info.st_gid != os.getgid() or stat.S_IMODE(info.st_mode) != mode
+                    or actual != payload):
+                raise Failure("EVIDENCE_CONFIRMATION_FAILED", stage)
+        finally:
+            os.close(check)
+        revalidate_owned_directory(directory, stage)
+        return hashlib.sha256(payload).hexdigest()
+    except FileExistsError:
+        raise Failure("EVIDENCE_NO_REPLACE_CONFLICT", stage)
+    except Failure:
+        raise
+    except OSError:
+        raise Failure("EVIDENCE_PUBLICATION_FAILED", stage)
+    finally:
+        if fd >= 0: os.close(fd)
+        try: os.unlink(temporary, dir_fd=directory.fd)
+        except OSError: pass
 
 
 def sha256(path: pathlib.Path) -> str:
@@ -462,6 +646,159 @@ def validate_transfer_directory(value: str) -> pathlib.Path:
     return path
 
 
+def _copy_exact_file(source_fd: int, destination_fd: int, name: str, size: int,
+                     digest: str, source_mode: int = 0o600) -> None:
+    try:
+        src = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=source_fd)
+    except OSError:
+        raise Failure("TRANSFER_FILE_OPEN_FAILED", "INPUT_SNAPSHOT")
+    try:
+        before = os.fstat(src)
+        if (not stat.S_ISREG(before.st_mode) or before.st_uid != os.getuid()
+                or before.st_gid != os.getgid()
+                or stat.S_IMODE(before.st_mode) != source_mode or before.st_size != size):
+            raise Failure("TRANSFER_FILE_IDENTITY_INVALID", "INPUT_SNAPSHOT")
+        try:
+            dst = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                          0o400, dir_fd=destination_fd)
+        except OSError:
+            raise Failure("SNAPSHOT_FILE_CREATION_FAILED", "INPUT_SNAPSHOT")
+        calculated = hashlib.sha256(); total = 0
+        try:
+            while True:
+                block = os.read(src, 65536)
+                if not block: break
+                total += len(block)
+                if total > size:
+                    raise Failure("TRANSFER_FILE_SIZE_MISMATCH", "INPUT_SNAPSHOT")
+                calculated.update(block)
+                view = memoryview(block)
+                while view:
+                    written = os.write(dst, view)
+                    if written <= 0:
+                        raise Failure("SNAPSHOT_FILE_WRITE_FAILED", "INPUT_SNAPSHOT")
+                    view = view[written:]
+            os.fchmod(dst, 0o400); os.fsync(dst)
+            after = os.fstat(src)
+            if (before.st_dev, before.st_ino, before.st_uid, before.st_gid,
+                    before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (
+                    after.st_dev, after.st_ino, after.st_uid, after.st_gid,
+                    after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+                raise Failure("TRANSFER_FILE_MUTATED", "INPUT_SNAPSHOT")
+            if total != size or calculated.hexdigest() != digest:
+                raise Failure("TRANSFER_FILE_DIGEST_MISMATCH", "INPUT_SNAPSHOT")
+        finally:
+            os.close(dst)
+    finally:
+        os.close(src)
+
+
+def validate_action_b_result(directory: OwnedDirectory) -> None:
+    try:
+        fd = os.open("result.json", os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory.fd)
+    except OSError:
+        raise Failure("ACTION_B_EVIDENCE_OPEN_FAILED", "INPUT_SNAPSHOT")
+    try:
+        info = os.fstat(fd)
+        payload = b""
+        while len(payload) <= 65536:
+            block = os.read(fd, 65536)
+            if not block: break
+            payload += block
+        after = os.fstat(fd)
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+                or info.st_gid != os.getgid() or stat.S_IMODE(info.st_mode) != 0o600
+                or len(payload) > 65536 or (info.st_dev, info.st_ino, info.st_size,
+                info.st_mtime_ns, info.st_ctime_ns) != (after.st_dev, after.st_ino,
+                after.st_size, after.st_mtime_ns, after.st_ctime_ns)):
+            raise Failure("ACTION_B_EVIDENCE_IDENTITY_INVALID", "INPUT_SNAPSHOT")
+        document = json.loads(payload)
+    except (UnicodeError, ValueError, json.JSONDecodeError):
+        raise Failure("ACTION_B_EVIDENCE_INVALID", "INPUT_SNAPSHOT")
+    finally:
+        os.close(fd)
+    true_fields = ("remote_staging_created", "wheel_transferred", "lock_transferred",
+                   "remote_artifact_verified", "remote_lock_verified")
+    expected_fields = {"schema_version", "action", *true_fields, "evidence_state",
+                       "result", "error_code", "failure_stage", "rollback_recommended"}
+    if (set(document) != expected_fields or document.get("schema_version") != "1.0"
+            or document.get("action") != "PE-4.0B.2a-B"
+            or document.get("result") != "PASS" or document.get("error_code") != "NONE"
+            or document.get("failure_stage") != "COMPLETE"
+            or document.get("rollback_recommended") is not False
+            or document.get("evidence_state") != "AWAITING_CONFIRMATION"
+            or any(document.get(name) is not True for name in true_fields)):
+        raise Failure("ACTION_B_EVIDENCE_MISMATCH", "INPUT_SNAPSHOT")
+
+
+def create_action_d_input_snapshot(value: str) -> OwnedDirectory:
+    if not TRANSFER_RE.fullmatch(value):
+        raise Failure("TRANSFER_PATH_INVALID", "INPUT_VALIDATION")
+    transfer = open_owned_directory(pathlib.Path(value), 0o700, "TRANSFER_IDENTITY")
+    tmp_root = open_tmp_root("SNAPSHOT_ROOT")
+    snapshot = None
+    try:
+        names = sorted(os.listdir(transfer.fd))
+        expected = sorted((WHEEL_NAME, "requirements-pe4.lock", "result.json"))
+        if names != expected:
+            raise Failure("TRANSFER_CONTENT_SET_INVALID", "INPUT_SNAPSHOT")
+        validate_action_b_result(transfer)
+        snapshot = create_owned_child(tmp_root, "hioc-pe4-runtime-input-", 0o700,
+                                      "INPUT_SNAPSHOT")
+        _copy_exact_file(transfer.fd, snapshot.fd, WHEEL_NAME, WHEEL_SIZE, WHEEL_SHA256)
+        lock_size = os.stat("requirements-pe4.lock", dir_fd=transfer.fd,
+                            follow_symlinks=False).st_size
+        _copy_exact_file(transfer.fd, snapshot.fd, "requirements-pe4.lock",
+                         lock_size, LOCK_SHA256)
+        os.fsync(snapshot.fd)
+        revalidate_owned_directory(transfer, "INPUT_SNAPSHOT")
+        revalidate_owned_directory(snapshot, "INPUT_SNAPSHOT")
+        return snapshot
+    except Exception:
+        if snapshot is not None:
+            try:
+                cleanup_owned_directory(snapshot, "SNAPSHOT_CLEANUP")
+                snapshot = None
+            except Exception: pass
+        raise
+    finally:
+        transfer.close()
+        if snapshot is None:
+            tmp_root.close()
+
+
+def sealed_snapshot_file(directory: OwnedDirectory, name: str, size: int,
+                         digest: str) -> int:
+    if not hasattr(os, "memfd_create") or fcntl is None:
+        raise Failure("SEALED_INPUT_UNAVAILABLE", "INPUT_SNAPSHOT")
+    source = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory.fd)
+    sealed = os.memfd_create("hioc-pe4-action-d-input", os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+    try:
+        calculated = hashlib.sha256(); total = 0
+        while True:
+            block = os.read(source, 65536)
+            if not block: break
+            total += len(block); calculated.update(block)
+            view = memoryview(block)
+            while view:
+                written = os.write(sealed, view)
+                if written <= 0: raise Failure("SEALED_INPUT_WRITE_FAILED", "INPUT_SNAPSHOT")
+                view = view[written:]
+        if total != size or calculated.hexdigest() != digest:
+            raise Failure("SEALED_INPUT_IDENTITY_MISMATCH", "INPUT_SNAPSHOT")
+        os.lseek(sealed, 0, os.SEEK_SET)
+        seals = fcntl.F_SEAL_SEAL | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE
+        fcntl.fcntl(sealed, fcntl.F_ADD_SEALS, seals)
+        if fcntl.fcntl(sealed, fcntl.F_GET_SEALS) != seals:
+            raise Failure("SEALED_INPUT_CONFIRMATION_FAILED", "INPUT_SNAPSHOT")
+        return sealed
+    except Exception:
+        os.close(sealed)
+        raise
+    finally:
+        os.close(source)
+
+
 def validate_construction(value: str) -> pathlib.Path:
     path = pathlib.Path(value)
     if path.parent != ENVIRONMENT_ROOT or not CONSTRUCTION_RE.fullmatch(path.name):
@@ -469,6 +806,72 @@ def validate_construction(value: str) -> pathlib.Path:
     require_directory(path, 0o750)
     require_owned(path)
     return path
+
+
+def _read_owned_json_fd(directory: OwnedDirectory, name: str, mode: int,
+                        stage: str) -> tuple[dict[str, object], bytes]:
+    try:
+        fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory.fd)
+    except OSError:
+        raise Failure("GOVERNED_JSON_OPEN_FAILED", stage)
+    try:
+        before = os.fstat(fd); raw = b""
+        while len(raw) <= 65536:
+            block = os.read(fd, 65536)
+            if not block: break
+            raw += block
+        after = os.fstat(fd)
+        if (not stat.S_ISREG(before.st_mode) or before.st_uid != os.getuid()
+                or before.st_gid != os.getgid() or stat.S_IMODE(before.st_mode) != mode
+                or len(raw) > 65536 or (before.st_dev, before.st_ino, before.st_size,
+                before.st_mtime_ns, before.st_ctime_ns) != (after.st_dev, after.st_ino,
+                after.st_size, after.st_mtime_ns, after.st_ctime_ns)):
+            raise Failure("GOVERNED_JSON_IDENTITY_INVALID", stage)
+        document = json.loads(raw)
+    except (UnicodeError, ValueError, json.JSONDecodeError):
+        raise Failure("GOVERNED_JSON_INVALID", stage)
+    finally:
+        os.close(fd)
+    return document, raw
+
+
+def validate_action_d_eligibility(root: OwnedDirectory, governance_commit: str) -> dict[str, object]:
+    document, _ = _read_owned_json_fd(root, ACTION_D_ELIGIBILITY, 0o400,
+                                      "ACTION_D_ELIGIBILITY")
+    required = {
+        "schema_version", "action", "governance_commit", "construction_directory",
+        "environment_identity", "wheel_sha256", "lock_sha256", "evidence_directory",
+        "evidence_sha256", "result",
+    }
+    if (set(document) != required or document.get("schema_version") != "1.0"
+            or document.get("action") != "PE-4.0B.2a-D"
+            or document.get("governance_commit") != governance_commit
+            or document.get("construction_directory") != str(root.path)
+            or document.get("environment_identity") != VERSIONED_NAME
+            or document.get("wheel_sha256") != WHEEL_SHA256
+            or document.get("lock_sha256") != LOCK_SHA256
+            or document.get("result") != "PASS"):
+        raise Failure("ACTION_D_ELIGIBILITY_MISMATCH", "ACTION_D_ELIGIBILITY")
+    evidence_value = document.get("evidence_directory")
+    if not isinstance(evidence_value, str) or not re.fullmatch(
+            r"/tmp/hioc-pe4-runtime-construct-[A-Za-z0-9]{8}", evidence_value):
+        raise Failure("ACTION_D_EVIDENCE_PATH_INVALID", "ACTION_D_ELIGIBILITY")
+    evidence = open_owned_directory(pathlib.Path(evidence_value), 0o700,
+                                    "ACTION_D_ELIGIBILITY")
+    try:
+        evidence_doc, payload = _read_owned_json_fd(evidence, "result.json", 0o600,
+                                                    "ACTION_D_ELIGIBILITY")
+    finally:
+        evidence.close()
+    if hashlib.sha256(payload).hexdigest() != document.get("evidence_sha256"):
+        raise Failure("ACTION_D_EVIDENCE_DIGEST_MISMATCH", "ACTION_D_ELIGIBILITY")
+    if (evidence_doc.get("action") != "PE-4.0B.2a-D"
+            or evidence_doc.get("result") != "PASS"
+            or evidence_doc.get("governance_commit") != governance_commit
+            or evidence_doc.get("construction_directory") != str(root.path)
+            or evidence_doc.get("eligibility_state") != "AWAITING_CONFIRMATION"):
+        raise Failure("ACTION_D_EVIDENCE_MISMATCH", "ACTION_D_ELIGIBILITY")
+    return document
 
 
 def validated_active_target() -> pathlib.Path:
@@ -484,10 +887,11 @@ def validated_active_target() -> pathlib.Path:
 
 def run(command: list[str], stage: str, *, timeout: int = 60, capture: bool = True,
         failure_codes: dict[int, str] | None = None,
-        env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+        env: dict[str, str] | None = None, cwd: str | None = None,
+        pass_fds: tuple[int, ...] = ()) -> subprocess.CompletedProcess[str]:
     try:
         result = subprocess.run(command, text=True, capture_output=capture, timeout=timeout,
-                                check=False, env=env)
+                                check=False, env=env, cwd=cwd, pass_fds=pass_fds)
     except (OSError, subprocess.TimeoutExpired):
         raise Failure("COMMAND_INVOCATION_FAILED", stage)
     if result.returncode != 0:
@@ -637,21 +1041,99 @@ def verify_client_source(governance_commit: str, tool_relative: str) -> None:
         raise Failure("CLIENT_IDENTITY_MISMATCH", "CLIENT_IDENTITY")
 
 
-def exact_distribution_set(python: pathlib.Path) -> None:
+def exact_distribution_set(python: pathlib.Path, *, cwd: str | None = None,
+                           pass_fds: tuple[int, ...] = (), env: dict[str, str] | None = None) -> dict[str, str]:
     code = "import importlib.metadata as m;print('\\n'.join(sorted(d.metadata['Name'].lower()+'=='+d.version for d in m.distributions())))"
-    names = run([str(python), "-I", "-c", code], "DEPENDENCY_IDENTITY").stdout.splitlines()
+    names = run([str(python), "-I", "-c", code], "DEPENDENCY_IDENTITY",
+                cwd=cwd, pass_fds=pass_fds, env=env).stdout.splitlines()
     allowed = {"pip", "setuptools", "websockets"}
-    parsed = {line.split("==", 1)[0] for line in names}
-    if "websockets==16.1.1" not in names or not parsed.issubset(allowed):
+    pairs = [line.split("==", 1) for line in names if line.count("==") == 1]
+    parsed = [pair[0] for pair in pairs]
+    if (len(pairs) != len(names) or "websockets==16.1.1" not in names
+            or set(parsed) - allowed or parsed.count("websockets") != 1
+            or parsed.count("pip") != 1 or parsed.count("setuptools") > 1
+            or len(parsed) != len(set(parsed))
+            or any(not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.!+_-]{0,63}", version)
+                   for _, version in pairs)):
         raise Failure("INSTALLED_DISTRIBUTION_SET_INVALID", "DEPENDENCY_IDENTITY")
+    return dict(pairs)
 
 
-def safe_cleanup_construction(path: pathlib.Path) -> None:
-    validate_construction(str(path))
-    if ACTIVE_POINTER.is_symlink() and validated_active_target() == path:
-        raise Failure("CONSTRUCTION_IS_ACTIVE", "CLEANUP")
-    for item in path.rglob("*"):
-        if item.is_symlink():
-            raise Failure("CONSTRUCTION_SYMLINK_FOUND", "CLEANUP")
-    import shutil
-    shutil.rmtree(path)
+def _remove_tree_fd(fd: int, root_dev: int, stage: str) -> None:
+    for name in os.listdir(fd):
+        info = os.stat(name, dir_fd=fd, follow_symlinks=False)
+        if stat.S_ISDIR(info.st_mode):
+            if info.st_dev != root_dev:
+                raise Failure("CLEANUP_MOUNT_POINT", stage)
+            child = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            try: _remove_tree_fd(child, root_dev, stage)
+            finally: os.close(child)
+            os.rmdir(name, dir_fd=fd)
+        else:
+            os.unlink(name, dir_fd=fd)
+    os.fsync(fd)
+
+
+def _refuse_active_construction(directory: OwnedDirectory, stage: str) -> None:
+    if directory.parent is None or directory.parent.path != ENVIRONMENT_ROOT:
+        return
+    try:
+        info = os.lstat(ACTIVE_POINTER)
+    except FileNotFoundError:
+        return
+    except OSError:
+        raise Failure("ACTIVE_POINTER_UNVERIFIABLE", stage)
+    if not stat.S_ISLNK(info.st_mode):
+        raise Failure("ACTIVE_POINTER_INVALID", stage)
+    try:
+        target = pathlib.Path(os.readlink(ACTIVE_POINTER))
+    except OSError:
+        raise Failure("ACTIVE_POINTER_UNVERIFIABLE", stage)
+    if target == pathlib.Path("environments") / directory.path.name:
+        raise Failure("CONSTRUCTION_IS_ACTIVE", stage)
+
+
+def cleanup_owned_directory(directory: OwnedDirectory, stage: str = "CLEANUP") -> None:
+    try:
+        revalidate_owned_directory(directory, stage)
+        _refuse_active_construction(directory, stage)
+        if directory.parent is None:
+            raise Failure("CLEANUP_PARENT_UNAVAILABLE", stage)
+        _remove_tree_fd(directory.fd, directory.dev, stage)
+        revalidate_owned_directory(directory, stage)
+        _refuse_active_construction(directory, stage)
+        os.rmdir(directory.path.name, dir_fd=directory.parent.fd)
+        os.fsync(directory.parent.fd)
+        directory.close()
+    except Failure:
+        raise
+    except OSError:
+        raise Failure("CLEANUP_FAILED", stage)
+
+
+def validate_venv_symlinks(directory: OwnedDirectory) -> None:
+    base = pathlib.Path(f"/proc/self/fd/{directory.fd}")
+    for root, dirs, files in os.walk(base, followlinks=False):
+        for name in dirs + files:
+            path = pathlib.Path(root) / name
+            if path.is_symlink():
+                relative = path.relative_to(base).as_posix()
+                if relative != "lib64" or os.readlink(path) != "lib":
+                    raise Failure("UNEXPECTED_VENV_SYMLINK", "VENV_FILESYSTEM")
+
+
+def action_d_subprocess_environment() -> dict[str, str]:
+    return {
+        "PATH": "/usr/bin:/bin",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "HOME": "/nonexistent",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PIP_CONFIG_FILE": os.devnull,
+        "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+        "PIP_NO_INPUT": "1",
+        "PIP_NO_INDEX": "1",
+        "PIP_ROOT_USER_ACTION": "ignore",
+        "PIP_KEYRING_PROVIDER": "disabled",
+    }
