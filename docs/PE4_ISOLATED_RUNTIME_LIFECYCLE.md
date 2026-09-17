@@ -370,3 +370,14 @@ tool launch; native Git divergence must parse as exactly two non-negative zero
 fields; output is preserved; current PASS markers and a new shared-grammar
 transfer path are required. Every terminal outcome emits `STOP_REQUIRED=TRUE`.
 The wrapper never launches Action D or retries.
+
+One separately authorized invocation of the original governed wrapper stopped
+at local precheck with `NameError: tools` caused by Windows PowerShell native
+argument serialization. The wrapper was entered but its Action B launch was
+not started: no process, SSH, PI3 staging, or transfer occurred. Historical
+`REPLACEMENT_TRANSACTION=TRUE` from that wrapper version denotes wrapper
+context only. The corrected wrapper uses structured argument lists and emits
+separate wrapper/precheck/launch/transaction markers. That authorization is
+consumed and cannot be retried without a new review and authorization. Managed
+PowerShell Core is mandatory because legacy Windows PowerShell 5.1 cannot carry
+the required discrete argument list.

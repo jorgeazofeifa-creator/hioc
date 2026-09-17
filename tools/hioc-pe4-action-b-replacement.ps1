@@ -22,6 +22,16 @@ $ActionBTool = Join-Path $PSScriptRoot 'hioc-pe4-artifact-transfer.py'
 $HistoricalTransfer = '/tmp/hioc-pe4-artifact-transfer-7g3xp1lk'
 $FailedReplacementTransfer = '/tmp/hioc-pe4-artifact-transfer-g_jrlqkl'
 
+function Test-HIOCStructuredArgumentTransport {
+    if ($PSVersionTable.PSEdition -ne 'Core') {
+        throw 'STRUCTURED_ARGUMENT_TRANSPORT_UNAVAILABLE'
+    }
+    $probe = [Diagnostics.ProcessStartInfo]::new()
+    if ($null -eq $probe.ArgumentList) {
+        throw 'STRUCTURED_ARGUMENT_TRANSPORT_UNAVAILABLE'
+    }
+}
+
 function ConvertFrom-HIOCDivergence {
     param([Parameter(Mandatory = $true)][string]$NativeOutput)
     $match = [regex]::Match($NativeOutput, '\A[ \t]*([0-9]+)[ \t]+([0-9]+)\r?\n?\z')
@@ -69,28 +79,34 @@ function Test-HIOCRepository {
     Test-HIOCNoActiveGitOperation -RepositoryPath $RepositoryPath
 }
 
-function Invoke-HIOCActionBTool {
+function Invoke-HIOCPython {
     param([Parameter(Mandatory = $true)][string]$Python,
-          [Parameter(Mandatory = $true)][string]$Tool,
-          [Parameter(Mandatory = $true)][string]$Commit)
+          [Parameter(Mandatory = $true)][string[]]$Arguments,
+          [Parameter(Mandatory = $true)][string]$Stage)
     $startInfo = [Diagnostics.ProcessStartInfo]::new()
     $startInfo.FileName = $Python
     $startInfo.UseShellExecute = $false
     $startInfo.RedirectStandardOutput = $true
     $startInfo.RedirectStandardError = $true
-    [void]$startInfo.ArgumentList.Add('-B')
-    [void]$startInfo.ArgumentList.Add($Tool)
-    [void]$startInfo.ArgumentList.Add('--governance-commit')
-    [void]$startInfo.ArgumentList.Add($Commit)
+    foreach ($argument in $Arguments) { [void]$startInfo.ArgumentList.Add($argument) }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $startInfo
-    if (-not $process.Start()) { throw 'ACTION_B_PROCESS_START_FAILED' }
+    if (-not $process.Start()) { throw "$Stage`_PROCESS_START_FAILED" }
     $stdout = $process.StandardOutput.ReadToEnd()
     $stderr = $process.StandardError.ReadToEnd()
     $process.WaitForExit()
     [Console]::Out.Write($stdout)
     [Console]::Error.Write($stderr)
     return [pscustomobject]@{ ExitCode = $process.ExitCode; Stdout = $stdout; Stderr = $stderr }
+}
+
+function Invoke-HIOCActionBTool {
+    param([Parameter(Mandatory = $true)][string]$Python,
+          [Parameter(Mandatory = $true)][string]$Tool,
+          [Parameter(Mandatory = $true)][string]$Commit)
+    return Invoke-HIOCPython -Python $Python -Arguments @(
+        '-B', $Tool, '--governance-commit', $Commit
+    ) -Stage 'ACTION_B'
 }
 
 function Test-HIOCActionBSuccess {
@@ -119,8 +135,10 @@ function Test-HIOCActionBSuccess {
         throw 'TRANSFER_DIRECTORY_REUSE_FORBIDDEN'
     }
     $validator = 'import sys;sys.path.insert(0,sys.argv[1]);from hioc_pe4_runtime_common import is_transfer_directory;raise SystemExit(0 if is_transfer_directory(sys.argv[2]) else 1)'
-    & $Python -B -c $validator $ToolsDirectory $transfer
-    if ($LASTEXITCODE -ne 0) { throw 'TRANSFER_DIRECTORY_INVALID' }
+    $validation = Invoke-HIOCPython -Python $Python -Arguments @(
+        '-B', '-c', $validator, $ToolsDirectory, $transfer
+    ) -Stage 'TRANSFER_DIRECTORY_VALIDATION'
+    if ($validation.ExitCode -ne 0) { throw 'TRANSFER_DIRECTORY_INVALID' }
     return $transfer
 }
 
@@ -129,12 +147,18 @@ function Test-HIOCActionBSuccess {
     try {
         if (-not (Test-Path -LiteralPath $PythonPath -PathType Leaf)) { throw 'MANAGED_PYTHON_MISSING' }
         if (-not (Test-Path -LiteralPath $ActionBTool -PathType Leaf)) { throw 'ACTION_B_TOOL_MISSING' }
+        Test-HIOCStructuredArgumentTransport
         Test-HIOCRepository -RepositoryPath $Repository -Commit $GovernanceCommit
         $preflight = 'import pathlib,sys;root=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(root/"tools"));import importlib.util;spec=importlib.util.spec_from_file_location("pe4_action_b",root/"tools"/"hioc-pe4-artifact-transfer.py");tool=importlib.util.module_from_spec(spec);spec.loader.exec_module(tool);tool.local_inputs(sys.argv[2]);tool.validate_local_transport()'
-        & $PythonPath -B -c $preflight $Repository $GovernanceCommit
-        if ($LASTEXITCODE -ne 0) { throw 'ACTION_B_PRECHECK_FAILED' }
+        $preflightResult = Invoke-HIOCPython -Python $PythonPath -Arguments @(
+            '-B', '-c', $preflight, $Repository, $GovernanceCommit
+        ) -Stage 'ACTION_B_PRECHECK'
+        if ($preflightResult.ExitCode -ne 0) { throw 'ACTION_B_PRECHECK_FAILED' }
     } catch {
-        Write-Output 'REPLACEMENT_TRANSACTION=TRUE'
+        Write-Output 'REPLACEMENT_WRAPPER=INVOKED'
+        Write-Output 'PRECHECKS=FAILED'
+        Write-Output 'ACTION_B_LAUNCH=NOT_STARTED'
+        Write-Output 'ACTION_B_TRANSACTION=NOT_STARTED'
         Write-Output 'ACTION_B_REPLACEMENT=NOT_EXECUTED'
         Write-Output "ERROR_CODE=$($_.Exception.Message)"
         Write-Output 'STOP_REQUIRED=TRUE'
@@ -146,7 +170,10 @@ function Test-HIOCActionBSuccess {
         $result = Invoke-HIOCActionBTool -Python $PythonPath -Tool $ActionBTool -Commit $GovernanceCommit
         if ($result.ExitCode -ne 0) { throw 'ACTION_B_TOOL_NONZERO' }
     } catch {
-        Write-Output 'REPLACEMENT_TRANSACTION=TRUE'
+        Write-Output 'REPLACEMENT_WRAPPER=INVOKED'
+        Write-Output 'PRECHECKS=PASS'
+        Write-Output 'ACTION_B_LAUNCH=STARTED'
+        Write-Output 'ACTION_B_TRANSACTION=ATTEMPTED'
         Write-Output 'ACTION_B_REPLACEMENT=ATTEMPTED_NOT_COMPLETE'
         Write-Output "ERROR_CODE=$($_.Exception.Message)"
         Write-Output 'STOP_REQUIRED=TRUE'
@@ -155,13 +182,20 @@ function Test-HIOCActionBSuccess {
 
     try {
         $transfer = Test-HIOCActionBSuccess -Stdout $result.Stdout -Python $PythonPath -ToolsDirectory $PSScriptRoot
-        Write-Output 'REPLACEMENT_TRANSACTION=TRUE'
-        Write-Output 'ACTION_B_REPLACEMENT=COMPLETE/PASS'
+        Write-Output 'REPLACEMENT_WRAPPER=INVOKED'
+        Write-Output 'PRECHECKS=PASS'
+        Write-Output 'ACTION_B_LAUNCH=STARTED'
+        Write-Output 'ACTION_B_TRANSACTION=COMPLETE'
+        Write-Output 'ACTION_B_REPLACEMENT=COMPLETE'
+        Write-Output 'RESULT=PASS'
         Write-Output "TRANSFER_DIRECTORY=$transfer"
         Write-Output 'STAGING_PRESERVED=TRUE'
         Write-Output 'STOP_REQUIRED=TRUE'
     } catch {
-        Write-Output 'REPLACEMENT_TRANSACTION=TRUE'
+        Write-Output 'REPLACEMENT_WRAPPER=INVOKED'
+        Write-Output 'PRECHECKS=PASS'
+        Write-Output 'ACTION_B_LAUNCH=STARTED'
+        Write-Output 'ACTION_B_TRANSACTION=ATTEMPTED'
         Write-Output 'ACTION_B_REPLACEMENT=ATTEMPTED_POSTCONDITION_FAILED'
         Write-Output "ERROR_CODE=$($_.Exception.Message)"
         Write-Output 'STOP_REQUIRED=TRUE'

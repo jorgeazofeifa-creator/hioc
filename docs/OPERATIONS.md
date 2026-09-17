@@ -916,3 +916,14 @@ It accepts a managed Python path and the exact published governance commit,
 checks the clean synchronized source and governed local inputs/transport, then
 stops on every terminal state. It preserves successful staging and rejects both
 the historical and failed transfer paths. It cannot authorize Action D.
+
+The first newly authorized wrapper invocation after publication stopped before
+Action B launch because Windows PowerShell stripped embedded Python quotes,
+causing `NameError: tools`. Treat its historical transaction marker as wrapper
+context evidence only. Do not inspect PI3: no SSH or staging creation was
+reachable. The corrected wrapper uses structured native argument lists and its
+prelaunch terminal state explicitly says wrapper invoked, prechecks failed,
+launch not started, and transaction not started. The consumed authorization
+does not permit another invocation. Invoke the corrected wrapper only through
+the governed managed PowerShell Core host; legacy Windows PowerShell 5.1 fails
+closed because it does not implement `ProcessStartInfo.ArgumentList`.

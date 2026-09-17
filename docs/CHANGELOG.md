@@ -887,3 +887,12 @@ Initial real HIOC core foundation.
   wrapper that parses Git divergence semantically, preserves tool output, and
   cannot chain into Action D. The failed empty PI3 staging directory is retained
   for separate disposition; no transfer, Action D, cleanup, or retry occurred.
+- Corrected the replacement Action B wrapper's Windows PowerShell native
+  argument transport. One governed wrapper invocation stopped at local precheck
+  because legacy argument serialization stripped quoted Python literals and
+  yielded `NameError: tools`. The Action B launch site was not reached; no SSH,
+  PI3 staging, transfer, or PI3 forensic work occurred. Every wrapper Python
+  invocation now uses structured `ProcessStartInfo.ArgumentList`, and terminal
+  markers distinguish wrapper entry, prechecks, launch, and transaction state.
+  The wrapper now fails closed under legacy Windows PowerShell 5.1 and requires
+  the governed managed PowerShell Core host that supports `ArgumentList`.

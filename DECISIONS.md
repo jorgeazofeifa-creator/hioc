@@ -1731,3 +1731,28 @@ blocks historical/failed path reuse, and stops after every outcome. The prior
 authorization is consumed: publication, source synchronization, disposition
 review, fresh readiness, and a new exactly-once authorization are distinct
 future checkpoints. No retry is authorized by this decision.
+
+# Decision: Use structured native argument transport for replacement Action B
+
+One newly authorized invocation of the wrapper introduced at
+`1bf339d61443e7947f7e0d56104d4492f1c52923` stopped during its local precheck.
+Windows PowerShell legacy native argument serialization removed embedded quotes
+from Python source, turning `root/"tools"` into `root/tools` and producing a
+bounded `NameError`. The Action B launch site was not reached; no Action B
+process, SSH transport, PI3 staging, wheel/lock transfer, or PI3 forensic work
+occurred. Its historical `REPLACEMENT_TRANSACTION=TRUE` means wrapper context
+entered in that version, not that an Action B transaction began.
+
+All wrapper Python processes now use `ProcessStartInfo.ArgumentList` with
+discrete arguments. Future terminal state distinguishes wrapper invocation,
+precheck status, launch state, and Action B transaction state. A Windows
+PowerShell behavioral regression passes quoted Python source through the exact
+shared helper without Action B or network activity. The consumed wrapper
+authorization cannot be continued; a corrected execution requires a new
+authorization after publication and fresh readiness.
+
+Windows PowerShell 5.1/.NET Framework does not expose `ArgumentList` and can
+silently omit the required arguments. The wrapper therefore fails closed unless
+run by the governed managed PowerShell Core host, where `ArgumentList` is
+available. This is a required execution-environment condition, not a fallback
+to the legacy flattened command-line path.

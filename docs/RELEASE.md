@@ -406,3 +406,13 @@ than formatting assumptions, permits precisely one Action B process launch,
 preserves stdout/stderr, validates the current PASS contract, and always stops.
 New execution requires a separately published/synchronized/readiness-reviewed
 authorization; the old authorization is consumed.
+
+The wrapper release at `1bf339d` was invoked once and failed before Action B
+launch because Windows PowerShell stripped embedded quotes from local Python
+preflight source. This release replaces all wrapper Python native invocations
+with `ProcessStartInfo.ArgumentList` transport and regression-tests that exact
+boundary. It makes wrapper entry, precheck state, launch state, and transaction
+state distinct. No Action B, SSH, PI3 staging, or transfer occurred in the
+historical precheck-only event. Release execution is pinned to managed
+PowerShell Core; legacy Windows PowerShell 5.1 fails closed because it lacks
+the required `ArgumentList` API.

@@ -246,3 +246,12 @@ empty and it lacks every required confirmed artifact and result. It is retained
 unchanged for separate disposition. A future replacement transaction must use a
 new invocation-owned directory and may never report either that path or the
 missing historical `/tmp/hioc-pe4-artifact-transfer-7g3xp1lk` as success.
+
+The replacement wrapper's local Python prechecks and canonical grammar check
+are governed native subprocesses. They use `ProcessStartInfo.ArgumentList` for
+each executable argument and never depend on Windows PowerShell legacy command
+line flattening. A wrapper precheck failure reports wrapper entry but
+`ACTION_B_LAUNCH=NOT_STARTED` and `ACTION_B_TRANSACTION=NOT_STARTED`; it is not
+an Action B transaction or an eligible Action D input. The governed invocation
+requires managed PowerShell Core: legacy Windows PowerShell 5.1 lacks the
+required `ArgumentList` API and fails closed before prechecks proceed.

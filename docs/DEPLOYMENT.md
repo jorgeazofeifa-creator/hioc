@@ -339,3 +339,13 @@ authorization. The governed wrapper has one tool launch after all prechecks;
 it rejects malformed/nonzero Git divergence, validates all Action B PASS
 markers, and keeps a successful new transfer directory for later Action D
 readiness only.
+
+The `1bf339d` wrapper itself required a source correction after one authorized
+precheck-only invocation. Its Python source was flattened by Windows
+PowerShell's native argument serialization, yielding `NameError: tools` before
+the Action B process-launch site. Publication of the structured-argument
+correction does not revive that authorization. It must be followed by fresh
+readiness and one new explicit execution authorization; no PI3 cleanup or
+forensics is required for the precheck-only event. The later invocation uses
+managed PowerShell Core, not legacy Windows PowerShell 5.1, because only the
+former provides the required discrete `ArgumentList` transport.

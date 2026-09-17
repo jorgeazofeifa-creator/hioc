@@ -2358,3 +2358,19 @@ no retry. Required future order is publication, PI3 source synchronization,
 failed-staging disposition review, fresh replacement readiness review, and a
 new exactly-once replacement Action B authorization; Action D readiness follows
 only a confirmed new Action B PASS.
+
+## PE-4 replacement Action B wrapper native-argument correction
+
+One new authorized invocation of the `1bf339d` replacement wrapper occurred
+and stopped at local precheck. Windows PowerShell legacy serialization removed
+embedded quotes in its Python preflight source, so `root/"tools"` became
+`root/tools` and Python raised `NameError: tools`. This was a wrapper defect,
+not an Action B or PI3 event: launch was not reached, no Action B process or
+SSH occurred, no PI3 staging was created, and PI3 forensics were unnecessary.
+The authorization is consumed at wrapper-entry level. The corrected wrapper
+uses discrete `ProcessStartInfo.ArgumentList` arguments for every Python
+process and unambiguously reports wrapper, precheck, launch, and transaction
+state. Because Windows PowerShell 5.1 lacks `ArgumentList`, the wrapper rejects
+that legacy host and requires the managed PowerShell Core host. A new
+authorization remains required after correction publication and fresh
+readiness.
