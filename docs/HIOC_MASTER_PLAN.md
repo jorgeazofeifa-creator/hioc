@@ -2326,3 +2326,13 @@ No production key was published, rollback remains not recommended, and
 provisioning plus Action B remain **BLOCKED / NOT EXECUTED**
 pending review, commit, push, and fresh preparation. Action C, Actions D-G,
 PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain not started.
+
+**PE-4 Windows OpenSSH trust-anchor refresh (2026-09-16):** Read-only
+forensics found stale Action B `ssh.exe` and `ssh-keygen.exe` hashes after
+observed September 9, 2026 System32 `OpenSSH_9.5p2` servicing drift. Both
+current files were valid Microsoft-signed, TrustedInstaller-owned,
+protected-ACL, non-reparse executables; exact servicing causality is
+unproven. The correction updates the sole fail-closed hashes without weakening
+the transport contract. Historical Action B remains **COMPLETE / PASS**, its
+temporary staging remains **MISSING**, and replacement Action B plus Action D
+remain **NOT EXECUTED**.

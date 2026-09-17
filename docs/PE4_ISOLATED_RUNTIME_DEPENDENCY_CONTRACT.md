@@ -15,6 +15,15 @@ FullControl plus current-operator Modify/Synchronize Allow ACEs. Each dedicated
 key remains protected, current-operator-owned, and governed by exactly one
 explicit current-operator FullControl Allow ACE.
 
+The current Windows transport trust anchors are the reviewed System32
+Microsoft-signed `OpenSSH_9.5p2` `ssh.exe`
+`786ff14be7cd652b2b9770a57e9b1aa5e03a052ce3a3d641fb4760c0ff3fde05` and
+`ssh-keygen.exe`
+`47f009c35523b6997aff0f0528dae84f1545465479d722292499941cd5cb83b5`.
+They replace stale hashes after legitimate-looking servicing drift; exact
+servicing causality remains unproven. Both remain single exact fail-closed
+identities, not a compatibility allow-list.
+
 ## Status and authority
 
 This repository-only checkpoint governs the future PI3 runtime for the

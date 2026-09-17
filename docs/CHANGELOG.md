@@ -1,5 +1,10 @@
 # HIOC Changelog
 
+- Refreshed PE-4 Action B's exact Windows System32 OpenSSH trust anchors after
+  valid Microsoft-signed `OpenSSH_9.5p2` servicing drift. The reviewed new
+  `ssh.exe` and `ssh-keygen.exe` hashes replace, rather than supplement, stale
+  pins; servicing causality remains unproven. No transport was executed.
+
 - Corrected PE-4 Action B's Windows SSH ACL preflight. Shared `.ssh`, protected
   `known_hosts`, and dedicated key files now use independent fail-closed
   ownership and ACE policies derived from the reviewed Windows layouts. No live

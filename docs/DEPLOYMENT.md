@@ -309,6 +309,12 @@ Evidence confirmation is three-state: `NOT_PUBLISHED`, `CONFIRMED`, or
 `UNCERTAIN`; uncertain state preserves the directory and authorizes no later
 action.
 
+Windows OpenSSH executable drift is handled through a reviewed single-hash
+trust-anchor refresh, never by relaxing the Action B transport gate. The
+reviewed System32 Microsoft-signed `OpenSSH_9.5p2` identities supersede stale
+hashes; exact servicing causality remains unproven. This correction neither
+executes a replacement transfer nor recreates historical temporary staging.
+
 Action D must not consume the Action B transfer by ordinary pathname. The
 published tool creates and validates its own private input snapshot, retains
 directory identities through construction and cleanup, and runs venv/pip with

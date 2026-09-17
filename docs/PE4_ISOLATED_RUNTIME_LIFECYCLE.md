@@ -173,10 +173,21 @@ commit. It derives the current profile with the Windows Known Folder API and
 fixes `.ssh/id_ed25519`, `.ssh/id_ed25519.pub`, Ed25519, comment
 `hioc-pe4-action-b-windows`, and system
 `C:/Windows/System32/OpenSSH/ssh-keygen.exe` with reviewed SHA-256
-`44c6809b7bbc917f1310ba92857f983e2788e9b0015aa7896fa0362eddb6338b`.
+`47f009c35523b6997aff0f0528dae84f1545465479d722292499941cd5cb83b5`.
 No caller may override a path, algorithm, comment, executable, or host. The key
 has an empty passphrase because Action B disables agents and prompts through
 `BatchMode=yes`, `IdentityAgent=none`, and `IdentitiesOnly=yes`.
+
+The Windows OpenSSH trust-anchor refresh accepts exactly the reviewed
+Microsoft-signed System32 `OpenSSH_9.5p2` executables: `ssh.exe`
+`786ff14be7cd652b2b9770a57e9b1aa5e03a052ce3a3d641fb4760c0ff3fde05` and
+`ssh-keygen.exe`
+`47f009c35523b6997aff0f0528dae84f1545465479d722292499941cd5cb83b5`.
+Both were regular non-reparse files under a non-reparse System32 OpenSSH
+directory, TrustedInstaller-owned with protected ACLs and valid Microsoft
+Authenticode signatures. Their observed September 9, 2026 servicing cause is
+unproven. Exact single-hash pinning remains mandatory; this update does not
+authorize a replacement Action B transfer.
 
 Both final names must remain absent at preflight, immediately before generation,
 and immediately before their respective publications. Generation occurs only

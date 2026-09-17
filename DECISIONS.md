@@ -1689,6 +1689,19 @@ the HIOC-owned private-object ACL policy to the shared `.ssh` directory and
 inheritance sets are exact and fail closed. Validation is read-only; an
 incompatible ACL blocks execution and is never repaired implicitly.
 
+## PE-4 Action B Windows OpenSSH trust-anchor refresh
+
+Windows servicing drift changed the System32 OpenSSH executable bytes after
+the historical Action B PASS. Read-only forensic review found valid Microsoft
+Authenticode signatures, TrustedInstaller ownership, protected ACLs, and
+non-reparse System32 paths for `OpenSSH_9.5p2`; the exact servicing cause is
+unproven. The old hashes are retired and the sole approved identities are
+`ssh.exe` `786ff14be7cd652b2b9770a57e9b1aa5e03a052ce3a3d641fb4760c0ff3fde05`
+and `ssh-keygen.exe` `47f009c35523b6997aff0f0528dae84f1545465479d722292499941cd5cb83b5`.
+Exact hashing, absolute paths, and fail-closed mismatch behavior remain the
+trust model. Historical Action B remains COMPLETE/PASS, its temporary staging
+is missing, and a replacement Action B remains unexecuted.
+
 ## PE-4 Action D construction trust boundary
 
 Action D owns a private descriptor-bound snapshot of the verified Action B

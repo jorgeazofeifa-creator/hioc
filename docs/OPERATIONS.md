@@ -894,3 +894,10 @@ states. Every PASS or FAIL is a STOP. Preserve any reported evidence directory
 or retained construction unchanged. Do not invoke Action E unless Action D
 reports confirmed evidence and confirmed eligibility; visual similarity of a
 construction directory is not acceptance.
+
+Windows OpenSSH servicing drift is a transport trust gate, not permission to
+fall back to ambient SSH. The current Action B pins only reviewed System32
+Microsoft-signed `OpenSSH_9.5p2` hashes; a hash mismatch stops before any
+transport. Historical Action B evidence remains valid when its temporary
+staging later disappears, but a replacement transfer requires a fresh,
+separately authorized transaction and must never recreate the historical path.

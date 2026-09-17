@@ -334,6 +334,12 @@ Action B transport isolation is part of release identity: ambient SSH config,
 agents, proxies, jump hosts, canonicalization, alternate ports, and alternate
 known-host/identity files are excluded. Its remote result becomes governed
 evidence only after exact digest and durability confirmation following rename.
+
+The published Action B executable identities are refreshed only after a
+read-only Microsoft-signature, System32-path, ownership, ACL, non-reparse, and
+version review. The current `OpenSSH_9.5p2` hashes supersede stale anchors;
+servicing causality remains unproven. This release-record correction does not
+authorize replacement transport or Action D.
 ## PE-4 Action B identity release boundary
 
 Publishing the provisioning implementation does not provision an identity.

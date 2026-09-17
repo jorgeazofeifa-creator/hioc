@@ -198,6 +198,19 @@ class PE4ActionBTransferTests(unittest.TestCase):
                         operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,
                         directory_acl_validator=no_acl,known_hosts_acl_validator=no_acl,key_acl_validator=no_acl)
 
+    def test_transport_identity_rejects_superseded_ssh_and_keygen_digests(self):
+        stale = {
+            "ssh.exe": "6250fd52163fe99a0dc49403ed1b4bbef9b764bdb7bada017a93d057d9376a42",
+            "ssh-keygen.exe": "44c6809b7bbc917f1310ba92857f983e2788e9b0015aa7896fa0362eddb6338b",
+        }
+        with tempfile.TemporaryDirectory() as temp:
+            profile,runner,resolver,_hasher,patches,operator=self.transport_fixture(temp)
+            def hasher(path): return stale.get(path.name, "0" * 64)
+            with patches[0],patches[1],patches[2],patches[3], self.assertRaises(ACTION_B.Failure):
+                ACTION_B.validate_local_transport(resolver=resolver,runner=runner,
+                    operator_resolver=lambda:operator,profile_resolver=lambda:profile,hasher=hasher,
+                    directory_acl_validator=no_acl,known_hosts_acl_validator=no_acl,key_acl_validator=no_acl)
+
     def test_transport_identity_rejects_wrong_pair_fingerprint_and_known_host(self):
         variants=(
             {"derived":"ssh-ed25519 BAUG\n"},
