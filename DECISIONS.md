@@ -1712,3 +1712,22 @@ construction is eligible for Action E only when no-replace result evidence and
 its read-only digest-bound eligibility marker both confirm. Evidence failure
 retains but does not authorize the construction. The standard bounded venv
 `lib64 -> lib` link is permitted; no other venv symlink is.
+# Decision: Correct replacement Action B transaction safety without adopting failed staging
+
+The replacement Action B failure is classified as a safe pre-transfer staging
+identity mismatch. CPython's valid underscore tempfile suffix was rejected by
+the shared parser; the corrected fully anchored shared grammar is
+`/tmp/hioc-pe4-artifact-transfer-[A-Za-z0-9_]{8}`. Syntax alone never weakens
+Action D's independently enforced ownership, exact entry-set, artifact, and
+confirmed PASS-result gates. The recorded empty PI3 path
+`/tmp/hioc-pe4-artifact-transfer-g_jrlqkl` remains forensic evidence, not Action
+D input and not rollback work.
+
+The manually assembled replacement wrapper also was not an atomic execution
+boundary and assumed whitespace formatting for Git divergence. A repository
+controlled PowerShell wrapper now owns one launch site, parses exactly two
+non-negative native fields, preserves tool streams, validates result markers,
+blocks historical/failed path reuse, and stops after every outcome. The prior
+authorization is consumed: publication, source synchronization, disposition
+review, fresh readiness, and a new exactly-once authorization are distinct
+future checkpoints. No retry is authorized by this decision.

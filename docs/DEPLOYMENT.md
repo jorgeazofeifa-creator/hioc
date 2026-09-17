@@ -323,3 +323,19 @@ artifact and is removed after confirmed installation. A retained construction
 may proceed to Action E only with the exact confirmed Action D evidence and
 `.hioc-action-d-eligibility.json` marker. This correction does not authorize
 Action D, Action E, or any production deployment.
+## PE-4 replacement Action B publication and disposition boundary
+
+The prior replacement authorization is consumed. The first invocation stopped
+before transfer with `REMOTE_STAGING_IDENTITY_INVALID` after creation of the
+empty, private PI3 directory `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl`
+(UID/GID `1000/1000`, mode `0700`, device `45826`, inode `131762`). It made no
+runtime mutation and requires no rollback, but its directory must remain
+preserved until a separate bounded disposition authorization.
+
+Publication of this correction is not execution authority. After publication,
+the order is PI3 release-source synchronization, failed-staging disposition
+review, fresh readiness review, and a new exactly-once replacement Action B
+authorization. The governed wrapper has one tool launch after all prechecks;
+it rejects malformed/nonzero Git divergence, validates all Action B PASS
+markers, and keeps a successful new transfer directory for later Action D
+readiness only.

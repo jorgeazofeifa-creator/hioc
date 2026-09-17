@@ -901,3 +901,18 @@ Microsoft-signed `OpenSSH_9.5p2` hashes; a hash mismatch stops before any
 transport. Historical Action B evidence remains valid when its temporary
 staging later disappears, but a replacement transfer requires a fresh,
 separately authorized transaction and must never recreate the historical path.
+## PE-4 replacement Action B stop boundary
+
+The observed replacement failure `REMOTE_STAGING_IDENTITY_INVALID` left only
+the empty PI3 directory `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl` (recorded
+UID/GID `1000/1000`, `0700`, device `45826`, inode `131762`). Do not inspect,
+reuse, clean, or reconcile it under the consumed attempt authorization. No
+wheel/lock transfer or Action D occurred. `ROLLBACK_RECOMMENDED=FALSE` does not
+authorize deletion; failed-staging disposition is a later explicit checkpoint.
+
+Future replacement Action B execution must invoke the published
+`tools/hioc-pe4-action-b-replacement.ps1` once, not manually pasted fragments.
+It accepts a managed Python path and the exact published governance commit,
+checks the clean synchronized source and governed local inputs/transport, then
+stops on every terminal state. It preserves successful staging and rejects both
+the historical and failed transfer paths. It cannot authorize Action D.

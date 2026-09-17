@@ -230,3 +230,19 @@ distribution set is one pip, optional single setuptools, exactly
 `websockets==16.1.1`, and nothing else. Action E requires the confirmed Action
 D evidence digest and construction eligibility marker. Action D remains
 **BLOCKED / NOT EXECUTED** and Actions E-G remain not started.
+## Replacement Action B transaction identity
+
+The complete canonical Action B staging path is exactly
+`/tmp/hioc-pe4-artifact-transfer-[A-Za-z0-9_]{8}`. The shared runtime helper is
+the single owner of this fully anchored grammar; it permits only ASCII letters,
+decimal digits, and underscore in an eight-character suffix. Syntax is never
+Action D eligibility. Action D still requires the owned `0700` directory, the
+exact wheel/lock/result entry set, governed digests, and confirmed Action B
+PASS evidence before creating its descriptor-bound input snapshot.
+
+The failed replacement path `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl` is
+therefore syntactically valid but ineligible: recorded evidence proves it was
+empty and it lacks every required confirmed artifact and result. It is retained
+unchanged for separate disposition. A future replacement transaction must use a
+new invocation-owned directory and may never report either that path or the
+missing historical `/tmp/hioc-pe4-artifact-transfer-7g3xp1lk` as success.

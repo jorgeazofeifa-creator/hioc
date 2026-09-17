@@ -297,7 +297,7 @@ def identity_args(identity):
 
 def parse_staging_identity(output):
     fields=output.strip().split("|")
-    if len(fields)!=5 or not TRANSFER_RE.fullmatch(fields[0]) or any(not re.fullmatch(r"[0-9]+",v) for v in fields[1:]):
+    if len(fields)!=5 or not is_transfer_directory(fields[0]) or any(not re.fullmatch(r"[0-9]+",v) for v in fields[1:]):
         raise Failure("REMOTE_STAGING_IDENTITY_INVALID","REMOTE_STAGING")
     values=tuple(map(int,fields[1:]))
     if values[2]<0 or values[3]!=0o700: raise Failure("REMOTE_STAGING_IDENTITY_INVALID","REMOTE_STAGING")

@@ -391,3 +391,18 @@ descriptors, isolates pip offline, and publishes confirmed evidence plus an
 Action E eligibility marker. A failed or ambiguous evidence handoff cannot be
 promoted merely because a construction tree exists. Action D remains blocked
 and Actions E-G remain not started.
+## PE-4 replacement Action B correction release boundary
+
+This release corrects only the shared temporary-directory compatibility and the
+future Windows operator transaction boundary. CPython tempfile suffixes may
+contain `_`; all Action B/Action D consumers now use the shared, anchored
+eight-character `[A-Za-z0-9_]` contract. The correction does not adopt the
+failed empty staging directory, recreate historical staging, transfer content,
+or run Action D.
+
+The version-controlled replacement wrapper is release-governed source, not a
+general PowerShell snippet. It parses Git's two native divergence fields rather
+than formatting assumptions, permits precisely one Action B process launch,
+preserves stdout/stderr, validates the current PASS contract, and always stops.
+New execution requires a separately published/synchronized/readiness-reviewed
+authorization; the old authorization is consumed.

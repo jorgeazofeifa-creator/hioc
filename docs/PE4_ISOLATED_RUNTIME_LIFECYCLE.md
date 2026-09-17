@@ -353,3 +353,20 @@ dumps, raw command output, arbitrary package metadata, and unrelated system or
 household information are prohibited. Every failure stops. Cleanup may target
 only a validated invocation path; neither `/home/jazofv1/hioc` nor
 `/home/jazofv1/hioc/runtime/pe4/environments` may be recursively removed.
+## Replacement Action B failed transaction
+
+Replacement Action B is **ATTEMPTED_NOT_COMPLETE**, not eligible for retry
+under its consumed authorization. Its first attempt created the empty private
+directory `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl` (UID/GID `1000/1000`, mode
+`0700`, device `45826`, inode `131762`) and stopped at
+`REMOTE_STAGING_IDENTITY_INVALID` before wheel or lock transfer, evidence
+publication, or Action D. This is a transaction-staging disposition issue, not
+a runtime rollback: `ROLLBACK_RECOMMENDED=FALSE`, the directory is preserved,
+and no cleanup or reconciliation is implied.
+
+A future attempt is governed by `tools/hioc-pe4-action-b-replacement.ps1` as a
+single invocation: all repository and local transport prechecks precede the one
+tool launch; native Git divergence must parse as exactly two non-negative zero
+fields; output is preserved; current PASS markers and a new shared-grammar
+transfer path are required. Every terminal outcome emits `STOP_REQUIRED=TRUE`.
+The wrapper never launches Action D or retries.

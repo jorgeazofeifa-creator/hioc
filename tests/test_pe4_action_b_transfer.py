@@ -75,6 +75,54 @@ class Runner:
 
 
 class PE4ActionBTransferTests(unittest.TestCase):
+    def test_staging_identity_uses_shared_underscore_compatible_grammar(self):
+        accepted = (
+            "/tmp/hioc-pe4-artifact-transfer-g_jrlqkl",
+            "/tmp/hioc-pe4-artifact-transfer-7g3xp1lk",
+        )
+        for path in accepted:
+            with self.subTest(path=path):
+                self.assertTrue(ACTION_B.is_transfer_directory(path))
+                self.assertEqual(
+                    ACTION_B.parse_staging_identity(f"{path}|45826|131762|1000|448\n"),
+                    (path, 45826, 131762, 1000, 0o700),
+                )
+        rejected = (
+            "/tmp/hioc-pe4-artifact-transfer-short",
+            "/tmp/not-hioc-pe4-artifact-transfer-g_jrlqkl",
+            "/var/tmp/hioc-pe4-artifact-transfer-g_jrlqkl",
+            "/tmp/hioc-pe4-artifact-transfer-g_jrlqkl/extra",
+            "/tmp/hioc-pe4-artifact-transfer-g_jrlqklx",
+            "/tmp/hioc-pe4-artifact-transfer-g_jrlqkl ",
+            "/tmp/hioc-pe4-artifact-transfer-g..rlqkl",
+        )
+        for path in rejected:
+            with self.subTest(path=path):
+                self.assertFalse(ACTION_B.is_transfer_directory(path))
+                with self.assertRaises(ACTION_B.Failure):
+                    ACTION_B.parse_staging_identity(f"{path}|45826|131762|1000|448")
+
+    def test_staging_identity_rejects_malformed_metadata(self):
+        path = "/tmp/hioc-pe4-artifact-transfer-g_jrlqkl"
+        malformed = (
+            f"{path}|45826|131762|1000",
+            f"{path}|device|131762|1000|448",
+            f"{path}|45826|inode|1000|448",
+            f"{path}|45826|131762|uid|448",
+            f"{path}|45826|131762|1000|mode",
+            f"{path}|45826|131762|-1|448",
+            f"{path}|45826|131762|1000|493",
+        )
+        for output in malformed:
+            with self.subTest(output=output):
+                with self.assertRaises(ACTION_B.Failure):
+                    ACTION_B.parse_staging_identity(output)
+
+    def test_action_b_delegates_path_grammar_to_shared_helper(self):
+        source = (TOOLS / "hioc-pe4-artifact-transfer.py").read_text(encoding="utf-8")
+        self.assertIn("is_transfer_directory(fields[0])", source)
+        self.assertNotIn("TRANSFER_RE.fullmatch(fields[0])", source)
+
     def test_all_embedded_remote_programs_compile(self):
         for name in ("REMOTE_CREATE_STAGING","REMOTE_NO_REPLACE","REMOTE_EXCLUSIVE_WRITE",
                      "REMOTE_EXCLUSIVE_INGRESS","REMOTE_EVIDENCE_PROBE",

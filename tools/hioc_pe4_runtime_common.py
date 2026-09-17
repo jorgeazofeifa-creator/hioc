@@ -52,7 +52,9 @@ LOCK_SHA256 = "19433d53e3015157207d1af4ef07930db6f0e0d525597485384b3b7d42628e96"
 WHEEL_URL = "https://files.pythonhosted.org/packages/de/09/87df740f7430ce564bd52402e9c9458d4d0459cc7d2ee29e530c8204851b/" + WHEEL_NAME
 CLIENT_BLOB = "09d66b041796dd6ec2efdb88f7a71b3f99e9a27a"
 CLIENT_SHA256 = "5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e"
-TRANSFER_RE = re.compile(r"^/tmp/hioc-pe4-artifact-transfer-[A-Za-z0-9]{8}$")
+# CPython tempfile may use an underscore in its eight-character token.  This is
+# the sole grammar for every Action B producer and Action D consumer.
+TRANSFER_RE = re.compile(r"^/tmp/hioc-pe4-artifact-transfer-[A-Za-z0-9_]{8}$")
 CONSTRUCTION_RE = re.compile(r"^\.construct-" + re.escape(VERSIONED_NAME) + r"-[A-Za-z0-9]{8}$")
 ACTION_D_INPUT_RE = re.compile(r"^hioc-pe4-runtime-input-[A-Za-z0-9]{8}$")
 ACTION_D_ELIGIBILITY = ".hioc-action-d-eligibility.json"
@@ -77,6 +79,16 @@ class Failure(RuntimeError):
     def __init__(self, code: str, stage: str, rollback: bool = False):
         self.code, self.stage, self.rollback = code, stage, rollback
         super().__init__(code)
+
+
+def is_transfer_directory(value: str) -> bool:
+    """Return whether *value* is a complete governed Action B path.
+
+    This deliberately validates syntax only.  Action D separately proves the
+    descriptor-bound directory, exact entry set, artifact identities, and
+    confirmed Action B result before accepting a path as input.
+    """
+    return isinstance(value, str) and TRANSFER_RE.fullmatch(value) is not None
 
 
 class OwnedDirectory:
@@ -634,7 +646,7 @@ def validate_wheel(path: pathlib.Path) -> None:
 
 
 def validate_transfer_directory(value: str) -> pathlib.Path:
-    if not TRANSFER_RE.fullmatch(value):
+    if not is_transfer_directory(value):
         raise Failure("TRANSFER_PATH_INVALID", "INPUT_VALIDATION")
     path = pathlib.Path(value)
     require_directory(path, 0o700)
@@ -732,7 +744,7 @@ def validate_action_b_result(directory: OwnedDirectory) -> None:
 
 
 def create_action_d_input_snapshot(value: str) -> OwnedDirectory:
-    if not TRANSFER_RE.fullmatch(value):
+    if not is_transfer_directory(value):
         raise Failure("TRANSFER_PATH_INVALID", "INPUT_VALIDATION")
     transfer = open_owned_directory(pathlib.Path(value), 0o700, "TRANSFER_IDENTITY")
     tmp_root = open_tmp_root("SNAPSHOT_ROOT")

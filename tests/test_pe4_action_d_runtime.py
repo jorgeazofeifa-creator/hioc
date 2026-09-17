@@ -16,6 +16,22 @@ VALIDATE = (TOOLS / "hioc-pe4-dependency-validate.py").read_text(encoding="utf-8
 
 
 class ActionDIsolationTests(unittest.TestCase):
+    def test_underscore_named_failed_transaction_is_syntactic_only_not_action_d_input(self):
+        failed = "/tmp/hioc-pe4-artifact-transfer-g_jrlqkl"
+        self.assertTrue(COMMON.is_transfer_directory(failed))
+        with mock.patch.object(COMMON, "require_directory"), \
+             mock.patch.object(COMMON, "require_owned"), \
+             mock.patch.object(COMMON, "validate_wheel", side_effect=COMMON.Failure(
+                 "ARTIFACT_PATH_UNSAFE", "ARTIFACT_IDENTITY")):
+            with self.assertRaises(COMMON.Failure) as caught:
+                COMMON.validate_transfer_directory(failed)
+        self.assertEqual(caught.exception.code, "ARTIFACT_PATH_UNSAFE")
+
+    def test_action_d_uses_the_shared_transfer_directory_grammar(self):
+        source = (TOOLS / "hioc_pe4_runtime_common.py").read_text(encoding="utf-8")
+        self.assertIn("def is_transfer_directory", source)
+        self.assertEqual(source.count("if not is_transfer_directory(value):"), 2)
+
     def test_subprocess_environment_is_explicit_and_excludes_hostile_inputs(self):
         hostile = ("PYTHONPATH", "PYTHONHOME", "PIP_FIND_LINKS", "PIP_INDEX_URL",
                    "PIP_EXTRA_INDEX_URL", "PIP_TRUSTED_HOST", "PIP_PROXY",

@@ -878,3 +878,12 @@ Initial real HIOC core foundation.
   construction, explicit Python/pip isolation, exact distributions,
   no-replace confirmed evidence and an Action E eligibility marker. Action D
   remains blocked and not executed pending publication and fresh review.
+- Corrected the PE-4 replacement Action B transaction boundary after its first
+  governed replacement attempt stopped at `REMOTE_STAGING_IDENTITY_INVALID`.
+  CPython may generate `_` in the eight-character temporary suffix; the shared
+  Action B/Action D grammar now accepts exactly `[A-Za-z0-9_]{8}` while Action
+  D retains its independent descriptor, entry-set, artifact, PASS-evidence,
+  and confirmation gates. Added a version-controlled one-shot PowerShell
+  wrapper that parses Git divergence semantically, preserves tool output, and
+  cannot chain into Action D. The failed empty PI3 staging directory is retained
+  for separate disposition; no transfer, Action D, cleanup, or retry occurred.

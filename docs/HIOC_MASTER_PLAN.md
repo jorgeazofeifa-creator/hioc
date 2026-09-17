@@ -2336,3 +2336,25 @@ unproven. The correction updates the sole fail-closed hashes without weakening
 the transport contract. Historical Action B remains **COMPLETE / PASS**, its
 temporary staging remains **MISSING**, and replacement Action B plus Action D
 remain **NOT EXECUTED**.
+## PE-4 replacement Action B failed-transaction correction
+
+The published replacement Action B attempt is **ATTEMPTED_NOT_COMPLETE**. It
+created `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl` but stopped safely at
+`REMOTE_STAGING_IDENTITY_INVALID`: CPython's tempfile token contained `_`,
+which the then-shared parser incorrectly excluded. Recorded PI3 forensic
+identity is directory, UID/GID `1000/1000`, mode `0700`, device `45826`, inode
+`131762`, and empty contents. No wheel or lock transferred, no Action D ran,
+and `ROLLBACK_RECOMMENDED=FALSE`; the directory is preserved pending a separate
+disposition decision. The same external wrapper also split prechecks from the
+launch and misparsed Git's tab-separated `0\t0` output. The corrected repository
+owns one atomic, no-retry wrapper and the sole shared full-path grammar
+`/tmp/hioc-pe4-artifact-transfer-[A-Za-z0-9_]{8}`. Historical successful
+staging remains missing and neither it nor the failed path may be reused.
+
+Action A and historical Action B remain **COMPLETE / PASS**; Action C remains
+**COMPLETE / PASS**; Action D is **NOT EXECUTED**; Actions E-G and PE-4.0B.2a,
+PE-4.0B.2b, and PE-4.0C are **NOT STARTED**. The consumed authorization grants
+no retry. Required future order is publication, PI3 source synchronization,
+failed-staging disposition review, fresh replacement readiness review, and a
+new exactly-once replacement Action B authorization; Action D readiness follows
+only a confirmed new Action B PASS.
