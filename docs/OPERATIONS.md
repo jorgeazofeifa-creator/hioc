@@ -927,3 +927,8 @@ launch not started, and transaction not started. The consumed authorization
 does not permit another invocation. Invoke the corrected wrapper only through
 the governed managed PowerShell Core host; legacy Windows PowerShell 5.1 fails
 closed because it does not implement `ProcessStartInfo.ArgumentList`.
+## Action D failure evidence
+
+On failure, retain only governed diagnostic stage, operation, normalized exception
+class, and bounded errno. Do not disclose exception messages, tracebacks, paths, or
+input contents. Failure evidence never authorizes Action E.

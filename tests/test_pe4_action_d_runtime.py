@@ -98,6 +98,8 @@ class ActionDIsolationTests(unittest.TestCase):
     def test_failure_output_keeps_primary_and_cleanup_states_separate(self):
         self.assertIn('state["CLEANUP_STATE"]', CONSTRUCT)
         self.assertIn("terminal(\"FAIL\", exc.code, exc.stage, exc.rollback", CONSTRUCT)
+        self.assertIn("FAILURE_EVIDENCE_STATE", CONSTRUCT)
+        self.assertIn("DIAGNOSTIC_OPERATION", CONSTRUCT)
 
 
 @unittest.skipUnless(os.name == "posix", "descriptor-relative Action D filesystem semantics are PI3/POSIX-only")

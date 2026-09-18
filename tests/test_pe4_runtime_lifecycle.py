@@ -72,6 +72,9 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
             if path.name == "hioc-pe4-ha-auth-capability.py": continue
             self.assertIn("--governance-commit",source,path.name)
             self.assertIn("UNEXPECTED_ERROR",source,path.name)
+        action_d=(TOOLS/"hioc-pe4-runtime-construct.py").read_text(encoding="utf-8")
+        self.assertIn("SANITIZED_FAILURE",action_d)
+        self.assertIn("failure-result.json",action_d)
 
     def test_pointer_and_rollback_are_not_caller_selected(self):
         common=(TOOLS/"hioc_pe4_runtime_common.py").read_text(encoding="utf-8")

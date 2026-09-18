@@ -255,3 +255,8 @@ line flattening. A wrapper precheck failure reports wrapper entry but
 an Action B transaction or an eligible Action D input. The governed invocation
 requires managed PowerShell Core: legacy Windows PowerShell 5.1 lacks the
 required `ArgumentList` API and fails closed before prechecks proceed.
+## Action D sanitized failure evidence
+
+Action D failure evidence is distinct from successful evidence: it is an owned
+`/tmp/hioc-pe4-runtime-construct-failure-XXXXXXXX` directory containing a result-last
+`failure-result.json` with finite diagnostic enums only. It never creates eligibility.

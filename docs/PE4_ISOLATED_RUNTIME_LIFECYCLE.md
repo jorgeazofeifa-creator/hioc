@@ -381,3 +381,8 @@ separate wrapper/precheck/launch/transaction markers. That authorization is
 consumed and cannot be retried without a new review and authorization. Managed
 PowerShell Core is mandatory because legacy Windows PowerShell 5.1 cannot carry
 the required discrete argument list.
+## Action D diagnostic retention
+
+If Action D fails, the primary failure remains authoritative while cleanup and failure-
+evidence publication outcomes remain separate. The original Action B transaction is
+never changed, and a corrected Action D retry still requires new authorization.

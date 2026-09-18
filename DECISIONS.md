@@ -1756,3 +1756,9 @@ silently omit the required arguments. The wrapper therefore fails closed unless
 run by the governed managed PowerShell Core host, where `ArgumentList` is
 available. This is a required execution-environment condition, not a fallback
 to the legacy flattened command-line path.
+## Decision: retain sanitized Action D failure diagnostics
+
+The first Action D production failure reached a validated private input snapshot but
+returned only `UNEXPECTED_ERROR`. Its functional cause remains unknown. Action D now
+retains bounded stage, operation, exception-class, and errno diagnostics in distinct
+private failure evidence; that record never creates Action E eligibility.

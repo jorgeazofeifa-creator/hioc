@@ -2374,3 +2374,8 @@ state. Because Windows PowerShell 5.1 lacks `ArgumentList`, the wrapper rejects
 that legacy host and requires the managed PowerShell Core host. A new
 authorization remains required after correction publication and fresh
 readiness.
+## Action D diagnostic-retention checkpoint
+
+The first Action D failure is diagnostically incomplete, not a proven functional
+failure. A corrected future attempt requires separate authorization; its private
+failure evidence records only bounded sanitized diagnostic fields.

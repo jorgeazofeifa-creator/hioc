@@ -349,3 +349,7 @@ readiness and one new explicit execution authorization; no PI3 cleanup or
 forensics is required for the precheck-only event. The later invocation uses
 managed PowerShell Core, not legacy Windows PowerShell 5.1, because only the
 former provides the required discrete `ArgumentList` transport.
+## Action D failure diagnostics
+
+Action D failure evidence is private, retained, and diagnostic-only. It is not a
+deployment result and cannot authorize Action E or runtime publication.

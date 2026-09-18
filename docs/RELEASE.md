@@ -416,3 +416,7 @@ state distinct. No Action B, SSH, PI3 staging, or transfer occurred in the
 historical precheck-only event. Release execution is pinned to managed
 PowerShell Core; legacy Windows PowerShell 5.1 fails closed because it lacks
 the required `ArgumentList` API.
+## Action D diagnostic retention
+
+Private Action D failure evidence is not a release artifact. It preserves bounded
+sanitized diagnostic context only and cannot be interpreted as a successful runtime.

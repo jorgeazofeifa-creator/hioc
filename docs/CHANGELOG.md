@@ -896,3 +896,7 @@ Initial real HIOC core foundation.
   markers distinguish wrapper entry, prechecks, launch, and transaction state.
   The wrapper now fails closed under legacy Windows PowerShell 5.1 and requires
   the governed managed PowerShell Core host that supports `ArgumentList`.
+## Unreleased
+
+- Action D now retains bounded sanitized diagnostics and separate private failure
+  evidence without changing runtime construction or eligibility semantics.
