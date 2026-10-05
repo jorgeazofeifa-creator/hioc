@@ -1,5 +1,12 @@
 # HIOC Changelog
 
+- Closed one operator-executed fresh replacement Action B transaction: PASS,
+  terminal evidence CONFIRMED, wrapper RC 0 and independent input review PASS.
+  Accepted staging is `/tmp/hioc-pe4-artifact-transfer-l3t4crcg`; historical
+  unavailable staging remains audit history. Action C and D-PREP were not rerun;
+  Action D remains failed twice with no third execution and requires separate
+  preparation/authorization. No later action or rollback occurred.
+
 - Reconciled operator-observed loss of historical B staging and second D failure
   evidence, with cause UNKNOWN. Historical PASS results and D-PREP closure remain
   valid; the recovery wrapper did not launch a third D execution. Both read-only
@@ -932,58 +939,92 @@ Initial real HIOC core foundation.
 
 ## Current transfer-evidence recovery status
 
-Operator-supplied PI3 read-only checks reported the following filesystem states
-at recovery readiness; these are observations, not indefinite presence guarantees:
+Operator-supplied recovery readiness observations remain historical audit facts:
 
 | Historical evidence/staging path | Observed state |
 | --- | --- |
 | `/tmp/hioc-pe4-artifact-transfer-_w3qekbv` | ABSENT |
 | `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl` | ABSENT |
 | `/tmp/hioc-pe4-runtime-construct-failure-aih8dlDw` | ABSENT |
-| `/tmp/hioc-pe4-runtime-hierarchy-prepare-8OfcmWdP` | PRESENT |
+| `/tmp/hioc-pe4-runtime-hierarchy-prepare-8OfcmWdP` | PRESENT at readiness observation |
 
 The three absent objects were historically created and used as governed
 evidence/staging. Their disappearance cause is UNKNOWN. Historical Action A PASS
-and Action B PASS remain valid; the successful B transfer directory is currently
-unavailable and cannot supply Action D input. Manual reconstruction or substitution
-is prohibited. This reconciliation authorizes no inspection, cleanup, or execution.
+and Action B PASS remain valid; `_w3qekbv` remains historically accepted but
+currently unavailable and cannot supply Action D input. It is not renamed or
+replaced in the audit history. Manual reconstruction or substitution is prohibited.
+The D-PREP evidence presence observation is not an indefinite retention guarantee.
 
-Action C remains PASS exactly once, is not invalidated by evidence loss or a
-replacement B transaction, and must not be rerun. No new route proof or network
-route probe is authorized or required. D-PREP native validation and production
-execution remain PASS / CLOSED, are not invalidated, and must not be rerun.
-PI3 read-only readiness reconfirmed `runtime`, `runtime/pe4`, and
-`runtime/pe4/environments` under `/home/jazofv1/hioc` as compliant directories,
-each mode `0750`, device `45826`. No lifecycle action executed during that check.
+### Successful fresh replacement Action B — PASS / CLOSED
 
-The attempted recovery Action D wrapper stopped during pre-execution Action B
-transfer-input validation before `PRE_EXECUTION_GUARDS=PASS`. The Action D process
-was not launched and no new Action D evidence was created. This is not a third
-Action D failure: `ACTION_D=FAILED_TWICE_NOT_COMPLETE` and
-`ACTION_D_RETRIED=FALSE` after D-PREP remain unchanged. Actions E/F/G,
-PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain NOT_STARTED; rollback remains
-NOT_PERFORMED. `ROUTE_PROOF_ORDER=BEFORE_DEPENDENCY_DEPLOYMENT` is unchanged.
+Operator evidence establishes one separately authorized new replacement B
+transaction at governance commit `8d5dae032267725ea688e72925676306312e745c`.
+This was not a rerun in place or reuse of historical staging. Wrapper process RC
+was `0`, terminal evidence was CONFIRMED, and independent read-only review PASS.
+This closure designates `/tmp/hioc-pe4-artifact-transfer-l3t4crcg` as the accepted
+replacement transfer directory for the next separately prepared Action D checkpoint.
+Fresh input was available at the successful independent observation; continued
+availability must be revalidated during preparation. No path is hard-coded in source.
 
 ```text
-PI3_READ_ONLY_READINESS=PASS
-WINDOWS_ACTION_B_REPLACEMENT_READINESS=PASS
-REPLACEMENT_ACTION_B=READY_FOR_SEPARATE_AUTHORIZATION
-ACTION_B_EXECUTED=FALSE
-ACTION_B_AUTHORIZED=FALSE
+REMOTE_STAGING_CREATED=TRUE
+WHEEL_TRANSFERRED=TRUE
+LOCK_TRANSFERRED=TRUE
+REMOTE_ARTIFACT_VERIFIED=TRUE
+REMOTE_LOCK_VERIFIED=TRUE
+EVIDENCE_STATE=CONFIRMED
+ACTION_B=COMPLETE
+RESULT=PASS
+ERROR_CODE=NONE
+FAILURE_STAGE=COMPLETE
+ROLLBACK_RECOMMENDED=FALSE
+TRANSFER_DIRECTORY=/tmp/hioc-pe4-artifact-transfer-l3t4crcg
+REPLACEMENT_WRAPPER=INVOKED
+PRECHECKS=PASS
+ACTION_B_LAUNCH=STARTED
+ACTION_B_TRANSACTION=COMPLETE
+ACTION_B_REPLACEMENT=COMPLETE
+STAGING_PRESERVED=TRUE
+WRAPPER_PROCESS_RC=0
+INDEPENDENT_ACTION_B_INPUT_REVIEW=PASS
+WINDOWS_REPOSITORY_SOURCE_UNCHANGED=TRUE
+ACTION_C_RERUN=FALSE
+D_PREP_RERUN=FALSE
+ACTION_D_EXECUTED=FALSE
+EVIDENCE_REVIEW_REQUIRED=TRUE
+STOP_REQUIRED=TRUE
 ```
 
-The last two markers apply only to the prospective replacement transaction and
-its readiness checkpoint, not historical Action B PASS. Replacement B is
-technically supported but NOT idempotent: each invocation creates a fresh random
-transfer directory, never reconstructs the vanished successful directory and
-never reuses failed staging. Previous authorization is consumed. A separately
-authorized single replacement B transaction may be considered only after this
-reconciliation is committed, published, and verified; this documentation is not
-execution authorization. Readiness PASS grants no standing execution authority.
+The tool and wrapper each emitted `RESULT=PASS` and the same transfer path.
+Staging was preserved at the observation. Do not modify or delete fresh staging;
+this documentation authorizes no PI3 access, cleanup, retry, or later execution.
 
-Ephemeral `/tmp` evidence became unavailable. No PE-4 durable evidence-retention
-hardening item is established here; a durable retention mechanism requires a
-separate future design/governance decision. No retention redesign is included.
+Action C remains PASS exactly once, not invalidated and not rerun. No new route
+proof is required or authorized. D-PREP native validation and production execution
+remain PASS / CLOSED, not invalidated and not rerun; the compliant hierarchy remains
+valid. Earlier PI3 read-only readiness reconfirmed `runtime`, `runtime/pe4`, and
+`runtime/pe4/environments` under `/home/jazofv1/hioc`, each mode `0750`, device
+`45826`. PI3 read-only readiness and Windows replacement-B readiness both PASS.
+
+The prior recovery Action D wrapper stopped during pre-execution B input validation
+before `PRE_EXECUTION_GUARDS=PASS`: no Action D process or new D evidence resulted.
+`ACTION_D=FAILED_TWICE_NOT_COMPLETE` and `ACTION_D_RETRIED=FALSE` after D-PREP
+remain unchanged; no third Action D execution has occurred. Successful replacement
+B restores transfer input availability, not Action D execution authority. Action D
+remains separately unauthorized until this closure is committed/published and a
+fresh Action D preparation/authorization checkpoint occurs. Actions E/F/G,
+authenticated PE-4.0B.2a proof, PE-4.0B.2b and PE-4.0C remain NOT_STARTED;
+rollback remains NOT_PERFORMED. `ROUTE_PROOF_ORDER=BEFORE_DEPENDENCY_DEPLOYMENT`
+is unchanged.
+
+Replacement B is not idempotent; each invocation allocates a fresh random directory.
+The successful transaction's authorization is consumed and grants no repeat.
+The prior ephemeral `/tmp` evidence-loss finding remains historical context;
+durable retention requires a separate future design/governance decision. No retention
+redesign is included here.
+
+Exact staging file identities and the persisted result contract are recorded
+in HIOC_MASTER_PLAN.md, Accepted replacement staging — independent observation.
 
 ## Current D-PREP reconciliation status
 
