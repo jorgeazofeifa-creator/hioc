@@ -6,12 +6,13 @@ Phase 7A is **ACTIVE / IN PROGRESS**. Passive Enrichment PE-0 through PE-3 are
 complete; PE-4 is current and not complete. PE-4.0A and PE-4.0B.1 are
 **COMPLETE / PASS**. Action A, dedicated Windows SSH identity provisioning,
 PI3 public-key authorization, historical successful replacement Action B, and Action C
-are **COMPLETE / PASS**. Action D has been attempted twice and is **NOT
-COMPLETE**; its latest bounded failure is `RUNTIME_PARENT_VALIDATION /
-OPEN_RUNTIME_PARENT / FILE_NOT_FOUND / errno 2`.
+are **COMPLETE / PASS**. Action D is **PASS / CLOSED** after its third actual
+execution. The first two failures remain historical; the later pre-execution
+recovery stop did not launch Action D and is not an execution.
 
 `PE-4.0B.2a-D-PREP` native validation and production execution are **PASS / CLOSED**.
-Its hierarchy prerequisite is confirmed; any Action D retry remains separately authorized. Actions E-G, authenticated
+Its hierarchy prerequisite remains compliant. Action E is separately unauthorized.
+Actions E-G, authenticated
 PE-4.0B.2a proof, PE-4.0B.2b, PE-4.0C, the HA association adapter, and PE-4
 production deployment remain **NOT STARTED** or **NOT COMPLETE** as applicable.
 The older checkpoint narratives below retain their historical status at the
@@ -23,11 +24,13 @@ revalidation are complete. Native result: 115 run / 115 pass / 0 skip / 0 fail /
 0 error. D-PREP subsequently executed successfully at governance commit
 `5783951fdd33e0bb476c0fa53022633adddf1b8c`: three absent hierarchy components
 were CREATED_CONFIRMED, evidence CONFIRMED, process RC 0, and post-validation PASS.
-Action D remains not retried; the combined suite has not executed on PI3.
+The separately authorized third Action D execution subsequently PASSed; the
+combined suite has not executed on PI3.
 Replacement Action B is **PASS / CLOSED**; accepted fresh transfer input is
 `/tmp/hioc-pe4-artifact-transfer-l3t4crcg`. Historical B staging remains unavailable.
-Action D requires fresh separate preparation/authorization after closure publication;
-no third D execution occurred. Action C and D-PREP were not rerun.
+Action D is **PASS / CLOSED** with confirmed retained construction and independent
+review PASS. Action C and D-PREP were not rerun. Action E remains NOT STARTED
+and unauthorized; separate Action E preparation is the next checkpoint.
 
 ## PE-4.0B.2a Action B Windows SSH ACL compatibility correction
 
@@ -2494,11 +2497,11 @@ valid. Earlier PI3 read-only readiness reconfirmed `runtime`, `runtime/pe4`, and
 
 The prior recovery Action D wrapper stopped during pre-execution B input validation
 before `PRE_EXECUTION_GUARDS=PASS`: no Action D process or new D evidence resulted.
-`ACTION_D=FAILED_TWICE_NOT_COMPLETE` and `ACTION_D_RETRIED=FALSE` after D-PREP
-remain unchanged; no third Action D execution has occurred. Successful replacement
-B restores transfer input availability, not Action D execution authority. Action D
-remains separately unauthorized until this closure is committed/published and a
-fresh Action D preparation/authorization checkpoint occurs. Actions E/F/G,
+At the replacement-B closure, `ACTION_D=FAILED_TWICE_NOT_COMPLETE` and
+`ACTION_D_RETRIED=FALSE` after D-PREP were the historical status: no third execution
+had then occurred. Replacement B restored input availability, not execution
+authority. A subsequent separate authorization led to the successful third actual
+Action D execution recorded in the current closure below. Actions E/F/G,
 authenticated PE-4.0B.2a proof, PE-4.0B.2b and PE-4.0C remain NOT_STARTED;
 rollback remains NOT_PERFORMED. `ROUTE_PROOF_ORDER=BEFORE_DEPENDENCY_DEPLOYMENT`
 is unchanged.
@@ -2558,7 +2561,98 @@ occurred. Authoritative `local_inputs()` and local transport validation PASS.
 
 These are completed readiness facts, not a fresh execution authorization.
 
-## Current D-PREP reconciliation status
+## Current Action D closure — third actual execution PASS / CLOSED
+
+Operator-supplied evidence establishes that the separately authorized third
+actual Action D invocation PASSed at governance commit
+`6c431494c88688fef9a2fec7c7e81de0f503bdc2`. Pre-execution guards PASSed;
+Action D process RC was `0` and independent post-execution review PASSed.
+
+Historical chronology remains: first Action D failure; second Action D failure
+(`RUNTIME_PARENT_VALIDATION / OPEN_RUNTIME_PARENT / FILE_NOT_FOUND / errno 2`);
+later recovery wrapper stop before launch because historical B input was absent;
+then this successful third actual execution. The recovery stop was not an Action D
+execution and did not increment the invocation count. D-PREP corrected the missing
+hierarchy prerequisite. Earlier failed-twice statuses below are historical only.
+
+Accepted construction, created, confirmed, retained and independently validated:
+
+`/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh`
+
+Confirmed successful evidence directory observed at closure:
+
+`/tmp/hioc-pe4-runtime-construct-LW9Dvay6`
+
+Evidence SHA-256:
+`a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d`.
+These are operator observations, not indefinite filesystem-retention guarantees.
+No construction, staging, or evidence is renamed, moved, published, activated,
+rewritten, or cleaned by this documentation checkpoint.
+
+```text
+ACTION_D=COMPLETE_PASS
+PRE_EXECUTION_GUARDS=PASS
+CONSTRUCTION_CREATED=TRUE
+CONSTRUCTION_CONFIRMED=TRUE
+CONSTRUCTION_RETAINED=TRUE
+INPUT_SNAPSHOT_CREATED=TRUE
+INPUT_SNAPSHOT_RETAINED=FALSE
+EVIDENCE_STATE=CONFIRMED
+ACTION_D_ELIGIBILITY=CONFIRMED
+CLEANUP_STATE=COMPLETE
+RESULT=PASS
+ERROR_CODE=NONE
+FAILURE_STAGE=COMPLETE
+ROLLBACK_RECOMMENDED=FALSE
+ACTION_D_PROCESS_RC=0
+INDEPENDENT_ACTION_D_REVIEW=PASS
+REPLACEMENT_ACTION_B_STAGING_UNCHANGED=TRUE
+SOURCE_REPOSITORY_UNCHANGED=TRUE
+D_PREP_HIERARCHY_COMPLIANT=TRUE
+NEW_INPUT_SNAPSHOT_ENTRIES_RETAINED=FALSE
+EVIDENCE_REVIEW_REQUIRED=TRUE
+ACTION_D_LAUNCHED=TRUE
+ACTION_C_RERUN=FALSE
+D_PREP_RERUN=FALSE
+ACTION_E_EXECUTED=FALSE
+STOP_REQUIRED=TRUE
+```
+
+Persisted success evidence intentionally retains
+`eligibility_state="AWAITING_CONFIRMATION"`; terminal
+`ACTION_D_ELIGIBILITY=CONFIRMED` follows eligibility-marker publication.
+The confirmed handoff binds governance commit, construction path, environment
+identity, wheel/lock hashes, evidence path and evidence SHA-256. Evidence is not
+rewritten to CONFIRMED by this closure.
+
+Independent runtime validation PASSed: CPython `3.11.2`, SOABI
+`cpython-311-aarch64-linux-gnu`, base executable `/usr/bin/python3.11`, base
+prefix `/usr`, environment prefix equal to the accepted construction path,
+user site disabled (`true`), and site-packages isolated under that construction.
+Observed installed distributions were exactly `pip==23.0.1`,
+`setuptools==66.1.1`, and `websockets==16.1.1`. Pip/setuptools versions are
+observations, not new immutable requirements; existing policy remains one pip,
+optional single setuptools, frozen websockets `16.1.1`, and no other distributions.
+
+Action A and historical Action B remain historical PASS; unavailable historical
+staging remains audit history. Replacement Action B remains PASS / CLOSED with
+accepted input `/tmp/hioc-pe4-artifact-transfer-l3t4crcg`, unchanged during D.
+Action C remains PASS exactly once, not invalidated or rerun. D-PREP native and
+production remain PASS / CLOSED, not rerun, and hierarchy compliant. No new
+input-snapshot namespace entries remained. No combined suite ran on PI3.
+Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
+PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
+
+Action D is complete; the next boundary is separate Action E preparation.
+This closure prepares and authorizes no Action E execution or later lifecycle
+action. It grants no repeat Action D invocation or cleanup authority.
+
+## Historical D-PREP reconciliation status
+
+The following records the D-PREP closure checkpoint before the third Action D
+execution. Its failed-twice/no-retry assertions are historical; current Action D
+is PASS / CLOSED as recorded above.
+
 
 Operator-supplied evidence establishes that corrected source was published and
 synchronized to PI3 at `c5181a0d65da294e5db2dbd6795f20889b972a22` before native
