@@ -1,5 +1,13 @@
 # HIOC Changelog
 
+- Recorded the PI3 native D-PREP test-harness portability failure (115 tests,
+  18 failures / 1 error): process-global OS mocking defects were exposed, while
+  all seven real POSIX-only tests passed. A private HIOC OS facade now isolates
+  synthetic behavior, and temp-root comparison uses host-native pathlib semantics.
+  Corrected Windows D-PREP (115 tests) and combined lifecycle (126 tests) suites
+  pass with the same seven skips. Native PI3 revalidation remains pending;
+  D-PREP has not executed and Action D has not been retried.
+
 - Added the separately governed PE-4 D-PREP runtime-hierarchy checkpoint. It
   prepares or validates only the descriptor-bound `runtime/pe4/environments`
   hierarchy, retains valid partial state, and cannot chain into Action D.
@@ -907,22 +915,39 @@ Initial real HIOC core foundation.
 
 ## Current D-PREP reconciliation status
 
-D-PREP repository implementation and behavioral validation are a complete candidate;
-this documentation/governance reconciliation checkpoint is complete, with commit
-readiness and governed repository publication still pending. D-PREP has NOT been
-executed on PI3. Action A and corrected B are COMPLETE / PASS; Action C is COMPLETE /
-PASS exactly once and must not be rerun absent an authorized finding of invalidation.
-Action D was attempted twice and failed twice, remains incomplete, and has not been
-retried after the second failure. E/F/G, HA 2a/2b, and 0C remain NOT STARTED. PE-4
-remains current and incomplete. No rollback has occurred.
+D-PREP source was published and synchronized to PI3 at
+`9de082ed9e114ac4e63e785d7e44edec88b0378d`. The repository implementation exists;
+the local test-harness portability correction is WINDOWS VALIDATED, while corrected
+native PI3 Linux REVALIDATION IS REQUIRED. D-PREP production execution is NOT
+EXECUTED and remains blocked until the corrected full native suite passes and a
+later checkpoint explicitly authorizes execution. Windows validation does not
+replace native Linux validation or establish production readiness.
 
-The next repository checkpoint is a commit-readiness audit. Publication of code,
-tests, and governance together, clean source identity, separately authorized PI3
-synchronization and D-PREP execution, and a production Evidence Report remain
-pending. Only successful D-PREP execution and evidence review permit consideration
-of an Action D retry under another authorization. This record authorizes none of
-those actions. Earlier checkpoint narratives describe historical status; this
-section records current status. The authoritative record is HIOC_MASTER_PLAN.md.
+```text
+D_PREP=WINDOWS_CORRECTION_VALIDATED_NATIVE_LINUX_REVALIDATION_PENDING_PRODUCTION_NOT_EXECUTED
+ACTION_D=FAILED_TWICE_NOT_COMPLETE
+ACTION_D_RETRY=NOT_PERFORMED
+ACTION_E=NOT_STARTED
+ACTION_F=NOT_STARTED
+ACTION_G=NOT_STARTED
+PE4_0B2A=NOT_STARTED
+```
+
+Action A and corrected B remain COMPLETE / PASS; Action C remains COMPLETE / PASS
+exactly once and must not be rerun absent an authorized finding of invalidation.
+Action D failed twice, remains incomplete, and has not been retried. HA 2b and 0C
+remain NOT STARTED; PE-4 remains current and incomplete. No rollback occurred.
+The seven real POSIX-only tests passed in the earlier PI3 run, but that full native
+suite failed. No production hierarchy or preserved evidence was changed by the
+Windows correction. No Production Evidence Report is created for this test-only
+validation and repository correction.
+
+Next is a bounded commit-readiness review of the unchanged test correction and
+this governance record. Corrected-source publication, synchronization, native
+revalidation, and any eventual D-PREP execution require separate checkpoints.
+Only successful authorized D-PREP execution and evidence review permit consideration
+of another Action D attempt. This record authorizes none of those actions. Earlier
+checkpoint narratives retain historical status; HIOC_MASTER_PLAN.md is authoritative.
 
 Final repository hardening validates descriptor ownership and cleanup, Policy C
 (no exceptional evidence-child pathname deletion), bounded publication/verification,

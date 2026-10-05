@@ -901,6 +901,25 @@ class ActionDHierarchyPreparationContractTests(unittest.TestCase):
     def test_path_bound_anchor_entry_removal_is_rejected_as_name_lost(self):
         self._path_bound_anchor_revalidation_case(False, entry_removed=True)
 
+    @contextlib.contextmanager
+    def _isolated_hioc_os(self):
+        common = sys.modules[PREP.open_tmp_root.__module__]
+        self.assertIs(PREP.open_tmp_root.__globals__, vars(common))
+        self.assertIs(PREP.ensure_owned_named_child.__globals__, vars(common))
+        self.assertIs(PREP.revalidate_path_bound_directory.__globals__, vars(common))
+        real_before = vars(os).copy()
+        host_path_type = type(pathlib.Path("/tmp"))
+        # Copy the namespace: patches affect this facade, never stdlib os.
+        facade = types.SimpleNamespace(**vars(os))
+        try:
+            with mock.patch.object(common, "os", facade), mock.patch.object(PREP, "os", facade):
+                yield facade
+                self.assertIs(type(pathlib.Path("/tmp")), host_path_type)
+        finally:
+            self.assertEqual(set(vars(os)), set(real_before))
+            for name, value in real_before.items():
+                self.assertIs(getattr(os, name), value, name)
+
     def _main_anchor_binding_checkpoint(self, fail_at):
         paths = ("/", "/home", "/home/jazofv1", "/home/jazofv1/hioc",
                  "/home/jazofv1/hioc/runtime", "/home/jazofv1/hioc/runtime/pe4",
@@ -977,17 +996,18 @@ class ActionDHierarchyPreparationContractTests(unittest.TestCase):
         publish = mock.Mock(side_effect=publish_evidence)
         acquire = mock.Mock(return_value=anchor)
         output = io.StringIO()
-        with mock.patch.multiple(PREP, verify_pi3=mock.Mock(), verify_repository=mock.Mock(),
+        with self._isolated_hioc_os() as hioc_os, \
+             mock.patch.multiple(PREP, verify_pi3=mock.Mock(), verify_repository=mock.Mock(),
                                  open_trusted_owned_path_bound=acquire,
                                  revalidate_path_bound_directory=mock.Mock(side_effect=revalidate),
                                  ensure_owned_named_child=mock.Mock(side_effect=ensure_child),
                                  open_tmp_root=open_evidence, create_owned_child=create_evidence,
                                  publish_owned_json=publish), \
-             mock.patch.object(PREP.os, "fstat", side_effect=entries.__getitem__) as fstat, \
-             mock.patch.object(PREP.os, "stat", side_effect=inspect_name) as named_stat, \
-             mock.patch.object(PREP.os, "open") as reopened, \
-             mock.patch.object(PREP.os, "close") as close, \
-             mock.patch.object(PREP.os, "umask", return_value=0o022), \
+             mock.patch.object(hioc_os, "fstat", side_effect=entries.__getitem__) as fstat, \
+             mock.patch.object(hioc_os, "stat", side_effect=inspect_name) as named_stat, \
+             mock.patch.object(hioc_os, "open") as reopened, \
+             mock.patch.object(hioc_os, "close") as close, \
+             mock.patch.object(hioc_os, "umask", return_value=0o022), \
              mock.patch.object(sys, "argv", ["d-prep", "--governance-commit", "0" * 40]), \
              contextlib.redirect_stdout(output):
             result = PREP.main()
@@ -2025,19 +2045,20 @@ class ActionDHierarchyPreparationContractTests(unittest.TestCase):
             51, 11, 151, 3, 4, 0o700, evidence_root)
         output = io.StringIO()
         with contextlib.ExitStack() as patches:
-            patches.enter_context(mock.patch.object(PREP.os, "name", "posix"))
-            patches.enter_context(mock.patch.object(PREP.os, "O_DIRECTORY", directory_flag, create=True))
-            patches.enter_context(mock.patch.object(PREP.os, "O_NOFOLLOW", nofollow_flag, create=True))
-            patches.enter_context(mock.patch.object(PREP.os, "getuid", return_value=3, create=True))
-            patches.enter_context(mock.patch.object(PREP.os, "getgid", return_value=4, create=True))
-            patches.enter_context(mock.patch.object(PREP.os, "fstat", side_effect=read_descriptor))
-            patches.enter_context(mock.patch.object(PREP.os, "stat", side_effect=inspect_name))
-            opened = patches.enter_context(mock.patch.object(PREP.os, "open", side_effect=open_child))
-            closed = patches.enter_context(mock.patch.object(PREP.os, "close"))
-            mutations = [patches.enter_context(mock.patch.object(PREP.os, name, create=True))
+            hioc_os = patches.enter_context(self._isolated_hioc_os())
+            patches.enter_context(mock.patch.object(hioc_os, "name", "posix"))
+            patches.enter_context(mock.patch.object(hioc_os, "O_DIRECTORY", directory_flag, create=True))
+            patches.enter_context(mock.patch.object(hioc_os, "O_NOFOLLOW", nofollow_flag, create=True))
+            patches.enter_context(mock.patch.object(hioc_os, "getuid", return_value=3, create=True))
+            patches.enter_context(mock.patch.object(hioc_os, "getgid", return_value=4, create=True))
+            patches.enter_context(mock.patch.object(hioc_os, "fstat", side_effect=read_descriptor))
+            patches.enter_context(mock.patch.object(hioc_os, "stat", side_effect=inspect_name))
+            opened = patches.enter_context(mock.patch.object(hioc_os, "open", side_effect=open_child))
+            closed = patches.enter_context(mock.patch.object(hioc_os, "close"))
+            mutations = [patches.enter_context(mock.patch.object(hioc_os, name, create=True))
                          for name in ("mkdir", "chmod", "fchmod", "chown", "fchown",
                                       "unlink", "rmdir", "rename", "replace", "fsync")]
-            patches.enter_context(mock.patch.object(PREP.os, "umask", return_value=0o022))
+            patches.enter_context(mock.patch.object(hioc_os, "umask", return_value=0o022))
             patches.enter_context(mock.patch.object(PREP, "verify_pi3"))
             patches.enter_context(mock.patch.object(PREP, "verify_repository"))
             acquire = patches.enter_context(mock.patch.object(
@@ -2165,24 +2186,25 @@ class ActionDHierarchyPreparationContractTests(unittest.TestCase):
 
         output = io.StringIO()
         with contextlib.ExitStack() as patches:
-            patches.enter_context(mock.patch.object(PREP.os, "name", "posix"))
-            patches.enter_context(mock.patch.object(PREP.os, "O_DIRECTORY", 0x10000, create=True))
-            patches.enter_context(mock.patch.object(PREP.os, "O_NOFOLLOW", 0x20000, create=True))
-            patches.enter_context(mock.patch.object(PREP.os, "getuid", create=True,
+            hioc_os = patches.enter_context(self._isolated_hioc_os())
+            patches.enter_context(mock.patch.object(hioc_os, "name", "posix"))
+            patches.enter_context(mock.patch.object(hioc_os, "O_DIRECTORY", 0x10000, create=True))
+            patches.enter_context(mock.patch.object(hioc_os, "O_NOFOLLOW", 0x20000, create=True))
+            patches.enter_context(mock.patch.object(hioc_os, "getuid", create=True,
                 side_effect=lambda: events.append(("getuid",)) or 3))
-            patches.enter_context(mock.patch.object(PREP.os, "getgid", create=True,
+            patches.enter_context(mock.patch.object(hioc_os, "getgid", create=True,
                 side_effect=lambda: events.append(("getgid",)) or 4))
-            inspected = patches.enter_context(mock.patch.object(PREP.os, "stat", side_effect=inspect_name))
-            patches.enter_context(mock.patch.object(PREP.os, "fstat", side_effect=read_descriptor))
-            opened = patches.enter_context(mock.patch.object(PREP.os, "open", side_effect=open_child))
-            closed = patches.enter_context(mock.patch.object(PREP.os, "close",
+            inspected = patches.enter_context(mock.patch.object(hioc_os, "stat", side_effect=inspect_name))
+            patches.enter_context(mock.patch.object(hioc_os, "fstat", side_effect=read_descriptor))
+            opened = patches.enter_context(mock.patch.object(hioc_os, "open", side_effect=open_child))
+            closed = patches.enter_context(mock.patch.object(hioc_os, "close",
                 side_effect=lambda fd: events.append(("close", fd))))
-            mutations = [patches.enter_context(mock.patch.object(PREP.os, name, create=True))
+            mutations = [patches.enter_context(mock.patch.object(hioc_os, name, create=True))
                          for name in ("mkdir", "chmod", "fchmod", "chown", "fchown",
                                       "unlink", "rmdir", "fsync", "rename", "replace")]
             constructed = patches.enter_context(mock.patch.object(
                 common, "OwnedDirectory", wraps=PREP.OwnedDirectory))
-            patches.enter_context(mock.patch.object(PREP.os, "umask", return_value=0o022))
+            patches.enter_context(mock.patch.object(hioc_os, "umask", return_value=0o022))
             patches.enter_context(mock.patch.object(PREP, "verify_pi3"))
             patches.enter_context(mock.patch.object(PREP, "verify_repository"))
             patches.enter_context(mock.patch.object(PREP, "open_trusted_owned_path_bound", return_value=anchor))
@@ -2280,24 +2302,25 @@ class ActionDHierarchyPreparationContractTests(unittest.TestCase):
 
         output = io.StringIO()
         with contextlib.ExitStack() as patches:
-            patches.enter_context(mock.patch.object(PREP.os, "name", "posix"))
-            patches.enter_context(mock.patch.object(PREP.os, "O_DIRECTORY", 0x10000, create=True))
-            patches.enter_context(mock.patch.object(PREP.os, "O_NOFOLLOW", 0x20000, create=True))
-            patches.enter_context(mock.patch.object(PREP.os, "getuid", create=True,
+            hioc_os = patches.enter_context(self._isolated_hioc_os())
+            patches.enter_context(mock.patch.object(hioc_os, "name", "posix"))
+            patches.enter_context(mock.patch.object(hioc_os, "O_DIRECTORY", 0x10000, create=True))
+            patches.enter_context(mock.patch.object(hioc_os, "O_NOFOLLOW", 0x20000, create=True))
+            patches.enter_context(mock.patch.object(hioc_os, "getuid", create=True,
                 side_effect=lambda: events.append(("getuid",)) or 3))
-            patches.enter_context(mock.patch.object(PREP.os, "getgid", create=True,
+            patches.enter_context(mock.patch.object(hioc_os, "getgid", create=True,
                 side_effect=lambda: events.append(("getgid",)) or 4))
-            inspected = patches.enter_context(mock.patch.object(PREP.os, "stat", side_effect=inspect_name))
-            patches.enter_context(mock.patch.object(PREP.os, "fstat", side_effect=read_descriptor))
-            opened = patches.enter_context(mock.patch.object(PREP.os, "open", side_effect=open_child))
-            closed = patches.enter_context(mock.patch.object(PREP.os, "close",
+            inspected = patches.enter_context(mock.patch.object(hioc_os, "stat", side_effect=inspect_name))
+            patches.enter_context(mock.patch.object(hioc_os, "fstat", side_effect=read_descriptor))
+            opened = patches.enter_context(mock.patch.object(hioc_os, "open", side_effect=open_child))
+            closed = patches.enter_context(mock.patch.object(hioc_os, "close",
                 side_effect=lambda fd: events.append(("close", fd))))
-            mutations = [patches.enter_context(mock.patch.object(PREP.os, name, create=True))
+            mutations = [patches.enter_context(mock.patch.object(hioc_os, name, create=True))
                          for name in ("mkdir", "chmod", "fchmod", "chown", "fchown",
                                       "unlink", "rmdir", "fsync", "rename", "replace")]
             constructed = patches.enter_context(mock.patch.object(
                 common, "OwnedDirectory", wraps=PREP.OwnedDirectory))
-            patches.enter_context(mock.patch.object(PREP.os, "umask", return_value=0o022))
+            patches.enter_context(mock.patch.object(hioc_os, "umask", return_value=0o022))
             patches.enter_context(mock.patch.object(PREP, "verify_pi3"))
             patches.enter_context(mock.patch.object(PREP, "verify_repository"))
             patches.enter_context(mock.patch.object(PREP, "open_trusted_owned_path_bound", return_value=anchor))
@@ -4669,7 +4692,7 @@ class ActionDHierarchyPreparationContractTests(unittest.TestCase):
                     return observed
 
                 def acquire(path, flags):
-                    self.assertEqual((str(path), flags), ("/tmp", 7))
+                    self.assertEqual((path, flags), (pathlib.Path("/tmp"), 7))
                     events.append("open")
                     if fault == "OPEN_OSERROR":
                         raise primary
@@ -4692,19 +4715,20 @@ class ActionDHierarchyPreparationContractTests(unittest.TestCase):
                     events.append("close")
 
                 with contextlib.ExitStack() as patches:
-                    patches.enter_context(mock.patch.object(common.os, "name",
+                    hioc_os = patches.enter_context(self._isolated_hioc_os())
+                    patches.enter_context(mock.patch.object(hioc_os, "name",
                         "nt" if fault == "UNSUPPORTED_PRIMITIVES" else "posix"))
                     for name, value in {"O_RDONLY": 1, "O_DIRECTORY": 2, "O_NOFOLLOW": 4}.items():
-                        patches.enter_context(mock.patch.object(common.os, name, value, create=True))
-                    lst = patches.enter_context(mock.patch.object(common.os, "lstat", side_effect=observe))
-                    op = patches.enter_context(mock.patch.object(common.os, "open", side_effect=acquire))
-                    fs = patches.enter_context(mock.patch.object(common.os, "fstat", side_effect=inspect))
-                    cl = patches.enter_context(mock.patch.object(common.os, "close", side_effect=close))
+                        patches.enter_context(mock.patch.object(hioc_os, name, value, create=True))
+                    lst = patches.enter_context(mock.patch.object(hioc_os, "lstat", side_effect=observe))
+                    op = patches.enter_context(mock.patch.object(hioc_os, "open", side_effect=acquire))
+                    fs = patches.enter_context(mock.patch.object(hioc_os, "fstat", side_effect=inspect))
+                    cl = patches.enter_context(mock.patch.object(hioc_os, "close", side_effect=close))
                     delegated = patches.enter_context(mock.patch.object(common, "open_owned_directory",
                         wraps=common.open_owned_directory))
                     constructed = patches.enter_context(mock.patch.object(common, "OwnedDirectory",
                         wraps=PREP.OwnedDirectory))
-                    mutations = [patches.enter_context(mock.patch.object(common.os, name, create=True))
+                    mutations = [patches.enter_context(mock.patch.object(hioc_os, name, create=True))
                         for name in ("mkdir", "chmod", "fchmod", "chown", "fchown", "unlink",
                                      "rmdir", "remove", "rename", "replace", "fsync")]
                     returned = None

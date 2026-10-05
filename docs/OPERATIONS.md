@@ -444,9 +444,15 @@ Copy/paste behavior is part of validation, including an intentional harmless
 failure proving sanitized evidence, suppression of later stages, survival of
 the parent terminal, and return of its prompt.
 
-- Interactive `set -e` or `set -euo pipefail` can close the evidence-bearing
-  shell. Do not enable either at interactive scope. `pipefail` is allowed only
-  inside a tested controlled process that cannot terminate its parent.
+- PI3 interactive HIOC validation blocks must not enable `set -e`, `set -u`,
+  `set -o pipefail`, or `set -euo pipefail` as prerequisites: failed validation
+  must preserve the operator's active SSH shell and return its prompt. Do not
+  use `exit` or `exec` in these blocks. Capture and report explicit return codes;
+  redirect long or diagnostic test output to a bounded or named log when
+  appropriate and inspect it separately. A nonzero test result stops lifecycle
+  advancement without intentionally terminating the shell. Never chain D-PREP
+  or a later action automatically after a test or validation command.
+  This operator-safety rule creates no production script or shell framework.
 - `grep -q` and pipelines under `pipefail` can report failure because an
   upstream writer receives SIGPIPE after a match. Use an explicitly tested
   bounded check whose authoritative status is unambiguous.
@@ -941,22 +947,39 @@ not inspect Action B staging or retained Action D evidence, and every result sto
 
 ## Current D-PREP reconciliation status
 
-D-PREP repository implementation and behavioral validation are a complete candidate;
-this documentation/governance reconciliation checkpoint is complete, with commit
-readiness and governed repository publication still pending. D-PREP has NOT been
-executed on PI3. Action A and corrected B are COMPLETE / PASS; Action C is COMPLETE /
-PASS exactly once and must not be rerun absent an authorized finding of invalidation.
-Action D was attempted twice and failed twice, remains incomplete, and has not been
-retried after the second failure. E/F/G, HA 2a/2b, and 0C remain NOT STARTED. PE-4
-remains current and incomplete. No rollback has occurred.
+D-PREP source was published and synchronized to PI3 at
+`9de082ed9e114ac4e63e785d7e44edec88b0378d`. The repository implementation exists;
+the local test-harness portability correction is WINDOWS VALIDATED, while corrected
+native PI3 Linux REVALIDATION IS REQUIRED. D-PREP production execution is NOT
+EXECUTED and remains blocked until the corrected full native suite passes and a
+later checkpoint explicitly authorizes execution. Windows validation does not
+replace native Linux validation or establish production readiness.
 
-The next repository checkpoint is a commit-readiness audit. Publication of code,
-tests, and governance together, clean source identity, separately authorized PI3
-synchronization and D-PREP execution, and a production Evidence Report remain
-pending. Only successful D-PREP execution and evidence review permit consideration
-of an Action D retry under another authorization. This record authorizes none of
-those actions. Earlier checkpoint narratives describe historical status; this
-section records current status. The authoritative record is HIOC_MASTER_PLAN.md.
+```text
+D_PREP=WINDOWS_CORRECTION_VALIDATED_NATIVE_LINUX_REVALIDATION_PENDING_PRODUCTION_NOT_EXECUTED
+ACTION_D=FAILED_TWICE_NOT_COMPLETE
+ACTION_D_RETRY=NOT_PERFORMED
+ACTION_E=NOT_STARTED
+ACTION_F=NOT_STARTED
+ACTION_G=NOT_STARTED
+PE4_0B2A=NOT_STARTED
+```
+
+Action A and corrected B remain COMPLETE / PASS; Action C remains COMPLETE / PASS
+exactly once and must not be rerun absent an authorized finding of invalidation.
+Action D failed twice, remains incomplete, and has not been retried. HA 2b and 0C
+remain NOT STARTED; PE-4 remains current and incomplete. No rollback occurred.
+The seven real POSIX-only tests passed in the earlier PI3 run, but that full native
+suite failed. No production hierarchy or preserved evidence was changed by the
+Windows correction. No Production Evidence Report is created for this test-only
+validation and repository correction.
+
+Next is a bounded commit-readiness review of the unchanged test correction and
+this governance record. Corrected-source publication, synchronization, native
+revalidation, and any eventual D-PREP execution require separate checkpoints.
+Only successful authorized D-PREP execution and evidence review permit consideration
+of another Action D attempt. This record authorizes none of those actions. Earlier
+checkpoint narratives retain historical status; HIOC_MASTER_PLAN.md is authoritative.
 
 ### Final hierarchy and evidence contract
 
