@@ -1,6 +1,107 @@
 # PE-4.0B.2a Isolated Runtime Lifecycle
 
-## Action E native non-lifecycle validation — PASS / CLOSED
+## Production Action E — PASS / CLOSED
+
+Preserve the full lifecycle chronology and the immutable identity of the single actual production Action E execution.
+
+The following production facts are recorded from supplied operator evidence; this
+Windows documentation closure does not access production or execute a lifecycle
+action. Action E actually executed **exactly once** and is **PASS / CLOSED**.
+
+The immutable execution consumer is
+`1c1698f009457baa1c3b548db31916559fcc2fc8`; the accepted Action D producer is
+`6c431494c88688fef9a2fec7c7e81de0f503bdc2`. Producer/current compatibility
+passed before and after execution. The accepted construction remains
+`/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh`.
+Action D evidence remains `/tmp/hioc-pe4-runtime-construct-LW9Dvay6`, with SHA-256
+`a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d`.
+Frozen Action D source SHA-256 remains
+`e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213`.
+
+The exact six production Action E terminal fields were:
+
+```text
+RESULT=PASS
+ERROR_CODE=NONE
+FAILURE_STAGE=COMPLETE
+ROLLBACK_RECOMMENDED=FALSE
+EVIDENCE_DIR=/tmp/hioc-pe4-dependency-validate-9ys_lrah
+CONSTRUCTION_DIRECTORY=/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh
+```
+
+Process RC was `0`. The sole new Action E namespace entry was
+`/tmp/hioc-pe4-dependency-validate-9ys_lrah`; its final file set was exactly
+`result.json`, with no `.result.tmp`. Ownership/mode and exact JSON review PASSed.
+Accepted evidence SHA-256 is
+`8d5ff1f602861d88ea8d363665a67091da2739686d10ab4aa9ac27f22389d834`.
+The canonical successful JSON semantic content is:
+
+```json
+{"ACTION":"DEPENDENCY_VALIDATION","CAPABILITY_VALIDATION":"PASS","ENVIRONMENT_IDENTITY":"cpython311-websockets16.1.1-lock-v1","INSTALLED_VERSION":"16.1.1","action":"PE-4.0B.2a-E","error_code":"NONE","failure_stage":"COMPLETE","result":"PASS","rollback_recommended":false,"schema_version":"1.0"}
+```
+
+The supplied independent supervisor acceptance markers were:
+
+```text
+ACTION_E_PREEXECUTION_GUARDS=PASS
+CURRENT_FINAL_CONSUMER_SOURCE=PASS
+NATIVE_PROOF_CONTINUITY=PASS
+ACTION_E_PROCESS_RC=0
+ACTION_E_EVIDENCE_BEFORE=[]
+ACTION_E_EVIDENCE_AFTER=["/tmp/hioc-pe4-dependency-validate-9ys_lrah"]
+ACTION_E_EVIDENCE_OWNERSHIP_MODE=PASS
+ACTION_E_EXACT_FILE_SET=PASS
+ACTION_E_EXACT_JSON=PASS
+ACTION_E_EVIDENCE_SHA256=8d5ff1f602861d88ea8d363665a67091da2739686d10ab4aa9ac27f22389d834
+CURRENT_CONSUMER_COMMIT=1c1698f009457baa1c3b548db31916559fcc2fc8
+ACTION_D_PRODUCER_COMMIT=6c431494c88688fef9a2fec7c7e81de0f503bdc2
+SOURCE_UNCHANGED=TRUE
+POST_PRODUCER_CONSUMER_COMPATIBILITY=PASS
+CONSTRUCTION_CONTENT_AND_IDENTITY_UNCHANGED=TRUE
+ACTION_D_MARKER_UNCHANGED=TRUE
+ACTION_D_EVIDENCE_AND_DIGEST_UNCHANGED=TRUE
+RUNTIME_HIERARCHY_UNCHANGED=TRUE
+PUBLICATION_AND_POINTER_STATE_UNCHANGED=TRUE
+ATIME_EXCLUDED=TRUE
+ACTION_E_INDEPENDENT_REVIEW=PASS
+ACTION_E_ACCEPTANCE=PASS
+ACTION_E_LAUNCHED=TRUE
+ACTION_F_EXECUTED=FALSE
+ACTION_G_EXECUTED=FALSE
+AUTOMATIC_RETRY=FALSE
+MANUAL_CLEANUP=FALSE
+ROLLBACK_PERFORMED=FALSE
+STOP_REQUIRED=TRUE
+```
+
+The intentional write was only the private Action E evidence directory. Accepted
+construction content/identity, D eligibility marker, D evidence/digest, source,
+runtime hierarchy and publication/pointer state remained unchanged. Atime was
+excluded according to the governed construction immutability contract.
+
+Chronology remains: Action D PASS/CLOSED (third execution, after two historical
+failures); earlier read-only D-to-E compatibility validation; controlled-startup
+corrective design and implementation at `70cfceba3ddc5dd05818fa6f27653709abd9819c`;
+architecture-matched native **non-lifecycle** validation; final PI3 consumer
+synchronization to `1c1698f009457baa1c3b548db31916559fcc2fc8`; exactly one actual
+production Action E invocation; then this documentation closure. Only the actual
+production invocation advances E to PASS/CLOSED. Earlier preparation and native
+validation did not execute E; their historical records below remain intact.
+
+Current lifecycle: replacement B **PASS / CLOSED**; C **PASS exactly once**;
+D-PREP **PASS / CLOSED**; D **PASS / CLOSED**; E **PASS / CLOSED exactly once**;
+F **NOT STARTED**; G **NOT STARTED**; rollback **NOT PERFORMED**. STOP remains
+required. No F publication/activation occurred, and F is not prepared here.
+
+This documentation closure creates a descendant of the execution consumer; its
+new HEAD is for a later checkpoint and must never be described retroactively as
+E's execution consumer. Before future F preparation, separately inspect current F
+governance and independently determine how F binds source/current consumer and
+accepted E producer/evidence; do not assume E's producer/current model applies.
+That inspection/preparation is not performed in this closure. The next checkpoint
+is `ACTION_F_PREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
+## Historical Action E native non-lifecycle validation — prerequisite PASS / CLOSED
 
 Chronology: separate PI3 synchronization PASS was followed by separately authorized native non-lifecycle validation PASS. Neither checkpoint invoked Action E main() or advanced Action E/F/G; the accepted D chronology and immutable handoff remain intact.
 
