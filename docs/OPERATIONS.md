@@ -1,5 +1,84 @@
 # HIOC Operations
 
+## Current PI3 D-to-E read-only compatibility validation — PASS / CLOSED
+
+Operator evidence confirms the explicitly selected immutable D handoff.
+Future review must retain this producer/construction/evidence/digest selection
+and evaluate the actual next consumer; no alternate handoff is adopted.
+
+Operator-supplied evidence reports host `nutandpihole`, user `jazofv1`, clean
+`main`, HEAD/local `origin/main` both `8e4880c7fa5fbea4583eea0d4485a65493fb6b36`,
+and ahead/behind `0 0` before and after validation. Source synchronization PASSed;
+producer `6c431494c88688fef9a2fec7c7e81de0f503bdc2` and reviewed consumer
+`8e4880c7fa5fbea4583eea0d4485a65493fb6b36` were actual commit objects, producer
+ancestry PASSed, and the real replacement-protected compatibility helper PASSed.
+
+Reviewed producer/current critical blobs were identical:
+
+| Contract file | Producer and reviewed consumer blob |
+|---|---|
+| `tools/hioc-pe4-runtime-construct.py` | `6dc8fe1c058f8b1de6f16d7ea7c88c133e1128b7` |
+| `tools/hioc_pe4_runtime_common.py` | `4d9289d174e8647bbc67b1a6b83868bda699bad7` |
+| `requirements-pe4.lock` | `8f2652298f12734b0e4f43341a48ed5702fe696e` |
+
+Current committed/worktree E blob was `402664a4533ab98c27358d3b48d37b69e72bf1de`;
+compatibility-helper blob was `807599005ad5ff0adc9335daf04b2598a3335dd6`.
+All five reviewed blobs and source remained unchanged. Frozen D SHA-256 remained
+`e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213`.
+
+Strict producer-bound D eligibility and runtime hierarchy/construction validation
+PASSed for construction
+`/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh`,
+observed identity `45826:823199:1000:1000:0750`. Marker producer remained
+`6c431494c88688fef9a2fec7c7e81de0f503bdc2`; accepted evidence remained
+`/tmp/hioc-pe4-runtime-construct-LW9Dvay6`, SHA-256
+`a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d`.
+Evidence review confirmed environment `cpython311-websockets16.1.1-lock-v1`, wheel
+SHA-256 `86d7f0f8bdb25d2c632b72527325e4776430fd5bc61b9118de4e2b8ddb5f5b01`,
+lock SHA-256 `19433d53e3015157207d1af4ef07930db6f0e0d525597485384b3b7d42628e96`,
+and persisted `eligibility_state="AWAITING_CONFIRMATION"`. Marker/evidence remained
+unchanged; no rewrite, migration, recreation or Action D rerun occurred.
+
+```text
+PI3_SOURCE_SYNCHRONIZATION=PASS
+CURRENT_CONSUMER_SOURCE=PASS
+PRODUCER_CONSUMER_COMPATIBILITY=PASS
+PRODUCER_ANCESTRY=PASS
+STRICT_ACTION_D_ELIGIBILITY=PASS
+RUNTIME_HIERARCHY_CONSTRUCTION=PASS
+ACCEPTED_D_EVIDENCE=PASS
+D_MARKER_AND_EVIDENCE_UNCHANGED=TRUE
+ACTION_E_EVIDENCE_BEFORE=[]
+ACTION_E_EVIDENCE_AFTER=[]
+NO_NEW_ACTION_E_EVIDENCE=TRUE
+CURRENT_SOURCE_UNCHANGED=TRUE
+D_TO_E_READ_ONLY_COMPATIBILITY=PASS
+ACTION_E_EXECUTED=FALSE
+ACTION_F_EXECUTED=FALSE
+ACTION_G_EXECUTED=FALSE
+NO_LIFECYCLE_ACTION_EXECUTED=TRUE
+STOP_REQUIRED=TRUE
+```
+
+No ERROR_CODE or FAILURE_STAGE was emitted. No Action E main invocation,
+distribution validation or websockets capability probing occurred. This Windows
+documentation closure accessed neither PI3 nor PI5 and executed no lifecycle
+action, synchronization, or combined suite.
+
+Replacement B remains PASS/CLOSED, Action C PASS exactly once, D-PREP PASS/CLOSED,
+and Action D PASS/CLOSED. Actions E/F/G remain **NOT STARTED** and separately
+unauthorized. Rollback remains NOT PERFORMED.
+
+The resulting documentation-only closure commit becomes the next current
+consumer/source candidate for Action E. `8e4880c7fa5fbea4583eea0d4485a65493fb6b36`
+is the reviewed historical consumer, not a permanent E consumer pin. The immutable
+producer remains `6c431494c88688fef9a2fec7c7e81de0f503bdc2`. Before eventual E
+execution, current-source integrity and the same compatibility policy must be
+validated again against the new consumer commit. This prior PASS does not replace
+that evaluation or separate Action E execution authorization.
+
+Next checkpoint: `ACTION_E_REPREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 ## Current Action E producer/current operator review
 
 A later separately authorized review must select an explicit current consumer
@@ -26,8 +105,9 @@ with bounded diagnostics, without retry, rollback, or cleanup. Compatibility and
 operator review are prerequisites, not authorization. Action E remains **NOT STARTED**;
 separate E authorization is still required. F/G remain unauthorized.
 
-Next checkpoint:
-`PI3_SYNCHRONIZATION_AND_READ_ONLY_D_TO_E_COMPATIBILITY_VALIDATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+The original implementation synchronization/read-only validation boundary
+is now PASS/CLOSED as recorded above. Next checkpoint:
+`ACTION_E_REPREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
 
 Action B fails closed if the staging pathname no longer resolves to its exact
 creation-time device, inode, UID, and mode. Do not search for, adopt,
@@ -1149,8 +1229,11 @@ Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
 PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
 
 Action D remains complete. The subsequent repository correction separates D
-producer provenance from E current source. The next boundary is separately
-authorized PI3 synchronization and read-only D-to-E compatibility validation.
+producer provenance from E current source. The separately authorized PI3
+synchronization and read-only D-to-E compatibility validation subsequently
+PASSed. The next boundary is separately authorized Action E re-preparation
+against the resulting documentation closure consumer commit; the accepted D
+producer remains immutable.
 This closure prepares and authorizes no Action E execution or later lifecycle
 action. It grants no repeat Action D invocation or cleanup authority.
 
