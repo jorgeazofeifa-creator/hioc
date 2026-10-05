@@ -1,6 +1,84 @@
 # HIOC Architecture Decisions
 
-## Action E controlled startup correction — repository implementation
+## Action E native non-lifecycle validation — PASS / CLOSED
+
+Decision: the hardened Action E architecture-matched native prerequisite is PASS/CLOSED on operator-reported PI3 evidence. The construction-read-only contract and immutable D producer remain unchanged; production Action E remains NOT STARTED.
+
+Operator-reported evidence records separate PI3 synchronization from
+`8e4880c7fa5fbea4583eea0d4485a65493fb6b36` to implementation commit
+`70cfceba3ddc5dd05818fa6f27653709abd9819c` as **PASS**. On host `nutandpihole`
+as `jazofv1`, branch `main`, HEAD and `origin/main` matched the implementation,
+ahead/behind was `0 0`, source was clean, and synchronization checks PASSed.
+No native validation or lifecycle action ran during synchronization.
+
+The subsequent separately authorized read-only supervisor directly exercised
+committed controlled validation primitives without calling production Action E
+`main()` or allocating Action E evidence. **`ACTION_E_NATIVE_VALIDATION=PASS`**
+closes the architecture-matched prerequisite; it does not mean lifecycle Action E
+PASS or completion. Target, current source, producer/consumer compatibility,
+strict D eligibility, controlled startup, distributions, native integrity,
+capability, network-side-effect and construction-immutability checks all PASSed.
+No native-validation failure code or failure stage was reported.
+
+Both controlled `-I -B -S` children measured implementation `cpython`, version
+`[3, 11, 2]`, SOABI `cpython-311-aarch64-linux-gnu`; prefix, base prefix, exec
+prefix and base exec prefix were `/usr`. Base executable was `/usr/bin/python3.11`.
+Isolated, no-site, no-user-site, environment-ignore, safe-path and bytecode
+suppression were active. Exact initial paths were `/usr/lib/python311.zip`,
+`/usr/lib/python3.11`, `/usr/lib/python3.11/lib-dynload`.
+
+Measured construction executable:
+`/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh/bin/python`.
+Its measured filesystem identity was device `45826`, inode `823209`.
+Exact installed distributions were
+`{"pip": "23.0.1", "setuptools": "66.1.1", "websockets": "16.1.1"}`.
+The actual governed AArch64 native module loaded from
+`/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh/lib/python3.11/site-packages/websockets/speedups.cpython-311-aarch64-linux-gnu.so`
+through `VerifiedNativeLoader`, with SHA-256
+`b786db296f7d0677ddeceb7efbe963bc316a094f36e12388caa1333763ca4c1b`.
+This native proof exercised the AArch64 extension, not the Windows source fallback,
+and the corrected controlled capability flow PASSed.
+
+Measured `FILESYSTEM_WRITE_ATTEMPTS=0`, `NETWORK_ATTEMPTS=0`,
+`CONSTRUCTION_IMMUTABILITY=PASS`, `ACTION_D_HANDOFF_UNCHANGED=TRUE`,
+`NO_ACTION_E_EVIDENCE_CREATED=TRUE`, `SOURCE_UNCHANGED=TRUE`, and
+`ATIME_EXCLUDED=TRUE` preserve the read-only comparison boundary. No production
+Action E evidence or production E terminal PASS is claimed.
+
+The immutable D producer remains `6c431494c88688fef9a2fec7c7e81de0f503bdc2`.
+Accepted construction remains
+`/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh`;
+accepted D evidence remains `/tmp/hioc-pe4-runtime-construct-LW9Dvay6`, SHA-256
+`a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d`.
+Frozen D source SHA-256 remains
+`e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213`.
+Validated E source blob was `f672c9327e2308593f218eadad5abd158006d498`;
+compatibility-helper blob was `807599005ad5ff0adc9335daf04b2598a3335dd6`.
+D/common/lock blobs remained respectively
+`6dc8fe1c058f8b1de6f16d7ea7c88c133e1128b7`,
+`4d9289d174e8647bbc67b1a6b83868bda699bad7`,
+`8f2652298f12734b0e4f43341a48ed5702fe696e`.
+
+The resulting documentation-only descendant closure commit is the **next Action E
+current-consumer candidate**. Do not permanently pin implementation commit
+`70cfceba3ddc5dd05818fa6f27653709abd9819c` as the final E consumer. Before eventual
+E execution, reverify producer/new-consumer compatibility, separately authorize
+PI3 synchronization from the implementation to the resulting closure commit,
+reprepare Action E against that closure commit, then obtain separate authorization
+for exactly one Action E invocation. This closure performs or authorizes none of
+those operations and changes no source, tests, dependency lock, or runtime objects.
+
+Lifecycle remains: replacement B PASS/CLOSED; C PASS exactly once; D-PREP
+PASS/CLOSED; D PASS/CLOSED; E NOT STARTED; F NOT STARTED; G NOT STARTED;
+rollback NOT PERFORMED. Operator evidence explicitly reported
+`ACTION_E_EXECUTED=FALSE`, `ACTION_F_EXECUTED=FALSE`, `ACTION_G_EXECUTED=FALSE`,
+`NO_LIFECYCLE_ACTION_EXECUTED=TRUE`, `AUTOMATIC_RETRY=FALSE`,
+`MANUAL_CLEANUP=FALSE`, `ROLLBACK_PERFORMED=FALSE`, `STOP_REQUIRED=TRUE`.
+No lifecycle action ran during native validation or documentation closure.
+No PI3/PI5 access or production synchronization occurs during this closure.
+Next checkpoint: `ACTION_E_FINAL_REPREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
+## Historical Action E controlled startup implementation — native prerequisite then pending
 
 Decision: Action E is construction-read-only except atime; normal site startup is prohibited. The correction stays E-local and preserves the producer compatibility boundary.
 
