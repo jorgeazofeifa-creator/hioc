@@ -368,8 +368,8 @@ directory `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl` (UID/GID `1000/1000`, mode
 `0700`, device `45826`, inode `131762`) and stopped at
 `REMOTE_STAGING_IDENTITY_INVALID` before wheel or lock transfer, evidence
 publication, or Action D. This is a transaction-staging disposition issue, not
-a runtime rollback: `ROLLBACK_RECOMMENDED=FALSE`, the directory is preserved,
-and no cleanup or reconciliation is implied.
+a runtime rollback: `ROLLBACK_RECOMMENDED=FALSE`; the historical disposition
+was preservation without cleanup. Current operator checks report ABSENT.
 
 A future attempt is governed by `tools/hioc-pe4-action-b-replacement.ps1` as a
 single invocation: all repository and local transport prechecks precede the one
@@ -406,6 +406,61 @@ respective parent devices. Existing noncompliance fails closed without chmod or
 chown; confirmed partial hierarchy is retained for an explicitly authorized
 retry. D-PREP evidence is audit-only: Action D remains construction-only and
 independently revalidates the hierarchy without consuming D-PREP evidence.
+
+## Current transfer-evidence recovery status
+
+Operator-supplied PI3 read-only checks reported the following filesystem states
+at recovery readiness; these are observations, not indefinite presence guarantees:
+
+| Historical evidence/staging path | Observed state |
+| --- | --- |
+| `/tmp/hioc-pe4-artifact-transfer-_w3qekbv` | ABSENT |
+| `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl` | ABSENT |
+| `/tmp/hioc-pe4-runtime-construct-failure-aih8dlDw` | ABSENT |
+| `/tmp/hioc-pe4-runtime-hierarchy-prepare-8OfcmWdP` | PRESENT |
+
+The three absent objects were historically created and used as governed
+evidence/staging. Their disappearance cause is UNKNOWN. Historical Action A PASS
+and Action B PASS remain valid; the successful B transfer directory is currently
+unavailable and cannot supply Action D input. Manual reconstruction or substitution
+is prohibited. This reconciliation authorizes no inspection, cleanup, or execution.
+
+Action C remains PASS exactly once, is not invalidated by evidence loss or a
+replacement B transaction, and must not be rerun. No new route proof or network
+route probe is authorized or required. D-PREP native validation and production
+execution remain PASS / CLOSED, are not invalidated, and must not be rerun.
+PI3 read-only readiness reconfirmed `runtime`, `runtime/pe4`, and
+`runtime/pe4/environments` under `/home/jazofv1/hioc` as compliant directories,
+each mode `0750`, device `45826`. No lifecycle action executed during that check.
+
+The attempted recovery Action D wrapper stopped during pre-execution Action B
+transfer-input validation before `PRE_EXECUTION_GUARDS=PASS`. The Action D process
+was not launched and no new Action D evidence was created. This is not a third
+Action D failure: `ACTION_D=FAILED_TWICE_NOT_COMPLETE` and
+`ACTION_D_RETRIED=FALSE` after D-PREP remain unchanged. Actions E/F/G,
+PE-4.0B.2a, PE-4.0B.2b, and PE-4.0C remain NOT_STARTED; rollback remains
+NOT_PERFORMED. `ROUTE_PROOF_ORDER=BEFORE_DEPENDENCY_DEPLOYMENT` is unchanged.
+
+```text
+PI3_READ_ONLY_READINESS=PASS
+WINDOWS_ACTION_B_REPLACEMENT_READINESS=PASS
+REPLACEMENT_ACTION_B=READY_FOR_SEPARATE_AUTHORIZATION
+ACTION_B_EXECUTED=FALSE
+ACTION_B_AUTHORIZED=FALSE
+```
+
+The last two markers apply only to the prospective replacement transaction and
+its readiness checkpoint, not historical Action B PASS. Replacement B is
+technically supported but NOT idempotent: each invocation creates a fresh random
+transfer directory, never reconstructs the vanished successful directory and
+never reuses failed staging. Previous authorization is consumed. A separately
+authorized single replacement B transaction may be considered only after this
+reconciliation is committed, published, and verified; this documentation is not
+execution authorization. Readiness PASS grants no standing execution authority.
+
+Ephemeral `/tmp` evidence became unavailable. No PE-4 durable evidence-retention
+hardening item is established here; a durable retention mechanism requires a
+separate future design/governance decision. No retention redesign is included.
 
 ## Current D-PREP reconciliation status
 
@@ -495,14 +550,11 @@ post-open directory type/token and UID/GID/mode against the observed policy, wit
 retained descriptor ownership. It imposes no fixed /tmp UID/GID/mode, sticky-bit
 policy, or observed/opened dev/inode continuity requirement.
 
-### Preserved production evidence — DO NOT TOUCH
+### Historical production evidence and current availability
 
-- Authoritative corrected B: `/tmp/hioc-pe4-artifact-transfer-_w3qekbv`
-- Old failed staging: `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl`
-- Second Action D failure: `/tmp/hioc-pe4-runtime-construct-failure-aih8dlDw`
-
-Documentation reconciliation grants no authority to inspect, modify, or delete
-these paths. `ROUTE_PROOF_ORDER=BEFORE_DEPENDENCY_DEPLOYMENT` remains unchanged.
+Current operator-observed availability is recorded in the transfer-evidence
+recovery status above. Historical paths remain audit facts; no continued
+presence, reconstruction, substitution, or cleanup authority is implied.
 
 Final validation counts, publisher fault coverage, and umask disposition D are
 recorded in HIOC_MASTER_PLAN.md; these do not establish production execution.
