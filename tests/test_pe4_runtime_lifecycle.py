@@ -27,6 +27,7 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
         for name in names:
             self.assertTrue((TOOLS / name).is_file(), name)
             compile((TOOLS / name).read_text(encoding="utf-8"), name, "exec")
+        self.assertTrue((TOOLS / "hioc-pe4-runtime-hierarchy-prepare.py").is_file())
         for action in "ABCDEFG":
             self.assertIn(f"PE-4.0B.2a-{action}", DOC)
 

@@ -81,6 +81,13 @@ class Failure(RuntimeError):
         super().__init__(code)
 
 
+class NamedChildFailure(Failure):
+    """A bounded named-child failure that preserves a known creation effect."""
+    def __init__(self, code: str, stage: str, creation_occurred: bool):
+        self.creation_occurred = creation_occurred
+        super().__init__(code, stage)
+
+
 def is_transfer_directory(value: str) -> bool:
     """Return whether *value* is a complete governed Action B path.
 
@@ -116,6 +123,7 @@ def open_owned_directory(path: pathlib.Path, mode: int, stage: str,
                          expected_gid: int | None = None) -> OwnedDirectory:
     if os.name != "posix" or not hasattr(os, "O_DIRECTORY") or not hasattr(os, "O_NOFOLLOW"):
         raise Failure("POSIX_DIRECTORY_PRIMITIVES_UNAVAILABLE", stage)
+    fd = -1
     try:
         fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     except OSError:
@@ -134,9 +142,14 @@ def open_owned_directory(path: pathlib.Path, mode: int, stage: str,
                 raise Failure("DIRECTORY_PARENT_IDENTITY_MISMATCH", stage)
             if dev != parent.dev:
                 raise Failure("DIRECTORY_MOUNT_SUBSTITUTION", stage)
-        return OwnedDirectory(path, fd, dev, ino, uid, gid, actual_mode, parent)
+        result = OwnedDirectory(path, fd, dev, ino, uid, gid, actual_mode, parent)
+        fd = -1
+        return result
     except Exception:
-        os.close(fd)
+        if fd >= 0:
+            owned_fd, fd = fd, -1
+            try: os.close(owned_fd)
+            except OSError: pass
         raise
 
 
@@ -159,7 +172,70 @@ def revalidate_owned_directory(directory: OwnedDirectory, stage: str) -> None:
                 stat.S_IMODE(info.st_mode)) != (directory.dev, directory.ino,
                                                 directory.uid, directory.gid,
                                                 directory.mode):
-            raise Failure("DIRECTORY_NAME_SUBSTITUTED", stage)
+                raise Failure("DIRECTORY_NAME_SUBSTITUTED", stage)
+
+
+def revalidate_path_bound_directory(directory: OwnedDirectory, stage: str) -> None:
+    """Revalidate a retained directory and every descriptor-bound ancestor."""
+    chain: list[OwnedDirectory] = []
+    current: OwnedDirectory | None = directory
+    while current is not None:
+        chain.append(current)
+        current = current.parent
+    for item in reversed(chain):
+        revalidate_owned_directory(item, stage)
+
+
+def open_trusted_owned_path_bound(path: pathlib.Path, stage: str) -> OwnedDirectory:
+    """Open *path* through retained, non-following descriptor-bound ancestry.
+
+    This deliberately does not impose a same-device policy on the trusted
+    ancestry.  Callers retain the complete chain and must use
+    ``revalidate_path_bound_directory`` at their governed checkpoints.
+    """
+    if os.name != "posix" or not hasattr(os, "O_DIRECTORY") or not hasattr(os, "O_NOFOLLOW"):
+        raise Failure("POSIX_DIRECTORY_PRIMITIVES_UNAVAILABLE", stage)
+    root_info = os.lstat(path.anchor)
+    root = open_owned_directory(pathlib.Path(path.anchor), stat.S_IMODE(root_info.st_mode), stage,
+                                expected_uid=root_info.st_uid, expected_gid=root_info.st_gid)
+    parent = root
+    try:
+        for part in path.parts[1:]:
+            try:
+                info = os.stat(part, dir_fd=parent.fd, follow_symlinks=False)
+            except OSError:
+                raise Failure("TRUSTED_PATH_COMPONENT_OPEN_FAILED", stage)
+            if (not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode)
+                    or info.st_uid not in (0, os.getuid()) or stat.S_IMODE(info.st_mode) & 0o022):
+                raise Failure("UNSAFE_PARENT_CHAIN", stage)
+            try:
+                fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent.fd)
+            except OSError:
+                raise Failure("TRUSTED_PATH_COMPONENT_OPEN_FAILED", stage)
+            try:
+                dev, ino, uid, gid, mode = _directory_token(fd)
+                entry = os.stat(part, dir_fd=parent.fd, follow_symlinks=False)
+                if (not stat.S_ISDIR(entry.st_mode) or stat.S_ISLNK(entry.st_mode)
+                        or (entry.st_dev, entry.st_ino, entry.st_uid, entry.st_gid,
+                            stat.S_IMODE(entry.st_mode)) != (dev, ino, uid, gid, mode)):
+                    raise Failure("TRUSTED_PATH_COMPONENT_SUBSTITUTED", stage)
+                child = OwnedDirectory(parent.path / part, fd, dev, ino, uid, gid, mode, parent)
+                fd = -1
+            finally:
+                if fd >= 0:
+                    os.close(fd)
+            parent = child
+        if parent.uid != os.getuid() or parent.gid != os.getgid():
+            raise Failure("PARENT_OWNERSHIP_INVALID", stage)
+        revalidate_path_bound_directory(parent, stage)
+        return parent
+    except Exception:
+        current: OwnedDirectory | None = parent
+        while current is not None:
+            previous, current.parent = current.parent, None
+            current.close()
+            current = previous
+        raise
 
 
 def create_owned_child(parent: OwnedDirectory, prefix: str, mode: int,
@@ -174,6 +250,7 @@ def create_owned_child(parent: OwnedDirectory, prefix: str, mode: int,
         except OSError:
             raise Failure("DIRECTORY_CREATION_FAILED", stage)
         path = parent.path / name
+        fd = -1
         try:
             fd = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
                          dir_fd=parent.fd)
@@ -184,12 +261,87 @@ def create_owned_child(parent: OwnedDirectory, prefix: str, mode: int,
             child = OwnedDirectory(path, fd, dev, ino, uid, gid, actual_mode, parent)
             revalidate_owned_directory(child, stage)
             os.fsync(fd); os.fsync(parent.fd)
+            fd = -1
             return child
         except Exception:
-            try: os.rmdir(name, dir_fd=parent.fd)
-            except OSError: pass
+            if fd >= 0:
+                owned_fd, fd = fd, -1
+                try: os.close(owned_fd)
+                except OSError: pass
             raise
     raise Failure("DIRECTORY_NAME_EXHAUSTED", stage)
+
+
+def ensure_owned_named_child(parent: OwnedDirectory, name: str, mode: int, stage: str,
+                             *, require_same_device: bool = True) -> tuple[OwnedDirectory, bool]:
+    """Open an exact pre-existing child or create it once without adopting a race.
+
+    The boolean is True only when this invocation created the child.  This is
+    intentionally separate from create_owned_child(), whose random names are
+    correct for invocation-owned directories but not durable hierarchy names.
+    """
+    if (not name or name in (".", "..") or "/" in name or "\\" in name
+            or pathlib.PurePath(name).name != name):
+        raise Failure("NAMED_CHILD_NAME_INVALID", stage)
+    if os.name != "posix" or not hasattr(os, "O_DIRECTORY") or not hasattr(os, "O_NOFOLLOW"):
+        raise Failure("POSIX_DIRECTORY_PRIMITIVES_UNAVAILABLE", stage)
+    revalidate_owned_directory(parent, stage)
+    created = False
+    try:
+        observed = os.stat(name, dir_fd=parent.fd, follow_symlinks=False)
+    except FileNotFoundError:
+        observed = None
+    except OSError:
+        raise Failure("NAMED_CHILD_INSPECTION_FAILED", stage)
+    if observed is None:
+        revalidate_owned_directory(parent, stage)
+        try:
+            os.mkdir(name, mode=mode, dir_fd=parent.fd)
+            created = True
+        except FileExistsError:
+            raise Failure("NAMED_CHILD_CREATION_COLLISION", stage)
+        except OSError:
+            raise Failure("NAMED_CHILD_CREATION_FAILED", stage)
+    elif not stat.S_ISDIR(observed.st_mode) or stat.S_ISLNK(observed.st_mode):
+        raise Failure("NAMED_CHILD_TYPE_INVALID", stage)
+    try:
+        fd = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent.fd)
+    except OSError:
+        if created:
+            raise NamedChildFailure("NAMED_CHILD_OPEN_FAILED", stage, True)
+        raise Failure("NAMED_CHILD_OPEN_FAILED", stage)
+    try:
+        if created: os.fchmod(fd, mode)
+        dev, ino, uid, gid, actual_mode = _directory_token(fd)
+        expected_uid, expected_gid = os.getuid(), os.getgid()
+        if (uid, gid, actual_mode) != (expected_uid, expected_gid, mode):
+            raise Failure("NAMED_CHILD_IDENTITY_MISMATCH", stage)
+        if require_same_device and dev != parent.dev:
+            raise Failure("NAMED_CHILD_MOUNT_SUBSTITUTION", stage)
+        entry = os.stat(name, dir_fd=parent.fd, follow_symlinks=False)
+        if (not stat.S_ISDIR(entry.st_mode) or stat.S_ISLNK(entry.st_mode)
+                or (entry.st_dev, entry.st_ino, entry.st_uid, entry.st_gid,
+                    stat.S_IMODE(entry.st_mode)) != (dev, ino, uid, gid, actual_mode)):
+            raise Failure("NAMED_CHILD_IDENTITY_SUBSTITUTED", stage)
+        child = OwnedDirectory(parent.path / name, fd, dev, ino, uid, gid, actual_mode, parent)
+        revalidate_owned_directory(parent, stage)
+        revalidate_owned_directory(child, stage)
+        if created:
+            os.fsync(fd); os.fsync(parent.fd)
+            revalidate_owned_directory(parent, stage)
+            revalidate_owned_directory(child, stage)
+        fd = -1
+        return child, created
+    except Failure as exc:
+        if created:
+            raise NamedChildFailure(exc.code, exc.stage, True)
+        raise
+    except OSError:
+        if created:
+            raise NamedChildFailure("NAMED_CHILD_CONFIRMATION_FAILED", stage, True)
+        raise Failure("NAMED_CHILD_CONFIRMATION_FAILED", stage)
+    finally:
+        if fd >= 0: os.close(fd)
 
 
 def open_tmp_root(stage: str) -> OwnedDirectory:
@@ -216,43 +368,55 @@ def open_trusted_owned_parent(path: pathlib.Path, stage: str) -> OwnedDirectory:
 
 
 def publish_owned_json(directory: OwnedDirectory, name: str, document: dict[str, object],
-                       stage: str, mode: int = 0o600) -> str:
+                       stage: str, mode: int = 0o600, *, max_bytes: int = 65536) -> str:
     revalidate_owned_directory(directory, stage)
     if "/" in name or name in ("", ".", ".."):
         raise Failure("EVIDENCE_NAME_INVALID", stage)
     payload = (json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n").encode()
-    if len(payload) > 65536:
+    if len(payload) > max_bytes:
         raise Failure("EVIDENCE_TOO_LARGE", stage)
     temporary = "." + name + "." + "".join(secrets.choice(string.ascii_letters)
                                                 for _ in range(8))
     fd = -1
+    temporary_owned = False
     try:
         fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
                      mode, dir_fd=directory.fd)
+        temporary_owned = True
         view = memoryview(payload)
         while view:
             written = os.write(fd, view)
             if written <= 0:
                 raise Failure("EVIDENCE_WRITE_FAILED", stage)
             view = view[written:]
-        os.fchmod(fd, mode); os.fsync(fd); os.close(fd); fd = -1
+        os.fchmod(fd, mode); os.fsync(fd)
+        owned_fd, fd = fd, -1
+        os.close(owned_fd)
         os.link(temporary, name, src_dir_fd=directory.fd, dst_dir_fd=directory.fd,
                 follow_symlinks=False)
-        os.unlink(temporary, dir_fd=directory.fd); os.fsync(directory.fd)
+        os.unlink(temporary, dir_fd=directory.fd)
+        temporary_owned = False
+        os.fsync(directory.fd)
+        check = -1
         check = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory.fd)
         try:
             info = os.fstat(check)
             actual = b""
-            while len(actual) <= 65536:
-                block = os.read(check, 65536)
+            while len(actual) <= max_bytes:
+                block = os.read(check, max_bytes + 1 - len(actual))
                 if not block: break
                 actual += block
-            if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+            if (len(actual) > max_bytes or not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
                     or info.st_gid != os.getgid() or stat.S_IMODE(info.st_mode) != mode
                     or actual != payload):
                 raise Failure("EVIDENCE_CONFIRMATION_FAILED", stage)
+            owned_check, check = check, -1
+            os.close(owned_check)
         finally:
-            os.close(check)
+            if check >= 0:
+                owned_check, check = check, -1
+                try: os.close(owned_check)
+                except OSError: pass
         revalidate_owned_directory(directory, stage)
         return hashlib.sha256(payload).hexdigest()
     except FileExistsError:
@@ -262,9 +426,15 @@ def publish_owned_json(directory: OwnedDirectory, name: str, document: dict[str,
     except OSError:
         raise Failure("EVIDENCE_PUBLICATION_FAILED", stage)
     finally:
-        if fd >= 0: os.close(fd)
-        try: os.unlink(temporary, dir_fd=directory.fd)
-        except OSError: pass
+        if fd >= 0:
+            owned_fd, fd = fd, -1
+            try: os.close(owned_fd)
+            except OSError: pass
+        if temporary_owned:
+            try:
+                os.unlink(temporary, dir_fd=directory.fd)
+                temporary_owned = False
+            except OSError: pass
 
 
 def sha256(path: pathlib.Path) -> str:

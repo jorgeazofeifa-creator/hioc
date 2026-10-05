@@ -1,5 +1,27 @@
 # HIOC Master Plan
 
+## Current governed status — Phase 7A
+
+Phase 7A is **ACTIVE / IN PROGRESS**. Passive Enrichment PE-0 through PE-3 are
+complete; PE-4 is current and not complete. PE-4.0A and PE-4.0B.1 are
+**COMPLETE / PASS**. Action A, dedicated Windows SSH identity provisioning,
+PI3 public-key authorization, the current replacement Action B, and Action C
+are **COMPLETE / PASS**. Action D has been attempted twice and is **NOT
+COMPLETE**; its latest bounded failure is `RUNTIME_PARENT_VALIDATION /
+OPEN_RUNTIME_PARENT / FILE_NOT_FOUND / errno 2`.
+
+`PE-4.0B.2a-D-PREP` is implemented in the repository but **NOT EXECUTED** and
+is required before any new Action D authorization. Actions E-G, authenticated
+PE-4.0B.2a proof, PE-4.0B.2b, PE-4.0C, the HA association adapter, and PE-4
+production deployment remain **NOT STARTED** or **NOT COMPLETE** as applicable.
+The older checkpoint narratives below retain their historical status at the
+time written and are not current lifecycle assertions.
+
+Next governed sequence: complete documentation reconciliation and commit-readiness
+audit, then separately authorize governed repository publication;
+separately synchronize approved source; separately prepare and authorize
+D-PREP; review its evidence; only then prepare another Action D attempt.
+
 ## PE-4.0B.2a Action B Windows SSH ACL compatibility correction
 
 Read-only workstation forensics proved that Action B incorrectly applied the
@@ -2379,3 +2401,142 @@ readiness.
 The first Action D failure is diagnostically incomplete, not a proven functional
 failure. A corrected future attempt requires separate authorization; its private
 failure evidence records only bounded sanitized diagnostic fields.
+
+## PE-4 D-PREP runtime hierarchy preparation
+
+Action A, dedicated Windows SSH identity provisioning, PI3 public-key authorization,
+the current replacement Action B, and Action C are **COMPLETE / PASS**. Action D
+has been attempted twice and is **NOT COMPLETE**: the second attempt localized the
+missing prerequisite at `RUNTIME_PARENT_VALIDATION / OPEN_RUNTIME_PARENT`.
+`PE-4.0B.2a-D-PREP` is now the mandatory separately authorized predecessor. It
+creates or validates only `runtime`, `runtime/pe4`, and `runtime/pe4/environments`
+under the existing HIOC runtime, preserves compliant partial hierarchy, and stops.
+Action D remains construction-only and independently validates that hierarchy.
+Actions E-G, authenticated PE-4.0B.2a proof, PE-4.0B.2b, and PE-4.0C remain
+**NOT STARTED**.
+
+## Current D-PREP reconciliation status
+
+D-PREP repository implementation and behavioral validation are a complete candidate;
+this documentation/governance reconciliation checkpoint is complete, with commit
+readiness and governed repository publication still pending. D-PREP has NOT been
+executed on PI3. Action A and corrected B are COMPLETE / PASS; Action C is COMPLETE /
+PASS exactly once and must not be rerun absent an authorized finding of invalidation.
+Action D was attempted twice and failed twice, remains incomplete, and has not been
+retried after the second failure. E/F/G, HA 2a/2b, and 0C remain NOT STARTED. PE-4
+remains current and incomplete. No rollback has occurred.
+
+The next repository checkpoint is a commit-readiness audit. Publication of code,
+tests, and governance together, clean source identity, separately authorized PI3
+synchronization and D-PREP execution, and a production Evidence Report remain
+pending. Only successful D-PREP execution and evidence review permit consideration
+of an Action D retry under another authorization. This record authorizes none of
+those actions. Earlier checkpoint narratives describe historical status; this
+section records current status. The authoritative record is HIOC_MASTER_PLAN.md.
+
+### Final hierarchy and evidence contract
+
+D-PREP owns only `/home/jazofv1/hioc/runtime`,
+`/home/jazofv1/hioc/runtime/pe4`, and
+`/home/jazofv1/hioc/runtime/pe4/environments`: directories, no symlinks,
+`jazofv1:jazofv1`, exact mode `0750`. `/home`, `/home/jazofv1`, and
+`/home/jazofv1/hioc` are validate-only anchors. Existing noncompliance is rejected,
+not normalized. hioc -> runtime permits cross-device operation with
+`require_same_device=False`; runtime -> pe4 and pe4 -> environments require the
+same device. States are `NOT_REACHED`, `PREEXISTING_COMPLIANT`, `CREATED_CONFIRMED`,
+and `CREATION_OCCURRED_BUT_FINAL_STATE_UNCONFIRMED`. Valid partial hierarchy is
+durable and resumable; no recursive rollback or automatic deletion of valid
+created hierarchy occurs. Governed failures retain `ROLLBACK_RECOMMENDED=FALSE`.
+
+Private evidence is under `/tmp/hioc-pe4-runtime-hierarchy-prepare-XXXXXXXX`,
+directory mode `0700`, `result.json` mode `0600`. D-PREP `EVIDENCE_MAX_BYTES=4096`
+includes the final newline; its publisher explicitly receives 4096, and bounded
+reread detects overflow under that limit. The shared publisher default remains
+65536 bytes, not D-PREP's limit. Publication uses an atomic no-replace final link,
+exact payload verification, final directory revalidation, and a digest calculated
+only after confirmation steps. States are `NOT_CREATED`, `CREATED`, `UNCONFIRMED`,
+and `CONFIRMED`: pre-evidence validation failures remain NOT_CREATED; evidence
+acquisition/creation/publication failures become UNCONFIRMED. Publication success
+sets CONFIRMED before final hierarchy validation. Unconfirmed evidence failures
+withhold `EVIDENCE_DIR`; a later governed final-validation failure retains CONFIRMED
+and may disclose the confirmed path despite overall FAIL. Unexpected evidence
+failures disclose no unconfirmed path. Confirmation is distinct from overall success.
+
+Policy C: `create_owned_child()` performs no pathname deletion during exceptional
+cleanup after successful mkdir: no rmdir, unlink, or alternate removal. It captures
+and clears local fd ownership, closes once if acquired, suppresses cleanup-close
+OSError, and bare re-raises the primary. Thus exceptional cleanup cannot delete an
+unrelated current basename occupant through pathname removal. Creation/acquisition
+is not race-free or atomic: namespace may change, original-object fate after
+substitution may be unknown, failures may leave private/remnant directories, and
+repeated failures may accumulate remnants. No automatic remnant cleanup exists.
+These accepted nonblocking limits are distinct from hierarchy rollback; original
+object persistence is not guaranteed.
+
+Temp-root policy uses pre-open lstat, rejects observed nondirectories/symlinks,
+requires POSIX primitives, opens with directory/no-follow flags, and validates
+post-open directory type/token and UID/GID/mode against the observed policy, with
+retained descriptor ownership. It imposes no fixed /tmp UID/GID/mode, sticky-bit
+policy, or observed/opened dev/inode continuity requirement.
+
+### Final repository validation and finalization
+
+D-PREP: 115 run, 108 passed, 7 skipped, zero failures/errors. D-PREP/lifecycle:
+126 run, 119 passed, 7 skipped, zero failures/errors. The seven known Windows skips
+are POSIX-only; this checkpoint adds no WSL requirement. They are:
+
+- `test_posix_named_child_create_then_idempotent_open`
+- `test_posix_path_bound_ancestor_rename_away_is_rejected_as_name_lost`
+- `test_posix_path_bound_ancestor_replacement_is_rejected_as_name_substituted`
+- `test_posix_path_bound_leaf_removal_is_rejected_as_name_lost`
+- `test_posix_path_bound_leaf_rename_away_is_rejected_as_name_lost`
+- `test_posix_path_bound_leaf_replacement_is_rejected_as_name_substituted`
+- `test_posix_path_bound_unchanged_leaf_revalidates`
+
+Private-child creation retains eight random characters from
+`string.ascii_letters + string.digits`, FileExistsError-only retry, 32 candidates,
+DIRECTORY_NAME_EXHAUSTED, local fd ownership until transfer, type/UID/GID/mode/device
+validation, real descriptor/path revalidation, child fsync then parent fsync and
+transfer. Temp-root real-helper coverage includes success transfer, UID mismatch,
+raw post-open fstat OSError, cleanup-close preservation, observed wrong type and
+symlink, unsupported primitives, open OSError, opened nondirectory, and raw pre-open
+lstat OSError. GID/mode variants are redundant with metadata-comparison coverage.
+
+The closed publisher matrix covers temporary-name ownership; temporary and
+verification descriptor lifecycles; exact/partial and nonpositive writes;
+temporary and final-target collisions; pre-link faults; explicit post-link unlink
+and cleanup-retry faults; directory fsync; verification open/fstat/metadata/read/
+content/close faults; final revalidation; payload equality and digest timing.
+Order remains write, fchmod, file fsync, close, final link, temporary unlink,
+directory fsync, reread/verification/close, directory revalidation, digest return.
+Once published, the final result may survive later unlink/fsync/verification/
+revalidation failure even though the operation fails.
+
+Representative evidence failures retain DIAGNOSTIC_STAGE=EVIDENCE_PUBLICATION and
+DIAGNOSTIC_OPERATION=PUBLISH_EVIDENCE. Governed Failure and NamedChildFailure use
+GOVERNED_FAILURE / errno NONE; raw OSError uses bounded OS classification and real
+nonnegative errno; other exceptions use bounded unexpected classification. Failure
+output retains STOP_REQUIRED=TRUE and governed rollback recommendation FALSE.
+Retained closes run evidence, evidence_root, environments, root, runtime, anchor;
+each non-null handle gets one attempt, only OSError is suppressed, later closes
+continue, and PASS/0 or FAIL/1 survives cleanup-close OSError.
+
+Umask review: D. NO MATERIAL CHECKPOINT NEEDED. `old_umask = os.umask(0o027)` saves
+the valid previous mask unchanged; finally restores `os.umask(old_umask)` before
+retained closes. No source path corrupts it. No normal intended-Linux restoration
+failure was established. An injected restore exception could override a pending
+return and skip closes; this is injected-only structural behavior, not a production
+blocker, with no dedicated test/correction required.
+
+Action D is unchanged, construction-only, and independently validates the hierarchy;
+D-PREP evidence is audit-only. Frozen Action D SHA-256:
+`e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213`.
+
+### Preserved production evidence — DO NOT TOUCH
+
+- Authoritative corrected B: `/tmp/hioc-pe4-artifact-transfer-_w3qekbv`
+- Old failed staging: `/tmp/hioc-pe4-artifact-transfer-g_jrlqkl`
+- Second Action D failure: `/tmp/hioc-pe4-runtime-construct-failure-aih8dlDw`
+
+Documentation reconciliation grants no authority to inspect, modify, or delete
+these paths. `ROUTE_PROOF_ORDER=BEFORE_DEPENDENCY_DEPLOYMENT` remains unchanged.

@@ -1,5 +1,9 @@
 # HIOC Changelog
 
+- Added the separately governed PE-4 D-PREP runtime-hierarchy checkpoint. It
+  prepares or validates only the descriptor-bound `runtime/pe4/environments`
+  hierarchy, retains valid partial state, and cannot chain into Action D.
+
 - Refreshed PE-4 Action B's exact Windows System32 OpenSSH trust anchors after
   valid Microsoft-signed `OpenSSH_9.5p2` servicing drift. The reviewed new
   `ssh.exe` and `ssh-keygen.exe` hashes replace, rather than supplement, stale
@@ -900,3 +904,29 @@ Initial real HIOC core foundation.
 
 - Action D now retains bounded sanitized diagnostics and separate private failure
   evidence without changing runtime construction or eligibility semantics.
+
+## Current D-PREP reconciliation status
+
+D-PREP repository implementation and behavioral validation are a complete candidate;
+this documentation/governance reconciliation checkpoint is complete, with commit
+readiness and governed repository publication still pending. D-PREP has NOT been
+executed on PI3. Action A and corrected B are COMPLETE / PASS; Action C is COMPLETE /
+PASS exactly once and must not be rerun absent an authorized finding of invalidation.
+Action D was attempted twice and failed twice, remains incomplete, and has not been
+retried after the second failure. E/F/G, HA 2a/2b, and 0C remain NOT STARTED. PE-4
+remains current and incomplete. No rollback has occurred.
+
+The next repository checkpoint is a commit-readiness audit. Publication of code,
+tests, and governance together, clean source identity, separately authorized PI3
+synchronization and D-PREP execution, and a production Evidence Report remain
+pending. Only successful D-PREP execution and evidence review permit consideration
+of an Action D retry under another authorization. This record authorizes none of
+those actions. Earlier checkpoint narratives describe historical status; this
+section records current status. The authoritative record is HIOC_MASTER_PLAN.md.
+
+Final repository hardening validates descriptor ownership and cleanup, Policy C
+(no exceptional evidence-child pathname deletion), bounded publication/verification,
+4096-byte evidence including newline, temp-root acquisition, and precise confirmed
+evidence disclosure. These repository changes are not deployed. Final technical
+contracts and validation evidence are recorded in HIOC_MASTER_PLAN.md and
+PE4_ISOLATED_RUNTIME_DEPENDENCY_CONTRACT.md.
