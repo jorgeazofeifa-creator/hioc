@@ -955,9 +955,9 @@ post-test source identity and frozen Action D SHA-256 were preserved. The prior
 Linux failures are closed as test-harness portability/isolation defects.
 
 ```text
-D_PREP=WINDOWS_CORRECTION_VALIDATED_NATIVE_LINUX_REVALIDATION_PASS_PRODUCTION_NOT_EXECUTED
+D_PREP=PRODUCTION_EXECUTED_PASS
 PI3_NATIVE_D_PREP_REVALIDATION=PASS
-D_PREP_EXECUTED=FALSE
+D_PREP_EXECUTED=TRUE
 ACTION_D=FAILED_TWICE_NOT_COMPLETE
 ACTION_D_RETRIED=FALSE
 PI3_COMBINED_SUITE_EXECUTED=FALSE
@@ -970,16 +970,20 @@ PE4_0C=NOT_STARTED
 ROLLBACK=NOT_PERFORMED
 ```
 
-This closes only native D-PREP test revalidation. D-PREP production hierarchy
-preparation has NOT EXECUTED; none of its three hierarchy paths is claimed created
-by D-PREP. Action D remains failed twice, incomplete, and not retried. The combined
+Operator-supplied production evidence now closes D-PREP execution as PASS at
+`5783951fdd33e0bb476c0fa53022633adddf1b8c`. All three previously absent hierarchy
+components were CREATED_CONFIRMED, owned by `jazofv1:jazofv1`, mode `0750`, device
+`45826`. Evidence was CONFIRMED, process RC was `0`, post-validation passed, and
+`ROLLBACK_RECOMMENDED=FALSE`. The missing-hierarchy prerequisite is corrected;
+this is not Action D success. Action D remains failed twice, incomplete, and not
+retried. The combined
 D-PREP/lifecycle suite has NOT EXECUTED on PI3; its earlier Windows validation is
 historical and separate. Action A and corrected B remain COMPLETE / PASS; Action C
 remains COMPLETE / PASS exactly once and must not be rerun absent an authorized
 finding of invalidation. Later lifecycle actions remain NOT STARTED and no rollback
 occurred. Phase 7A remains active; PE-4 is incomplete and Active Discovery postponed.
 
-The next production lifecycle action requires separate operator authorization.
+Action D retry requires separate operator authorization.
 This documentation closure grants no execution authority. No production state or
 preserved evidence was changed by this checkpoint. Earlier checkpoint narratives
 retain historical status; HIOC_MASTER_PLAN.md remains the authoritative source.

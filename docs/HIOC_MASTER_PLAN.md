@@ -10,8 +10,8 @@ are **COMPLETE / PASS**. Action D has been attempted twice and is **NOT
 COMPLETE**; its latest bounded failure is `RUNTIME_PARENT_VALIDATION /
 OPEN_RUNTIME_PARENT / FILE_NOT_FOUND / errno 2`.
 
-`PE-4.0B.2a-D-PREP` is implemented in the repository but **NOT EXECUTED** and
-is required before any new Action D authorization. Actions E-G, authenticated
+`PE-4.0B.2a-D-PREP` native validation and production execution are **PASS / CLOSED**.
+Its hierarchy prerequisite is confirmed; any Action D retry remains separately authorized. Actions E-G, authenticated
 PE-4.0B.2a proof, PE-4.0B.2b, PE-4.0C, the HA association adapter, and PE-4
 production deployment remain **NOT STARTED** or **NOT COMPLETE** as applicable.
 The older checkpoint narratives below retain their historical status at the
@@ -20,9 +20,11 @@ time written and are not current lifecycle assertions.
 Current correction status: Windows validation passed; source synchronization to PI3
 at `c5181a0d65da294e5db2dbd6795f20889b972a22` and corrected native D-PREP
 revalidation are complete. Native result: 115 run / 115 pass / 0 skip / 0 fail /
-0 error. D-PREP remains NOT EXECUTED; Action D remains not retried; the combined
-suite has not executed on PI3. The next production lifecycle action requires
-separate operator authorization. This closes native revalidation only.
+0 error. D-PREP subsequently executed successfully at governance commit
+`5783951fdd33e0bb476c0fa53022633adddf1b8c`: three absent hierarchy components
+were CREATED_CONFIRMED, evidence CONFIRMED, process RC 0, and post-validation PASS.
+Action D remains not retried; the combined suite has not executed on PI3.
+Action D retry requires separate operator authorization.
 
 ## PE-4.0B.2a Action B Windows SSH ACL compatibility correction
 
@@ -2427,9 +2429,9 @@ post-test source identity and frozen Action D SHA-256 were preserved. The prior
 Linux failures are closed as test-harness portability/isolation defects.
 
 ```text
-D_PREP=WINDOWS_CORRECTION_VALIDATED_NATIVE_LINUX_REVALIDATION_PASS_PRODUCTION_NOT_EXECUTED
+D_PREP=PRODUCTION_EXECUTED_PASS
 PI3_NATIVE_D_PREP_REVALIDATION=PASS
-D_PREP_EXECUTED=FALSE
+D_PREP_EXECUTED=TRUE
 ACTION_D=FAILED_TWICE_NOT_COMPLETE
 ACTION_D_RETRIED=FALSE
 PI3_COMBINED_SUITE_EXECUTED=FALSE
@@ -2442,19 +2444,75 @@ PE4_0C=NOT_STARTED
 ROLLBACK=NOT_PERFORMED
 ```
 
-This closes only native D-PREP test revalidation. D-PREP production hierarchy
-preparation has NOT EXECUTED; none of its three hierarchy paths is claimed created
-by D-PREP. Action D remains failed twice, incomplete, and not retried. The combined
+Operator-supplied production evidence now closes D-PREP execution as PASS at
+`5783951fdd33e0bb476c0fa53022633adddf1b8c`. All three previously absent hierarchy
+components were CREATED_CONFIRMED, owned by `jazofv1:jazofv1`, mode `0750`, device
+`45826`. Evidence was CONFIRMED, process RC was `0`, post-validation passed, and
+`ROLLBACK_RECOMMENDED=FALSE`. The missing-hierarchy prerequisite is corrected;
+this is not Action D success. Action D remains failed twice, incomplete, and not
+retried. The combined
 D-PREP/lifecycle suite has NOT EXECUTED on PI3; its earlier Windows validation is
 historical and separate. Action A and corrected B remain COMPLETE / PASS; Action C
 remains COMPLETE / PASS exactly once and must not be rerun absent an authorized
 finding of invalidation. Later lifecycle actions remain NOT STARTED and no rollback
 occurred. Phase 7A remains active; PE-4 is incomplete and Active Discovery postponed.
 
-The next production lifecycle action requires separate operator authorization.
+Action D retry requires separate operator authorization.
 This documentation closure grants no execution authority. No production state or
 preserved evidence was changed by this checkpoint. Earlier checkpoint narratives
 retain historical status; HIOC_MASTER_PLAN.md remains the authoritative source.
+
+### Operator-supplied D-PREP production execution evidence
+
+The operator executed D-PREP on `nutandpihole` as `jazofv1` from
+`/home/jazofv1/hioc-release-source`, synchronized beforehand to governance commit
+`5783951fdd33e0bb476c0fa53022633adddf1b8c` (subject
+`PE-4: close native D-PREP revalidation`). `PRE_EXECUTION_GUARDS=PASS`.
+This documentation checkpoint did not access PI3 or independently inspect evidence.
+
+All three hierarchy components were ABSENT before execution and are now confirmed:
+
+| Path | State | Created | Type | Owner/group | Mode | Device |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/home/jazofv1/hioc/runtime` | CREATED_CONFIRMED | TRUE | directory | jazofv1:jazofv1 | 0750 | 45826 |
+| `/home/jazofv1/hioc/runtime/pe4` | CREATED_CONFIRMED | TRUE | directory | jazofv1:jazofv1 | 0750 | 45826 |
+| `/home/jazofv1/hioc/runtime/pe4/environments` | CREATED_CONFIRMED | TRUE | directory | jazofv1:jazofv1 | 0750 | 45826 |
+
+```text
+RUNTIME_PARENT_STATE=CREATED_CONFIRMED
+RUNTIME_ROOT_STATE=CREATED_CONFIRMED
+ENVIRONMENTS_STATE=CREATED_CONFIRMED
+CREATED_RUNTIME_PARENT=TRUE
+CREATED_RUNTIME_ROOT=TRUE
+CREATED_ENVIRONMENTS=TRUE
+CLEANUP_STATE=NOT_APPLICABLE
+EVIDENCE_STATE=CONFIRMED
+RESULT=PASS
+ERROR_CODE=NONE
+FAILURE_STAGE=COMPLETE
+ROLLBACK_RECOMMENDED=FALSE
+STOP_REQUIRED=TRUE
+D_PREP_PROCESS_RC=0
+POST_EXECUTION_VALIDATION=PASS
+CHECKPOINT=D_PREP_PASS_STOP_FOR_REVIEW
+NO_LATER_ACTION_EXECUTED=TRUE
+INTERACTIVE_SHELL_PRESERVED=YES
+```
+
+Confirmed private evidence: `/tmp/hioc-pe4-runtime-hierarchy-prepare-8OfcmWdP`,
+directory owned by `jazofv1:jazofv1`, mode `0700`, device `45826`. Preserve this
+execution evidence; this closure grants no authority to inspect, modify or delete it.
+The operator supplied the following confirmed `result.json`:
+
+```json
+{"action":"PE-4.0B.2a-D-PREP","cleanup_state":"NOT_APPLICABLE","created_environments":true,"created_runtime_parent":true,"created_runtime_root":true,"device_relationship":"RUNTIME_TO_PE4_SAME_DEVICE;PE4_TO_ENVIRONMENTS_SAME_DEVICE","environments_mode":"0750","environments_state":"CREATED_CONFIRMED","error_code":"NONE","failure_stage":"COMPLETE","governance_commit":"5783951fdd33e0bb476c0fa53022633adddf1b8c","result":"PASS","rollback_recommended":false,"runtime_parent_mode":"0750","runtime_parent_state":"CREATED_CONFIRMED","runtime_root_mode":"0750","runtime_root_state":"CREATED_CONFIRMED","schema_version":"1.0"}
+```
+
+D-PREP production execution is PASS and CLOSED. The missing runtime-hierarchy
+prerequisite behind the second Action D failure has been corrected. This is not
+Action D success: `ACTION_D=FAILED_TWICE_NOT_COMPLETE`, with no retry. No combined
+native suite or later lifecycle action ran, and no rollback occurred. Action D
+retry requires separate operator authorization; no command is prepared here.
 
 ### Operator-supplied native PI3 revalidation evidence
 
@@ -2499,7 +2557,7 @@ Post-test HEAD_POST and ORIGIN_MAIN_POST remained
 `POST_TEST_IDENTITY=PASS`. Operator-reported native log:
 `/tmp/hioc-dprep-native-revalidation-20261004-223906.log`.
 
-Negative evidence: `D_PREP_EXECUTED=FALSE`, `ACTION_D_RETRIED=FALSE`,
+Negative evidence at that native test-only checkpoint: `D_PREP_EXECUTED=FALSE`, `ACTION_D_RETRIED=FALSE`,
 `COMBINED_SUITE_EXECUTED=FALSE`, `INTERACTIVE_SHELL_PRESERVED=YES`.
 This is native test-validation evidence, not D-PREP production execution evidence.
 The corrected harness is now natively validated; production advancement remains
@@ -2564,7 +2622,8 @@ Frozen Action D SHA-256 remained
 `e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213`.
 Corrected full native PI3 validation was pending at that historical Windows
 checkpoint; the operator-supplied native PASS above now closes that requirement.
-D-PREP production execution and the PE-4 roadmap remain incomplete.
+D-PREP production execution subsequently passed as recorded above; the PE-4
+roadmap remains incomplete.
 
 ### Final hierarchy and evidence contract
 
