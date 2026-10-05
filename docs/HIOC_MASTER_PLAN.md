@@ -1,5 +1,139 @@
 # HIOC Master Plan
 
+## Action E handoff capture/preservation tooling — continuity NOT ACCEPTED
+
+Historical roadmap status `PE-4 NOT STARTED` preceded the accepted D/E lifecycle;
+current PE-4 is in progress with E PASS/CLOSED and F/G NOT STARTED.
+
+Choice 2 is selected as the bounded corrective policy: implement machinery for a
+one-time `GOVERNANCE_ATTESTED_E_TO_CAPTURE` bridge. This selects tooling and the
+policy; it does **not** accept the actual continuity bridge. No production
+capture or preservation has occurred in this checkpoint. No durable accepted
+handoff bundle is recorded, and `governance/pe4/accepted-action-e.json` has not
+been created. Action F remains blocked and **NOT STARTED**.
+
+The three evidence classes remain distinct:
+
+- `RETAINED_MACHINE_OBSERVATION`: genuinely retained historical measurements.
+- `GOVERNANCE_ATTESTED_E_TO_CAPTURE`: the historical interval, supported by
+  governed chronology rather than a persisted recursive snapshot.
+- `MACHINE_VERIFIED_CAPTURE_FORWARD`: exact comparisons against a future
+  canonical capture; operational reliance begins only after independent capture
+  review and later repository acceptance.
+
+No E-time recursive snapshot was persisted. The records require
+`historical_recursive_snapshot_persisted=false`,
+`historical_recursive_continuity_machine_proven=false`, and
+`NO_PERSISTED_E_TIME_RECURSIVE_BASELINE`. Current files, package hashes and a
+new tree digest cannot manufacture historical recursive proof. Governed
+chronology records no authorized post-E HIOC mutation; it does not exclude
+out-of-band same-UID or privileged changes. Historical mtime/ctime comparisons
+are possible only where actual retained values exist. Complete timestamps and
+membership become capture-time observations, with atime excluded.
+
+Immutable E consumer remains `1c1698f009457baa1c3b548db31916559fcc2fc8`; original
+E evidence is `/tmp/hioc-pe4-dependency-validate-9ys_lrah`, SHA-256
+`8d5ff1f602861d88ea8d363665a67091da2739686d10ab4aa9ac27f22389d834`.
+D producer remains `6c431494c88688fef9a2fec7c7e81de0f503bdc2`; original D evidence
+is `/tmp/hioc-pe4-runtime-construct-LW9Dvay6`, SHA-256
+`a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d`.
+Accepted construction remains
+`/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh`.
+Retained root identity is `45826:823199:1000:1000:0750`; interpreter identity is
+`45826:823209`. The native member digest remains
+`b786db296f7d0677ddeceb7efbe963bc316a094f36e12388caa1333763ca4c1b`.
+Mismatch must STOP; expected historical values must never be refreshed.
+
+### Tooling interfaces and authorization boundary
+
+`tools/hioc-pe4-action-e-handoff-capture.py` requires `--governance-commit` and
+`--authorization-reference`. Capture source consumer is distinct from immutable
+D/E identities. `tools/hioc-pe4-action-e-handoff-preserve.py` additionally requires
+`--capture-directory`, `--capture-manifest-sha256`, `--capture-source-commit`,
+and `--approval-state APPROVED_FOR_PRESERVATION`. The manifest digest must be
+independently reviewed and pinned. An authorization reference records operator
+approval; it is not a cryptographic authentication credential.
+
+Both entry points use only `tools/hioc_pe4_action_e_handoff.py` for new logic.
+Production guards require PI3 `nutandpihole`, IPv4 `192.168.100.252`, UID/GID
+`1000:1000`, `jazofv1:jazofv1`, exact release-source root, clean main/HEAD/origin,
+complete Git history, actual commits, no active operation and disabled Git
+replacement objects. D is an ancestor of E; E is an ancestor of the current
+consumer. Protected historical implementation blobs remain unchanged. The
+52-member E policy is read statically from frozen Git source, not imported.
+
+No construction Python, installed package or websockets import runs. Original
+D/E records and producer-bound D eligibility must validate exactly. Static
+package/member, configuration, hierarchy and retained-identity checks precede
+canonical descriptor-relative capture. Construction, evidence and source are
+revalidated after writing. Active/previous pointers, final environment and F
+transaction artifacts must be absent; an unexpected prepublication state stops
+for review rather than being adopted.
+
+Capture deliberately writes evidence; it is construction-read-only, not globally
+read-only. It allocates exclusively under
+`/home/jazofv1/hioc/runtime/pe4/captures/e-<32 lowercase hex digits>`, with parent
+and directory `0700`, files `0600`, owner/group `jazofv1:jazofv1`. The staged set is
+`action-e-result.json`, `action-d-result.json`, `construction-tree.json`,
+`capture-report.json`, `capture-manifest.json`. Historical result bytes are copied
+exactly. Reports/manifests remain `PROPOSED`. Missing/changed staging invalidates
+its review; no recreation under the same acceptance decision is permitted.
+
+Preservation never establishes a new baseline: it compares the live construction
+with the already staged tree. Original D/E evidence is still required for this
+first preservation. It publishes an exclusive sibling bundle with
+`renameat2(RENAME_NOREPLACE)` under
+`/home/jazofv1/hioc/runtime/pe4/handoffs/action-e-1c1698f009457baa1c3b548db31916559fcc2fc8`.
+Final directory is `0500`, files `0400`, owner/group `jazofv1:jazofv1`. Owner read
+and traversal remain available; these permissions do not prevent deliberate
+owner/root mutation. Required exact files are `action-e-result.json`,
+`action-d-result.json`, `construction-tree.json`, `continuity-attestation.json`,
+`manifest.json`. The attestation is `GOVERNANCE_DERIVED_ATTESTATION`, at most
+`APPROVED_FOR_PRESERVATION`; it is not original supervisor-generated JSON.
+
+Each file, evidence directory and publication parent has an fsync boundary and
+independent reopen verification. Unsupported no-replace primitives, collisions,
+cross-device errors, changed inputs or failed durability STOP without fallback,
+cleanup or retry. Failed staging and originals remain retained. Modes alone are
+not proof of durability or authenticity. Cooperative operator exclusivity is
+required; descriptor checks cannot exclude privileged/uncooperative mutation.
+
+### Strict records and future acceptance
+
+Seven separate contracts under `governance/pe4` describe accepted handoff,
+construction tree, continuity attestation, capture report, capture manifest,
+durable bundle and fixed historical identity. The shared runtime validator
+executes the bounded JSON Schema keywords used by these files, without a new
+third-party dependency. Unknown/missing fields, duplicate keys, wrong types,
+noncanonical records, malformed/full-length hashes and traversal are rejected.
+New records use sorted compact ASCII-escaped UTF-8 JSON plus one LF; digests
+cover exact bytes. Manifests exclude themselves from inventory. Trees use hex
+POSIX-byte path components, stable metadata/content and deterministic membership;
+limits are 100,000 entries, 64 MiB tree, 64 KiB metadata, 255-byte components and
+4096-byte paths, with a bounded traversal depth. Nothing is truncated.
+
+The eventual accepted manifest must bind real capture/report/bundle digests,
+fixed D/E history, the continuity limitation, exact revalidated facts and explicit
+Decisions/Master Plan authorization. It is created only in a later checkpoint
+after independent capture and preservation reviews. Durable original copies may
+then replace a missing `/tmp` original for future F preparation; any surviving
+original must still match. Preservation deletes neither originals nor staging.
+
+Future validation-to-publication handoffs must persist canonical construction
+snapshots/digests at validation acceptance time. This historical exception must
+not become the default. Windows synthetic tests do not certify PI3 ownership,
+AArch64, real POSIX traversal, fsync or kernel/libc no-replace capability. Separate
+native validation preparation/authorization is required before capture.
+
+Current lifecycle remains replacement B PASS/CLOSED; C PASS exactly once;
+D-PREP PASS/CLOSED; D PASS/CLOSED; E PASS/CLOSED exactly once; F/G NOT STARTED;
+rollback NOT PERFORMED. D/E/F/G/common/lock/client source and historical evidence
+are unchanged. This checkpoint does not synchronize PI3, authorize capture,
+preserve evidence, accept continuity, or implement corrected F.
+
+Next checkpoint:
+`ACTION_E_HANDOFF_CAPTURE_NATIVE_VALIDATION_PREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 ## Production Action E — PASS / CLOSED
 
 PE-4 remains in progress: Action E is PASS/CLOSED, while F/G and the later authenticated association proof remain NOT STARTED.

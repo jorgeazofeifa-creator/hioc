@@ -1,0 +1,76 @@
+{
+  "$id": "action-e-capture-manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "approval_state": {
+      "const": "PROPOSED"
+    },
+    "capture_id": {
+      "maxLength": 32,
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{32}$",
+      "type": "string"
+    },
+    "capture_source_commit": {
+      "maxLength": 40,
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "inventory": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "maxLength": 4,
+            "minLength": 1,
+            "pattern": "^[0-7]{4}$",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z-]+(?:[.]json)$",
+            "type": "string"
+          },
+          "sha256": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "size": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "size",
+          "mode",
+          "sha256"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "type": "array"
+    },
+    "record_type": {
+      "const": "CAPTURE_MANIFEST"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "capture_id",
+    "capture_source_commit",
+    "approval_state",
+    "inventory"
+  ],
+  "type": "object"
+}

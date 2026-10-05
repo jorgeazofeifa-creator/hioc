@@ -1,0 +1,186 @@
+{
+  "$id": "action-e-durable-bundle.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "approval_state": {
+      "const": "APPROVED_FOR_PRESERVATION"
+    },
+    "capture_id": {
+      "maxLength": 32,
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{32}$",
+      "type": "string"
+    },
+    "capture_source_commit": {
+      "maxLength": 40,
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "continuity_class": {
+      "const": "GOVERNANCE_ATTESTED_E_TO_CAPTURE"
+    },
+    "historical": {
+      "additionalProperties": false,
+      "properties": {
+        "construction_path": {
+          "const": "/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh"
+        },
+        "d_evidence_directory": {
+          "const": "/tmp/hioc-pe4-runtime-construct-LW9Dvay6"
+        },
+        "d_evidence_sha256": {
+          "const": "a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d"
+        },
+        "d_producer": {
+          "const": "6c431494c88688fef9a2fec7c7e81de0f503bdc2"
+        },
+        "d_source_sha256": {
+          "const": "e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213"
+        },
+        "e_evidence_directory": {
+          "const": "/tmp/hioc-pe4-dependency-validate-9ys_lrah"
+        },
+        "e_evidence_sha256": {
+          "const": "8d5ff1f602861d88ea8d363665a67091da2739686d10ab4aa9ac27f22389d834"
+        },
+        "e_execution_consumer": {
+          "const": "1c1698f009457baa1c3b548db31916559fcc2fc8"
+        },
+        "environment_identity": {
+          "const": "cpython311-websockets16.1.1-lock-v1"
+        },
+        "interpreter": {
+          "additionalProperties": false,
+          "properties": {
+            "dev": {
+              "const": 45826
+            },
+            "ino": {
+              "const": 823209
+            }
+          },
+          "required": [
+            "dev",
+            "ino"
+          ],
+          "type": "object"
+        },
+        "native_member": {
+          "const": "websockets/speedups.cpython-311-aarch64-linux-gnu.so"
+        },
+        "native_sha256": {
+          "const": "b786db296f7d0677ddeceb7efbe963bc316a094f36e12388caa1333763ca4c1b"
+        },
+        "root": {
+          "additionalProperties": false,
+          "properties": {
+            "dev": {
+              "const": 45826
+            },
+            "gid": {
+              "const": 1000
+            },
+            "ino": {
+              "const": 823199
+            },
+            "mode": {
+              "const": "0750"
+            },
+            "uid": {
+              "const": 1000
+            }
+          },
+          "required": [
+            "dev",
+            "ino",
+            "uid",
+            "gid",
+            "mode"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "e_execution_consumer",
+        "e_evidence_directory",
+        "e_evidence_sha256",
+        "d_producer",
+        "d_evidence_directory",
+        "d_evidence_sha256",
+        "d_source_sha256",
+        "construction_path",
+        "environment_identity",
+        "root",
+        "interpreter",
+        "native_member",
+        "native_sha256"
+      ],
+      "type": "object"
+    },
+    "inventory": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "maxLength": 4,
+            "minLength": 1,
+            "pattern": "^[0-7]{4}$",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z-]+(?:[.]json)$",
+            "type": "string"
+          },
+          "sha256": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "size": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "size",
+          "mode",
+          "sha256"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "type": "array"
+    },
+    "preservation_source_commit": {
+      "maxLength": 40,
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "DURABLE_HANDOFF_MANIFEST"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "capture_id",
+    "capture_source_commit",
+    "preservation_source_commit",
+    "historical",
+    "continuity_class",
+    "approval_state",
+    "inventory"
+  ],
+  "type": "object"
+}

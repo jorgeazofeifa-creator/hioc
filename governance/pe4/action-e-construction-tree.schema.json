@@ -1,0 +1,400 @@
+{
+  "$id": "action-e-construction-tree.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "atime_excluded": {
+      "const": true
+    },
+    "bindings": {
+      "additionalProperties": false,
+      "properties": {
+        "configuration_sha256": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "d_evidence_sha256": {
+          "const": "a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d"
+        },
+        "d_marker_sha256": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "fact_class": {
+          "const": "MACHINE_VERIFIED_CAPTURE_FORWARD"
+        },
+        "interpreter_identity": {
+          "additionalProperties": false,
+          "properties": {
+            "dev": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "gid": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "ino": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mode": {
+              "maxLength": 4,
+              "minLength": 1,
+              "pattern": "^[0-7]{4}$",
+              "type": "string"
+            },
+            "uid": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "dev",
+            "ino",
+            "uid",
+            "gid",
+            "mode"
+          ],
+          "type": "object"
+        },
+        "member_policy_sha256": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "native_sha256": {
+          "const": "b786db296f7d0677ddeceb7efbe963bc316a094f36e12388caa1333763ca4c1b"
+        }
+      },
+      "required": [
+        "d_marker_sha256",
+        "d_evidence_sha256",
+        "interpreter_identity",
+        "configuration_sha256",
+        "native_sha256",
+        "member_policy_sha256",
+        "fact_class"
+      ],
+      "type": "object"
+    },
+    "entries": {
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "children": {
+                "items": {
+                  "maxLength": 510,
+                  "minLength": 1,
+                  "pattern": "^(?:[0-9a-f]{2}){1,255}$",
+                  "type": "string"
+                },
+                "maxItems": 100000,
+                "type": "array"
+              },
+              "ctime_ns": {
+                "type": "integer"
+              },
+              "dev": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "gid": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "ino": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "mode": {
+                "maxLength": 4,
+                "minLength": 1,
+                "pattern": "^[0-7]{4}$",
+                "type": "string"
+              },
+              "mtime_ns": {
+                "type": "integer"
+              },
+              "nlink": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "path": {
+                "items": {
+                  "maxLength": 510,
+                  "minLength": 1,
+                  "pattern": "^(?:[0-9a-f]{2}){1,255}$",
+                  "type": "string"
+                },
+                "maxItems": 4096,
+                "type": "array"
+              },
+              "size": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "type": {
+                "const": "DIRECTORY"
+              },
+              "uid": {
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "path",
+              "dev",
+              "ino",
+              "uid",
+              "gid",
+              "mode",
+              "nlink",
+              "size",
+              "mtime_ns",
+              "ctime_ns",
+              "type",
+              "children"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "ctime_ns": {
+                "type": "integer"
+              },
+              "dev": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "gid": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "ino": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "mode": {
+                "maxLength": 4,
+                "minLength": 1,
+                "pattern": "^[0-7]{4}$",
+                "type": "string"
+              },
+              "mtime_ns": {
+                "type": "integer"
+              },
+              "nlink": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "path": {
+                "items": {
+                  "maxLength": 510,
+                  "minLength": 1,
+                  "pattern": "^(?:[0-9a-f]{2}){1,255}$",
+                  "type": "string"
+                },
+                "maxItems": 4096,
+                "type": "array"
+              },
+              "sha256": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "size": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "type": {
+                "const": "REGULAR_FILE"
+              },
+              "uid": {
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "path",
+              "dev",
+              "ino",
+              "uid",
+              "gid",
+              "mode",
+              "nlink",
+              "size",
+              "mtime_ns",
+              "ctime_ns",
+              "type",
+              "sha256"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "ctime_ns": {
+                "type": "integer"
+              },
+              "dev": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "gid": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "ino": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "mode": {
+                "maxLength": 4,
+                "minLength": 1,
+                "pattern": "^[0-7]{4}$",
+                "type": "string"
+              },
+              "mtime_ns": {
+                "type": "integer"
+              },
+              "nlink": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "path": {
+                "items": {
+                  "maxLength": 510,
+                  "minLength": 1,
+                  "pattern": "^(?:[0-9a-f]{2}){1,255}$",
+                  "type": "string"
+                },
+                "maxItems": 4096,
+                "type": "array"
+              },
+              "size": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "target_hex": {
+                "maxLength": 8192,
+                "minLength": 1,
+                "pattern": "^(?:[0-9a-f]{2})+$",
+                "type": "string"
+              },
+              "type": {
+                "const": "SYMLINK"
+              },
+              "uid": {
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "path",
+              "dev",
+              "ino",
+              "uid",
+              "gid",
+              "mode",
+              "nlink",
+              "size",
+              "mtime_ns",
+              "ctime_ns",
+              "type",
+              "target_hex"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 100000,
+      "minItems": 1,
+      "type": "array"
+    },
+    "hierarchy": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "identity": {
+            "additionalProperties": false,
+            "properties": {
+              "dev": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "gid": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "ino": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "mode": {
+                "maxLength": 4,
+                "minLength": 1,
+                "pattern": "^[0-7]{4}$",
+                "type": "string"
+              },
+              "uid": {
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "dev",
+              "ino",
+              "uid",
+              "gid",
+              "mode"
+            ],
+            "type": "object"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^/[^\u0000]*$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "identity"
+        ],
+        "type": "object"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "type": "array"
+    },
+    "record_type": {
+      "const": "CONSTRUCTION_TREE"
+    },
+    "root_path": {
+      "const": "/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "root_path",
+    "atime_excluded",
+    "hierarchy",
+    "entries",
+    "bindings"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,249 @@
+{
+  "$id": "action-e-capture-report.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "approval_state": {
+      "const": "PROPOSED"
+    },
+    "authorization_reference": {
+      "maxLength": 512,
+      "minLength": 1,
+      "type": "string"
+    },
+    "capture_id": {
+      "maxLength": 32,
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{32}$",
+      "type": "string"
+    },
+    "capture_source_commit": {
+      "maxLength": 40,
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "capture_time_facts": {
+      "additionalProperties": false,
+      "properties": {
+        "construction_tree_sha256": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "d_marker_sha256": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "fact_class": {
+          "const": "MACHINE_VERIFIED_CAPTURE_FORWARD"
+        }
+      },
+      "required": [
+        "construction_tree_sha256",
+        "d_marker_sha256",
+        "fact_class"
+      ],
+      "type": "object"
+    },
+    "continuity_class": {
+      "const": "GOVERNANCE_ATTESTED_E_TO_CAPTURE"
+    },
+    "error_code": {
+      "const": "NONE"
+    },
+    "failure_stage": {
+      "const": "COMPLETE"
+    },
+    "historical": {
+      "additionalProperties": false,
+      "properties": {
+        "construction_path": {
+          "const": "/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh"
+        },
+        "d_evidence_directory": {
+          "const": "/tmp/hioc-pe4-runtime-construct-LW9Dvay6"
+        },
+        "d_evidence_sha256": {
+          "const": "a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d"
+        },
+        "d_producer": {
+          "const": "6c431494c88688fef9a2fec7c7e81de0f503bdc2"
+        },
+        "d_source_sha256": {
+          "const": "e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213"
+        },
+        "e_evidence_directory": {
+          "const": "/tmp/hioc-pe4-dependency-validate-9ys_lrah"
+        },
+        "e_evidence_sha256": {
+          "const": "8d5ff1f602861d88ea8d363665a67091da2739686d10ab4aa9ac27f22389d834"
+        },
+        "e_execution_consumer": {
+          "const": "1c1698f009457baa1c3b548db31916559fcc2fc8"
+        },
+        "environment_identity": {
+          "const": "cpython311-websockets16.1.1-lock-v1"
+        },
+        "interpreter": {
+          "additionalProperties": false,
+          "properties": {
+            "dev": {
+              "const": 45826
+            },
+            "ino": {
+              "const": 823209
+            }
+          },
+          "required": [
+            "dev",
+            "ino"
+          ],
+          "type": "object"
+        },
+        "native_member": {
+          "const": "websockets/speedups.cpython-311-aarch64-linux-gnu.so"
+        },
+        "native_sha256": {
+          "const": "b786db296f7d0677ddeceb7efbe963bc316a094f36e12388caa1333763ca4c1b"
+        },
+        "root": {
+          "additionalProperties": false,
+          "properties": {
+            "dev": {
+              "const": 45826
+            },
+            "gid": {
+              "const": 1000
+            },
+            "ino": {
+              "const": 823199
+            },
+            "mode": {
+              "const": "0750"
+            },
+            "uid": {
+              "const": 1000
+            }
+          },
+          "required": [
+            "dev",
+            "ino",
+            "uid",
+            "gid",
+            "mode"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "e_execution_consumer",
+        "e_evidence_directory",
+        "e_evidence_sha256",
+        "d_producer",
+        "d_evidence_directory",
+        "d_evidence_sha256",
+        "d_source_sha256",
+        "construction_path",
+        "environment_identity",
+        "root",
+        "interpreter",
+        "native_member",
+        "native_sha256"
+      ],
+      "type": "object"
+    },
+    "historical_recursive_continuity_machine_proven": {
+      "const": false
+    },
+    "historical_recursive_snapshot_persisted": {
+      "const": false
+    },
+    "limitation": {
+      "const": "NO_PERSISTED_E_TIME_RECURSIVE_BASELINE"
+    },
+    "record_type": {
+      "const": "CAPTURE_REPORT"
+    },
+    "revalidated_observables": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "comparison_basis": {
+            "enum": [
+              "RETAINED_VALUE",
+              "COMMITTED_POLICY"
+            ]
+          },
+          "observable": {
+            "enum": [
+              "CONSTRUCTION_PATH",
+              "ROOT_IDENTITY",
+              "INTERPRETER_IDENTITY",
+              "D_ELIGIBILITY",
+              "D_EVIDENCE",
+              "E_EVIDENCE",
+              "NATIVE_MEMBER",
+              "GOVERNED_MEMBERS",
+              "GIT_LINEAGE",
+              "PUBLICATION_ABSENT"
+            ]
+          },
+          "result": {
+            "const": "PASS"
+          },
+          "source_class": {
+            "enum": [
+              "RETAINED_MACHINE_OBSERVATION",
+              "COMMITTED_POLICY"
+            ]
+          },
+          "source_reference": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "observable",
+          "source_class",
+          "source_reference",
+          "comparison_basis",
+          "result"
+        ],
+        "type": "object"
+      },
+      "maxItems": 10,
+      "minItems": 10,
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "validation_result": {
+      "const": "PASS"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "capture_id",
+    "capture_source_commit",
+    "authorization_reference",
+    "historical",
+    "revalidated_observables",
+    "capture_time_facts",
+    "continuity_class",
+    "historical_recursive_snapshot_persisted",
+    "historical_recursive_continuity_machine_proven",
+    "limitation",
+    "approval_state",
+    "validation_result",
+    "error_code",
+    "failure_stage"
+  ],
+  "type": "object"
+}
