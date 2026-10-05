@@ -7,6 +7,11 @@ from tests.test_pe4_action_e_handoff import directory, tree, report
 class WorkflowTests(unittest.TestCase):
     def setUp(self):
         self.stack=contextlib.ExitStack();self.addCleanup(self.stack.close);self.files={};self.calls=[]
+        self.accepted_path=H.REPOSITORY/'governance/pe4/accepted-action-e.json'
+        self.accepted_before=self.accepted_path.read_bytes()
+        self.addCleanup(self.assert_acceptance_unchanged)
+        self.stack.enter_context(mock.patch.object(pathlib.Path,'write_bytes',side_effect=AssertionError('runtime repository write')))
+        self.stack.enter_context(mock.patch.object(pathlib.Path,'write_text',side_effect=AssertionError('runtime repository write')))
         self.d=directory();self.parent=directory(H.CAPTURES,11);self.stage=directory(H.CAPTURES/('e-'+'a'*32),12);self.bundle=directory(H.HANDOFFS/'.action-e-test',13)
         self.fs=mock.Mock();self.fs.parent.side_effect=lambda path,stage:self.parent
         self.fs.child.side_effect=self.child
@@ -21,7 +26,17 @@ class WorkflowTests(unittest.TestCase):
     def patch(self,name,**kwargs):return self.stack.enter_context(mock.patch.object(H,name,**kwargs))
     def child(self,parent,name,mode,stage):
         self.calls.append(('child',stage));d=self.stage if stage=='STAGING_ALLOCATION' else self.bundle;d.path=parent.path/name;return d
-    def write(self,d,name,raw,mode,stage):self.calls.append(('write',name,mode));self.files[name]=raw
+    def assert_acceptance_unchanged(self):
+        self.assertEqual(self.accepted_path.read_bytes(),self.accepted_before)
+        self.assertNotIn('accepted-action-e.json',self.files)
+        for raw in self.files.values():
+            self.assertNotIn(b'ACCEPTED_ACTION_E_HANDOFF',raw)
+            self.assertNotIn(b'"approval_state":"ACCEPTED"',raw)
+            self.assertNotIn(b'"state":"ACCEPTED"',raw)
+    def write(self,d,name,raw,mode,stage):
+        self.assertNotEqual(name,'accepted-action-e.json')
+        self.assertTrue(H.CAPTURES in d.path.parents or H.HANDOFFS in d.path.parents)
+        self.calls.append(('write',name,mode));self.files[name]=raw
     def check(self,d,payloads,mode,stage):
         for k,v in payloads.items():
             if self.files.get(k)!=v:H.fail(stage,'MISMATCH')
@@ -107,6 +122,40 @@ class PrimitiveTests(unittest.TestCase):
     def test_lifecycle_forbidden_writes_are_absent(self):
         source=(H.REPOSITORY/'tools/hioc_pe4_action_e_handoff.py').read_text(encoding='utf-8')
         for value in ('os.unlink(', 'os.rmdir(', 'shutil.', 'os.replace(', 'import websockets', 'cleanup_owned_directory(', 'controlled_capabilities('):self.assertNotIn(value,source)
-        self.assertFalse((H.REPOSITORY/'governance/pe4/accepted-action-e.json').exists())
+        self.assertNotIn('accepted-action-e.json',source)
+        self.assertNotIn("'ACCEPTED'",source)
+
+
+class AcceptedManifestTests(unittest.TestCase):
+    def manifest(self):
+        raw=(H.REPOSITORY/'governance/pe4/accepted-action-e.json').read_bytes()
+        doc=H.parse(raw,'STAGED_INPUT',canonical_required=True)
+        H.record('handoff',doc)
+        return raw,doc
+    def test_accepted_schema_canonical_approval_and_records(self):
+        raw,doc=self.manifest()
+        self.assertEqual(raw,H.canonical(doc))
+        self.assertEqual(doc['approval'],dict(state='ACCEPTED',authorization_reference='PE4-ACTION-E-HANDOFF-ACCEPTANCE-20261005',decisions_record='DECISIONS.md#action-e-handoff-acceptance-2026-10-05',master_plan_record='docs/HIOC_MASTER_PLAN.md#action-e-handoff-acceptance-2026-10-05'))
+        self.assertEqual(doc['revalidated_observables'],H.observables())
+        self.assertEqual(doc['lifecycle_state'],'E_PASS_CLOSED')
+        self.assertEqual(doc['supervisor_attestation_class'],'GOVERNANCE_DERIVED_ATTESTATION')
+        for name in ('DECISIONS.md','docs/HIOC_MASTER_PLAN.md'):
+            self.assertIn('<a id="action-e-handoff-acceptance-2026-10-05"></a>',(H.REPOSITORY/name).read_text(encoding='utf-8'))
+    def test_exact_production_capture_and_durable_bindings(self):
+        _,doc=self.manifest()
+        self.assertEqual(doc['capture'],dict(capture_id='ed2af1a61929197bd045c08ee654bba4',source_commit='350dda0d1bc138f5adbbf2c15ac9ecd128eefd9f',manifest_sha256='622c81614ec10a5cd6408b83b506e8d58f21de542b389bcc2dcd3fae4b9f108c',report_sha256='1b3ed36af9da63742d5977bb185084ad152634b8ff3a0a6e97e54d3dfeccd02e',tree_sha256='4a929181d69f7391b3e39a0fd27fb17aa9c8883f42d9707af559c9a986d514a9'))
+        self.assertEqual(doc['durable_bundle'],dict(directory='/home/jazofv1/hioc/runtime/pe4/handoffs/action-e-1c1698f009457baa1c3b548db31916559fcc2fc8',manifest_sha256='1f5c5b477a01e3ef82017d8d57a70f864cb0ddb6ba28371989a3124b1cecf804'))
+    def test_immutable_history_e_semantics_and_limitation(self):
+        _,doc=self.manifest()
+        self.assertEqual(doc['historical'],H.history())
+        self.assertEqual(doc['e_semantics'],{k:v['const'] for k,v in H.schema('handoff')['properties']['e_semantics']['properties'].items()})
+        self.assertEqual(doc['continuity'],dict(evidence_class='GOVERNANCE_ATTESTED_E_TO_CAPTURE',limitation='NO_PERSISTED_E_TIME_RECURSIVE_BASELINE',historical_recursive_snapshot_persisted=False,historical_recursive_continuity_machine_proven=False,attestation_sha256='0ba4f111a1a8cc21336c7c4676f0f19fa37d166158155aa9fe88153b7dff7c49'))
+    def test_no_enclosing_commit_dependency_and_reject_promoted_history(self):
+        _,doc=self.manifest()
+        self.assertNotIn('acceptance_commit',doc)
+        self.assertNotIn('completed_at_utc',doc)
+        for field in ('historical_recursive_snapshot_persisted','historical_recursive_continuity_machine_proven'):
+            bad=copy.deepcopy(doc);bad['continuity'][field]=True
+            with self.subTest(field=field),self.assertRaises(H.Failure):H.record('handoff',bad)
 
 if __name__=='__main__':unittest.main()

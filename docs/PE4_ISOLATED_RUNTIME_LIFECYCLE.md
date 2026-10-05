@@ -1,6 +1,86 @@
 # PE-4.0B.2a Isolated Runtime Lifecycle
 
-## Action E handoff capture/preservation tooling — continuity NOT ACCEPTED
+## Action E handoff acceptance — 2026-10-05
+
+<a id="action-e-handoff-acceptance-2026-10-05"></a>
+
+Repository acceptance is **ACCEPTED** under
+`PE4-ACTION-E-HANDOFF-ACCEPTANCE-20261005`.
+The committed `governance/pe4/accepted-action-e.json` is canonical and schema
+validated; its SHA-256 is `1ac94f233bf543cafdc81b1f530177bd1c84d46ae13a7a686b33d34032d50c14`. This acceptance binds the
+already captured, independently reviewed, preserved and independently reviewed
+production handoff. It performs no new production operation.
+
+Capture **PASS / NONE / COMPLETE**, independent capture review **PASS**:
+`/home/jazofv1/hioc/runtime/pe4/captures/e-ed2af1a61929197bd045c08ee654bba4`.
+Capture source and preservation source are both `350dda0d1bc138f5adbbf2c15ac9ecd128eefd9f`.
+Capture authorization: `PE4-ACTION-E-CAPTURE-20261005`; capture records remain
+`PROPOSED`. Preservation authorization:
+`PE4-ACTION-E-PRESERVATION-20261005`; preserved records remain
+`APPROVED_FOR_PRESERVATION`. Only repository governance records acceptance.
+
+| Binding | SHA-256 |
+| --- | --- |
+| Capture manifest | `622c81614ec10a5cd6408b83b506e8d58f21de542b389bcc2dcd3fae4b9f108c` |
+| Capture report | `1b3ed36af9da63742d5977bb185084ad152634b8ff3a0a6e97e54d3dfeccd02e` |
+| Accepted construction tree | `4a929181d69f7391b3e39a0fd27fb17aa9c8883f42d9707af559c9a986d514a9` |
+| Durable manifest | `1f5c5b477a01e3ef82017d8d57a70f864cb0ddb6ba28371989a3124b1cecf804` |
+| Continuity attestation | `0ba4f111a1a8cc21336c7c4676f0f19fa37d166158155aa9fe88153b7dff7c49` |
+
+The independently measured pre-capture construction digest equals the accepted
+construction-tree digest above. Preservation **PASS / NONE / COMPLETE** and
+independent durable-bundle review **PASS** bind
+`/home/jazofv1/hioc/runtime/pe4/handoffs/action-e-1c1698f009457baa1c3b548db31916559fcc2fc8`.
+Durable directory mode is `0500`, files `0400`; these permissions do not
+prevent deliberate owner/root changes. Original D/E copies, staging and the
+accepted construction remain retained; no cleanup or baseline replacement is
+authorized.
+
+The one-time bridge is accepted exactly once as
+`GOVERNANCE_ATTESTED_E_TO_CAPTURE`, with attestation class
+`GOVERNANCE_DERIVED_ATTESTATION` and limitation
+`NO_PERSISTED_E_TIME_RECURSIVE_BASELINE`.
+`historical_recursive_snapshot_persisted=false` and
+`historical_recursive_continuity_machine_proven=false` remain mandatory.
+The historical E-to-capture recursive interval is not machine or
+cryptographically proven. `NO_AUTHORIZED_POST_E_HIOC_MUTATION_RECORDED`
+describes governed chronology; it does not claim that every possible mutation
+was excluded. The accepted capture now supplies the machine-verifiable recursive
+baseline forward (`MACHINE_VERIFIED_CAPTURE_FORWARD`).
+
+The manifest preserves immutable D producer `6c431494c88688fef9a2fec7c7e81de0f503bdc2`,
+E execution consumer `1c1698f009457baa1c3b548db31916559fcc2fc8`, original D/E evidence paths and
+digests, frozen D source, retained root/interpreter identities and native member
+digest. Its ten revalidated observable records retain the exact committed
+comparison/source policy. It has no dependency on its enclosing acceptance
+commit and invents no runtime timestamp.
+
+D **PASS/CLOSED**; E **PASS/CLOSED** exactly once; Action E handoff **ACCEPTED**;
+F **NOT STARTED**; G **NOT STARTED**; rollback **NOT PERFORMED**.
+There was no D/E rerun and no production F action. This repository checkpoint
+does not access PI3/PI5, rerun native validation, capture or preserve evidence,
+change runtime artifacts, or begin F/G. Future F preparation must validate the
+accepted bundle and current construction against these pinned records; mismatch
+must STOP without refreshing historical values or adopting an alternate bundle.
+Any surviving original D/E evidence must still match; reviewed durable copies
+may supply the evidence when the temporary originals are absent.
+
+Validation covers canonical/schema acceptance, exact production bindings,
+runtime non-promotion and manifest immutability across successful and failed
+capture/preservation workflows, plus the focused and complete repository suites.
+Runtime tooling and schemas are unchanged. Focused validation: 60 tests,
+59 PASS, 1 POSIX-only skip. Complete repository suite: 1153 tests,
+1106 PASS, 47 platform/tool-dependent skips, zero failures/errors.
+The first sandboxed full run could not read the existing cached PE-4 wheel;
+the rerun with local fixture access passed. Canonical/schema, ten-file scope,
+19 protected blob comparisons, bytecode-suppressed compilation and
+git diff --check passed. Git emitted LF-to-CRLF conversion warnings only.
+
+Next checkpoint:
+`ACTION_F_IMPLEMENTATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
+
+## Historical tooling checkpoint — continuity NOT ACCEPTED at that checkpoint
 
 Choice 2 is selected as the bounded corrective policy: implement machinery for a
 one-time `GOVERNANCE_ATTESTED_E_TO_CAPTURE` bridge. This selects tooling and the
