@@ -81,7 +81,7 @@ class ActionDIsolationTests(unittest.TestCase):
         self.assertIn("sealed_snapshot_file(snapshot", CONSTRUCT)
 
     def test_action_e_requires_confirmed_action_d_handoff(self):
-        gate = "validate_action_d_eligibility(root,a.governance_commit)"
+        gate = "validate_action_d_eligibility(root,a.action_d_governance_commit)"
         self.assertIn(gate, VALIDATE)
         self.assertLess(VALIDATE.index(gate), VALIDATE.index("exact_distribution_set"))
 

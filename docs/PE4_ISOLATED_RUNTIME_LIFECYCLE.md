@@ -1,5 +1,32 @@
 # PE-4.0B.2a Isolated Runtime Lifecycle
 
+## Corrected Action D to Action E transition
+
+The accepted third Action D execution remains PASS/CLOSED with immutable producer
+provenance. A later documentation/source closure commit does not rewrite that
+handoff. E now distinguishes current source `--governance-commit` from mandatory
+D producer `--action-d-governance-commit`; no fallback is permitted.
+
+E parses both identities before its host gate, validates current clean checkout
+and normalized source, then proves producer equality/ancestry and exact committed
+D/common/lock blobs with replacement-object substitution disabled and complete
+history required. Only after compatibility passes does E open the selected
+construction and call the unchanged strict D eligibility validator with producer.
+Existing distribution and capability checks then precede existing E validation
+evidence and terminal PASS. The E success JSON schema is unchanged.
+
+This is a repository correction, not a D rerun or E execution. Historical first
+two D failures and the intervening pre-execution stop remain historical; the third
+D execution remains accepted. Replacement B PASS/CLOSED, C PASS exactly once and
+D-PREP PASS/CLOSED are unchanged. E/F/G remain NOT STARTED. F publication and G
+preflight remain separate, unchanged actions; no E-to-F evidence gate or combined
+production suite is introduced. No rollback or cleanup occurred. The next boundary
+is separately authorized PI3 synchronization/read-only compatibility validation,
+followed only later by separately authorized E work.
+
+Next checkpoint:
+`PI3_SYNCHRONIZATION_AND_READ_ONLY_D_TO_E_COMPATIBILITY_VALIDATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 The staging creation result includes bounded device, inode, UID, and mode
 identity. Every subsequent command independently opens the governed
 path with `O_DIRECTORY|O_NOFOLLOW`, verifies the complete tuple using `fstat`,
@@ -578,7 +605,9 @@ input-snapshot namespace entries remained. No combined suite ran on PI3.
 Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
 PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
 
-Action D is complete; the next boundary is separate Action E preparation.
+Action D remains complete. The subsequent repository correction separates D
+producer provenance from E current source. The next boundary is separately
+authorized PI3 synchronization and read-only D-to-E compatibility validation.
 This closure prepares and authorizes no Action E execution or later lifecycle
 action. It grants no repeat Action D invocation or cleanup authority.
 

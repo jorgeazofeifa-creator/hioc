@@ -1,5 +1,39 @@
 # PE-4 Isolated Runtime and Dependency Contract
 
+## Corrected D-to-E governance compatibility contract
+
+E requires `--governance-commit` (current consumer/source) and
+`--action-d-governance-commit` (immutable D producer), with no default/fallback.
+Both must be full lowercase 40-hex IDs resolving to actual Git commit objects;
+tags, trees, blobs, refs, abbreviated IDs and missing objects are rejected.
+Compatibility-critical Git reads and ancestry checks use `--no-replace-objects`.
+Complete history is mandatory. Producer must equal or be an ancestor of consumer;
+divergence, descendant/unrelated producers, shallow/missing history and Git errors
+fail closed.
+
+Exactly these upstream committed blob identities must match producer and consumer:
+`tools/hioc-pe4-runtime-construct.py`, `tools/hioc_pe4_runtime_common.py`, and
+`requirements-pe4.lock`. Missing paths or nonblob tree entries reject. Changes
+outside this critical set can be compatible if all current-source gates pass.
+Current source must be clean main, HEAD and local origin/main equal consumer,
+ahead/behind zero, and free of active Git operations. Normalized committed/worktree
+blobs must match consumer for E, the new compatibility helper and those three
+critical files. Hidden worktree modifications are rejected by direct blob checks.
+
+The unchanged strict D validator receives producer, never consumer. Marker/evidence
+must retain their existing producer, selected construction, environment, approved
+wheel/lock, evidence path/digest, PASS and persisted eligibility-state bindings.
+Compatibility rejection precedes construction access, distributions, capability
+probe and E evidence allocation. Codes/stages are finite and sanitized; there is
+no retry, rollback or cleanup. E still independently validates exact distributions,
+`websockets==16.1.1`, the asyncio connect API/keywords, exception capabilities,
+isolated prefixes, preexisting-socket redirect refusal and owned hierarchy/device
+semantics. E success JSON is unchanged. Compatibility is separate from authorization.
+Action E remains **NOT STARTED**; F/G remain separate and unauthorized.
+
+Next checkpoint:
+`PI3_SYNCHRONIZATION_AND_READ_ONLY_D_TO_E_COMPATIBILITY_VALIDATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 Action B's invocation-owned staging identity is the tuple of its governed path,
 device, inode, UID, and mode `0700`. Each independent
 remote primitive must open the directory non-followingly, compare `fstat` to
@@ -446,7 +480,9 @@ input-snapshot namespace entries remained. No combined suite ran on PI3.
 Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
 PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
 
-Action D is complete; the next boundary is separate Action E preparation.
+Action D remains complete. The subsequent repository correction separates D
+producer provenance from E current source. The next boundary is separately
+authorized PI3 synchronization and read-only D-to-E compatibility validation.
 This closure prepares and authorizes no Action E execution or later lifecycle
 action. It grants no repeat Action D invocation or cleanup authority.
 

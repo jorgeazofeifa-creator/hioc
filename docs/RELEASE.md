@@ -1,5 +1,27 @@
 # HIOC Release Process
 
+## Action E producer/current governance release prerequisite
+
+The published correction requires E's current-consumer `--governance-commit` and
+immutable D producer `--action-d-governance-commit` as distinct mandatory inputs.
+Release review must verify actual commit objects without replacement substitution,
+complete history, producer equality/ancestry and identical committed D/common/lock
+blobs. The current source checkout must also satisfy clean main/HEAD/origin identity,
+zero ahead/behind, no active Git operation and normalized identities for E, the
+compatibility helper and all three upstream critical files.
+
+The common strict producer-bound eligibility/evidence contract, runtime/capability
+checks and E success JSON remain unchanged. Local Windows tests passed; publication
+is a governance prerequisite, not production synchronization, evidence migration,
+D rerun, or E execution. Accepted D evidence/marker remain immutable. D/common/lock
+and F/G source remain unchanged. Action E has not executed and remains **NOT STARTED**;
+F/G remain NOT STARTED and unauthorized. No PI3/PI5 access, lifecycle execution or
+rollback occurred in this checkpoint. Only separately authorized synchronization
+and read-only compatibility validation may follow this repository closure.
+
+Next checkpoint:
+`PI3_SYNCHRONIZATION_AND_READ_ONLY_D_TO_E_COMPATIBILITY_VALIDATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 Action B release identity includes three independent, read-only Windows SSH ACL
 contracts: the shared `.ssh` compatibility layout, the protected `known_hosts`
 trust-file layout, and the strict protected dedicated-key layout. Publication
@@ -599,7 +621,9 @@ input-snapshot namespace entries remained. No combined suite ran on PI3.
 Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
 PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
 
-Action D is complete; the next boundary is separate Action E preparation.
+Action D remains complete. The subsequent repository correction separates D
+producer provenance from E current source. The next boundary is separately
+authorized PI3 synchronization and read-only D-to-E compatibility validation.
 This closure prepares and authorizes no Action E execution or later lifecycle
 action. It grants no repeat Action D invocation or cleanup authority.
 

@@ -1,5 +1,19 @@
 # HIOC Changelog
 
+- Corrected Action E's producer/current governance binding. E retains mandatory
+  `--governance-commit` for current source and adds mandatory
+  `--action-d-governance-commit` for accepted D provenance, with no fallback.
+  A separate compatibility module proves actual commit objects without replacement
+  substitution, producer ancestry and exact D/common/lock blob equality, plus
+  current checkout governance and normalized source identity. Strict D eligibility,
+  E dependency/capability checks and E success JSON remain unchanged. Local Windows
+  compatibility tests passed (36 run, zero skips); related PE-4 regressions passed
+  (164 run, 11 POSIX-only skips). D/common/lock and F/G source remain unchanged.
+  The accepted D handoff remains immutable. Action E has not executed and remains
+  **NOT STARTED**; F/G remain unauthorized. No PI3/PI5 access or lifecycle execution
+  occurred. Next is separately authorized synchronization/read-only compatibility
+  validation, not E execution.
+
 - Closed the operator-reported successful third actual Action D execution:
   process RC 0, construction confirmed/retained, evidence and eligibility CONFIRMED,
   cleanup COMPLETE and independent review PASS. Earlier two failures remain history;
@@ -1116,7 +1130,9 @@ input-snapshot namespace entries remained. No combined suite ran on PI3.
 Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
 PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
 
-Action D is complete; the next boundary is separate Action E preparation.
+Action D remains complete. The subsequent repository correction separates D
+producer provenance from E current source. The next boundary is separately
+authorized PI3 synchronization and read-only D-to-E compatibility validation.
 This closure prepares and authorizes no Action E execution or later lifecycle
 action. It grants no repeat Action D invocation or cleanup authority.
 

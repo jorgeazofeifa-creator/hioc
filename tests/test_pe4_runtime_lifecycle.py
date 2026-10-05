@@ -31,6 +31,19 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
         for action in "ABCDEFG":
             self.assertIn(f"PE-4.0B.2a-{action}", DOC)
 
+    def test_e_producer_consumer_guard_remains_separate_from_f_and_g(self):
+        action_e = (TOOLS / "hioc-pe4-dependency-validate.py").read_text(encoding="utf-8")
+        self.assertIn('"--action-d-governance-commit",required=True', action_e)
+        self.assertIn("verify_handoff_compatibility", action_e)
+        for name in ("hioc-pe4-runtime-publish.py", "hioc-pe4-runtime-preflight.py"):
+            source = (TOOLS / name).read_text(encoding="utf-8")
+            self.assertNotIn("--action-d-governance-commit", source)
+            self.assertNotIn("verify_handoff_compatibility", source)
+            self.assertNotIn("hioc-pe4-dependency-validate.py", source)
+        for name in ("hioc-pe4-runtime-construct.py", "hioc-pe4-runtime-publish.py",
+                     "hioc-pe4-runtime-preflight.py"):
+            self.assertNotIn(name, action_e)
+
     def test_frozen_identity(self):
         self.assertEqual(COMMON.WHEEL_SIZE, 188095)
         self.assertEqual(COMMON.WHEEL_SHA256, "86d7f0f8bdb25d2c632b72527325e4776430fd5bc61b9118de4e2b8ddb5f5b01")

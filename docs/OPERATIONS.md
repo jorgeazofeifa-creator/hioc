@@ -1,5 +1,34 @@
 # HIOC Operations
 
+## Current Action E producer/current operator review
+
+A later separately authorized review must select an explicit current consumer
+`--governance-commit`, accepted D producer `--action-d-governance-commit`, and
+construction directory. Neither commit may be inferred from the other. Confirm
+producer provenance from the accepted immutable marker and D evidence, including
+the selected evidence directory and independently reviewed evidence digest.
+
+The accepted historical handoff remains producer
+`6c431494c88688fef9a2fec7c7e81de0f503bdc2`, construction
+`/home/jazofv1/hioc/runtime/pe4/environments/.construct-cpython311-websockets16.1.1-lock-v1-mwJVPNqh`,
+evidence `/tmp/hioc-pe4-runtime-construct-LW9Dvay6`, SHA-256
+`a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d`.
+These are accepted review records, not generic source defaults or evidence-retention
+guarantees. No production object was accessed or modified by this correction.
+
+Current source must satisfy clean main/HEAD/origin identity, zero ahead/behind,
+no active Git operation and all five normalized source identities. Producer/current
+compatibility requires real commit objects, replacement protection, complete history,
+producer equality/ancestry and exact D/common/lock committed blobs. Strict D marker
+and evidence equality must still bind the producer and selected construction;
+consumer substitution is forbidden. A failure stops before runtime/evidence work
+with bounded diagnostics, without retry, rollback, or cleanup. Compatibility and
+operator review are prerequisites, not authorization. Action E remains **NOT STARTED**;
+separate E authorization is still required. F/G remain unauthorized.
+
+Next checkpoint:
+`PI3_SYNCHRONIZATION_AND_READ_ONLY_D_TO_E_COMPATIBILITY_VALIDATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 Action B fails closed if the staging pathname no longer resolves to its exact
 creation-time device, inode, UID, and mode. Do not search for, adopt,
 or clean a renamed or substituted directory. Treat failed identity proof as
@@ -1119,7 +1148,9 @@ input-snapshot namespace entries remained. No combined suite ran on PI3.
 Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
 PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
 
-Action D is complete; the next boundary is separate Action E preparation.
+Action D remains complete. The subsequent repository correction separates D
+producer provenance from E current source. The next boundary is separately
+authorized PI3 synchronization and read-only D-to-E compatibility validation.
 This closure prepares and authorizes no Action E execution or later lifecycle
 action. It grants no repeat Action D invocation or cleanup authority.
 

@@ -1,5 +1,32 @@
 # HIOC Architecture Decisions
 
+## Decision: Separate Action E consumer identity from Action D producer provenance
+
+Action E keeps `--governance-commit` for its current consumer/source commit and
+requires `--action-d-governance-commit` for the immutable upstream D producer.
+The two identities can legitimately differ after lifecycle closure documentation
+is committed. Immutable evidence remains bound to the producer; current source
+remains bound to the consumer. Neither identity defaults to or substitutes for
+the other.
+
+The new `tools/hioc_pe4_handoff_compatibility.py` requires literal lowercase
+40-hex commit objects, complete Git history, producer equality or ancestry, and
+identical committed blobs for D construction, the common runtime helper, and
+`requirements-pe4.lock`. Git object and ancestry checks explicitly disable
+replacement objects. Current source independently proves clean `main`, matching
+HEAD and local `origin/main`, zero ahead/behind, no active Git operation, and
+normalized committed/worktree identity for E, the new helper, D, common and lock.
+
+The strict common D eligibility/evidence validator is unchanged and receives
+only the producer identity. Compatibility proves provenance continuity; it does
+not grant execution authorization. E runtime checks and success evidence schema
+are unchanged. F/G are separate, unchanged, and unauthorized; no E-to-F evidence
+consumer is introduced. This repository checkpoint executed no lifecycle action
+and accessed neither PI3 nor PI5. Action E remains **NOT STARTED**.
+
+Next checkpoint:
+`PI3_SYNCHRONIZATION_AND_READ_ONLY_D_TO_E_COMPATIBILITY_VALIDATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 ## Decision: Execute PE-4 Home Assistant consumption on PI3
 
 HIOC is the consumer of Home Assistant data, so the PE-4 authenticated client
@@ -1941,7 +1968,9 @@ input-snapshot namespace entries remained. No combined suite ran on PI3.
 Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
 PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
 
-Action D is complete; the next boundary is separate Action E preparation.
+Action D remains complete. The subsequent repository correction separates D
+producer provenance from E current source. The next boundary is separately
+authorized PI3 synchronization and read-only D-to-E compatibility validation.
 This closure prepares and authorizes no Action E execution or later lifecycle
 action. It grants no repeat Action D invocation or cleanup authority.
 

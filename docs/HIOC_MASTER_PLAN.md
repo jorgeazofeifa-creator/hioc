@@ -1,5 +1,31 @@
 # HIOC Master Plan
 
+## Current Action E preparation blocker correction
+
+Read-only preparation identified a governance-binding blocker: Action E used its
+current source commit to validate immutable D producer evidence. Normal closure
+commits advance source while the accepted D handoff remains bound to its producer.
+The repository-only correction separates mandatory current-consumer
+`--governance-commit` from mandatory producer `--action-d-governance-commit`.
+
+The compatibility guard proves actual commit identities without replacement
+substitution, complete history, producer equality/ancestry and exact committed
+D/common/lock blobs. Current checkout/source governance remains strict; the common
+D eligibility equality contract, E runtime checks and E success schema are unchanged.
+Local/native Windows focused and regression tests passed. The accepted D handoff
+remains immutable, D/common/lock and F/G source are unchanged, and no PI3/PI5
+access or production lifecycle action occurred during this implementation.
+
+Replacement Action B remains PASS/CLOSED, Action C PASS exactly once, D-PREP
+PASS/CLOSED and Action D PASS/CLOSED. Action E remains **NOT STARTED** and requires
+separate authorization; Actions F/G remain NOT STARTED and unauthorized. No rollback
+occurred. After repository publication, the next checkpoint is separately authorized
+PI3 source synchronization and read-only D-to-E compatibility validation. That
+checkpoint does not authorize E preparation or execution in this implementation.
+
+Next checkpoint:
+`PI3_SYNCHRONIZATION_AND_READ_ONLY_D_TO_E_COMPATIBILITY_VALIDATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 ## Current governed status — Phase 7A
 
 Phase 7A is **ACTIVE / IN PROGRESS**. Passive Enrichment PE-0 through PE-3 are
@@ -30,7 +56,8 @@ Replacement Action B is **PASS / CLOSED**; accepted fresh transfer input is
 `/tmp/hioc-pe4-artifact-transfer-l3t4crcg`. Historical B staging remains unavailable.
 Action D is **PASS / CLOSED** with confirmed retained construction and independent
 review PASS. Action C and D-PREP were not rerun. Action E remains NOT STARTED
-and unauthorized; separate Action E preparation is the next checkpoint.
+and unauthorized; separately authorized PI3 synchronization/read-only D-to-E
+compatibility validation is the next checkpoint.
 
 ## PE-4.0B.2a Action B Windows SSH ACL compatibility correction
 
@@ -2643,7 +2670,9 @@ input-snapshot namespace entries remained. No combined suite ran on PI3.
 Action E is NOT_STARTED and separately unauthorized; Actions F/G and later
 PE-4 actions remain NOT_STARTED. Rollback remains NOT_PERFORMED.
 
-Action D is complete; the next boundary is separate Action E preparation.
+Action D remains complete. The subsequent repository correction separates D
+producer provenance from E current source. The next boundary is separately
+authorized PI3 synchronization and read-only D-to-E compatibility validation.
 This closure prepares and authorizes no Action E execution or later lifecycle
 action. It grants no repeat Action D invocation or cleanup authority.
 
