@@ -22,6 +22,7 @@ try:
     import hioc_pe4_runtime_common as COMMON
     spec = importlib.util.spec_from_file_location("pe4_e_test", TOOLS / "hioc-pe4-dependency-validate.py")
     E = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = E
     spec.loader.exec_module(E)
 finally:
     sys.path.pop(0)
@@ -137,6 +138,7 @@ class GitCompatibilityTests(unittest.TestCase):
 
     def test_unrelated_history_rejected(self):
         self.git("checkout", "--orphan", "unrelated")
+        self.write("unrelated-root", "distinct orphan tree\n")
         self.producer = self.commit()
         self.rejected(self.compatible, "HANDOFF_GIT_FAILED")
 
@@ -349,13 +351,16 @@ class ActionEMainTests(unittest.TestCase):
         names = ("verify_pi3", "verify_current_consumer_source", "verify_handoff_compatibility",
                  "validate_construction", "open_trusted_owned_parent", "open_owned_directory",
                  "action_d_subprocess_environment", "validate_action_d_eligibility",
-                 "exact_distribution_set", "run", "evidence_directory", "write_evidence", "terminal")
+                 "validate_runtime_inputs", "snapshot_tree", "assert_unchanged", "revalidate_owned_directory",
+                 "controlled_distributions", "controlled_capabilities", "evidence_directory", "write_evidence", "terminal")
         for name in names:
             def record(*args, _name=name, **kwargs):
                 calls.append((_name, args, kwargs))
                 if _name.startswith("open_"): return mock.Mock(fd=42)
                 if _name == "validate_construction": return pathlib.Path(args[0])
                 if _name == "action_d_subprocess_environment": return {"PIP_NO_INDEX":"1"}
+                if _name == "validate_action_d_eligibility": return {"evidence_directory":"synthetic-d-evidence"}
+                if _name == "validate_runtime_inputs": return {"policy":"controlled"}
                 if _name == "evidence_directory": return pathlib.Path("synthetic-evidence")
             mocks[name] = stack.enter_context(mock.patch.object(E, name, side_effect=record))
         stack.enter_context(mock.patch.object(sys, "argv", self.argv))
@@ -390,22 +395,22 @@ class ActionEMainTests(unittest.TestCase):
             self.assertLess(names.index("verify_pi3"), names.index("verify_current_consumer_source"))
             self.assertLess(names.index("verify_current_consumer_source"), names.index("verify_handoff_compatibility"))
             self.assertLess(names.index("verify_handoff_compatibility"), names.index("validate_construction"))
-            self.assertLess(names.index("validate_action_d_eligibility"), names.index("exact_distribution_set"))
-            self.assertLess(names.index("exact_distribution_set"), names.index("run"))
-            self.assertLess(names.index("run"), names.index("evidence_directory"))
+            self.assertLess(names.index("validate_action_d_eligibility"), names.index("controlled_distributions"))
+            self.assertLess(names.index("controlled_distributions"), names.index("controlled_capabilities"))
+            self.assertLess(names.index("controlled_capabilities"), names.index("evidence_directory"))
             mocks["verify_current_consumer_source"].assert_called_once_with(E.SOURCE, self.consumer)
             mocks["verify_handoff_compatibility"].assert_called_once_with(E.SOURCE, self.producer, self.consumer)
             root = mocks["validate_action_d_eligibility"].call_args.args[0]
             mocks["validate_action_d_eligibility"].assert_called_once_with(root, self.producer)
             root.close.assert_called_once()
-            mocks["run"].assert_called_once_with(["./bin/python", "-I", "-c", COMMON.CAPABILITY_PROBE],
-                "CAPABILITY_VALIDATION", cwd="/proc/self/fd/42", pass_fds=(42,), env={"PIP_NO_INDEX":"1"})
+            mocks["controlled_distributions"].assert_called_once_with(root, {"PIP_NO_INDEX":"1"}, {"policy":"controlled"})
+            mocks["controlled_capabilities"].assert_called_once_with(root, {"PIP_NO_INDEX":"1"}, {"policy":"controlled"})
             mocks["write_evidence"].assert_called_once_with(pathlib.Path("synthetic-evidence"), "PE-4.0B.2a-E",
                 {"ACTION":"DEPENDENCY_VALIDATION", "ENVIRONMENT_IDENTITY":COMMON.VERSIONED_NAME,
                  "INSTALLED_VERSION":"16.1.1", "CAPABILITY_VALIDATION":"PASS"}, "PASS")
             mocks["terminal"].assert_called_once_with("PASS", "NONE", "COMPLETE", False, pathlib.Path("synthetic-evidence"))
-            # The only subprocess request is the existing capability probe; no D/F/G launch.
-            self.assertEqual(names.count("run"), 1)
+            # Exactly the controlled distribution/capability gates; no D/F/G launch.
+            self.assertEqual(names.count("controlled_capabilities"), 1)
 
     def test_repository_compatibility_and_eligibility_reject_before_runtime_and_evidence(self):
         for gate, stage in (("verify_current_consumer_source", "SOURCE_IDENTITY"),
@@ -415,7 +420,8 @@ class ActionEMainTests(unittest.TestCase):
                 calls, mocks = self.harness(stack)
                 mocks[gate].side_effect = COMMON.Failure("BOUNDED_REJECTION", stage)
                 with self.assertRaises(COMMON.Failure): E.main()
-                for name in ("exact_distribution_set", "run", "evidence_directory", "write_evidence", "terminal"):
+                for name in ("validate_runtime_inputs", "snapshot_tree", "assert_unchanged", "revalidate_owned_directory",
+                 "controlled_distributions", "controlled_capabilities", "evidence_directory", "write_evidence", "terminal"):
                     mocks[name].assert_not_called()
                 if gate != "validate_action_d_eligibility":
                     mocks["open_owned_directory"].assert_not_called()

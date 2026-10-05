@@ -1,6 +1,78 @@
 # HIOC Operations
 
-## Current PI3 D-to-E read-only compatibility validation — PASS / CLOSED
+## Action E controlled startup correction — repository implementation
+
+Operator boundary: use the future published corrective implementation/closure commit as consumer, retaining the accepted D producer. Validation may read the construction, never normalize, repair, warm caches, delete, retry, or roll back it.
+
+Action E construction interpreters use **`-I -B -S`**: isolated startup,
+interpreter-level bytecode suppression, and no normal `site` initialization.
+Neither `site.main()` nor `site.addsitedir()` is called. Executable/library
+`._pth` overrides, build-layout markers, malformed/duplicate venv configuration,
+wrong interpreter binding, and unexpected initial paths fail closed before
+package execution. The outer process validates the construction interpreter
+against the governed `/usr/bin/python3` used by D's `--copies` installation.
+Python 3.11 `-S` leaves base prefixes active; E validates venv provenance
+separately and never changes `sys.prefix` to fake activation.
+
+The governed initial path model is exactly `/usr/lib/python311.zip`,
+`/usr/lib/python3.11`, `/usr/lib/python3.11/lib-dynload`. No user site, cwd,
+ambient `PYTHONPATH`, additional site/dist-packages root, or `.pth` path is
+adopted. Distribution discovery explicitly reads the single validated
+construction `lib/python3.11/site-packages` through standard-library metadata;
+pip, setuptools, websockets and entry points are not executed by discovery.
+One pip, optional single setuptools, exactly websockets `16.1.1`, no extras or
+duplicates, and bounded bootstrap-version syntax remain the acceptance policy.
+
+The E-local 52-member manifest comes from the exact frozen 188095-byte wheel
+with SHA-256 `86d7f0f8bdb25d2c632b72527325e4776430fd5bc61b9118de4e2b8ddb5f5b01`.
+Installed member bytes are verified before execution. The restricted capability
+loader compiles verified package source in memory, ignores construction `.pyc`,
+and permits only the reviewed websockets graph plus trusted standard-library
+imports. Optional `python_socks` and unrelated third-party imports are blocked.
+The native member is bound to SHA-256
+`b786db296f7d0677ddeceb7efbe963bc316a094f36e12388caa1333763ca4c1b`.
+The capability child appends exactly one governed site directory after validating
+its startup/finder state, keeping standard-library paths first.
+
+The E-local redirect probe now supplies `InvalidStatus(Response(...))` and
+validates the returned preexisting-socket refusal exception, matching the exact
+16.1.1 API. Version, canonical asyncio connect, required signature parameters,
+`**kwargs`, `InvalidStatus`, and `PayloadTooBig` remain required. No actual
+connect, DNS, proxy lookup, event-loop connection, SOCKS call, or URL open is
+performed. Common/F/G's historical probe is not changed or certified here.
+
+Construction-read-only means unchanged directory entries, content, sizes,
+ownership, permissions, identities, symlink targets, mtime and ctime. Recursive
+checks exclude atime and cover the D eligibility marker and D evidence too,
+including ordinary validation and E-evidence-publication failure paths. E's
+only deliberate filesystem writes are its own `/tmp` evidence. No permission
+flipping, construction copy, cleanup dependence, retry, rollback or F/G chaining
+is introduced. Child output is limited to 64 KiB per stream with a 60-second
+execution timeout. Success evidence retains its existing ten-field JSON and
+six-field terminal contract.
+
+Trust remains bounded to governed CPython/system libraries and the hash-bound
+reviewed wheel; this is not an OS sandbox for arbitrary hostile native code or
+concurrent same-account modification. Windows fixtures exercise real controlled
+interpreters and the exact wheel's source; they do not execute/certify its
+AArch64 native component. POSIX descriptor behavior, CPython 3.11.2/AArch64 SOABI,
+actual initial paths/configuration and native loading require a separately
+authorized architecture-matched **non-lifecycle** validation checkpoint before
+production Action E authorization. No PI3/PI5 access occurs in this implementation.
+
+The accepted producer remains `6c431494c88688fef9a2fec7c7e81de0f503bdc2`.
+D/common/lock, the handoff compatibility helper, and F/G source remain unchanged;
+exact producer/current critical-blob compatibility remains required. The future
+published corrective implementation/closure commit is the consumer, not
+`5c9afc5cb921681121fbbb71d64d6fe1cf29e242`. Historical PI3 compatibility closure
+remains historical evidence and does not validate this correction.
+
+Lifecycle: replacement B PASS/CLOSED; C PASS exactly once; D-PREP PASS/CLOSED;
+D PASS/CLOSED; E NOT STARTED; F NOT STARTED; G NOT STARTED; rollback NOT PERFORMED.
+No production synchronization or lifecycle action is performed or authorized here.
+Next checkpoint: `ACTION_E_NATIVE_VALIDATION_PREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+
+## Historical PI3 D-to-E read-only compatibility validation — PASS / CLOSED
 
 Operator evidence confirms the explicitly selected immutable D handoff.
 Future review must retain this producer/construction/evidence/digest selection

@@ -42,6 +42,11 @@ class PE4DependencyRuntimeGovernanceTests(unittest.TestCase):
             "5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e",
         )
 
+    def test_controlled_startup_contract_preserves_read_only_boundary(self):
+        for value in ("-I -B -S", "Construction-read-only", "exclude atime", "52-member manifest",
+                      "python_socks", "architecture-matched", "E NOT STARTED"):
+            self.assertIn(value, CONTRACT)
+
     def test_checkpoint_does_not_claim_execution(self):
         self.assertIn("PE-4.0B.2a remains **NOT STARTED**", CONTRACT)
         self.assertIn("does not install, deploy, or\nexecute anything", CONTRACT)

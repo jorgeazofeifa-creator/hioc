@@ -44,6 +44,16 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
                      "hioc-pe4-runtime-preflight.py"):
             self.assertNotIn(name, action_e)
 
+    def test_e_controls_are_local_and_lifecycle_remains_unexecuted(self):
+        source = (TOOLS / "hioc-pe4-dependency-validate.py").read_text(encoding="utf-8")
+        self.assertIn('["./bin/python", "-I", "-B", "-S", "-c"', source)
+        self.assertNotIn("site.main(", source)
+        self.assertNotIn("site.addsitedir(", source)
+        self.assertIn("E NOT STARTED; F NOT STARTED; G NOT STARTED", DOC)
+        for name in ("hioc-pe4-runtime-construct.py", "hioc-pe4-runtime-publish.py",
+                     "hioc-pe4-runtime-preflight.py", "hioc-pe4-runtime-rollback.py"):
+            self.assertNotIn(name, source)
+
     def test_frozen_identity(self):
         self.assertEqual(COMMON.WHEEL_SIZE, 188095)
         self.assertEqual(COMMON.WHEEL_SHA256, "86d7f0f8bdb25d2c632b72527325e4776430fd5bc61b9118de4e2b8ddb5f5b01")
