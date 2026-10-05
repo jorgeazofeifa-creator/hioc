@@ -1772,22 +1772,42 @@ Action D, Action E, publication, or rollback.
 
 ## Current D-PREP reconciliation status
 
-D-PREP repository implementation and behavioral validation are a complete candidate;
-this documentation/governance reconciliation checkpoint is complete, with commit
-readiness and governed repository publication still pending. D-PREP has NOT been
-executed on PI3. Action A and corrected B are COMPLETE / PASS; Action C is COMPLETE /
-PASS exactly once and must not be rerun absent an authorized finding of invalidation.
-Action D was attempted twice and failed twice, remains incomplete, and has not been
-retried after the second failure. E/F/G, HA 2a/2b, and 0C remain NOT STARTED. PE-4
-remains current and incomplete. No rollback has occurred.
+Operator-supplied evidence establishes that corrected source was published and
+synchronized to PI3 at `c5181a0d65da294e5db2dbd6795f20889b972a22` before native
+validation. PI3 native D-PREP revalidation is PASS and CLOSED: 115 run / 115 pass /
+0 skip / 0 fail / 0 error, including all seven POSIX-specific tests. Pre- and
+post-test source identity and frozen Action D SHA-256 were preserved. The prior
+Linux failures are closed as test-harness portability/isolation defects.
 
-The next repository checkpoint is a commit-readiness audit. Publication of code,
-tests, and governance together, clean source identity, separately authorized PI3
-synchronization and D-PREP execution, and a production Evidence Report remain
-pending. Only successful D-PREP execution and evidence review permit consideration
-of an Action D retry under another authorization. This record authorizes none of
-those actions. Earlier checkpoint narratives describe historical status; this
-section records current status. The authoritative record is HIOC_MASTER_PLAN.md.
+```text
+D_PREP=WINDOWS_CORRECTION_VALIDATED_NATIVE_LINUX_REVALIDATION_PASS_PRODUCTION_NOT_EXECUTED
+PI3_NATIVE_D_PREP_REVALIDATION=PASS
+D_PREP_EXECUTED=FALSE
+ACTION_D=FAILED_TWICE_NOT_COMPLETE
+ACTION_D_RETRIED=FALSE
+PI3_COMBINED_SUITE_EXECUTED=FALSE
+ACTION_E=NOT_STARTED
+ACTION_F=NOT_STARTED
+ACTION_G=NOT_STARTED
+PE4_0B2A=NOT_STARTED
+PE4_0B2B=NOT_STARTED
+PE4_0C=NOT_STARTED
+ROLLBACK=NOT_PERFORMED
+```
+
+This closes only native D-PREP test revalidation. D-PREP production hierarchy
+preparation has NOT EXECUTED; none of its three hierarchy paths is claimed created
+by D-PREP. Action D remains failed twice, incomplete, and not retried. The combined
+D-PREP/lifecycle suite has NOT EXECUTED on PI3; its earlier Windows validation is
+historical and separate. Action A and corrected B remain COMPLETE / PASS; Action C
+remains COMPLETE / PASS exactly once and must not be rerun absent an authorized
+finding of invalidation. Later lifecycle actions remain NOT STARTED and no rollback
+occurred. Phase 7A remains active; PE-4 is incomplete and Active Discovery postponed.
+
+The next production lifecycle action requires separate operator authorization.
+This documentation closure grants no execution authority. No production state or
+preserved evidence was changed by this checkpoint. Earlier checkpoint narratives
+retain historical status; HIOC_MASTER_PLAN.md remains the authoritative source.
 
 ### Final hierarchy and evidence contract
 

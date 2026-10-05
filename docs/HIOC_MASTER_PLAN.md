@@ -17,12 +17,12 @@ production deployment remain **NOT STARTED** or **NOT COMPLETE** as applicable.
 The older checkpoint narratives below retain their historical status at the
 time written and are not current lifecycle assertions.
 
-Current correction status: Windows test-harness validation passed; corrected native
-PI3 Linux revalidation remains pending. D-PREP production readiness is not established.
-Next governed sequence: review test-correction/governance commit readiness, separately
-publish and synchronize the correction, then validate the full corrected native suite.
-Only after native PASS may a later checkpoint prepare and authorize D-PREP execution;
-review its evidence before considering another Action D attempt.
+Current correction status: Windows validation passed; source synchronization to PI3
+at `c5181a0d65da294e5db2dbd6795f20889b972a22` and corrected native D-PREP
+revalidation are complete. Native result: 115 run / 115 pass / 0 skip / 0 fail /
+0 error. D-PREP remains NOT EXECUTED; Action D remains not retried; the combined
+suite has not executed on PI3. The next production lifecycle action requires
+separate operator authorization. This closes native revalidation only.
 
 ## PE-4.0B.2a Action B Windows SSH ACL compatibility correction
 
@@ -2419,39 +2419,91 @@ Actions E-G, authenticated PE-4.0B.2a proof, PE-4.0B.2b, and PE-4.0C remain
 
 ## Current D-PREP reconciliation status
 
-D-PREP source was published and synchronized to PI3 at
-`9de082ed9e114ac4e63e785d7e44edec88b0378d`. The repository implementation exists;
-the local test-harness portability correction is WINDOWS VALIDATED, while corrected
-native PI3 Linux REVALIDATION IS REQUIRED. D-PREP production execution is NOT
-EXECUTED and remains blocked until the corrected full native suite passes and a
-later checkpoint explicitly authorizes execution. Windows validation does not
-replace native Linux validation or establish production readiness.
+Operator-supplied evidence establishes that corrected source was published and
+synchronized to PI3 at `c5181a0d65da294e5db2dbd6795f20889b972a22` before native
+validation. PI3 native D-PREP revalidation is PASS and CLOSED: 115 run / 115 pass /
+0 skip / 0 fail / 0 error, including all seven POSIX-specific tests. Pre- and
+post-test source identity and frozen Action D SHA-256 were preserved. The prior
+Linux failures are closed as test-harness portability/isolation defects.
 
 ```text
-D_PREP=WINDOWS_CORRECTION_VALIDATED_NATIVE_LINUX_REVALIDATION_PENDING_PRODUCTION_NOT_EXECUTED
+D_PREP=WINDOWS_CORRECTION_VALIDATED_NATIVE_LINUX_REVALIDATION_PASS_PRODUCTION_NOT_EXECUTED
+PI3_NATIVE_D_PREP_REVALIDATION=PASS
+D_PREP_EXECUTED=FALSE
 ACTION_D=FAILED_TWICE_NOT_COMPLETE
-ACTION_D_RETRY=NOT_PERFORMED
+ACTION_D_RETRIED=FALSE
+PI3_COMBINED_SUITE_EXECUTED=FALSE
 ACTION_E=NOT_STARTED
 ACTION_F=NOT_STARTED
 ACTION_G=NOT_STARTED
 PE4_0B2A=NOT_STARTED
+PE4_0B2B=NOT_STARTED
+PE4_0C=NOT_STARTED
+ROLLBACK=NOT_PERFORMED
 ```
 
-Action A and corrected B remain COMPLETE / PASS; Action C remains COMPLETE / PASS
-exactly once and must not be rerun absent an authorized finding of invalidation.
-Action D failed twice, remains incomplete, and has not been retried. HA 2b and 0C
-remain NOT STARTED; PE-4 remains current and incomplete. No rollback occurred.
-The seven real POSIX-only tests passed in the earlier PI3 run, but that full native
-suite failed. No production hierarchy or preserved evidence was changed by the
-Windows correction. No Production Evidence Report is created for this test-only
-validation and repository correction.
+This closes only native D-PREP test revalidation. D-PREP production hierarchy
+preparation has NOT EXECUTED; none of its three hierarchy paths is claimed created
+by D-PREP. Action D remains failed twice, incomplete, and not retried. The combined
+D-PREP/lifecycle suite has NOT EXECUTED on PI3; its earlier Windows validation is
+historical and separate. Action A and corrected B remain COMPLETE / PASS; Action C
+remains COMPLETE / PASS exactly once and must not be rerun absent an authorized
+finding of invalidation. Later lifecycle actions remain NOT STARTED and no rollback
+occurred. Phase 7A remains active; PE-4 is incomplete and Active Discovery postponed.
 
-Next is a bounded commit-readiness review of the unchanged test correction and
-this governance record. Corrected-source publication, synchronization, native
-revalidation, and any eventual D-PREP execution require separate checkpoints.
-Only successful authorized D-PREP execution and evidence review permit consideration
-of another Action D attempt. This record authorizes none of those actions. Earlier
-checkpoint narratives retain historical status; HIOC_MASTER_PLAN.md is authoritative.
+The next production lifecycle action requires separate operator authorization.
+This documentation closure grants no execution authority. No production state or
+preserved evidence was changed by this checkpoint. Earlier checkpoint narratives
+retain historical status; HIOC_MASTER_PLAN.md remains the authoritative source.
+
+### Operator-supplied native PI3 revalidation evidence
+
+The operator manually ran the corrected D-PREP test suite on host `nutandpihole`,
+user `jazofv1`, in `/home/jazofv1/hioc-release-source`. This Windows documentation
+checkpoint did not connect to PI3 or independently inspect its evidence log.
+The terminal-safe validation returned control to the interactive shell.
+
+Pre-test guards: HOST=nutandpihole, USER=jazofv1, BRANCH=main; HEAD and ORIGIN_MAIN
+both `c5181a0d65da294e5db2dbd6795f20889b972a22`; subject
+`PE-4: isolate D-PREP tests across host platforms`; committed and worktree test blobs
+both `9f2efe579acc674513594c15cba29cb37c66a45b`; Action D SHA-256
+`e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213`.
+All guards passed: `PRE_TEST_GUARD=PASS`.
+
+```text
+TESTS_RUN=115
+FAILURES=0
+ERRORS=0
+SKIPPED=0
+EXPECTED_FAILURES=0
+UNEXPECTED_SUCCESSES=0
+Ran 115 tests in 2.568s
+OK
+PI3_NATIVE_D_PREP_REVALIDATION=PASS
+```
+
+All seven POSIX-specific tests executed and passed:
+
+- `test_posix_named_child_create_then_idempotent_open`
+- `test_posix_path_bound_ancestor_rename_away_is_rejected_as_name_lost`
+- `test_posix_path_bound_ancestor_replacement_is_rejected_as_name_substituted`
+- `test_posix_path_bound_leaf_removal_is_rejected_as_name_lost`
+- `test_posix_path_bound_leaf_rename_away_is_rejected_as_name_lost`
+- `test_posix_path_bound_leaf_replacement_is_rejected_as_name_substituted`
+- `test_posix_path_bound_unchanged_leaf_revalidates`
+
+Post-test HEAD_POST and ORIGIN_MAIN_POST remained
+`c5181a0d65da294e5db2dbd6795f20889b972a22`; WORKTREE_TEST_BLOB_POST remained
+`9f2efe579acc674513594c15cba29cb37c66a45b`; ACTION_D_SHA256_POST remained
+`e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213`.
+`POST_TEST_IDENTITY=PASS`. Operator-reported native log:
+`/tmp/hioc-dprep-native-revalidation-20261004-223906.log`.
+
+Negative evidence: `D_PREP_EXECUTED=FALSE`, `ACTION_D_RETRIED=FALSE`,
+`COMBINED_SUITE_EXECUTED=FALSE`, `INTERACTIVE_SHELL_PRESERVED=YES`.
+This is native test-validation evidence, not D-PREP production execution evidence.
+The corrected harness is now natively validated; production advancement remains
+separately authorized and no later lifecycle action is closed by this result.
 
 ### Native validation failure and bounded harness correction
 
@@ -2476,8 +2528,8 @@ proved process-global contamination directly: synthetic `os.name = "nt"` caused
 Linux pathlib to attempt WindowsPath construction and raise
 `NotImplementedError: cannot instantiate 'WindowsPath' on your system`.
 The downstream temp-root completeness failure resulted from that failed subcase.
-No production implementation semantic defect was established; native PASS is not
-claimed.
+No production implementation semantic defect was established by the earlier run.
+At that historical checkpoint, corrected native PASS had not yet been established.
 
 The bounded correction modifies only `tests/test_pe4_action_d_hierarchy_prepare.py`.
 Its `_isolated_hioc_os()` private facade is separately bound to PREP.os and the os
@@ -2510,8 +2562,9 @@ failures/errors; the seven Windows skips are exactly the POSIX tests listed abov
 Four-file bytecode-write-suppressed compilation and `git diff --check` passed.
 Frozen Action D SHA-256 remained
 `e979cc6049f8912c23e880f121fd2988d0354623c4f2a7d27eafb310e4b0c213`.
-Corrected full native PI3 validation remains mandatory and pending. The D-PREP
-checkpoint and PE-4 roadmap are not complete or advanced.
+Corrected full native PI3 validation was pending at that historical Windows
+checkpoint; the operator-supplied native PASS above now closes that requirement.
+D-PREP production execution and the PE-4 roadmap remain incomplete.
 
 ### Final hierarchy and evidence contract
 
