@@ -1,5 +1,104 @@
 # PE-4 Isolated Runtime and Dependency Contract
 
+## Action F publication-only implementation — production NOT STARTED
+
+Architecture B is implemented by `tools/hioc-pe4-runtime-publish.py` and the
+dedicated `tools/hioc_pe4_action_f.py`. This is PE-4.0B.2a-F implementation,
+not authorization or evidence of production execution. D/E/common/lock/client,
+G/rollback, all Action E handoff tooling/schemas, and the committed accepted
+Action E manifest remain unchanged.
+
+F accepts only the current consumer `--governance-commit`; the committed
+accepted handoff selects immutable D/E history and construction. It validates
+canonical/schema acceptance, pinned accepted-manifest bytes, local clean
+main/HEAD/origin and complete lineage, protected source blobs, the exact durable
+bundle inventory/modes/digests, attestation bindings and historical limitation,
+and the live construction recursively against the accepted capture. Atime is
+excluded; descendant content, metadata, membership and inode changes fail.
+Root/interpreter/native/configuration/D-marker bindings are independently
+cross-checked. The D marker is read at `0400`. Reviewed durable D/E copies may
+replace missing temporary originals; surviving originals must validate exactly.
+
+No construction interpreter, installed module, websockets import, startup hook,
+.pth processing, dependency/capability/redirect probe or network request runs.
+F requires isolated, no-site, bytecode-suppressed system /usr/bin/python3 startup.
+Only sanitized allowlisted local Git/source inspection and local target identity
+inspection precede publication. F never invokes D/E/G or rollback.
+
+The first-publication handoff requires absent final environment, active and
+previous-active records, plus absence of unresolved transactions. An existing
+client requires exact frozen bytes, owner/group, `0700` and retained descriptor
+identity/metadata; conflicting clients fail. A POSIX nonblocking exclusive flock
+on the retained PE4 root descriptor serializes F invocations through completion.
+This lock is cooperative F exclusivity, not exclusion of privileged mutation;
+operators must separately exclude other lifecycle writers. No lock-file creation
+or journal hierarchy mutation occurs before all preconditions validate.
+
+Transactions are exclusively allocated at
+`/home/jazofv1/hioc/runtime/pe4/transactions/f-<32 lowercase hex digits>/`.
+Transaction hierarchy is `0700`; sequential canonical records and result are
+`0600`. The strict version `2.0` contract is
+`governance/pe4/action-f-record.schema.json`.
+Each numbered record binds its predecessor digest, transaction/current consumer,
+accepted manifest, D/E lineage, bundle/tree/attestation, construction/final
+identities, client disposition, pointer identities and publication/evidence state.
+
+Progression is PREPARED; durable INTENT then verified/fsynced CONFIRMED for client
+publication when absent, environment rename, previous-active creation, active
+link staging and activation; POST_VERIFIED; immutable result; durable
+RESULT_REFERENCE; COMMITTED. An exact existing client skips client mutation.
+Absent destinations use renameat2(RENAME_NOREPLACE); no existing environment or
+pointer is overwritten. Client/result records include file fsync; every boundary
+includes directory and relevant parent fsync plus reread verification.
+The construction root name and rename-induced ctime may transition once; all
+other root fields and descendants must match. The observed final root ctime is
+then frozen and recorded. Final pointer identities and exact client metadata
+are rechecked. The multi-object transaction is not globally atomic.
+
+PASS and RC 0 require rereading the canonical chained COMMITTED state and its
+exact immutable result digest, final-state revalidation and successful descriptor
+close. A result file alone is not acceptance. Handled failures are sanitized
+finite records with RC 1; arguments reject with RC 2. Incomplete intents, partial
+records and fixtures are retained. Unknown mutation outcomes report UNCERTAIN
+and recovery-required. Read-only absence proof may establish nonpublication but
+never authorizes retry. Second invocation rejects prior transaction state;
+there is no resume, adoption, cleanup, rollback or automatic repair.
+This initial publication has no validated prior active target, so rollback
+recommendation remains FALSE even when reconciliation is required.
+
+Windows synthetic/fault tests prove repository control flow; they do not certify
+PI3 flock, no-replace kernel/libc support, POSIX name binding or filesystem
+durability. Remaining prerequisites are separately authorized native compatibility
+review, independent implementation/transaction review and bounded execution
+preparation against the published current consumer. The existing G/rollback
+tools are unchanged and are not authorized by this checkpoint; their compatibility
+with F version 2.0 must be independently reviewed before any use. No production
+validator or PI3 execution commands are issued here.
+
+Final repository validation: 37 dedicated F tests PASS, including the full
+intent/confirmation fault matrix. Final lifecycle/handoff regression: 146 tests,
+145 PASS and one POSIX-only skip. Complete repository suite: 1190 tests,
+1143 PASS and 47 platform/tool-dependent skips; zero failures/errors.
+Bytecode-suppressed compilation, strict schema structure, full diff review,
+exact 13-file scope and 19 protected-file comparisons PASS. The accepted E
+manifest remains byte-identical with SHA-256
+1ac94f233bf543cafdc81b1f530177bd1c84d46ae13a7a686b33d34032d50c14.
+git diff --check PASS; LF-to-CRLF conversion warnings only.
+Created files retain descriptor/name inode pins through write/fsync/reread;
+journal rereads reject identical-byte inode replacement. Early synthetic
+fixture path/digest/mode differences were corrected before final validation.
+
+D: PASS/CLOSED. E: PASS/CLOSED. Action E handoff: ACCEPTED.
+Continuity: ACCEPTED as GOVERNANCE_ATTESTED_E_TO_CAPTURE with
+NO_PERSISTED_E_TIME_RECURSIVE_BASELINE; both historical recursive flags remain
+false. The accepted capture is the machine-verifiable baseline forward.
+F: NOT STARTED. G: NOT STARTED. Rollback: NOT PERFORMED.
+No PI3/PI5 access, synchronization or production lifecycle action occurred.
+
+Next checkpoint:
+`ACTION_F_NATIVE_COMPATIBILITY_CHECK_READY_FOR_SEPARATE_AUTHORIZATION`.
+
+
 ## Action E handoff acceptance — 2026-10-05
 
 <a id="action-e-handoff-acceptance-2026-10-05"></a>
