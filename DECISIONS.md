@@ -1,5 +1,21 @@
 # HIOC Architecture Decisions
 
+## PE-4.0B.2a successor authenticated proof preparation - 2026-10-05
+
+Freeze release-source execution with the existing governed runtime, client
+`-I -B` and stdlib bootstrap `-I -B -S`; clear the environment and gate source,
+target and complete approved dependency identity before any credential prompt.
+[Canonical preparation policy](governance/pe4/pe4-0b2a-successor-preparation.json).
+No implementation/test or historical/runtime changes.
+
+D/E/F/G remain PASS/CLOSED, E handoff ACCEPTED; successor CORRECTED /
+REPOSITORY_ONLY / NOT DEPLOYED. 2a is NOT STARTED / PREPARED FOR SEPARATE
+AUTHORIZATION; 2b NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback
+NOT PERFORMED. Historical F/G identity/runtime and accepted handoff/lock are
+unchanged. No authenticated execution, PI3/PI5/HA access, F/G rerun or rollback
+occurred. Package installation, another environment and pointer mutation are
+excluded. Stop after the separately authorized proof; chain no later action.
+
 ## PE-4.0B.2a consolidated client boundary correction - 2026-10-05
 
 Retain standard-library HTTP parsing with a deadline-aware socket/file adapter:

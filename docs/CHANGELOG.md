@@ -1,5 +1,31 @@
 # HIOC Changelog
 
+## PE-4.0B.2a successor authenticated proof preparation - 2026-10-05
+
+Comprehensive repository-only review PASS: credential, shared absolute network
+deadline, REST partial progress/cleanup, strict JSON, WebSocket receive/send/cleanup,
+interruption RC 130, exact authentication schemas, and absence of 2b commands.
+No implementation or test changes were required.
+
+Candidate blob 85842a81c57187c9e119d1065fce433e5b067e1f; SHA-256
+aa0e58ed6c7bb4586625836cc71ad0cab9270e6b11a6a5db66497115b001decf.
+
+[Canonical preparation record](../governance/pe4/pe4-0b2a-successor-preparation.json).
+
+Validation: 160 focused regressions PASS; full suite 1253 run, 1206 PASS,
+47 platform skips. In-memory compilation of 138 tracked Python files, static
+privacy/output checks, Git Bash release validation and future block syntax/
+Python compilation PASS. Preparation JSON is canonical and source-bound.
+Existing G-test ResourceWarnings and Git line-ending warnings are informational.
+
+D/E/F/G remain PASS/CLOSED, E handoff ACCEPTED; successor CORRECTED /
+REPOSITORY_ONLY / NOT DEPLOYED. 2a is NOT STARTED / PREPARED FOR SEPARATE
+AUTHORIZATION; 2b NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback
+NOT PERFORMED. Historical F/G identity/runtime and accepted handoff/lock are
+unchanged. No authenticated execution, PI3/PI5/HA access, F/G rerun or rollback
+occurred. Package installation, another environment and pointer mutation are
+excluded. Stop after the separately authorized proof; chain no later action.
+
 ## PE-4.0B.2a consolidated client boundary correction - 2026-10-05
 
 Corrected all five audited boundaries in one repository-only batch: absolute REST

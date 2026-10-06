@@ -1,5 +1,47 @@
 # PE-4 Home Assistant Access and Privacy Contract
 
+## PE-4.0B.2a successor authenticated proof preparation - 2026-10-05
+
+Comprehensive repository-only review PASS: credential, shared absolute network
+deadline, REST partial progress/cleanup, strict JSON, WebSocket receive/send/cleanup,
+interruption RC 130, exact authentication schemas, and absence of 2b commands.
+No implementation or test changes were required.
+
+Correction commit: cdbe4567d559aa8f5631d0f076cce0b076b2ad96; blob 85842a81c57187c9e119d1065fce433e5b067e1f; SHA-256
+aa0e58ed6c7bb4586625836cc71ad0cab9270e6b11a6a5db66497115b001decf.
+
+[Canonical preparation record](../governance/pe4/pe4-0b2a-successor-preparation.json).
+
+Future execution selects the release-source successor at
+`/home/jazofv1/hioc-release-source/tools/hioc-pe4-ha-auth-capability.py` with the
+existing `cpython311-websockets16.1.1-lock-v1` isolated interpreter. Client flags
+are `-I -B`: isolated Python/user paths and no bytecode writes. Omit `-S` for
+the client because CPython 3.11 needs site initialization for the venv prefix
+and approved site-packages. The stdlib-only bootstrap uses `-I -B -S`.
+
+The environment is cleared first. Retain only PATH=/usr/bin:/usr/sbin (approved
+system tools, including ip), HOME=/nonexistent (no ambient home configuration),
+LANG=C.UTF-8 and LC_ALL=C.UTF-8 (fixed encoding), and the validated parent SHELL
+(bash/zsh/ash at approved /bin or /usr/bin paths). Operator discovery uses
+pwd/geteuid, not environment names. PYTHONPATH, PYTHONHOME and every proxy variable
+are absent. The client inherits terminal stderr and receives /dev/tty stdin.
+
+Pre-token gates bind the separately verified preparation commit, clean synchronized
+main with no untracked files or active operation, source blob/SHA, PI3 identity,
+exact active/final paths, accepted runtime tree bytes/metadata, digest-bound D
+distributions, CPython 3.11.2, aarch64 SOABI, and websockets 16.1.1/origin. Read-only
+E tree primitives validate the existing runtime; no E/F/G action is invoked.
+Source identity is checked again after execution. The future operator block is
+delivered in the preparation report and requires separate execution authorization.
+
+D/E/F/G remain PASS/CLOSED, E handoff ACCEPTED; successor CORRECTED /
+REPOSITORY_ONLY / NOT DEPLOYED. 2a is NOT STARTED / PREPARED FOR SEPARATE
+AUTHORIZATION; 2b NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback
+NOT PERFORMED. Historical F/G identity/runtime and accepted handoff/lock are
+unchanged. No authenticated execution, PI3/PI5/HA access, F/G rerun or rollback
+occurred. Package installation, another environment and pointer mutation are
+excluded. Stop after the separately authorized proof; chain no later action.
+
 ## PE-4.0B.2a consolidated client boundary correction - 2026-10-05
 
 The repository-only successor now enforces the shared absolute REST deadline at
