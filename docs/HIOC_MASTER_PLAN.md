@@ -1,5 +1,26 @@
 # HIOC Master Plan
 
+## Successor network-budget timing correction - 2026-10-05
+
+Preparation review found the network-budget timing defect before execution.
+The 20-second clock now starts immediately after successful getpass credential
+acquisition, before REST; local checks and prompt time are excluded. REST and
+WebSocket retain one shared deadline, the 5/10-second caps and existing elapsed
+checks. Strict authentication-frame parsing, credential privacy and 2b exclusion
+remain unchanged. No authenticated operation occurred.
+
+New successor blob: be4499c81b0475b0320039ca2bfb74d926aefda4.
+New successor SHA-256: d41a4991c51bb95546c80e85c39df421b59d29574f8645c328826c3df2e29f65.
+The repository-only candidate from correction commit
+3f625ca0ef46deb83565823eb7ae35aa14aa8055 is superseded (blob
+23ad1249c44b5d9b951057ea196e8bce3d598fd5; SHA-256
+0e0817f64905eba13d8505a8aa2fa217ff7eab05c918877c8f9809393e4959b0).
+
+Successor is CORRECTED / REPOSITORY_ONLY / NOT DEPLOYED; 2a NOT STARTED /
+NOT PREPARED. Repeat successor authenticated proof preparation review in a
+separate checkpoint. D/E/F/G PASS/CLOSED; E handoff ACCEPTED; 2b NOT STARTED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+
 ## Repository successor authentication-frame correction — 2026-10-05
 
 The canonical tools/hioc-pe4-ha-auth-capability.py successor source now corrects
@@ -2862,7 +2883,8 @@ Native compatibility PASS/CLOSED; rollback NOT PERFORMED. PE-4 NOT COMPLETE.
 The current Action G closure and repository successor correction above are
 authoritative. Successor source is corrected, REPOSITORY_ONLY / NOT DEPLOYED,
 not executed and not yet authorized; 2a is not prepared and remains NOT STARTED.
-Next: separate successor preparation review for PE-4.0B.2a under
+The successor network-budget correction supersedes the earlier candidate.
+Next: repeat separate successor preparation review for PE-4.0B.2a under
 REST_THEN_WEBSOCKET_2A; no automatic 2b registry/schema discovery.
 The accepted E historical bridge retains NO_PERSISTED_E_TIME_RECURSIVE_BASELINE
 and both historical recursive flags remain false.

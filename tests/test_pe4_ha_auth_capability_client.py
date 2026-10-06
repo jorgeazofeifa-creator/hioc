@@ -419,6 +419,90 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(CLIENT.run(ARGS, list().append), 1)
         ws.assert_not_called()
 
+    def run_with_network_clock(self, *, precheck=0, prompt=0, rest=1, ws=1,
+                               credential_failure=False):
+        clock = [0.0]
+        deadlines = []
+        clock_events = []
+        output = []
+        def monotonic():
+            clock_events.append(("clock", clock[0]))
+            return clock[0]
+        def validate(*args, **kwargs):
+            clock[0] += precheck
+        def acquire():
+            clock[0] += prompt
+            if credential_failure:
+                raise CLIENT.ContractFailure("AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION")
+            clock_events.append(("credential_return", clock[0]))
+            return "synthetic-secret"
+        def rest_check(token, *, deadline):
+            deadlines.append(("rest", deadline))
+            clock[0] += rest
+        def websocket_check(token, *, deadline):
+            deadlines.append(("ws", deadline))
+            clock[0] += ws
+        with mock.patch.object(CLIENT.time, "monotonic", side_effect=monotonic), \
+             mock.patch.object(CLIENT, "validate_execution_host", side_effect=validate), \
+             mock.patch.object(CLIENT, "local_ipv4_addresses", return_value=set()), \
+             mock.patch.object(CLIENT, "current_operator", return_value="fixture"), \
+             mock.patch.object(CLIENT, "proxy_influence_present", return_value=False), \
+             mock.patch.object(CLIENT, "detect_websocket_client", return_value="PYTHON_WEBSOCKETS"), \
+             mock.patch.object(CLIENT, "validate_terminal"), \
+             mock.patch.object(CLIENT, "acquire_token", side_effect=acquire), \
+             mock.patch.object(CLIENT, "rest_check", side_effect=rest_check) as rest_mock, \
+             mock.patch.object(CLIENT, "websockets_check", side_effect=websocket_check) as ws_mock:
+            rc = CLIENT.run(ARGS, output.append)
+        return rc, output, deadlines, clock_events, rest_mock, ws_mock
+
+    def test_slow_prompt_excluded_from_shared_network_deadline(self):
+        rc, output, deadlines, events, _, _ = self.run_with_network_clock(prompt=21)
+        self.assertEqual(rc, 0)
+        self.assertEqual(events[:2], [("credential_return", 21.0), ("clock", 21.0)])
+        self.assertEqual(deadlines, [("rest", 41.0), ("ws", 41.0)])
+        self.assertEqual(output, CLIENT.success_lines("PYTHON_WEBSOCKETS"))
+        self.assertNotIn("synthetic-secret", "\n".join(output))
+
+    def test_local_prechecks_excluded_from_network_budget(self):
+        rc, output, deadlines, events, _, _ = self.run_with_network_clock(precheck=60, prompt=21)
+        self.assertEqual(rc, 0)
+        self.assertEqual(events[:2], [("credential_return", 81.0), ("clock", 81.0)])
+        self.assertEqual(deadlines, [("rest", 101.0), ("ws", 101.0)])
+        self.assertIn("PE4_0B2B=NOT_STARTED", output)
+
+    def test_credential_failure_has_no_network_clock_or_operations(self):
+        rc, output, deadlines, events, rest, ws = self.run_with_network_clock(
+            precheck=60, prompt=21, credential_failure=True)
+        self.assertEqual(rc, 1)
+        self.assertEqual(events, [])
+        self.assertEqual(deadlines, [])
+        rest.assert_not_called()
+        ws.assert_not_called()
+        self.assertEqual(output, CLIENT.failure_lines(
+            "AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION", "PYTHON_WEBSOCKETS"))
+
+    def test_network_elapsed_budget_exhaustion_before_and_after_websocket(self):
+        for rest_seconds, ws_seconds, expected_calls in (
+                (21, 0, ["rest"]), (10, 11, ["rest", "ws"])):
+            with self.subTest(rest=rest_seconds, ws=ws_seconds):
+                rc, output, deadlines, _, _, _ = self.run_with_network_clock(
+                    prompt=21, rest=rest_seconds, ws=ws_seconds)
+                self.assertEqual(rc, 1)
+                self.assertEqual([name for name, _ in deadlines], expected_calls)
+                self.assertTrue(all(deadline == 41.0 for _, deadline in deadlines))
+                self.assertEqual(output, CLIENT.failure_lines(
+                    "ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY", "PYTHON_WEBSOCKETS"))
+
+    def test_remaining_connect_read_caps_and_expired_deadline_unchanged(self):
+        self.assertEqual((CLIENT.CONNECT_TIMEOUT, CLIENT.READ_TIMEOUT, CLIENT.TOTAL_BUDGET),
+                         (5.0, 10.0, 20.0))
+        with mock.patch.object(CLIENT.time, "monotonic", return_value=100.0):
+            self.assertEqual(CLIENT.remaining_timeout(120.0, CLIENT.CONNECT_TIMEOUT, "ENDPOINT"), 5.0)
+            self.assertEqual(CLIENT.remaining_timeout(120.0, CLIENT.READ_TIMEOUT, "ENDPOINT"), 10.0)
+            self.assertEqual(CLIENT.remaining_timeout(103.0, CLIENT.READ_TIMEOUT, "ENDPOINT"), 3.0)
+            self.failure(lambda: CLIENT.remaining_timeout(100.0, CLIENT.CONNECT_TIMEOUT, "ENDPOINT"),
+                         "ENDPOINT_UNAVAILABLE", "ENDPOINT")
+
     def test_source_contains_no_forbidden_ha_commands_or_persistence(self):
         source = PATH.read_text(encoding="utf-8")
         for forbidden in ("/api/states", "subscribe_events", "config/device_registry/list",

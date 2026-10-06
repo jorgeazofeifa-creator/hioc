@@ -1,5 +1,32 @@
 # HIOC Changelog
 
+## Successor network-budget timing correction - 2026-10-05
+
+Preparation review found the network-budget timing defect before execution.
+The 20-second clock now starts immediately after successful getpass credential
+acquisition, before REST; local checks and prompt time are excluded. REST and
+WebSocket retain one shared deadline, the 5/10-second caps and existing elapsed
+checks. Strict authentication-frame parsing, credential privacy and 2b exclusion
+remain unchanged. No authenticated operation occurred.
+
+New successor blob: be4499c81b0475b0320039ca2bfb74d926aefda4.
+New successor SHA-256: d41a4991c51bb95546c80e85c39df421b59d29574f8645c328826c3df2e29f65.
+The repository-only candidate from correction commit
+3f625ca0ef46deb83565823eb7ae35aa14aa8055 is superseded (blob
+23ad1249c44b5d9b951057ea196e8bce3d598fd5; SHA-256
+0e0817f64905eba13d8505a8aa2fa217ff7eab05c918877c8f9809393e4959b0).
+
+Validation: 39 client/privacy tests PASS, including five timing regressions;
+98 historical F/G/runtime/API regressions PASS. Full suite: 1230 run,
+1183 PASS, 47 platform skips. In-memory compilation of 138 Python files,
+static output/privacy and release checks, complete diff and exact seven-file
+scope PASS; diff checks have only Git line-ending warnings.
+
+Added mocked timing regressions for slow prompts, long local checks, shared
+deadlines, credential failure and network elapsed-time exhaustion. Historical
+F/G identity/runtime are unchanged; no F/G rerun, deployment or rollback.
+2a remains NOT STARTED / NOT PREPARED; separate preparation review is next.
+
 ## Repository successor authentication-frame correction — 2026-10-05
 
 The canonical tools/hioc-pe4-ha-auth-capability.py successor source now corrects

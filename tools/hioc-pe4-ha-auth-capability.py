@@ -412,8 +412,6 @@ def emit(lines: Sequence[str], output: Callable[[str], None] = print) -> None:
 def run(argv: Sequence[str], output: Callable[[str], None] = print) -> int:
     ws_class: str | None = None
     token: str | None = None
-    started = time.monotonic()
-    deadline = started + TOTAL_BUDGET
     try:
         args = parse_args(argv)
         validate_execution_host(
@@ -431,6 +429,8 @@ def run(argv: Sequence[str], output: Callable[[str], None] = print) -> int:
             )
         validate_terminal(sys.stdin.isatty(), sys.stderr.isatty())
         token = acquire_token()
+        started = time.monotonic()
+        deadline = started + TOTAL_BUDGET
         rest_check(token, deadline=deadline)
         if time.monotonic() - started >= TOTAL_BUDGET:
             raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
