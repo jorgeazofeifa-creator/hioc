@@ -1,6 +1,111 @@
 # HIOC Deployment
 
-## Action F publication-only implementation — production NOT STARTED
+## Action F production closure — Evidence Report — 2026-10-05
+
+This is the authoritative current Action F closure. Earlier checkpoint sections
+below retain historical status and authorization boundaries; their NOT STARTED
+statements and earlier next-checkpoint markers do not describe current F status.
+This repository checkpoint records the supplied production execution and
+separately completed read-only review; it does not repeat production inspection.
+
+### Deployment result
+
+Action F (PE-4.0B.2a-F) executed exactly once on PI3 using consumer
+`2a5e6299a0806c3f3d7c3bc11c84fddc8492333c`.
+Production terminal: RESULT=PASS, ERROR_CODE=NONE, FAILURE_STAGE=COMPLETE,
+ROLLBACK_RECOMMENDED=FALSE, PUBLICATION_STATE=COMPLETE,
+RECOVERY_REQUIRED=FALSE, EVIDENCE_STATE=CONFIRMED; process RC 0.
+
+Transaction ID: `17fc3e0580ff007cdcd619ed2e2d3b34`.
+Transaction directory:
+`/home/jazofv1/hioc/runtime/pe4/transactions/f-17fc3e0580ff007cdcd619ed2e2d3b34`.
+
+Independent read-only production review PASS: directory mode 0700,
+15 transaction files, 14 journal events; chain, event order, schema/canonical
+validation, exact result reference and committed-state validation all PASS.
+Result record SHA-256:
+`d647c7b2241d7800a3c819cf86459e2be95c3ef58581d5ffef2dbf5bd1190941`.
+Committed record SHA-256:
+`24bb64cc8d885297e5696ddd733ec0dfab4b28a24e18a6996b667c186f2016e9`.
+
+### Intended behavior
+
+Publication-only F consumed and independently validated the accepted Action E
+handoff, verified construction against the accepted machine baseline, published
+the final environment and HA capability client, established the active pointer,
+recorded previous-active=NONE, and produced a durable committed journal.
+
+Final environment:
+`/home/jazofv1/hioc/runtime/pe4/environments/cpython311-websockets16.1.1-lock-v1`.
+The original construction path is absent after the governed rename.
+Client: `/home/jazofv1/hioc/tools/hioc-pe4-ha-auth-capability.py`.
+Client SHA-256:
+`5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e`.
+Active target: `environments/cpython311-websockets16.1.1-lock-v1`.
+Previous-active content: `NONE`.
+
+### Invariant checks
+
+Independent production review recorded PASS for accepted handoff binding,
+durable handoff unchanged, original D evidence unchanged, original E evidence
+unchanged, final environment tree equality, D eligibility marker preservation,
+client SHA, active pointer, previous-active, journal chain, committed record,
+source integrity and absence of all F publication temporary files.
+Only the permitted root-name/root-ctime transition occurred.
+PI3 source remained at the execution consumer above with no source mutation
+during execution or independent review.
+
+Retained accepted bindings, all independently reviewed PASS:
+
+- Accepted E manifest SHA-256:
+  `1ac94f233bf543cafdc81b1f530177bd1c84d46ae13a7a686b33d34032d50c14`.
+- Durable E bundle manifest SHA-256:
+  `1f5c5b477a01e3ef82017d8d57a70f864cb0ddb6ba28371989a3124b1cecf804`.
+- Accepted construction tree SHA-256:
+  `4a929181d69f7391b3e39a0fd27fb17aa9c8883f42d9707af559c9a986d514a9`.
+- Continuity attestation SHA-256:
+  `0ba4f111a1a8cc21336c7c4676f0f19fa37d166158155aa9fe88153b7dff7c49`.
+
+### Warnings and limitations
+
+The multi-object F publication is journaled and durable, but not globally atomic.
+The historical E-to-capture recursive interval remains governance-attested,
+not retrospectively machine-proven: GOVERNANCE_ATTESTED_E_TO_CAPTURE with
+NO_PERSISTED_E_TIME_RECURSIVE_BASELINE; historical recursive flags remain false.
+The accepted capture remains the machine-verifiable continuity baseline forward.
+G has not executed; authenticated association/service proof has not yet been
+established by G. F performed no service restart/reload.
+F success does not certify G's runtime/shared probes or production readiness.
+
+### Repository closure validation
+
+Focused PE-4 governance/lifecycle/handoff checks: 125 tests, 124 PASS,
+one POSIX-only skip. Complete repository suite: 1190 tests, 1143 PASS,
+47 platform/tool-dependent skips; zero failures/errors.
+Exact eight-document scope, synchronized reports and current Master Plan
+lifecycle review PASS. All 24 explicitly checked protected blobs match
+the implementation consumer; no other tracked path changed.
+Accepted E manifest SHA-256 is unchanged.
+git diff --check PASS; LF-to-CRLF conversion warnings only.
+No PI3 native tests or production access occurred in this closure checkpoint.
+
+### PASS / FAIL and next checkpoint
+
+Action F Evidence Report: **PASS**. F is **PASS/CLOSED**, publication COMPLETE,
+recovery required FALSE, rollback recommended FALSE. No recovery action is
+required; no rollback is required or authorized.
+Replacement B: PASS/CLOSED. C: PASS. D-PREP: PASS/CLOSED.
+D: PASS/CLOSED. E: PASS/CLOSED. Action E handoff: ACCEPTED.
+F: PASS/CLOSED. G: NOT STARTED. Rollback: NOT PERFORMED.
+PE-4 remains incomplete while G is outstanding.
+
+Next is a separately authorized bounded **Action G preparation** review,
+not execution:
+`ACTION_G_PREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
+This docs-only closure accesses neither PI3 nor PI5, changes no implementation,
+and executes neither F again, G nor rollback.
+
+## Historical Action F implementation checkpoint — production then NOT STARTED
 
 Architecture B is implemented by `tools/hioc-pe4-runtime-publish.py` and the
 dedicated `tools/hioc_pe4_action_f.py`. This is PE-4.0B.2a-F implementation,
