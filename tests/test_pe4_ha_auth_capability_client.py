@@ -150,13 +150,94 @@ class ClientTests(unittest.TestCase):
                      "ENDPOINT_UNAVAILABLE", "ENDPOINT")
 
     def test_ws_message_schema(self):
-        self.assertEqual(CLIENT._parse_ws_message('{"type":"auth_ok"}'), {"type": "auth_ok"})
-        for raw, code in (("bad", "UNEXPECTED_SCHEMA"), ('{"type":"auth_ok","id":1}', "UNEXPECTED_SCHEMA"),
-                          ("x" * 65537, "RESPONSE_TOO_LARGE")):
-            self.failure(lambda r=raw: CLIENT._parse_ws_message(r), code, "WEBSOCKET_CAPABILITY")
+        frame = {"type": "auth_ok", "ha_version": "2026.8.1"}
+        self.assertEqual(CLIENT._parse_ws_message(json.dumps(frame)), frame)
+        for raw in ("bad", "[]", "null", "1", '"text"', "{}",
+                    '{"type":null}', '{"type":1}', b"\xff", object()):
+            with self.subTest(raw=raw):
+                self.failure(lambda: CLIENT._parse_ws_message(raw),
+                             "UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+        self.failure(lambda: CLIENT._parse_ws_message("x" * 65537),
+                     "RESPONSE_TOO_LARGE", "WEBSOCKET_CAPABILITY")
+
+    def test_documented_auth_schemas_discard_ancillary_fields(self):
+        self.assertIsNone(CLIENT._parse_auth_required(
+            b'{"type":"auth_required","ha_version":"2026.8.1"}'))
+        self.assertIsNone(CLIENT._parse_auth_result(
+            '{"type":"auth_ok","ha_version":"2026.8.1"}'))
+        self.failure(lambda: CLIENT._parse_auth_result(
+            '{"type":"auth_invalid","message":"Invalid access token or password"}'),
+            "AUTHENTICATION_FAILED", "AUTHENTICATION")
+
+    def test_exact_phase_schemas_reject_missing_wrong_and_extra_fields(self):
+        for kind, field, parser in (
+                ("auth_required", "ha_version", CLIENT._parse_auth_required),
+                ("auth_ok", "ha_version", CLIENT._parse_auth_result),
+                ("auth_invalid", "message", CLIENT._parse_auth_result)):
+            cases = [{"type": kind}, {"type": kind, field: "text", "id": 1}]
+            cases.extend({"type": kind, field: value}
+                         for value in (1, None, {}, [], True))
+            for frame in cases:
+                with self.subTest(frame=frame):
+                    self.failure(lambda: parser(json.dumps(frame)),
+                                 "UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+
+    def test_wrong_phase_and_command_frames_rejected(self):
+        for parser, wrong_auth in (
+                (CLIENT._parse_auth_required, {"type": "auth_ok", "ha_version": "2026.8.1"}),
+                (CLIENT._parse_auth_result, {"type": "auth_required", "ha_version": "2026.8.1"})):
+            wrong_frames = [wrong_auth]
+            if parser is CLIENT._parse_auth_required:
+                wrong_frames.append({"type": "auth_invalid", "message": "bad"})
+            for frame in wrong_frames:
+                self.failure(lambda: parser(json.dumps(frame)),
+                             "UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+            for kind in ("result", "event", "pong", "supported_features", "arbitrary"):
+                with self.subTest(parser=parser.__name__, kind=kind):
+                    self.failure(lambda: parser(json.dumps({"type": kind})),
+                                 "UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+
+    def test_real_exchange_terminal_privacy_success_and_failure(self):
+        version = "PRIVATE_VERSION_SENTINEL"
+        message = "PRIVATE_SERVER_MESSAGE_SENTINEL"
+        for result, expected_code in (
+                ({"type": "auth_ok", "ha_version": version}, None),
+                ({"type": "auth_invalid", "message": message}, "AUTHENTICATION_FAILED")):
+            with self.subTest(result=result["type"]):
+                ws = FakeWebSocket([json.dumps({"type": "auth_required", "ha_version": version}),
+                                    json.dumps(result)])
+                def connect(uri, *, open_timeout=None, close_timeout=None,
+                            max_size=None, proxy=None, **kwargs):
+                    return ws
+                connect.process_redirect = reject_redirect
+                module = types.SimpleNamespace(connect=connect)
+                output = []
+                sock = mock.Mock()
+                with mock.patch.object(CLIENT, "validate_execution_host"), \
+                     mock.patch.object(CLIENT, "local_ipv4_addresses", return_value=set()), \
+                     mock.patch.object(CLIENT, "current_operator", return_value="fixture"), \
+                     mock.patch.object(CLIENT, "proxy_influence_present", return_value=False), \
+                     mock.patch.object(CLIENT, "detect_websocket_client", return_value="PYTHON_WEBSOCKETS"), \
+                     mock.patch.object(CLIENT, "validate_terminal"), \
+                     mock.patch.object(CLIENT, "acquire_token", return_value="fixture-secret"), \
+                     mock.patch.object(CLIENT, "rest_check"), \
+                     mock.patch.object(CLIENT.importlib, "import_module", return_value=module), \
+                     mock.patch.object(CLIENT.socket, "create_connection", return_value=sock):
+                    self.assertEqual(CLIENT.run(ARGS, output.append), int(expected_code is not None))
+                expected = (CLIENT.success_lines("PYTHON_WEBSOCKETS") if expected_code is None
+                            else CLIENT.failure_lines(expected_code, "AUTHENTICATION", "PYTHON_WEBSOCKETS"))
+                self.assertEqual(output, expected)
+                self.assertIn("PE4_0B2B=NOT_STARTED", output)
+                for private in (version, message, "fixture-secret", "Authorization", CLIENT.HA_IPV4, CLIENT.WS_URI):
+                    self.assertNotIn(private, "\n".join(output))
+                self.assertEqual([json.loads(raw) for raw in ws.sent],
+                                 [{"type": "auth", "access_token": "fixture-secret"}])
+                self.assertEqual(ws.messages, [])
+                self.assertTrue(ws.closed)
+                sock.close.assert_called_once_with()
 
     def test_websockets_auth_only_receive_bound_and_close(self):
-        ws = FakeWebSocket(['{"type":"auth_required"}', '{"type":"auth_ok"}'])
+        ws = FakeWebSocket(['{"type":"auth_required","ha_version":"2026.8.1"}', '{"type":"auth_ok","ha_version":"2026.8.1"}'])
         captured = {}
         def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,
                     **kwargs):
@@ -178,7 +259,7 @@ class ClientTests(unittest.TestCase):
         self.assertIs(captured["sock"], fake_socket)
 
     def test_websockets_auth_invalid(self):
-        ws = FakeWebSocket(['{"type":"auth_required"}', '{"type":"auth_invalid"}'])
+        ws = FakeWebSocket(['{"type":"auth_required","ha_version":"2026.8.1"}', '{"type":"auth_invalid","message":"Invalid access token or password"}'])
         def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,
                     **kwargs):
             return ws
@@ -193,7 +274,7 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(len(ws.sent), 1)
 
     def test_websockets_first_frame_and_connection_failures(self):
-        ws = FakeWebSocket(['{"type":"auth_ok"}'])
+        ws = FakeWebSocket(['{"type":"auth_ok","ha_version":"2026.8.1"}'])
         def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,
                     **kwargs):
             return ws
@@ -271,7 +352,9 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(lines[-6:], ["RESULT=PASS", "ERROR_CODE=NONE", "FAILURE_STAGE=COMPLETE",
                                       "ROLLBACK_RECOMMENDED=FALSE", "PE4_0B2A=COMPLETE", "PE4_0B2B=NOT_STARTED"])
         for unsafe in (["DETAIL=secret"], ["ERROR_CODE=TOKEN"], ["ERROR_CODE=BAD"],
-                       ["RESULT={PASS}"], ["RESULT=192.168.1.1"]):
+                       ["RESULT={PASS}"], ["RESULT=192.168.1.1"], ["DETAIL=ws://example.invalid"],
+                       ['DETAIL={"type":"auth_ok","ha_version":"2026.8.1"}'],
+                       ["DETAIL=Invalid access token or password"]):
             self.failure(lambda u=unsafe: CLIENT.validate_output(u), "PRIVACY_CONTRACT_VIOLATION", "PRIVACY_VALIDATION")
 
     def test_failure_contract(self):

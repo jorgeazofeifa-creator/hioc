@@ -266,9 +266,28 @@ def _parse_ws_message(raw: object) -> dict[str, object]:
         value = json.loads(raw)
     except (UnicodeError, json.JSONDecodeError):
         raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY") from None
-    if not isinstance(value, dict) or set(value) != {"type"} or not isinstance(value["type"], str):
+    if not isinstance(value, dict) or not isinstance(value.get("type"), str):
         raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
     return value
+
+
+def _parse_auth_required(raw: object) -> None:
+    value = _parse_ws_message(raw)
+    if (set(value) != {"type", "ha_version"}
+            or value["type"] != "auth_required"
+            or not isinstance(value["ha_version"], str)):
+        raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+
+
+def _parse_auth_result(raw: object) -> None:
+    value = _parse_ws_message(raw)
+    if (value["type"] == "auth_ok" and set(value) == {"type", "ha_version"}
+            and isinstance(value["ha_version"], str)):
+        return
+    if (value["type"] == "auth_invalid" and set(value) == {"type", "message"}
+            and isinstance(value["message"], str)):
+        raise ContractFailure("AUTHENTICATION_FAILED", "AUTHENTICATION")
+    raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
 
 
 def _dependency_rejected_oversized_message(exc: Exception, module: object) -> bool:
@@ -311,16 +330,11 @@ async def _websockets_async_check(
             first = await asyncio.wait_for(
                 ws.recv(), remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY")
             )
-            if _parse_ws_message(first)["type"] != "auth_required":
-                raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+            _parse_auth_required(first)
             await ws.send(json.dumps({"type": "auth", "access_token": token}, separators=(",", ":")))
-            kind = _parse_ws_message(await asyncio.wait_for(
+            _parse_auth_result(await asyncio.wait_for(
                 ws.recv(), remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY")
-            ))["type"]
-            if kind == "auth_invalid":
-                raise ContractFailure("AUTHENTICATION_FAILED", "AUTHENTICATION")
-            if kind != "auth_ok":
-                raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+            ))
     except ContractFailure:
         raise
     except (TimeoutError, OSError, asyncio.TimeoutError):

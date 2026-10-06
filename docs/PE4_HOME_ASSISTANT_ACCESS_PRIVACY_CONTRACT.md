@@ -1,5 +1,29 @@
 # PE-4 Home Assistant Access and Privacy Contract
 
+## Repository successor authentication-frame correction — 2026-10-05
+
+The canonical tools/hioc-pe4-ha-auth-capability.py successor source now corrects
+the exact-one-key authentication parser defect. Bounded JSON object parsing
+requires a string type; phase validators accept only auth_required/auth_ok
+with exactly type + string ha_version, or auth_invalid with exactly type +
+string message. Ancillary values are validated and discarded. auth_invalid
+maps to AUTHENTICATION_FAILED / AUTHENTICATION; other schemas fail closed.
+The exchange sends one auth frame and no command after auth_ok. REST, network,
+credential acquisition, terminal markers and the 2b prohibition are unchanged.
+
+Successor Git blob: 23ad1249c44b5d9b951057ea196e8bce3d598fd5.
+Successor SHA-256: 0e0817f64905eba13d8505a8aa2fa217ff7eab05c918877c8f9809393e4959b0.
+This is REPOSITORY_ONLY / NOT DEPLOYED, not executed and not authorized for
+execution. Historical F/G identity record, constants, runtime publication and
+evidence are unchanged; F/G were not rerun. The old historical runtime client
+remains unsuitable and prohibited for authenticated 2a. Earlier defect and
+identity-split entries below describe their historical checkpoint state.
+Next checkpoint: separate successor preparation review binding the final
+correction commit and this source identity; 2a is not prepared here.
+
+D/E/F/G PASS/CLOSED; Action E handoff ACCEPTED; 2a NOT STARTED; 2b NOT STARTED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+
 ## Historical F/G client and successor source boundary — 2026-10-05
 
 governance/pe4/historical-fg-client.json durably pins the immutable closed
