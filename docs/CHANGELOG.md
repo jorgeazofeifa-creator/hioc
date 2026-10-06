@@ -1,5 +1,61 @@
 # HIOC Changelog
 
+## Action G distribution discovery ordering correction — 2026-10-05
+
+First native compatibility attempt stopped safely at HANDOFF because G
+misinterpreted F's in-progress recovery semantics. After that correction,
+G_NATIVE_PREFLIGHT=PASS and the exact F transaction/result/COMMITTED bindings
+PASSed. The second native retry reached the controlled child but stopped at
+PROBE with PROBE_FAILED before WebSocket/client validation or G evidence.
+The failed condition was exact distribution dictionary comparison.
+An independent read-only diagnostic observed pip==23.0.1,
+setuptools==66.1.1 and websockets==16.1.1, with
+EXPECTED_EQUALS_OBSERVED=TRUE. Runtime and F transaction postchecks PASSed.
+No runtime mutation or G execution occurred. This was a G ordering defect,
+not a dependency/runtime failure.
+
+importlib.metadata discovers distributions through sys.meta_path finders.
+G removed standard PathFinder before its explicit-site metadata scan; G's
+restricted Finder delegates module lookup but supplies no distribution finder.
+G now performs the exact accepted D-evidence distribution comparison after
+controlled startup, trusted stdlib/descriptor/interpreter/environment checks
+and network/credential prohibitions, while standard discovery is available.
+It then installs the unchanged restrictive meta path before any websockets,
+native speedup or frozen-client import and keeps that path through final checks.
+
+The scan reads metadata only from the final environment's explicit
+lib/python3.11/site-packages. Duplicate names, missing/extra names and wrong
+versions reject. Package/version policy still comes from accepted D evidence.
+No site invocation, .pth processing, user-site scanning or new sys.path entry
+is introduced. Startup remains -I -B -S; verified source/native loading,
+corrected redirect semantics, client detection and proxy restrictions remain.
+PathFinder is not a general entry in the final restricted meta path.
+
+Regression tests exercise real child_probe with target-only startup fixtures,
+real explicit-site metadata discovery, and an import boundary proving package
+imports occur only after restriction. They reproduce the loss of distribution
+discovery after standard PathFinder removal and restore sys.meta_path in finally.
+An isolated -I -B -S subprocess proves malicious package/.pth/site customization
+fixtures stay inert and create no pyc.
+
+D: PASS/CLOSED. E: PASS/CLOSED. Action E handoff: ACCEPTED. F: PASS/CLOSED.
+G: NOT STARTED. Rollback: NOT PERFORMED. Native compatibility remains pending
+until the corrected controlled child passes on PI3. PE-4 is not complete.
+F/D/E/common, schemas, entrypoint, lock, frozen client and accepted E handoff
+remain unchanged. This Windows correction accesses neither PI3 nor PI5.
+
+Next checkpoint:
+`ACTION_G_NATIVE_COMPATIBILITY_RETRY_READY_FOR_SEPARATE_AUTHORIZATION`.
+
+Distribution-order correction validation PASS: 20 dedicated G tests; 166 focused
+F/G and lifecycle/handoff regressions (165 PASS, one POSIX-only skip); full suite
+1210 tests (1163 PASS, 47 platform/tool-dependent skips), zero failures/errors.
+Bytecode-suppressed compilation, schema parsing, exact ten-file scope, complete
+diff review, synchronized document retention and 27 protected-blob comparisons
+PASS. F implementation/schema and closed D/E/F artifacts remain unchanged.
+git diff --check PASS; line-ending conversion warnings and pre-existing test
+ResourceWarnings are non-failing.
+
 ## Action G F-journal recovery correction — 2026-10-05
 
 The first PI3 G native compatibility attempt safely stopped in G.Posix.preflight

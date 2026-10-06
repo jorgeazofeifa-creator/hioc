@@ -447,11 +447,13 @@ def child_probe(policy):
     finally:os.close(fd)
     child_require(dict(os.environ)==ENV and not any(k.lower().endswith('_proxy') for k in os.environ))
     install_prohibitions()
-    finder=Finder(policy);sys.meta_path=[finder,importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter]
     site=policy['root']+'/lib/python3.11/site-packages'
+    # Metadata discovery needs the standard distribution finder. It reads only
+    # the explicit site's metadata; package execution stays behind Finder below.
     distributions=list(metadata.distributions(path=[site]))
     pairs=[(d.metadata['Name'].lower(),d.version) for d in distributions]
     child_require(len(pairs)==len(dict(pairs)) and dict(pairs)==policy['distributions'])
+    finder=Finder(policy);sys.meta_path=[finder,importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter]
     import websockets
     from websockets.asyncio.client import connect
     from websockets.exceptions import InvalidStatus,PayloadTooBig

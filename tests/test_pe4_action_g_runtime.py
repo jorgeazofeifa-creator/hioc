@@ -3,6 +3,17 @@ import io
 import unittest
 from unittest import mock
 from pathlib import PurePosixPath
+import builtins
+import importlib.metadata
+import importlib.machinery
+import os
+import sys
+import sysconfig
+import tempfile
+import types
+import json
+import subprocess
+from pathlib import Path
 
 from tools import hioc_pe4_action_g as G
 
@@ -112,6 +123,116 @@ class FJournalRecoveryTests(unittest.TestCase):
         files,_=faithful_f_transaction();doc=G.H.parse(files['0012.json'],'STAGED_INPUT')
         doc['result_sha256']='0'*64;files['0012.json']=G.H.canonical(doc)
         with self.assertRaises(G.Failure):self.validate(files)
+
+
+class DistributionOrderingTests(unittest.TestCase):
+    expected={'pip':'23.0.1','setuptools':'66.1.1','websockets':'16.1.1'}
+
+    def seed(self,site,pairs):
+        for i,(name,version) in enumerate(pairs):
+            directory=site/f'{name}-{i}.dist-info';directory.mkdir(parents=True)
+            (directory/'METADATA').write_text(f'Metadata-Version: 2.1\nName: {name}\nVersion: {version}\n',encoding='utf-8')
+
+    def test_standard_distribution_discovery_disappears_without_pathfinder(self):
+        with tempfile.TemporaryDirectory() as root:
+            site=Path(root);self.seed(site,list(self.expected.items()))
+            original=list(sys.meta_path)
+            try:
+                self.assertEqual({d.metadata['Name']:d.version for d in importlib.metadata.distributions(path=[str(site)])},self.expected)
+                sys.meta_path=[G.Finder({'paths':list(sys.path)}),importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter]
+                self.assertEqual(list(importlib.metadata.distributions(path=[str(site)])),[])
+            finally:sys.meta_path=original
+
+    def run_probe(self,pairs,success):
+        # Mock target-only startup facts; run real child_probe and real metadata
+        # discovery. Stop at the first package import, before any package code.
+        original_meta=list(sys.meta_path);original_path=list(sys.path)
+        real_import=builtins.__import__;real_distributions=importlib.metadata.distributions
+        events=[]
+        class PackageBoundary(Exception):pass
+        with tempfile.TemporaryDirectory() as root:
+            site=Path(root)/'lib/python3.11/site-packages';site.mkdir(parents=True)
+            self.seed(site,pairs)
+            sentinel=Path(root)/'EXECUTED'
+            (site/'websockets').mkdir()
+            (site/'websockets/__init__.py').write_text(f"raise AssertionError('package executed before restriction')\n",encoding='utf-8')
+            (site/'sentinel.pth').write_text(f"import pathlib;pathlib.Path({str(sentinel)!r}).touch()\n",encoding='utf-8')
+            (site/'sitecustomize.py').write_text("raise AssertionError('site customization')\n",encoding='utf-8')
+            interpreter=Path(root)/'interpreter';interpreter.write_bytes(b'fixture')
+            fd=os.open(interpreter,os.O_RDONLY);info=os.fstat(fd)
+            policy={'root':root,'paths':original_path,'version':list(sys.version_info[:3]),'soabi':sysconfig.get_config_var('SOABI'),
+                'fd':fd,'identity':G.H.identity(info),'interpreter':{},'distributions':dict(self.expected)}
+            flags=types.SimpleNamespace(**{n:getattr(sys.flags,n) for n in dir(sys.flags) if not n.startswith('_')})
+            flags.isolated=flags.no_site=flags.ignore_environment=1
+            def discover(*args,**kwargs):
+                self.assertEqual(kwargs,{'path':[root+'/lib/python3.11/site-packages']})
+                self.assertEqual(sys.meta_path,original_meta)
+                self.assertEqual(events,['prohibitions'])
+                events.append('metadata')
+                return real_distributions(*args,**kwargs)
+            def guarded_import(name,*args,**kwargs):
+                if name=='websockets' or name.startswith('websockets.'):
+                    self.assertEqual(events,['prohibitions','metadata'])
+                    self.assertIsInstance(sys.meta_path[0],G.Finder)
+                    self.assertEqual(sys.meta_path[1:],[importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter])
+                    self.assertNotIn(importlib.machinery.PathFinder,sys.meta_path)
+                    events.append('package');raise PackageBoundary()
+                return real_import(name,*args,**kwargs)
+            try:
+                with contextlib.ExitStack() as stack:
+                    stack.enter_context(mock.patch.object(sys,'flags',flags))
+                    stack.enter_context(mock.patch.object(sys,'dont_write_bytecode',True))
+                    stack.enter_context(mock.patch.object(sys,'prefix','/usr'))
+                    stack.enter_context(mock.patch.object(sys,'base_prefix','/usr'))
+                    stack.enter_context(mock.patch.dict(sys.modules,{}))
+                    sys.modules.pop('site',None)
+                    stack.enter_context(mock.patch.object(G.os.path,'lexists',return_value=False))
+                    stack.enter_context(mock.patch.object(G,'verified_open',side_effect=lambda *a:(os.dup(fd),b'fixture')))
+                    stack.enter_context(mock.patch.object(G,'child_expected',return_value=G.child_token(os.stat(sys.executable))))
+                    stack.enter_context(mock.patch.dict(os.environ,G.ENV,clear=True))
+                    stack.enter_context(mock.patch.object(G,'install_prohibitions',side_effect=lambda:events.append('prohibitions')))
+                    stack.enter_context(mock.patch.object(importlib.metadata,'distributions',side_effect=discover))
+                    stack.enter_context(mock.patch.object(builtins,'__import__',side_effect=guarded_import))
+                    with self.assertRaises(PackageBoundary if success else RuntimeError):G.child_probe(policy)
+                self.assertEqual(events,['prohibitions','metadata','package'] if success else ['prohibitions','metadata'])
+                self.assertFalse(sentinel.exists())
+                self.assertEqual(sys.path,original_path)
+            finally:
+                sys.meta_path=original_meta;sys.path=original_path;os.close(fd)
+
+    def test_exact_dictionary_accepted_before_restricted_package_phase(self):
+        self.run_probe(list(self.expected.items()),True)
+
+    def test_isolated_metadata_scan_executes_no_package_pth_or_site_hooks(self):
+        with tempfile.TemporaryDirectory() as root:
+            site=Path(root);self.seed(site,list(self.expected.items()))
+            sentinel=site/'EXECUTED';package=site/'websockets';package.mkdir()
+            payload=f"import pathlib;pathlib.Path({str(sentinel)!r}).touch()\n"
+            (package/'__init__.py').write_text(payload,encoding='utf-8')
+            (site/'bad.pth').write_text(payload,encoding='utf-8')
+            (site/'sitecustomize.py').write_text(payload,encoding='utf-8')
+            code="import sys,json,importlib.metadata as m; assert sys.flags.no_site and sys.dont_write_bytecode and 'site' not in sys.modules; print(json.dumps({d.metadata['Name']:d.version for d in m.distributions(path=[sys.argv[1]])})); assert 'websockets' not in sys.modules"
+            env=dict(G.ENV)
+            if os.name=='nt':env['SYSTEMROOT']=os.environ['SYSTEMROOT']
+            result=subprocess.run([sys.executable,'-I','-B','-S','-c',code,str(site)],env=env,stdin=subprocess.DEVNULL,capture_output=True,timeout=10)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(json.loads(result.stdout),self.expected)
+            self.assertFalse(sentinel.exists());self.assertFalse(list(site.rglob('*.pyc')))
+
+    def test_missing_extra_duplicate_and_wrong_version_rejected_before_import(self):
+        good=list(self.expected.items())
+        variants=[good[:-1],good+[('unexpected','1')],good+[good[0]],[(n,'0' if n=='websockets' else v) for n,v in good]]
+        for pairs in variants:
+            with self.subTest(pairs=pairs):self.run_probe(pairs,False)
+
+    def test_generated_startup_and_existing_client_loader_restrictions(self):
+        script=G.child_script({})
+        self.assertLess(script.index('distributions=list(metadata.distributions'),script.index('finder=Finder(policy);sys.meta_path='))
+        self.assertLess(script.index('finder=Finder(policy);sys.meta_path='),script.index('\n    import websockets\n'))
+        self.assertIn('sys.flags.no_site',script);self.assertIn('sys.dont_write_bytecode',script)
+        self.assertNotIn('site.main(',script);self.assertNotIn('addsitedir(',script)
+        self.assertIn('verified_open',script);self.assertIn('InvalidStatus(response)',script)
+        self.assertIn("client.detect_websocket_client()=='PYTHON_WEBSOCKETS'",script)
 
 
 class ActionGRuntimeTests(unittest.TestCase):
