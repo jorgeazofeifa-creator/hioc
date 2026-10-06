@@ -1,5 +1,27 @@
 # HIOC Changelog
 
+## PE-4.0B.2a authenticated proof PASS/CLOSED - 2026-10-05
+
+Separately authorized PI3 production execution PASS; independent read-only
+evidence review PASS, as supplied for this closure. Client and operator RCs were
+0; source precheck/runtime precheck/source postcheck passed and the execution
+source remained clean and synchronized at preparation commit
+03f43e5231e59ec396665bb8bda9faf2447c5276. Successor blob
+85842a81c57187c9e119d1065fce433e5b067e1f; SHA-256
+aa0e58ed6c7bb4586625836cc71ad0cab9270e6b11a6a5db66497115b001decf.
+Active target: environments/cpython311-websockets16.1.1-lock-v1.
+
+[Canonical execution closure](../governance/pe4/pe4-0b2a-execution-closure.json).
+
+D/E/F/G remain PASS/CLOSED; Action E handoff ACCEPTED. PE-4.0B.2a is now
+PASS/CLOSED; 2b NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback
+NOT PERFORMED. F/G were not rerun; rollback and 2b were not executed. No credential
+was persisted in repository evidence. This checkpoint accessed no PI3/PI5/HA and
+reran no authenticated client. Historical/runtime/implementation identities remain
+unchanged. The preparation record remains immutable pre-execution evidence with
+2a NOT_STARTED; the new closure record supplies the post-execution state. Next
+work requires separate governance; no 2b preparation or execution is authorized here.
+
 ## PE-4.0B.2a successor authenticated proof preparation - 2026-10-05
 
 Comprehensive repository-only review PASS: credential, shared absolute network

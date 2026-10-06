@@ -1,5 +1,29 @@
 # HIOC Operations
 
+## PE-4.0B.2a authenticated proof PASS/CLOSED - 2026-10-05
+
+Authenticated production execution and independent evidence review PASS.
+Exact successor, preparation and runtime identities are bound in the closure record.
+
+[Canonical execution closure](../governance/pe4/pe4-0b2a-execution-closure.json).
+
+2a proved live approved-endpoint reachability, authenticated REST access and exact
+/api/ root capability, authenticated Home Assistant WebSocket handshake, approved
+successor/runtime compatibility, bounded credential/private-output behavior, and
+a bounded authentication-only interface. It did not prove or execute device/entity/
+area registries, config entries, states, services, broader configuration,
+subscriptions, event listening, registry/schema relationships or association logic.
+These remain separately governed 2b or later work; PE-4 completion is not established.
+
+D/E/F/G remain PASS/CLOSED; Action E handoff ACCEPTED. PE-4.0B.2a is now
+PASS/CLOSED; 2b NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback
+NOT PERFORMED. F/G were not rerun; rollback and 2b were not executed. No credential
+was persisted in repository evidence. This checkpoint accessed no PI3/PI5/HA and
+reran no authenticated client. Historical/runtime/implementation identities remain
+unchanged. The preparation record remains immutable pre-execution evidence with
+2a NOT_STARTED; the new closure record supplies the post-execution state. Next
+work requires separate governance; no 2b preparation or execution is authorized here.
+
 ## PE-4.0B.2a successor authenticated proof preparation - 2026-10-05
 
 Future execution selects the release-source successor at
