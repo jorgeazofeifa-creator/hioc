@@ -1,5 +1,27 @@
 # HIOC Master Plan
 
+## Compatibility roadmap governance synchronization - 2026-10-06
+
+The accepted Compatibility Resilience implementation and dependency audit at
+`8187114c7233be82b188f0fc03b93a022787e7bb` remain unchanged. This repository-only
+checkpoint completes the permanent principles, roadmap, current lifecycle,
+sequencing and future operator-awareness commitments below. It does not repeat
+the audit, change runtime behavior, deploy, access PI3/PI5/HA, use credentials,
+execute corrected PE-4.0B.2b or begin PE-4.0C.
+
+The [Implementation Status](#implementation-status) and
+[Next Planned Task](#next-planned-task) sections are authoritative for current
+state and sequencing. Earlier checkpoint narratives are explicitly historical.
+[COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md) owns the detailed
+matrix, probes, algorithms, fields, schemas, mechanics and audit inventory;
+this Master Plan owns principles, roadmap, state, sequencing and completion rules.
+
+# Historical Checkpoint Chronology
+
+The following dated checkpoint narratives preserve the state and authority at
+the time written. Their older NOT STARTED, pending or next-task statements do
+not supersede the current Implementation Status and Next Planned Task sections.
+
 ## Compatibility resilience correction - 2026-10-06
 
 The repository now governs capability-first external dependency contracts,
@@ -1337,7 +1359,7 @@ The original implementation synchronization/read-only validation boundary
 is now PASS/CLOSED as recorded above. Next checkpoint:
 `ACTION_E_REPREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
 
-## Current governed status — Phase 7A
+## Historical governed status — Phase 7A
 
 Phase 7A is **ACTIVE / IN PROGRESS**. Passive Enrichment PE-0 through PE-3 are
 complete; PE-4 is current and not complete. PE-4.0A and PE-4.0B.1 are
@@ -1885,6 +1907,68 @@ Large redesigns require explicit approval.
 
 ---
 
+## 10. Compatibility Resilience
+
+> Accept compatible external evolution. Preserve intentional HIOC-controlled and security identities. Diagnose both clearly.
+
+HIOC prefers capability and structural compatibility over exact versions for
+independently updated external software. Version drift alone is not failure;
+compatible updates continue automatically. Required capability, schema or
+protocol failures fail clearly with the affected dependency and subsystem.
+Exact identities remain intentional for HIOC-controlled frozen runtimes,
+immutable evidence, cryptographic verification and security/provenance trust
+anchors. This policy is capability-first compatibility, not "always accept newer."
+
+### Dependency Classification
+
+Development distinguishes independently updated external dependencies;
+HIOC-controlled isolated/vendored dependencies; security/provenance trust
+anchors; supported runtime/tool families; external protocol/data-schema
+dependencies; and internal HIOC schemas/protocols. Internal contracts remain
+HIOC governed; supported families separate permitted patch evolution from exact
+tested evidence. Detailed classification and boundaries belong in the
+[compatibility documentation](COMPATIBILITY_RESILIENCE.md) and registry.
+
+### Standard Compatibility States
+
+The standard HIOC semantics for future external dependencies are:
+`COMPATIBLE`, `COMPATIBLE_UPDATED`, `COMPATIBILITY_UNKNOWN`,
+`COMPATIBILITY_DEGRADED`, `INCOMPATIBLE`, `TRUST_ANCHOR_CHANGED`, and
+`DEPENDENCY_UNAVAILABLE`. Exact field/schema definitions remain in
+[COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md).
+
+### Update Causality and Last-Known-Compatible History
+
+A dependency update must not be blamed merely because a failure happened after
+an update. A likely update-related compatibility break requires evidence of:
+
+1. a previously known-compatible dependency version/identity;
+2. a different current version/identity; and
+3. failure of a required compatibility capability after the change.
+
+A capability failure without established version drift is reported as
+incompatibility without claiming that an update caused it. Changed version with
+passing capabilities is `COMPATIBLE_UPDATED`; normal operation continues.
+Detailed causality implementation remains in the focused compatibility document.
+
+Retain safe, non-secret last-known-compatible observations where useful to show
+what previously worked, what is running now, what changed, which capability
+failed, when incompatibility first appeared and which subsystem is affected.
+An incompatible current observation must not erase the previous known-good
+observation.
+
+### Subsystem Failure Isolation
+
+A compatibility failure in one dependency must not make unrelated HIOC
+subsystems appear globally broken. HA registry incompatibility isolates HA
+association; Pi-hole contract failure isolates dependent DHCP/inventory
+processing; NUT incompatibility isolates UPS observations; go2rtc incompatibility
+isolates camera integration. MQTT failure affects publication but must not erase
+authoritative local state. Operator-tool trust drift blocks operations requiring
+that trusted tool where practical. Detailed boundaries stay in the registry.
+
+---
+
 # Architecture
 
 Current major components include:
@@ -1901,6 +1985,18 @@ Current major components include:
 Additional components should integrate cleanly into this architecture.
 
 ---
+
+## Compatibility Status Architecture
+
+Permanent HIOC operator-awareness contracts, rather than temporary PE-4 evidence:
+
+- Authoritative local state: `state/platform/compatibility.json`.
+- Retained MQTT status: `<HIOC_BASE_TOPIC>/platform/compatibility`.
+- Compatibility summary integrated with platform status.
+
+The focused [compatibility documentation](COMPATIBILITY_RESILIENCE.md) owns the
+exact schemas. Future presentation consumes these central contracts rather than
+creating a separate monitoring island.
 
 # Dashboard Philosophy
 
@@ -2472,7 +2568,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 3. **PE-3 - Manufacturer Reference Enrichment** — complete. Actions 1–10,
    production deployment, generation, PI3 validation, final Evidence Report,
    administrative Action 10 closure, and final governance closure are complete.
-4. **PE-4 - Home Assistant Association** — in progress; Action E PASS/CLOSED; Actions F/G and authenticated association proof NOT STARTED; PE-4 not complete.
+4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS; corrected 2b execution and PE-4.0C NOT STARTED; PE-4 NOT COMPLETE.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
 6. **PE-6 - Classification & Metadata Quality** — not started.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
@@ -2527,6 +2623,54 @@ Separate governed future checkpoints also preserve:
   free of corruption indicators; and a final Evidence Report PASS.
 
 These items remain intentionally out of scope until the current roadmap reaches them.
+
+### Compatibility Diagnostics UX
+
+Status: **PLANNED / NOT STARTED — ROADMAP PRESERVATION ONLY**
+
+Objective: make dependency compatibility failures visible and understandable
+without requiring SSH, JSON inspection or source-code debugging. This named
+checkpoint is permanent future roadmap work; it is not implemented or authorized
+by the current governance completion and does not reorder PE-4 or other phases.
+
+Planned presentation layers:
+
+1. authoritative PI3 compatibility state;
+2. HIOC logs;
+3. retained MQTT compatibility status;
+4. Home Assistant HIOC dashboard compatibility/system-health presentation;
+5. persistent Home Assistant notifications for actionable compatibility failures;
+6. later integration with the existing phone-notification semantics checkpoint.
+
+#### Dashboard Compatibility Presentation
+
+Remain quiet/normal for `COMPATIBLE`; do not alarm merely for
+`COMPATIBLE_UPDATED`. Actionable failures identify the dependency and affected
+subsystem, distinguish degraded/incompatible/unavailable/trust-change conditions,
+provide recommended operator action and show what remains unaffected where
+practical. Visual design and exact wording are not frozen.
+
+#### Persistent Home Assistant Notifications
+
+Future persistent Home Assistant notifications are required for actionable
+compatibility problems according to subsystem impact: `INCOMPATIBLE`,
+`TRUST_ANCHOR_CHANGED`, significant `COMPATIBILITY_DEGRADED`, or required
+`DEPENDENCY_UNAVAILABLE`. `COMPATIBLE_UPDATED` alone must not trigger an alarming
+persistent notification. This is a future UX commitment, not current implementation.
+
+#### Phone-Notification Integration
+
+Compatibility events will later feed the existing planned phone-notification
+semantics checkpoint. Do not create a second or conflicting phone notification
+architecture. That work determines severity, wording, rate limiting and actionability.
+The existing UPS/NUT and internet-latency notification roadmap remains preserved.
+
+#### User-Visible Diagnostic Semantics
+
+A compatibility warning must answer: what changed; which dependency is affected;
+which capability stopped being compatible; which HIOC subsystem is affected;
+what remains operational; what the operator should do next; and whether an
+update is a likely cause or causality is unproven. Literal UI wording is not frozen.
 
 ### PE-10 - Application, Integration & Service Assurance
 
@@ -3008,6 +3152,22 @@ If production verification is required, it must be captured in an Evidence Repor
 
 ---
 
+### Operational Dependency Compatibility Acceptance
+
+For each operational external dependency, committed repository documentation
+must answer without ad hoc troubleshooting:
+
+- What dependency does HIOC rely on?
+- What capability does HIOC actually require?
+- Is the version expected to float?
+- How is compatibility determined?
+- What status/error appears when compatibility breaks?
+- Which HIOC subsystem is affected?
+- What should the operator do?
+
+Detailed answers may live in the registry and focused compatibility document;
+this requirement remains part of the Operations Acceptance Standard.
+
 # Working Agreement
 
 While implementing HIOC:
@@ -3020,24 +3180,82 @@ While implementing HIOC:
 
 ---
 
+### External Dependency Compatibility Review
+
+Whenever a new or changed external dependency, executable, API, protocol,
+runtime, file format or data source is introduced, development must establish:
+
+1. whether it is independently updated;
+2. whether version is informational or gating;
+3. the actual capability HIOC requires;
+4. how compatibility is validated;
+5. behavior after a compatible update;
+6. behavior after an incompatible update;
+7. diagnostic dependency identity;
+8. affected subsystem/failure-isolation boundary;
+9. whether exact identity is required for security/provenance; and
+10. how the operator will know what happened.
+
+Detailed answers may live in the registry/focused documentation, but this review
+is a permanent Working Agreement completion requirement.
+
 # Implementation Status
 
-Replacement B PASS/CLOSED; C PASS; D-PREP PASS/CLOSED.
-D PASS/CLOSED; E PASS/CLOSED; Action E handoff ACCEPTED; F PASS/CLOSED;
-G PASS/CLOSED after one production execution and independent review PASS.
-Native compatibility PASS/CLOSED; rollback NOT PERFORMED. PE-4 NOT COMPLETE.
-The current Action G closure and repository successor correction above are
-authoritative. Successor source is corrected, REPOSITORY_ONLY / NOT DEPLOYED,
-not executed and not yet authorized; 2a is not prepared and remains NOT STARTED.
-The authentication send deadline correction supersedes the earlier candidate.
-Next: repeat separate successor preparation review for PE-4.0B.2a under
-REST_THEN_WEBSOCKET_2A; no automatic 2b registry/schema discovery.
-The accepted E historical bridge retains NO_PERSISTED_E_TIME_RECURSIVE_BASELINE
-and both historical recursive flags remain false.
+## Authoritative Current PE-4 Lifecycle
 
-This section reflects the current state of the project.
+This section reflects the current project state and is updated at checkpoint
+completion. Historical chronology elsewhere does not override it.
 
-It should be updated whenever a development phase is completed.
+| Checkpoint | Current state |
+| --- | --- |
+| D | PASS/CLOSED |
+| E | PASS/CLOSED |
+| E handoff | ACCEPTED |
+| F | PASS/CLOSED |
+| G | PASS/CLOSED |
+| PE-4.0B.2a | PASS/CLOSED |
+| Original PE-4.0B.2b preparation | COMPLETE |
+| First PE-4.0B.2b live execution | ATTEMPTED / NOT COMPLETE |
+| Compatibility Resilience and Dependency Drift Audit | PASS |
+| Exact-version HA runtime gate | CORRECTED IN REPOSITORY |
+| Corrected PE-4.0B.2b execution | NOT STARTED |
+| PE-4.0C | NOT STARTED |
+| PE-4 | NOT COMPLETE |
+| Phase 7A | ACTIVE |
+| Rollback | NOT PERFORMED |
+
+Replacement B, C, D-PREP and native prerequisites retain their accepted closures.
+The E historical bridge retains NO_PERSISTED_E_TIME_RECURSIVE_BASELINE; both
+historical recursive flags remain false. No new production authority follows
+from this documentation-only checkpoint.
+
+### Completed Compatibility Resilience and Dependency Drift Audit
+
+The **HIOC Compatibility Resilience and Dependency Drift Audit** completed with
+PASS at `8187114c7233be82b188f0fc03b93a022787e7bb`, independently reviewed and
+accepted. Repository-wide scope included Home Assistant, Pi-hole/DHCP contracts,
+NUT, Unbound where applicable (no consumed dependency was found), MQTT, go2rtc,
+Python runtimes/packages, OpenSSH, Git, Bash/shell, PowerShell, Linux utilities,
+filesystem/OS facilities and external APIs/protocols/file formats/data shapes
+actually consumed by HIOC. Counts, matrix and unresolved live proofs remain in
+[COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md); this checkpoint does
+not repeat the audit or claim deployment.
+
+### First PE-4.0B.2b Failed Execution Evidence
+
+Preserved user-supplied historical interpretation: the first live 2b reached the
+HA endpoint, received a valid WebSocket greeting and stopped because exact
+Core-version equality had incorrectly been treated as compatibility. The
+authentication frame was not sent; zero registry commands were sent; evidence
+validation passed. Result FAIL, error UNSUPPORTED_HA_DEPLOYMENT, stage
+HA_DEPLOYMENT_DISCOVERY; 2b remained NOT COMPLETE. 2a/F/G were not rerun and
+rollback was not performed.
+
+Evidence: `/tmp/hioc-pe4-ha-discovery-22be880b`.
+Report SHA-256: `efd3aa0cc2f5bc00a459a0c05055ac14e5a9a7ab6cc13aeeb34aa9aa616cb087`.
+Result SHA-256: `1e11b6e512db860a8f9b2b6af1723c6aabafd75968d7fd643c891144a7a72195`.
+The evidence is referenced, not accessed or mutated here. Core `2026.8.1` remains
+historical source-review baseline provenance, not required live runtime equality.
 
 PE-4 Action E is **PASS / CLOSED** after exactly one production invocation under
 consumer `1c1698f009457baa1c3b548db31916559fcc2fc8`, with immutable D producer
@@ -3091,6 +3309,78 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+Maintain active Phase 7A and advance the in-progress PE-4 Home Assistant
+Association roadmap after accepted 2a closure and the compatibility correction.
+Preserve the accepted runtime/trust/evidence boundaries and prepare corrected
+2b under separate governance. PE-3 and its Actions 1–10 remain complete.
+This checkpoint synchronizes documentation only; it does not begin preparation,
+execution, deployment, PE-4.0C or Compatibility Diagnostics UX implementation.
+
+## Next Planned Task
+
+### Corrected PE-4.0B.2b Execution Preparation
+
+Immediate next governed checkpoint:
+
+1. synchronize the compatibility-corrected repository to PI3;
+2. perform credential-free source/governance/runtime validation;
+3. bind the corrected discovery-client identity; and
+4. separately authorize corrected live 2b execution.
+
+These are future preparation requirements, not actions authorized or executed
+by this governance completion.
+
+### Corrected PE-4.0B.2b Live Execution
+
+After preparation and separate authorization: one bounded execution, sanitized
+evidence and independent review. Close 2b only after validated PASS.
+
+### PE-4.0C Association Contract Freeze
+
+Only after real successful 2b evidence, use that evidence to freeze the
+association/schema contract. Then continue the existing PE-4 association
+implementation and production-validation roadmap under its gates.
+
+### Future Compatibility Diagnostics UX Checkpoint
+
+**Compatibility Diagnostics UX** remains named future visible-product work.
+It consumes the central status architecture and integrates with the existing
+phone-notification semantics roadmap; it does not replace or reorder other work.
+
+PE-5 through PE-10, DHCP Service Health & Capacity Monitoring, expected-
+availability monitoring, configurable stale-client retention/archive, the
+asset-centric living digital twin, improved dependency graph, automatic service
+relationships, failure propagation visualization, infrastructure topology,
+historical trends, predictive recommendations, infrastructure backup/disaster
+recovery/hardware migration, incident-history validator hardening, existing
+Phase 7A and later checkpoints all remain preserved and separately governed.
+
+# Historical Operator Preparation Chronology
+
+The following superseded status/objective/next-task statements and operator
+preparation records are historical only; they do not govern the current sequence.
+
+## Historical Successor Status Before PE-4.0B.2a Closure
+
+Replacement B PASS/CLOSED; C PASS; D-PREP PASS/CLOSED.
+D PASS/CLOSED; E PASS/CLOSED; Action E handoff ACCEPTED; F PASS/CLOSED;
+G PASS/CLOSED after one production execution and independent review PASS.
+Native compatibility PASS/CLOSED; rollback NOT PERFORMED. PE-4 NOT COMPLETE.
+The current Action G closure and repository successor correction above are
+authoritative. Successor source is corrected, REPOSITORY_ONLY / NOT DEPLOYED,
+not executed and not yet authorized; 2a is not prepared and remains NOT STARTED.
+The authentication send deadline correction supersedes the earlier candidate.
+Next: repeat separate successor preparation review for PE-4.0B.2a under
+REST_THEN_WEBSOCKET_2A; no automatic 2b registry/schema discovery.
+The accepted E historical bridge retains NO_PERSISTED_E_TIME_RECURSIVE_BASELINE
+and both historical recursive flags remain false.
+
+At that checkpoint, this section reflected the then-current project state.
+
+It is retained here as historical chronology.
+
+## Historical Manufacturer Objective
+
 Maintain Phase 7A after completing and production-validating PE-1 and PE-2.1,
 defining PE-3.0 architecture, freezing the PE-3.1 executable contract, and
 correcting its manufacturer lock order so all mutable generator inputs are read
@@ -3112,7 +3402,7 @@ assignment keys as explicit non-selectable conflicts. Conflicted keys block
 weaker-prefix fallback and cannot produce manufacturer claims. No source row or
 organization variant enters Git.
 
-## Next Planned Task
+## Historical PE-3-to-PE-4 Next Task
 
 PE-3 is **COMPLETE** with Actions 1–10 complete. The next ordered passive-
 enrichment checkpoint is **PE-4 - Home Assistant Association**, already planned

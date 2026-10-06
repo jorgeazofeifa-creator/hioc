@@ -1,5 +1,23 @@
 # HIOC Changelog
 
+## Compatibility roadmap governance synchronization - 2026-10-06
+
+Documentation-only completion follows the independently reviewed Compatibility
+Resilience implementation/audit at `8187114c7233be82b188f0fc03b93a022787e7bb`.
+The Master Plan now preserves capability-first principles, standard states,
+causality/history, central status and subsystem isolation; adds the named future
+Compatibility Diagnostics UX checkpoint with persistent HA notifications and
+existing phone-notification integration; extends development/operations acceptance;
+and corrects current lifecycle and next-task sequencing. Older status narratives
+are clearly historical. Existing roadmap work and first-failure evidence remain.
+A small semantic-anchor governance regression test protects these commitments.
+No audit rerun, runtime change, deployment, host access, credentials, corrected
+2b execution or PE-4.0C occurred. Corrected 2b preparation is the next governed
+checkpoint; live execution still needs separate authority and reviewed PASS
+before 2b closure and PE-4.0C.
+
+Permanent governance authority: [Master Plan](HIOC_MASTER_PLAN.md).
+
 ## Compatibility resilience correction - 2026-10-06
 
 The repository now governs capability-first external dependency contracts,
