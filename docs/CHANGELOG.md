@@ -1,5 +1,26 @@
 # HIOC Changelog
 
+## PE-4 runtime credential provisioning preparation — 2026-10-06
+
+Preparation PASS/CLOSED; parent Runtime Credential Provisioning PREPARED / NOT
+COMPLETE. [Provisioning contract](PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md) and canonical closed governance bind
+fixed-path operator-only provision and separate read-only validator tools. Hidden
+root controlling-TTY input, strict ASCII/4096-byte policy, root:jazofv1 0750/0640,
+effective primary plus supplemental group membership and fail-closed FD POSIX ACL
+checks precede atomic no-backup installation/rotation. Existing drift is rejected.
+Credential remains outside Git/releases and code rollback ownership.
+
+Next: **PE-4 Home Assistant Runtime Credential Provisioning — Operator Installation**. Operator Installation,
+Independent Validation and Governance Closure are NOT STARTED. The exact source-bound
+manual installation block is supplied after the preparation commit is pushed; stop
+after installation, leaving independent root and jazofv1 validation for the next
+separately authorized action. No token, token hash, PI3/PI5/HA access, network
+authentication, adapter implementation, deployment, production mutation, MQTT,
+cron or rollback occurred. PE-4 NOT COMPLETE; Phase 7A ACTIVE. DATA_MODEL and
+release/install scripts remain unchanged. Synthetic tests establish repository
+preparation only; actual host membership/ACL/TTY/readability remain future proofs.
+
+
 ## PE-4 association adapter implementation preparation - 2026-10-06
 
 [Implementation architecture](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md) closes Preparation PASS/CLOSED using unchanged
