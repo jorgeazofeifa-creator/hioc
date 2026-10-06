@@ -1,5 +1,56 @@
 # HIOC Changelog
 
+## Action G reviewed optional dependency fallback correction — 2026-10-05
+
+The first native compatibility attempt stopped at HANDOFF because G
+misread F's recovery semantics. After correction, F-to-G handoff PASSed.
+The next controlled probe stopped on distribution discovery because G
+removed PathFinder too early. After that correction, G_NATIVE_PREFLIGHT=PASS
+and the probe advanced into verified websockets.asyncio.client source.
+Its supported python_socks optional import was converted from expected
+ImportError into G's CONTROLLED_RUNTIME_INVALID RuntimeError, causing
+PROBE_FAILED at PROBE. This is a G loader-semantics defect.
+
+The accepted environment remains exactly pip 23.0.1, setuptools 66.1.1
+and websockets 16.1.1. The reviewed-absent immutable policy contains only
+python_socks. Finder returns None for that top-level name and descendants,
+without PathFinder or disk lookup. With only G Finder, BuiltinImporter
+and FrozenImporter installed, absence produces ModuleNotFoundError
+(an ImportError), selecting websockets' supported no-SOCKS fallback.
+Arbitrary unknown third-party imports still fail closed.
+
+Resident python_socks and python_socks.* keys reject before websockets
+imports; they are never removed or adopted. Absence is checked again after
+capabilities and frozen-client detection. Verified source/native loaders,
+redirect validation, client detection, -I -B -S, sanitized environment,
+proxy prohibition, no site/.pth/user site, network/credential prohibitions,
+runtime revalidation and fixed F predecessor bindings remain unchanged.
+
+The exact accepted F transaction is 17fc3e0580ff007cdcd619ed2e2d3b34,
+result SHA d647c7b2241d7800a3c819cf86459e2be95c3ef58581d5ffef2dbf5bd1190941,
+COMMITTED SHA 24bb64cc8d885297e5696ddd733ec0dfab4b28a24e18a6996b667c186f2016e9.
+Runtime and F post-failure revalidation PASSed every time. No G evidence
+was created. No production G, F or rollback execution occurred here.
+
+Regression coverage proves the representative two-import ImportError
+fallback in an isolated subprocess, a searchable malicious disk package
+remaining inert, reviewed-only lookup behavior, unknown-package denial,
+resident top-level/descendant rejection through real child_probe, repeated
+absence checks, and exact final restricted meta path.
+
+Validation: dedicated G 25/25 PASS; focused F/G and lifecycle 171 total,
+170 PASS and one platform skip; full repository 1215 total, 1168 PASS and
+47 platform skips. In-memory compilation of 106 Python files and generated
+child source, schema parsing, exact ten-file scope, complete diff inspection
+and 27 protected baseline blob comparisons PASSed. git diff --check PASSed
+with line-ending warnings only. Existing unclosed-file ResourceWarnings
+did not fail tests. Closed D/E/F artifacts remain unchanged.
+
+D PASS/CLOSED; E PASS/CLOSED; Action E handoff ACCEPTED; F PASS/CLOSED;
+G NOT STARTED; rollback NOT PERFORMED. Native compatibility remains pending.
+Next checkpoint: separately authorize the native compatibility retry.
+ACTION_G_NATIVE_COMPATIBILITY_RETRY_READY_FOR_SEPARATE_AUTHORIZATION
+
 ## Action G distribution discovery ordering correction — 2026-10-05
 
 First native compatibility attempt stopped safely at HANDOFF because G

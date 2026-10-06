@@ -143,7 +143,7 @@ class DistributionOrderingTests(unittest.TestCase):
                 self.assertEqual(list(importlib.metadata.distributions(path=[str(site)])),[])
             finally:sys.meta_path=original
 
-    def run_probe(self,pairs,success):
+    def run_probe(self,pairs,success,preloaded=None):
         # Mock target-only startup facts; run real child_probe and real metadata
         # discovery. Stop at the first package import, before any package code.
         original_meta=list(sys.meta_path);original_path=list(sys.path)
@@ -186,6 +186,7 @@ class DistributionOrderingTests(unittest.TestCase):
                     stack.enter_context(mock.patch.object(sys,'base_prefix','/usr'))
                     stack.enter_context(mock.patch.dict(sys.modules,{}))
                     sys.modules.pop('site',None)
+                    if preloaded is not None:sys.modules[preloaded]=types.ModuleType(preloaded)
                     stack.enter_context(mock.patch.object(G.os.path,'lexists',return_value=False))
                     stack.enter_context(mock.patch.object(G,'verified_open',side_effect=lambda *a:(os.dup(fd),b'fixture')))
                     stack.enter_context(mock.patch.object(G,'child_expected',return_value=G.child_token(os.stat(sys.executable))))
@@ -202,6 +203,10 @@ class DistributionOrderingTests(unittest.TestCase):
 
     def test_exact_dictionary_accepted_before_restricted_package_phase(self):
         self.run_probe(list(self.expected.items()),True)
+
+    def test_real_probe_rejects_preloaded_optional_before_websockets(self):
+        for name in ('python_socks','python_socks.async_.asyncio'):
+            with self.subTest(name=name):self.run_probe(list(self.expected.items()),False,name)
 
     def test_isolated_metadata_scan_executes_no_package_pth_or_site_hooks(self):
         with tempfile.TemporaryDirectory() as root:
@@ -233,6 +238,58 @@ class DistributionOrderingTests(unittest.TestCase):
         self.assertNotIn('site.main(',script);self.assertNotIn('addsitedir(',script)
         self.assertIn('verified_open',script);self.assertIn('InvalidStatus(response)',script)
         self.assertIn("client.detect_websocket_client()=='PYTHON_WEBSOCKETS'",script)
+
+
+class OptionalDependencyTests(unittest.TestCase):
+    def test_only_reviewed_optional_names_skip_pathfinder(self):
+        finder=G.Finder({'paths':list(sys.path)})
+        self.assertEqual(G.REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL,('python_socks',))
+        with mock.patch.object(importlib.machinery.PathFinder,'find_spec') as lookup:
+            for name in ('python_socks','python_socks.async_','python_socks.async_.asyncio'):
+                self.assertIsNone(finder.find_spec(name))
+            for name in ('unknown_vendor','python_socks_extra','requests'):
+                with self.assertRaisesRegex(RuntimeError,'CONTROLLED_RUNTIME_INVALID'):finder.find_spec(name)
+            lookup.assert_not_called()
+
+    def test_preloaded_top_level_and_descendants_fail_without_removal(self):
+        for name in ('python_socks','python_socks.async_','python_socks.async_.asyncio'):
+            value=types.ModuleType(name)
+            with self.subTest(name=name),mock.patch.dict(sys.modules,{name:value}):
+                with self.assertRaisesRegex(RuntimeError,'CONTROLLED_RUNTIME_INVALID'):G.require_optional_absence()
+                self.assertIs(sys.modules[name],value)
+
+    def test_optional_import_fallback_and_malicious_disk_copy_isolated(self):
+        import inspect
+        with tempfile.TemporaryDirectory() as root:
+            package=Path(root)/'python_socks';package.mkdir()
+            sentinel=Path(root)/'EXECUTED'
+            (package/'__init__.py').write_text(f"open({str(sentinel)!r},'w').write('executed')\n",encoding='utf-8')
+            # Run the real Finder with the same final meta path. The fixture is
+            # searchable by PathFinder, but reviewed absence never consults it.
+            code="import sys,importlib.abc,importlib.machinery,importlib.util\n"
+            code+='REVIEWED_MODULES='+repr(G.REVIEWED_MODULES)+'\n'
+            code+='REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL='+repr(G.REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL)+'\n'
+            code+='\n'.join(inspect.getsource(x) for x in (G.child_require,G.require_optional_absence,G.Finder))
+            code+="\nsys.path.insert(0,sys.argv[1])\nassert importlib.machinery.PathFinder.find_spec('python_socks') is not None\nfinder=Finder({'paths':sys.path})\nsys.meta_path=[finder,importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter]\nrequire_optional_absence()\ntry:\n from python_socks import ProxyType\n from python_socks.async_.asyncio import Proxy as SocksProxy\nexcept ImportError as exc:\n assert isinstance(exc,ModuleNotFoundError)\n fallback=True\nelse:\n raise AssertionError('unapproved optional package loaded')\nassert fallback\nrequire_optional_absence()\nassert sys.meta_path==[finder,importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter]\ntry:\n import unknown_vendor\nexcept RuntimeError:\n pass\nelse:\n raise AssertionError('unknown third party accepted')\nprint('PASS')\n"
+            env=dict(G.ENV)
+            if os.name=='nt':env['SYSTEMROOT']=os.environ['SYSTEMROOT']
+            result=subprocess.run([sys.executable,'-I','-B','-S','-c',code,root],env=env,stdin=subprocess.DEVNULL,capture_output=True,timeout=10)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(result.stdout.strip(),b'PASS')
+            self.assertFalse(sentinel.exists());self.assertFalse(list(Path(root).rglob('*.pyc')))
+
+    def test_generated_probe_checks_absence_before_import_and_after_both_phases(self):
+        script=G.child_script({})
+        compile(script,'<controlled-child>','exec')
+        start=script.index('def child_probe(');probe=script[start:]
+        self.assertEqual(probe.count('    require_optional_absence()'),3)
+        first=probe.index('    require_optional_absence()')
+        self.assertLess(first,probe.index('    import websockets'))
+        capability=probe.index('    check_capabilities(')
+        second=probe.index('    require_optional_absence()',first+1)
+        client=probe.index('    client_detection(')
+        third=probe.index('    require_optional_absence()',second+1)
+        self.assertLess(capability,second);self.assertLess(second,client);self.assertLess(client,third)
 
 
 class ActionGRuntimeTests(unittest.TestCase):
