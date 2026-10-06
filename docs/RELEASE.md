@@ -1,5 +1,10 @@
 # HIOC Release Process
 
+## Action G implementation status
+
+The dedicated controlled preflight and strict result contract are implemented.
+No production G execution or authenticated Home Assistant validation occurred.
+
 ## Action F production closure — Evidence Report — 2026-10-05
 
 This is the authoritative current Action F closure. Earlier checkpoint sections

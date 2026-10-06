@@ -1,5 +1,10 @@
 # HIOC Operations
 
+## Action G implementation
+
+G validates the F predecessor and local runtime/client facts only. Credentials,
+Home Assistant access, network checks and service operations remain excluded.
+
 ## Action F production closure — Evidence Report — 2026-10-05
 
 This is the authoritative current Action F closure. Earlier checkpoint sections

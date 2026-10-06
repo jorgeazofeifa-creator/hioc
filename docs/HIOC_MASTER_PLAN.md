@@ -1,5 +1,15 @@
 # HIOC Master Plan
 
+## Action G controlled preflight implementation — production NOT STARTED
+
+Corrected G is implemented as a dedicated controlled runtime preflight. It
+consumes the fixed successful F journal before runtime code, uses `-I -B -S`
+and a restricted loader, performs no credentials or network validation, and
+revalidates the published runtime before PASS. D/E/F remain PASS/CLOSED; G is
+NOT STARTED pending native compatibility and separately authorized execution.
+
+Next checkpoint: `ACTION_G_NATIVE_COMPATIBILITY_CHECK_READY_FOR_SEPARATE_AUTHORIZATION`.
+
 ## Action F production closure — Evidence Report — 2026-10-05
 
 This is the authoritative current Action F closure. Earlier checkpoint sections

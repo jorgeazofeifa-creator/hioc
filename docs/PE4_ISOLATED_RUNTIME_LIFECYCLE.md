@@ -1,5 +1,11 @@
 # PE-4.0B.2a Isolated Runtime Lifecycle
 
+## Action G controlled preflight implementation — production NOT STARTED
+
+G consumes immutable F completion facts and proves only local credential-free,
+network-free runtime health and client detection. D/E/F remain closed; G remains
+NOT STARTED pending separately authorized native and production checks.
+
 ## Action F production closure — Evidence Report — 2026-10-05
 
 This is the authoritative current Action F closure. Earlier checkpoint sections

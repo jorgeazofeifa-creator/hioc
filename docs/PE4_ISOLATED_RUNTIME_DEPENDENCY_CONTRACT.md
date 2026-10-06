@@ -1,5 +1,10 @@
 # PE-4 Isolated Runtime and Dependency Contract
 
+## Action G implementation status
+
+The dedicated controlled G preflight is implemented. Native compatibility,
+preparation, execution and independent review remain pending authorization.
+
 ## Action F production closure — Evidence Report — 2026-10-05
 
 This is the authoritative current Action F closure. Earlier checkpoint sections

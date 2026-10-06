@@ -1,5 +1,10 @@
 # HIOC Deployment
 
+## Action G implementation
+
+The controlled preflight is implemented; production execution remains separately
+authorized and no authenticated service validation is included.
+
 ## Action F production closure — Evidence Report — 2026-10-05
 
 This is the authoritative current Action F closure. Earlier checkpoint sections

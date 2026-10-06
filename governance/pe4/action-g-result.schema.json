@@ -1,0 +1,346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Action G controlled preflight result",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "f_result_sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "f_committed_sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "accepted_manifest_sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "tree_sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "attestation_sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "client_sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "current_consumer": {
+      "type": "string",
+      "minLength": 40,
+      "maxLength": 40,
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "f_consumer": {
+      "const": "2a5e6299a0806c3f3d7c3bc11c84fddc8492333c"
+    },
+    "schema_version": {
+      "const": "2.0"
+    },
+    "record_type": {
+      "const": "ACTION_G_RESULT"
+    },
+    "action": {
+      "const": "PE-4.0B.2a-G"
+    },
+    "f_transaction_id": {
+      "const": "17fc3e0580ff007cdcd619ed2e2d3b34"
+    },
+    "f_transaction_path": {
+      "const": "/home/jazofv1/hioc/runtime/pe4/transactions/f-17fc3e0580ff007cdcd619ed2e2d3b34"
+    },
+    "final_environment_path": {
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^/",
+      "type": "string"
+    },
+    "active_target": {
+      "const": "environments/cpython311-websockets16.1.1-lock-v1"
+    },
+    "previous_content": {
+      "const": "NONE"
+    },
+    "credential_use": {
+      "const": false
+    },
+    "network_connection_attempted": {
+      "const": false
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "error_code": {
+      "enum": [
+        "NONE",
+        "INVALID",
+        "MISMATCH",
+        "CONFLICT",
+        "UNAVAILABLE",
+        "IO_FAILED",
+        "TIMEOUT",
+        "OUTPUT_LIMIT",
+        "PROBE_FAILED",
+        "NETWORK_FORBIDDEN",
+        "CREDENTIAL_FORBIDDEN",
+        "UNEXPECTED_ERROR"
+      ]
+    },
+    "failure_stage": {
+      "enum": [
+        "ARGUMENTS",
+        "TARGET",
+        "SOURCE",
+        "HANDOFF",
+        "PUBLICATION",
+        "STARTUP",
+        "PROBE",
+        "POSTVALIDATION",
+        "EVIDENCE",
+        "COMPLETE",
+        "UNEXPECTED"
+      ]
+    },
+    "rollback_recommended": {
+      "const": false
+    },
+    "final_environment_identity": {
+      "additionalProperties": false,
+      "properties": {
+        "dev": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "gid": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "ino": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "mode": {
+          "maxLength": 4,
+          "minLength": 1,
+          "pattern": "^[0-7]{4}$",
+          "type": "string"
+        },
+        "uid": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "dev",
+        "ino",
+        "uid",
+        "gid",
+        "mode"
+      ],
+      "type": "object"
+    },
+    "active_identity": {
+      "additionalProperties": false,
+      "properties": {
+        "dev": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "gid": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "ino": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "mode": {
+          "maxLength": 4,
+          "minLength": 1,
+          "pattern": "^[0-7]{4}$",
+          "type": "string"
+        },
+        "uid": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "dev",
+        "ino",
+        "uid",
+        "gid",
+        "mode"
+      ],
+      "type": "object"
+    },
+    "previous_identity": {
+      "additionalProperties": false,
+      "properties": {
+        "dev": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "gid": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "ino": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "mode": {
+          "maxLength": 4,
+          "minLength": 1,
+          "pattern": "^[0-7]{4}$",
+          "type": "string"
+        },
+        "uid": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "dev",
+        "ino",
+        "uid",
+        "gid",
+        "mode"
+      ],
+      "type": "object"
+    },
+    "client_identity": {
+      "additionalProperties": false,
+      "properties": {
+        "identity": {
+          "additionalProperties": false,
+          "properties": {
+            "dev": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "gid": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "ino": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mode": {
+              "maxLength": 4,
+              "minLength": 1,
+              "pattern": "^[0-7]{4}$",
+              "type": "string"
+            },
+            "uid": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "dev",
+            "ino",
+            "uid",
+            "gid",
+            "mode"
+          ],
+          "type": "object"
+        },
+        "token": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 9,
+          "minItems": 9,
+          "type": "array"
+        }
+      },
+      "required": [
+        "identity",
+        "token"
+      ],
+      "type": "object"
+    },
+    "checks": {
+      "type": "object",
+      "properties": {
+        "interpreter": {
+          "const": "PASS"
+        },
+        "dependency": {
+          "const": "PASS"
+        },
+        "websocket": {
+          "const": "PASS"
+        },
+        "client_detection": {
+          "const": "PASS"
+        },
+        "proxy_policy": {
+          "const": "PASS"
+        },
+        "runtime_unchanged": {
+          "const": "PASS"
+        }
+      },
+      "required": [
+        "interpreter",
+        "dependency",
+        "websocket",
+        "client_detection",
+        "proxy_policy",
+        "runtime_unchanged"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "f_result_sha256",
+    "f_committed_sha256",
+    "accepted_manifest_sha256",
+    "tree_sha256",
+    "attestation_sha256",
+    "client_sha256",
+    "current_consumer",
+    "f_consumer",
+    "schema_version",
+    "record_type",
+    "action",
+    "f_transaction_id",
+    "f_transaction_path",
+    "final_environment_path",
+    "active_target",
+    "previous_content",
+    "credential_use",
+    "network_connection_attempted",
+    "result",
+    "error_code",
+    "failure_stage",
+    "rollback_recommended",
+    "final_environment_identity",
+    "active_identity",
+    "previous_identity",
+    "client_identity",
+    "checks"
+  ]
+}

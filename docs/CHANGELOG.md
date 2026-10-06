@@ -1,5 +1,10 @@
 # HIOC Changelog
 
+## Action G implementation
+
+Added the controlled credential-free G preflight and dedicated result contract.
+Production execution remains NOT STARTED.
+
 ## Action F production closure — Evidence Report — 2026-10-05
 
 This is the authoritative current Action F closure. Earlier checkpoint sections

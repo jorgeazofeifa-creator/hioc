@@ -1,5 +1,11 @@
 # HIOC Architecture Decisions
 
+## Action G controlled preflight implementation — production NOT STARTED
+
+Dedicated G source, strict evidence schema, and behavioral tests are added.
+Production G remains NOT STARTED and authenticated Home Assistant access is out
+of scope.
+
 ## Action F production closure — Evidence Report — 2026-10-05
 
 This is the authoritative current Action F closure. Earlier checkpoint sections
