@@ -93,7 +93,10 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
     def test_every_entrypoint_binds_to_governance_and_bounds_unexpected_errors(self):
         for path in TOOLS.glob("hioc-pe4-*.py"):
             source=path.read_text(encoding="utf-8")
-            if path.name == "hioc-pe4-ha-auth-capability.py": continue
+            # Standalone HA clients are governed by separately bound preparation
+            # records and operator pre-token gates, not lifecycle CLI arguments.
+            if path.name in {"hioc-pe4-ha-auth-capability.py",
+                             "hioc-pe4-ha-registry-discovery.py"}: continue
             self.assertIn("--governance-commit",source,path.name)
             self.assertIn("UNEXPECTED_ERROR",source,path.name)
         action_d=(TOOLS/"hioc-pe4-runtime-construct.py").read_text(encoding="utf-8")

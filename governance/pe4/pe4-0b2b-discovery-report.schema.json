@@ -1,0 +1,3164 @@
+{
+  "$defs": {
+    "area": {
+      "additionalProperties": false,
+      "properties": {
+        "counts": {
+          "additionalProperties": false,
+          "properties": {
+            "automation_domain": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connection_collision_values": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_multiple": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_one": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_zero": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "dangling_relationships": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "disabled": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "group_domain": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "identifier_collision_values": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_canonical": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_collision_values": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_conflicting_devices": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_duplicate_entries": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_entries": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_invalid": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_multiple": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_normalization_required": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_one": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_zero": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "records": {
+              "maximum": 2048,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "scene_domain": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "template_platform": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_array": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_boolean": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_fields": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_integer": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_null": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_number": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_object": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_string": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unpublished_namespaces": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "via_device": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_area": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_config_entry": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_device": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "without_device": {
+              "maximum": 786432,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "automation_domain",
+            "connection_collision_values",
+            "connections_multiple",
+            "connections_one",
+            "connections_zero",
+            "dangling_relationships",
+            "disabled",
+            "group_domain",
+            "identifier_collision_values",
+            "mac_canonical",
+            "mac_collision_values",
+            "mac_conflicting_devices",
+            "mac_duplicate_entries",
+            "mac_entries",
+            "mac_invalid",
+            "mac_multiple",
+            "mac_normalization_required",
+            "mac_one",
+            "mac_zero",
+            "records",
+            "scene_domain",
+            "template_platform",
+            "unknown_array",
+            "unknown_boolean",
+            "unknown_fields",
+            "unknown_integer",
+            "unknown_null",
+            "unknown_number",
+            "unknown_object",
+            "unknown_string",
+            "unpublished_namespaces",
+            "via_device",
+            "with_area",
+            "with_config_entry",
+            "with_device",
+            "without_device"
+          ],
+          "type": "object"
+        },
+        "fields": {
+          "additionalProperties": false,
+          "properties": {
+            "aliases": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "array"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "area_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "created_at": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer",
+                      "number"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "floor_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "humidity_entity_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "icon": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "array"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "modified_at": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer",
+                      "number"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "name": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "picture": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "temperature_entity_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "namespaces": {
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "items": {
+                "enum": [
+                  "bluetooth",
+                  "esphome",
+                  "hue",
+                  "mac",
+                  "mqtt",
+                  "upnp",
+                  "zha",
+                  "zigbee",
+                  "zwave",
+                  "zwave_js"
+                ]
+              },
+              "maxItems": 128,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "identifier": {
+              "items": {
+                "enum": [
+                  "bluetooth",
+                  "esphome",
+                  "hue",
+                  "mac",
+                  "mqtt",
+                  "upnp",
+                  "zha",
+                  "zigbee",
+                  "zwave",
+                  "zwave_js"
+                ]
+              },
+              "maxItems": 128,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "connection",
+            "identifier"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "counts",
+        "fields",
+        "namespaces"
+      ],
+      "type": "object"
+    },
+    "config_entry": {
+      "additionalProperties": false,
+      "properties": {
+        "counts": {
+          "additionalProperties": false,
+          "properties": {
+            "automation_domain": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connection_collision_values": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_multiple": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_one": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_zero": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "dangling_relationships": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "disabled": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "group_domain": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "identifier_collision_values": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_canonical": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_collision_values": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_conflicting_devices": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_duplicate_entries": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_entries": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_invalid": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_multiple": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_normalization_required": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_one": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_zero": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "records": {
+              "maximum": 4096,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "scene_domain": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "template_platform": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_array": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_boolean": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_fields": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_integer": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_null": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_number": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_object": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_string": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unpublished_namespaces": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "via_device": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_area": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_config_entry": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_device": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "without_device": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "automation_domain",
+            "connection_collision_values",
+            "connections_multiple",
+            "connections_one",
+            "connections_zero",
+            "dangling_relationships",
+            "disabled",
+            "group_domain",
+            "identifier_collision_values",
+            "mac_canonical",
+            "mac_collision_values",
+            "mac_conflicting_devices",
+            "mac_duplicate_entries",
+            "mac_entries",
+            "mac_invalid",
+            "mac_multiple",
+            "mac_normalization_required",
+            "mac_one",
+            "mac_zero",
+            "records",
+            "scene_domain",
+            "template_platform",
+            "unknown_array",
+            "unknown_boolean",
+            "unknown_fields",
+            "unknown_integer",
+            "unknown_null",
+            "unknown_number",
+            "unknown_object",
+            "unknown_string",
+            "unpublished_namespaces",
+            "via_device",
+            "with_area",
+            "with_config_entry",
+            "with_device",
+            "without_device"
+          ],
+          "type": "object"
+        },
+        "fields": {
+          "additionalProperties": false,
+          "properties": {
+            "created_at": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer",
+                      "number"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "disabled_by": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "domain": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "entry_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "error_reason_translation_key": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "error_reason_translation_placeholders": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "object"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "modified_at": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer",
+                      "number"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "num_subentries": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "pref_disable_new_entities": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "boolean"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "pref_disable_polling": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "boolean"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "reason": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "source": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "state": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "supported_subentry_types": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "object"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "supports_options": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "boolean"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "supports_reconfigure": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "boolean"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "supports_remove_device": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "boolean"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "supports_unload": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "boolean"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "title": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "namespaces": {
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "items": {
+                "enum": [
+                  "bluetooth",
+                  "esphome",
+                  "hue",
+                  "mac",
+                  "mqtt",
+                  "upnp",
+                  "zha",
+                  "zigbee",
+                  "zwave",
+                  "zwave_js"
+                ]
+              },
+              "maxItems": 128,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "identifier": {
+              "items": {
+                "enum": [
+                  "bluetooth",
+                  "esphome",
+                  "hue",
+                  "mac",
+                  "mqtt",
+                  "upnp",
+                  "zha",
+                  "zigbee",
+                  "zwave",
+                  "zwave_js"
+                ]
+              },
+              "maxItems": 128,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "connection",
+            "identifier"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "counts",
+        "fields",
+        "namespaces"
+      ],
+      "type": "object"
+    },
+    "device": {
+      "additionalProperties": false,
+      "properties": {
+        "counts": {
+          "additionalProperties": false,
+          "properties": {
+            "automation_domain": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connection_collision_values": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_multiple": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_one": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_zero": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "dangling_relationships": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "disabled": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "group_domain": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "identifier_collision_values": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_canonical": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_collision_values": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_conflicting_devices": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_duplicate_entries": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_entries": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_invalid": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_multiple": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_normalization_required": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_one": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_zero": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "records": {
+              "maximum": 4096,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "scene_domain": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "template_platform": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_array": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_boolean": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_fields": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_integer": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_null": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_number": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_object": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_string": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unpublished_namespaces": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "via_device": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_area": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_config_entry": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_device": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "without_device": {
+              "maximum": 1572864,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "automation_domain",
+            "connection_collision_values",
+            "connections_multiple",
+            "connections_one",
+            "connections_zero",
+            "dangling_relationships",
+            "disabled",
+            "group_domain",
+            "identifier_collision_values",
+            "mac_canonical",
+            "mac_collision_values",
+            "mac_conflicting_devices",
+            "mac_duplicate_entries",
+            "mac_entries",
+            "mac_invalid",
+            "mac_multiple",
+            "mac_normalization_required",
+            "mac_one",
+            "mac_zero",
+            "records",
+            "scene_domain",
+            "template_platform",
+            "unknown_array",
+            "unknown_boolean",
+            "unknown_fields",
+            "unknown_integer",
+            "unknown_null",
+            "unknown_number",
+            "unknown_object",
+            "unknown_string",
+            "unpublished_namespaces",
+            "via_device",
+            "with_area",
+            "with_config_entry",
+            "with_device",
+            "without_device"
+          ],
+          "type": "object"
+        },
+        "fields": {
+          "additionalProperties": false,
+          "properties": {
+            "area_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "config_entries": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "array"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "config_entries_subentries": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "object"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "config_entry_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "config_subentry_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "configuration_url": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "connections": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "array"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "created_at": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer",
+                      "number"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "disabled_by": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "entry_type": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "hw_version": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "identifiers": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "array"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "array"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "manufacturer": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "model": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "model_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "modified_at": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer",
+                      "number"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "name": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "name_by_user": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "primary_config_entry": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "serial_number": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "sw_version": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "via_device_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "namespaces": {
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "items": {
+                "enum": [
+                  "bluetooth",
+                  "esphome",
+                  "hue",
+                  "mac",
+                  "mqtt",
+                  "upnp",
+                  "zha",
+                  "zigbee",
+                  "zwave",
+                  "zwave_js"
+                ]
+              },
+              "maxItems": 128,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "identifier": {
+              "items": {
+                "enum": [
+                  "bluetooth",
+                  "esphome",
+                  "hue",
+                  "mac",
+                  "mqtt",
+                  "upnp",
+                  "zha",
+                  "zigbee",
+                  "zwave",
+                  "zwave_js"
+                ]
+              },
+              "maxItems": 128,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "connection",
+            "identifier"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "counts",
+        "fields",
+        "namespaces"
+      ],
+      "type": "object"
+    },
+    "entity": {
+      "additionalProperties": false,
+      "properties": {
+        "counts": {
+          "additionalProperties": false,
+          "properties": {
+            "automation_domain": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connection_collision_values": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_multiple": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_one": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "connections_zero": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "dangling_relationships": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "disabled": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "group_domain": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "identifier_collision_values": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_canonical": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_collision_values": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_conflicting_devices": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_duplicate_entries": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_entries": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_invalid": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_multiple": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_normalization_required": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_one": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mac_zero": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "records": {
+              "maximum": 65536,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "scene_domain": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "template_platform": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_array": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_boolean": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_fields": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_integer": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_null": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_number": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_object": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unknown_string": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unpublished_namespaces": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "via_device": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_area": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_config_entry": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "with_device": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "without_device": {
+              "maximum": 25165824,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "automation_domain",
+            "connection_collision_values",
+            "connections_multiple",
+            "connections_one",
+            "connections_zero",
+            "dangling_relationships",
+            "disabled",
+            "group_domain",
+            "identifier_collision_values",
+            "mac_canonical",
+            "mac_collision_values",
+            "mac_conflicting_devices",
+            "mac_duplicate_entries",
+            "mac_entries",
+            "mac_invalid",
+            "mac_multiple",
+            "mac_normalization_required",
+            "mac_one",
+            "mac_zero",
+            "records",
+            "scene_domain",
+            "template_platform",
+            "unknown_array",
+            "unknown_boolean",
+            "unknown_fields",
+            "unknown_integer",
+            "unknown_null",
+            "unknown_number",
+            "unknown_object",
+            "unknown_string",
+            "unpublished_namespaces",
+            "via_device",
+            "with_area",
+            "with_config_entry",
+            "with_device",
+            "without_device"
+          ],
+          "type": "object"
+        },
+        "fields": {
+          "additionalProperties": false,
+          "properties": {
+            "area_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "categories": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "object"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "config_entry_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "config_subentry_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "created_at": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer",
+                      "number"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "device_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "disabled_by": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "entity_category": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "entity_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "has_entity_name": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "boolean"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "hidden_by": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "icon": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "array"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "modified_at": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "integer",
+                      "number"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "name": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "options": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "object"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "original_name": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "platform": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "translation_key": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            },
+            "unique_id": {
+              "additionalProperties": false,
+              "properties": {
+                "optional": {
+                  "type": "boolean"
+                },
+                "types": {
+                  "items": {
+                    "enum": [
+                      "string"
+                    ]
+                  },
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "optional",
+                "types"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "namespaces": {
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "items": {
+                "enum": [
+                  "bluetooth",
+                  "esphome",
+                  "hue",
+                  "mac",
+                  "mqtt",
+                  "upnp",
+                  "zha",
+                  "zigbee",
+                  "zwave",
+                  "zwave_js"
+                ]
+              },
+              "maxItems": 128,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "identifier": {
+              "items": {
+                "enum": [
+                  "bluetooth",
+                  "esphome",
+                  "hue",
+                  "mac",
+                  "mqtt",
+                  "upnp",
+                  "zha",
+                  "zigbee",
+                  "zwave",
+                  "zwave_js"
+                ]
+              },
+              "maxItems": 128,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "connection",
+            "identifier"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "counts",
+        "fields",
+        "namespaces"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:hioc:pe4:registry-discovery-report:1.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "else": {
+        "properties": {
+          "ERROR_CODE": {
+            "enum": [
+              "AUTHENTICATION_FAILED",
+              "AUTHENTICATION_UNAVAILABLE",
+              "DISCOVERY_OUTPUT_UNSAFE",
+              "EVIDENCE_PUBLICATION_FAILED",
+              "INSUFFICIENT_READ_SCOPE",
+              "PRIVACY_CONTRACT_VIOLATION",
+              "UNEXPECTED_ERROR",
+              "UNEXPECTED_SCHEMA",
+              "UNSUPPORTED_HA_DEPLOYMENT",
+              "UNSUPPORTED_INTERFACE",
+              "WRONG_OPERATOR",
+              "WRONG_TARGET"
+            ]
+          },
+          "FAILURE_STAGE": {
+            "enum": [
+              "AUTHENTICATION",
+              "EVIDENCE_PUBLICATION",
+              "HA_DEPLOYMENT_DISCOVERY",
+              "INTERFACE_DISCOVERY",
+              "PRIVACY_VALIDATION",
+              "SCHEMA_DISCOVERY",
+              "TARGET_IDENTITY"
+            ]
+          },
+          "registries": {
+            "additionalProperties": false,
+            "properties": {},
+            "required": [],
+            "type": "object"
+          },
+          "structure_fingerprint": {
+            "type": "null"
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "result": {
+            "const": "PASS"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "ERROR_CODE": {
+            "const": "NONE"
+          },
+          "FAILURE_STAGE": {
+            "const": "COMPLETE"
+          },
+          "registries": {
+            "additionalProperties": false,
+            "properties": {
+              "area": {
+                "$ref": "#/$defs/area"
+              },
+              "config_entry": {
+                "$ref": "#/$defs/config_entry"
+              },
+              "device": {
+                "$ref": "#/$defs/device"
+              },
+              "entity": {
+                "$ref": "#/$defs/entity"
+              }
+            },
+            "required": [
+              "area",
+              "config_entry",
+              "device",
+              "entity"
+            ],
+            "type": "object"
+          },
+          "structure_fingerprint": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "ERROR_CODE": {
+      "enum": [
+        "AUTHENTICATION_FAILED",
+        "AUTHENTICATION_UNAVAILABLE",
+        "DISCOVERY_OUTPUT_UNSAFE",
+        "EVIDENCE_PUBLICATION_FAILED",
+        "INSUFFICIENT_READ_SCOPE",
+        "NONE",
+        "PRIVACY_CONTRACT_VIOLATION",
+        "UNEXPECTED_ERROR",
+        "UNEXPECTED_SCHEMA",
+        "UNSUPPORTED_HA_DEPLOYMENT",
+        "UNSUPPORTED_INTERFACE",
+        "WRONG_OPERATOR",
+        "WRONG_TARGET"
+      ]
+    },
+    "FAILURE_STAGE": {
+      "enum": [
+        "AUTHENTICATION",
+        "COMPLETE",
+        "EVIDENCE_PUBLICATION",
+        "HA_DEPLOYMENT_DISCOVERY",
+        "INTERFACE_DISCOVERY",
+        "PRIVACY_VALIDATION",
+        "SCHEMA_DISCOVERY",
+        "TARGET_IDENTITY"
+      ]
+    },
+    "INSTANCE_REFERENCE": {
+      "const": "PI5_HA"
+    },
+    "INSTANCE_REFERENCE_METHOD": {
+      "const": "OPERATOR_LOGICAL_LABEL"
+    },
+    "classification_limit": {
+      "const": "PHYSICAL_HELPER_INTEGRATION_VIRTUAL_CLOUD_NOT_DERIVED"
+    },
+    "core_source_reference": {
+      "const": "2026.8.1"
+    },
+    "deployment_classification": {
+      "const": "REMOTE_HA_ENDPOINT_ONLY"
+    },
+    "interface_classification": {
+      "const": "CORE_SOURCE_VERSION_PINNED_WEBSOCKET"
+    },
+    "privacy_validation": {
+      "const": "PASS"
+    },
+    "registries": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "area": {
+              "$ref": "#/$defs/area"
+            },
+            "config_entry": {
+              "$ref": "#/$defs/config_entry"
+            },
+            "device": {
+              "$ref": "#/$defs/device"
+            },
+            "entity": {
+              "$ref": "#/$defs/entity"
+            }
+          },
+          "required": [
+            "area",
+            "config_entry",
+            "device",
+            "entity"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        }
+      ]
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "structure_fingerprint": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      ]
+    },
+    "target_classification": {
+      "const": "APPROVED_PI3_TO_PI5_HA"
+    },
+    "warnings": {
+      "items": {
+        "enum": [
+          "CLASSIFICATION_NOT_DERIVED",
+          "RELATIONSHIP_SNAPSHOT_INCOMPLETE",
+          "UNKNOWN_FIELDS",
+          "UNPUBLISHED_NAMESPACES"
+        ]
+      },
+      "maxItems": 16,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "ERROR_CODE",
+    "FAILURE_STAGE",
+    "INSTANCE_REFERENCE",
+    "INSTANCE_REFERENCE_METHOD",
+    "classification_limit",
+    "core_source_reference",
+    "deployment_classification",
+    "interface_classification",
+    "privacy_validation",
+    "registries",
+    "result",
+    "schema_version",
+    "structure_fingerprint",
+    "target_classification",
+    "warnings"
+  ],
+  "title": "Sanitized PE-4.0B.2b registry discovery report",
+  "type": "object"
+}

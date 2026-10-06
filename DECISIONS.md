@@ -1,5 +1,38 @@
 # HIOC Architecture Decisions
 
+## PE-4.0B.2b bounded registry/schema discovery prepared - 2026-10-06
+
+Repository-only preparation follows the immutable 2a PASS/CLOSED closure at
+`09814b8ab19553f21ff68c3a617a5164c47ef59f`. The standalone discovery client,
+sanitized evidence schema, compact Core **2026.8.1** source contract, and synthetic
+tests are bound by
+[pe4-0b2b-discovery-preparation.json](governance/pe4/pe4-0b2b-discovery-preparation.json).
+[Preparation details](docs/PE4_REGISTRY_DISCOVERY_PREPARATION.md) freeze exact read-only WebSocket commands
+`config/device_registry/list`, `config/entity_registry/list`,
+`config/area_registry/list`, and `config_entries/get`; authenticated-user permission
+at this tag is a source-level classification, not a versionless API promise.
+Documented REST remains insufficient for registry metadata. Unsupported interface
+or schema fails closed, with no fallback command.
+
+One authenticated connection, sequential correlated IDs 1–4, a shared 90-second
+network deadline, zero retries, strict bounded JSON, immediate memory-only raw
+reduction, no MAC hashing, structural evidence allowlists, and private durable
+non-overwriting result-last publication define the prepared scope. No credential,
+raw registry record, household identifier, or private response is repository evidence.
+Unprovable physical/helper/integration/virtual/cloud classifications remain
+explicitly unclaimed. The source closure, 2a client identity, historical F/G,
+accepted E handoff, dependency lock, and runtime implementation remain unchanged.
+
+No PI3/PI5/HA access, live discovery, real credential, deployment, 2a or D/E/F/G
+rerun, rollback, PE-4.0C, or final association adapter occurred. Future execution
+requires separate authorization and existing governed source/runtime pre-token
+gates; no execution command is provided here.
+
+Lifecycle: D/E/F/G **PASS/CLOSED**, E handoff **ACCEPTED**, 2a **PASS/CLOSED**,
+2b **NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION**, PE-4 **NOT COMPLETE**,
+Phase 7A **ACTIVE**, rollback **NOT PERFORMED**.
+
+
 ## PE-4.0B.2a authenticated proof PASS/CLOSED - 2026-10-05
 
 Authenticated production execution and independent evidence review PASS.
