@@ -1,5 +1,61 @@
 # HIOC Master Plan
 
+## Current Action G production governance closure — 2026-10-05
+
+Action G is **PASS/CLOSED** after exactly one production execution using
+consumer a01dfb53258317ba703d320836b38b38650872bd. Operator-supplied terminal
+evidence is RESULT=PASS, ERROR_CODE=NONE, FAILURE_STAGE=COMPLETE,
+ROLLBACK_RECOMMENDED=FALSE, EVIDENCE_STATE=CONFIRMED, RC=0,
+CREDENTIAL_USE=FALSE and NETWORK_CONNECTION_ATTEMPTED=FALSE.
+Final native compatibility, read-only production preparation and independent
+post-execution evidence review all PASSed; source pre/postchecks PASSed.
+G was not rerun, F was not rerun, and rollback was not performed.
+
+Evidence: /tmp/hioc-pe4-runtime-preflight-97fcfda645295262b1735816c5481544.
+Exact file set: result.json; size 1809 bytes; directory 0700 and file 0600,
+both owned by 1000:1000.
+ACTION_G_PRODUCTION_RESULT_SHA256=e63133f034da322fd761aaf56613a7706e577b332057a8f763891c855bbbb02e
+Published bytes exactly matched the preceding canonical preparation and
+independent reconstruction, canonical JSON and schema validation.
+This /tmp path is production execution evidence, not a durable repository
+artifact. These documents durably record the reviewed governance outcome.
+
+F consumer 2a5e6299a0806c3f3d7c3bc11c84fddc8492333c; transaction
+17fc3e0580ff007cdcd619ed2e2d3b34; result SHA
+d647c7b2241d7800a3c819cf86459e2be95c3ef58581d5ffef2dbf5bd1190941;
+COMMITTED SHA 24bb64cc8d885297e5696ddd733ec0dfab4b28a24e18a6996b667c186f2016e9.
+Accepted E manifest SHA remains
+1ac94f233bf543cafdc81b1f530177bd1c84d46ae13a7a686b33d34032d50c14.
+Final environment:
+/home/jazofv1/hioc/runtime/pe4/environments/cpython311-websockets16.1.1-lock-v1.
+Active target: environments/cpython311-websockets16.1.1-lock-v1.
+Frozen client SHA: 5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e.
+Runtime/F revalidation PASSed; environment, active, previous-active and client
+remained unchanged through native validation, execution and independent review.
+
+Current status: D PASS/CLOSED; E PASS/CLOSED; Action E handoff ACCEPTED;
+F PASS/CLOSED; G PASS/CLOSED; G execution count ONE; independent review PASS;
+rollback NOT PERFORMED. Native compatibility is PASS/CLOSED.
+**PE-4 NOT COMPLETE**: the master plan's authenticated API interface-contract
+freeze and PE-4.0B.1 completion roadmap separately require preparation of
+PE-4.0B.2a authenticated API/capability proof (REST_THEN_WEBSOCKET_2A).
+That preparation is the next governed checkpoint; execution requires separate
+authorization and cannot chain into PE-4.0B.2b registry/schema discovery.
+G proves credential-free preflight, not live HA reachability, credentials,
+authenticated REST/WebSocket association, service authorization, read scope
+or application behavior beyond its bounded contract.
+
+Repository closure validation PASS: exact eight-document scope, unchanged
+implementation/tests and all 27 protected baseline blobs, retained historical
+records, existing release/static validator, bytecode-free Python compilation
+and schema parsing, full diff review and git diff --check. No generated or
+untracked artifacts; line-ending warnings are not failures.
+
+This current closure supersedes prior pending-G status and retry instructions.
+All earlier checkpoint entries retain their historical meaning and chronology;
+they do not assert current pending status. This documentation-only checkpoint
+does not access PI3/PI5 or execute any production lifecycle operation.
+
 ## Action G compatibility import fallback correction — 2026-10-05
 
 G initially stopped at F HANDOFF because of incorrect recovery semantics;
@@ -2744,29 +2800,15 @@ While implementing HIOC:
 
 # Implementation Status
 
-Action G's controlled-child metadata scan now precedes restricted finder
-installation. F-to-G native preflight PASSed; child compatibility remains
-pending after the second retry stopped at PROBE on distribution discovery.
-G remains NOT STARTED. Next: ACTION_G_NATIVE_COMPATIBILITY_RETRY_READY_FOR_SEPARATE_AUTHORIZATION.
-
-Action G's F-journal recovery interpretation is corrected in the repository.
-The first native compatibility attempt safely stopped at HANDOFF before probes;
-native compatibility remains pending. G remains NOT STARTED. Next checkpoint:
-`ACTION_G_NATIVE_COMPATIBILITY_RETRY_READY_FOR_SEPARATE_AUTHORIZATION`.
-
-Architecture B Action F production execution and independent review are PASS;
-F is PASS/CLOSED. The production closure Evidence Report above is authoritative.
-Replacement B: PASS/CLOSED. C: PASS. D-PREP: PASS/CLOSED.
-D: PASS/CLOSED. E: PASS/CLOSED. Action E handoff: ACCEPTED.
-F: PASS/CLOSED. G: NOT STARTED. Rollback: NOT PERFORMED.
-PE-4 is not fully complete: G preparation, review and separately authorized
-execution remain outstanding. No recovery checkpoint or rollback is required.
-
-Action E acceptance remains PE4-ACTION-E-HANDOFF-ACCEPTANCE-20261005.
-The one-time historical bridge retains NO_PERSISTED_E_TIME_RECURSIVE_BASELINE
-and both historical recursive flags remain false. The accepted capture remains
-the machine-verifiable continuity baseline forward.
-Next: ACTION_G_PREPARATION_READY_FOR_SEPARATE_AUTHORIZATION.
+Replacement B PASS/CLOSED; C PASS; D-PREP PASS/CLOSED.
+D PASS/CLOSED; E PASS/CLOSED; Action E handoff ACCEPTED; F PASS/CLOSED;
+G PASS/CLOSED after one production execution and independent review PASS.
+Native compatibility PASS/CLOSED; rollback NOT PERFORMED. PE-4 NOT COMPLETE.
+The current Action G closure above is authoritative. Next: separately governed
+preparation only of PE-4.0B.2a authenticated API/capability proof under
+REST_THEN_WEBSOCKET_2A; no automatic 2b registry/schema discovery.
+The accepted E historical bridge retains NO_PERSISTED_E_TIME_RECURSIVE_BASELINE
+and both historical recursive flags remain false.
 
 This section reflects the current state of the project.
 
@@ -2778,7 +2820,7 @@ consumer `1c1698f009457baa1c3b548db31916559fcc2fc8`, with immutable D producer
 `/tmp/hioc-pe4-dependency-validate-9ys_lrah`, SHA-256
 `8d5ff1f602861d88ea8d363665a67091da2739686d10ab4aa9ac27f22389d834`.
 Independent supervisor acceptance PASSed; construction, D handoff and source
-remained unchanged. F is now **PASS/CLOSED**; G remains **NOT STARTED**;
+remained unchanged. F and G are now **PASS/CLOSED**;
 rollback **NOT PERFORMED**.
 The production closure record above preserves the full prerequisite chronology.
 
