@@ -2568,7 +2568,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 3. **PE-3 - Manufacturer Reference Enrichment** — complete. Actions 1–10,
    production deployment, generation, PI3 validation, final Evidence Report,
    administrative Action 10 closure, and final governance closure are complete.
-4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PREPARED / NOT COMPLETE; Operator Installation and Independent Validation NOT STARTED; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.
+4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
 6. **PE-6 - Classification & Metadata Quality** — not started.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
@@ -3226,10 +3226,10 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4.0C.1 Association Lifecycle Clarification | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Implementation Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Runtime Credential Provisioning Preparation | PASS/CLOSED |
-| PE-4 Home Assistant Runtime Credential Provisioning | PREPARED / NOT COMPLETE |
-| Operator Credential Installation | NOT STARTED |
-| Independent Credential Validation | NOT STARTED |
-| Credential Provisioning Governance Closure | NOT STARTED |
+| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |
+| Operator Credential Installation | PASS/CLOSED |
+| Independent Credential Validation | PASS/CLOSED |
+| Credential Provisioning Governance Closure | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Implementation | NOT STARTED |
 | PE-4 | NOT COMPLETE |
 | Phase 7A | ACTIVE |
@@ -3251,6 +3251,25 @@ filesystem/OS facilities and external APIs/protocols/file formats/data shapes
 actually consumed by HIOC. Counts, matrix and unresolved live proofs remain in
 [COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md); this checkpoint does
 not repeat the audit or claim deployment.
+
+### PE-4 Home Assistant Runtime Credential Provisioning Governance Closure - 2026-10-06
+
+Operator Credential Installation PASS/CLOSED; Independent Credential Validation
+PASS/CLOSED; Governance Closure PASS/CLOSED; parent Runtime Credential Provisioning
+PASS/CLOSED. The [closure record](../governance/pe4/pe4-ha-runtime-credential-provisioning-closure.json)
+binds unchanged corrected tool identities and OPERATOR_SUPPLIED PI3 evidence:
+source fast-forward to d089be8, INSTALL, root filesystem/security/content validation,
+and a separate actual jazofv1 read. Root mode correctly reported runtime readability
+NOT_TESTED; the separate runtime identity reported TRUE. No rotation occurred.
+Codex did not access or independently inspect PI3. No token or secret-derived
+hash is recorded. Authentication remains DEFERRED_TO_ADAPTER_VALIDATION; this
+closure proves local storage and readability, not HA credential validity or access.
+Preparation/correction history and records are preserved. Adapter Implementation
+NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+
+The following preparation and pre-execution correction narratives describe their
+historical states; the authoritative current lifecycle table and closure above
+supersede their prior NOT STARTED/PREPARED statements.
 
 ### PE-4 Canonical Credential Storage Pre-execution Correction - 2026-10-06
 
@@ -3453,25 +3472,24 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-**PE-4 Home Assistant Runtime Credential Provisioning** remains the current
-separately governed objective. Implementation Preparation and Credential Provisioning
-Preparation are PASS/CLOSED. The parent is PREPARED / NOT COMPLETE. Operator
-Installation, Independent Validation, Governance Closure, adapter implementation
-and deployment remain NOT STARTED. Both PE-4.0C and PE-4.0C.1 remain PASS/CLOSED.
-Phase 7A ACTIVE; PE-4 NOT COMPLETE; rollback NOT PERFORMED.
+**PE-4 Home Assistant Association Adapter Implementation** is the current objective
+after Runtime Credential Provisioning PASS/CLOSED. Operator installation and
+independent root/runtime-operator validation are closed based on operator-supplied
+PI3 evidence, not Codex inspection. Authentication remains deferred to adapter
+validation. Adapter Implementation and deployment remain NOT STARTED.
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. Prior D/E/F/G,
+2a/2b, 0C/0C.1 and implementation-preparation closures remain preserved.
 
 ## Next Planned Task
 
-### PE-4 Home Assistant Runtime Credential Provisioning — Operator Installation
+### PE-4 Home Assistant Association Adapter Implementation
 
-Separately authorize the human operator's local hidden-TTY installation on PI3
-NUT&PIHOLE using the exact pushed preparation commit and both tool source identities
-from the [provisioning preparation](PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md).
-Stop after installation. Independent root metadata and actual jazofv1 readability
-validation follow as a separately authorized action; governance closure follows
-accepted evidence. The parent must close before Adapter Implementation. This
-repository preparation neither provisions a credential nor authorizes deployment.
-Public projection remains a later named checkpoint.
+Follow the [frozen implementation preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md)
+and [credential closure](PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md).
+The credential prerequisite is PASS/CLOSED; authentication remains
+DEFERRED_TO_ADAPTER_VALIDATION. This governance checkpoint does not implement,
+deploy or execute the adapter. Public Projection and PE-5 remain later separate
+checkpoints; all unrelated roadmap work retains its existing sequence and scope.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 

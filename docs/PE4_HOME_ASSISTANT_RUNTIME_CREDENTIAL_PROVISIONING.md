@@ -1,12 +1,24 @@
 # PE-4 Home Assistant Runtime Credential Provisioning
 
-This repository preparation is PREPARED_FOR_SEPARATE_OPERATOR_EXECUTION.
-Preparation is PASS/CLOSED; the parent Runtime Credential Provisioning is
-PREPARED / NOT COMPLETE. No credential has been provisioned. Operator Installation,
-Independent Credential Validation and Governance Closure remain NOT STARTED.
-Adapter Implementation is NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE;
-rollback NOT PERFORMED. The next task is **PE-4 Home Assistant Runtime Credential
-Provisioning — Operator Installation**.
+Runtime Credential Provisioning is PASS/CLOSED. Preparation, Operator Installation,
+Independent Credential Validation and Governance Closure are PASS/CLOSED. The
+[closure record](../governance/pe4/pe4-ha-runtime-credential-provisioning-closure.json)
+and its [closed schema](../governance/pe4/pe4-ha-runtime-credential-provisioning-closure.schema.json)
+record OPERATOR_SUPPLIED production evidence; Codex did not access or independently
+inspect PI3. The human operator reported first INSTALL, separate root validation
+and separate actual jazofv1 readability validation, all PASS, using corrected
+commit `d089be8e76a37084470336f1d999f1567f60d19f`. No rotation occurred.
+Authentication remains DEFERRED_TO_ADAPTER_VALIDATION. This proves governed local
+storage, security, canonical content, atomic installation and runtime readability;
+it does not prove HA credential validity, revocation state, authentication,
+WebSocket access, registry success or adapter success.
+
+Adapter Implementation NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback
+NOT PERFORMED. Next: **PE-4 Home Assistant Association Adapter Implementation**.
+
+The original preparation and correction records below are historical evidence of
+repository-only work before installation. Their NOT STARTED/PREPARED statements
+and proposed operator-block descriptions do not override the current closure.
 
 The unchanged [implementation preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md)
 and [frozen authority](../governance/pe4/pe4-ha-association-adapter-implementation-preparation.json)
@@ -168,7 +180,45 @@ are released; physical memory zeroization is not claimed. Root mode prints runti
 readability NOT_TESTED. Only a separate actual `jazofv1` read may print TRUE.
 Installation's final root recheck is not independent validation or authentication.
 
-## One operator action at a time
+## Operator sequence and accepted closure
+
+| Checkpoint | Current status |
+| --- | --- |
+| Repository Preparation, corrected before execution | PASS/CLOSED |
+| Operator Credential Installation | PASS/CLOSED |
+| Independent Root and Runtime-Operator Validation | PASS/CLOSED |
+| Credential Provisioning Governance Closure | PASS/CLOSED |
+| Parent Runtime Credential Provisioning | PASS/CLOSED |
+| Adapter Implementation | NOT STARTED |
+
+All production evidence is OPERATOR_SUPPLIED for PI3 NUT&PIHOLE, host nutandpihole,
+operator jazofv1, source `/home/jazofv1/hioc-release-source`. Source synchronization
+fast-forwarded from `d7aa423e2ead6e9c1266a884ab3e25e4331ebec1` to the corrected
+commit, with local HEAD/origin at that commit and 0/0. Synchronization did not
+provision a credential. A separate source-bound INSTALL used a local hidden
+controlling-TTY prompt; no token or secret-derived evidence was disclosed.
+
+Installation reported root:jazofv1 0750 directories and 0640 file, filesystem,
+ACL, group-reader, content-policy and atomic-replacement PASS. Independent root
+validation reported ROOT_METADATA PASS and runtime readability NOT_TESTED.
+The separate actual jazofv1 validation reported RUNTIME_OPERATOR PASS and runtime
+readability TRUE. Both reported no network/authentication and value exposed FALSE.
+Evidence stage-local NOT_STARTED values remain verbatim in the closure record;
+subsequent accepted steps close the lifecycle without rewriting earlier results.
+
+The installation and two validations remain distinct operator actions. Codex
+performed only repository governance review, not host inspection or production
+execution. Historical preparation/correction records and exact tool bytes remain
+unchanged. Proposed installation blocks are historical; this closure authorizes
+no repeat installation, rotation, deletion or validation. The next task is adapter
+implementation under its separate scope; authentication remains deferred.
+
+## Historical prepared operator sequence (superseded by closure)
+
+The following sequence and proposed-command description are retained as historical
+pre-execution governance. Their pending statuses do not override the accepted
+closure above; the source-binding and interactive-shell safeguards remain preserved.
+
 
 1. Repository Preparation: PASS/CLOSED, prepared for separate operator execution.
 2. Operator Installation: NOT STARTED. Use the exact pushed commit and source hashes
@@ -212,7 +262,7 @@ Account/ACL/hierarchy drift requires separately authorized operator review.
 If input fails, the old final is untouched and this operation stops; a later
 explicit invocation can retry. Post-replacement errors leave the new authoritative
 file in place for separate validation. Cleanup uncertainty requires bounded review,
-not automatic secret deletion. Later closure needs exact source identities,
+not automatic secret deletion. The accepted operator-supplied closure binds exact source identities,
 installation evidence, root validation and non-root readability validation;
 authentication remains DEFERRED_TO_ADAPTER_VALIDATION. No live rotation/deletion
 is part of initial acceptance.
@@ -247,4 +297,6 @@ privilege and syscall faults on Windows. Production CLI has no fixture override.
 Tests cover boundaries, first installation, rotation, required canonical LF, invalid prior
 state, interruption and post-commit errors, read-only validation and redaction.
 They do not prove actual PI3 ownership/ACL support, sudo TTY, directory fsync or
-non-root access until later operator execution. No production/network tests ran.
+non-root access by Codex. The later operator-supplied results establish those
+accepted local checks; Codex ran no production/network tests and no HA
+authentication has been attempted.

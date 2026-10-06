@@ -697,15 +697,15 @@ class GovernanceTests(unittest.TestCase):
     def test_lifecycle_links_and_unrelated_roadmap_preserved(self):
         text=(ROOT/"docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
         current=text.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
-        for row in ("| PE-4 Home Assistant Runtime Credential Provisioning Preparation | PASS/CLOSED |","| PE-4 Home Assistant Runtime Credential Provisioning | PREPARED / NOT COMPLETE |","| Operator Credential Installation | NOT STARTED |","| Independent Credential Validation | NOT STARTED |","| Credential Provisioning Governance Closure | NOT STARTED |","| PE-4 Home Assistant Association Adapter Implementation | NOT STARTED |","| PE-4 | NOT COMPLETE |","| Phase 7A | ACTIVE |","| Rollback | NOT PERFORMED |"):
+        for row in ("| PE-4 Home Assistant Runtime Credential Provisioning Preparation | PASS/CLOSED |","| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |","| Operator Credential Installation | PASS/CLOSED |","| Independent Credential Validation | PASS/CLOSED |","| Credential Provisioning Governance Closure | PASS/CLOSED |","| PE-4 Home Assistant Association Adapter Implementation | NOT STARTED |","| PE-4 | NOT COMPLETE |","| Phase 7A | ACTIVE |","| Rollback | NOT PERFORMED |"):
             self.assertIn(row,current)
-        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### "+NEXT))
+        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Implementation"))
         before=subprocess.check_output(["git","show",BASE+":docs/HIOC_MASTER_PLAN.md"],cwd=ROOT).decode("utf-8")
         for start,end in (("## Future Enhancements","# Repository Rules"),("### Future Compatibility Diagnostics UX Checkpoint","# Historical Operator Preparation Chronology"),("# Historical Operator Preparation Chronology",None)):
             previous=before.split(start,1)[1]; now=text.split(start,1)[1]
             if end: previous=previous.split(end,1)[0]; now=now.split(end,1)[0]
             if start == "## Future Enhancements":
-                previous = previous.replace("Runtime Credential Provisioning NOT STARTED; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.", "Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PREPARED / NOT COMPLETE; Operator Installation and Independent Validation NOT STARTED; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.", 1)
+                previous = previous.replace("Runtime Credential Provisioning NOT STARTED; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.", "Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.", 1)
             self.assertEqual(previous,now)
         import re
         doc=ROOT/"docs/PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md"

@@ -1,5 +1,26 @@
 # HIOC Operations
 
+## PE-4 runtime credential provisioning governance closure — 2026-10-06
+
+Operator Credential Installation PASS/CLOSED; Independent Credential Validation
+PASS/CLOSED; Governance Closure PASS/CLOSED; Runtime Credential Provisioning
+PASS/CLOSED. The [credential closure contract](PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md) and dedicated canonical
+closure record/schema bind OPERATOR_SUPPLIED PI3 evidence for source synchronization,
+first INSTALL, independent root validation and separate actual jazofv1 readability.
+Corrected commit d089be8 and tool identities are preserved. Root mode reported
+runtime readability NOT_TESTED; the subsequent runtime identity reported TRUE.
+Codex did not access or independently inspect PI3. No token or token hash is recorded.
+
+Authentication remains DEFERRED_TO_ADAPTER_VALIDATION; local storage/readability
+closure does not establish credential validity, revocation state, HA authentication,
+WebSocket/registry access or adapter success. Next: **PE-4 Home Assistant Association Adapter Implementation**,
+NOT STARTED. PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. No Codex
+PI3/PI5/HA access, network validation, adapter implementation, deployment, MQTT
+or production mutation occurred. No rotation was reported. Original preparation
+and pre-execution correction history are immutable; older entries below describe
+historical states and are superseded only for the current lifecycle by this closure.
+
+
 ## PE-4 canonical credential storage pre-execution correction — 2026-10-06
 
 Independent review found that original preparation commit
