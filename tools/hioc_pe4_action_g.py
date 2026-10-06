@@ -301,7 +301,7 @@ REVIEWED_MODULES=('websockets','websockets.imports','websockets.version','websoc
  'websockets.http11','websockets.protocol','websockets.proxy','websockets.streams',
  'websockets.typing','websockets.uri','websockets.utils','websockets.speedups')
 BASE_PATHS=('/usr/lib/python311.zip','/usr/lib/python3.11','/usr/lib/python3.11/lib-dynload')
-REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL=('python_socks',)
+REVIEWED_ABSENT_TOP_LEVEL=('org','python_socks')
 def loader_policy(directory,entries,client_raw,distributions):
     members={}
     for e in entries:
@@ -317,8 +317,8 @@ def loader_policy(directory,entries,client_raw,distributions):
 def child_require(value):
     if not value:raise RuntimeError('CONTROLLED_RUNTIME_INVALID')
 
-def require_optional_absence():
-    child_require(not any(name.partition('.')[0] in REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL
+def require_reviewed_absence():
+    child_require(not any(name.partition('.')[0] in REVIEWED_ABSENT_TOP_LEVEL
                           for name in sys.modules))
 def child_token(i):
     return (i.st_dev,i.st_ino,i.st_uid,i.st_gid,i.st_mode,i.st_nlink,i.st_size,i.st_mtime_ns,i.st_ctime_ns)
@@ -387,7 +387,7 @@ class Finder(importlib.abc.MetaPathFinder):
             member=prefix+('/__init__.py' if package else '.py')
             child_require(member in self.policy['members'])
             return importlib.util.spec_from_loader(fullname,SourceLoader(fullname,member,package,self.policy),is_package=package)
-        if fullname.partition('.')[0] in REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL:return None
+        if fullname.partition('.')[0] in REVIEWED_ABSENT_TOP_LEVEL:return None
         child_require(fullname.partition('.')[0] in sys.stdlib_module_names)
         for f in (importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter):
             spec=f.find_spec(fullname,path)
@@ -461,7 +461,7 @@ def child_probe(policy):
     pairs=[(d.metadata['Name'].lower(),d.version) for d in distributions]
     child_require(len(pairs)==len(dict(pairs)) and dict(pairs)==policy['distributions'])
     finder=Finder(policy);sys.meta_path=[finder,importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter]
-    require_optional_absence()
+    require_reviewed_absence()
     import websockets
     from websockets.asyncio.client import connect
     from websockets.exceptions import InvalidStatus,PayloadTooBig
@@ -469,9 +469,9 @@ def child_probe(policy):
     from websockets.datastructures import Headers
     import websockets.speedups
     check_capabilities(websockets,connect,InvalidStatus,PayloadTooBig,Response,Headers)
-    require_optional_absence()
+    require_reviewed_absence()
     client_detection(policy['client'].encode(),policy['client_sha256'],ENV)
-    require_optional_absence()
+    require_reviewed_absence()
     child_require(sys.path==policy['paths'] and sys.meta_path==[finder,importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter])
     print(json.dumps(CHECKS,sort_keys=True,separators=(',',':')))
 
@@ -480,7 +480,7 @@ def child_script(policy):
     prelude+="if not (sys.flags.isolated and sys.flags.no_site and sys.dont_write_bytecode) or 'site' in sys.modules: raise RuntimeError('CONTROLLED_STARTUP_INVALID')\n"
     prelude+="import os,stat,hashlib,json,inspect,importlib.abc,importlib.machinery,importlib.util\nfrom pathlib import Path\n"
     prelude+="POLICY="+repr(policy)+"\nENV="+repr(ENV)+"\nCHECKS="+repr(CHECKS)+"\nREVIEWED_MODULES="+repr(REVIEWED_MODULES)+"\n"
-    prelude+="REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL="+repr(REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL)+"\n"
-    definitions=(child_require,require_optional_absence,child_token,child_expected,verified_open,SourceLoader,NativeLoader,Finder,
+    prelude+="REVIEWED_ABSENT_TOP_LEVEL="+repr(REVIEWED_ABSENT_TOP_LEVEL)+"\n"
+    definitions=(child_require,require_reviewed_absence,child_token,child_expected,verified_open,SourceLoader,NativeLoader,Finder,
         deny_network,deny_credentials,install_prohibitions,check_capabilities,client_detection,child_probe)
     return prelude+'\n'.join(inspect.getsource(x) for x in definitions)+'\nchild_probe(POLICY)\n'

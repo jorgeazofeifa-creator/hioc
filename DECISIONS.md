@@ -1,5 +1,66 @@
 # HIOC Architecture Decisions
 
+## Action G compatibility import fallback correction — 2026-10-05
+
+G initially stopped at F HANDOFF because of incorrect recovery semantics;
+the handoff correction PASSed. Distribution validation then failed because
+standard discovery was removed too early; ordering was corrected.
+The next optional python_socks probe converted expected ImportError into
+RuntimeError; reviewed optional absence was corrected. POSIX msvcrt platform
+detection then failed because recognized stdlib absence was treated as invalid;
+platform stdlib absence was corrected. The latest supplied controlled child
+now reaches CPython 3.11.2 copy.py's Jython compatibility probe:
+from org.python.core import PyStringMap, caught by except ImportError with
+PyStringMap=None. G rejected org at its stdlib-name assertion because org
+is not a stdlib name. This is a G loader-semantics defect, not a production
+dependency defect.
+
+One immutable REVIEWED_ABSENT_TOP_LEVEL policy contains exactly org and
+python_socks. Finder returns None for these families and descendants without
+PathFinder or disk lookup. Final meta path remains G Finder, BuiltinImporter,
+FrozenImporter, so unresolved org produces ModuleNotFoundError / ImportError
+and CPython's compatibility fallback continues. Arbitrary non-reviewed
+third-party names remain denied with CONTROLLED_RUNTIME_INVALID.
+
+require_reviewed_absence rejects resident org, org.*, python_socks and
+python_socks.* before verified package imports and after capabilities/client
+phases. No preloaded module is removed or adopted. Generated child includes
+the renamed policy/helper. Recognized platform stdlib absence, existing
+trusted-origin checks, built-in/frozen handling, verified websockets
+source/native loaders, redirect validation, frozen-client detection and
+distribution ordering remain unchanged. Startup -I -B -S, sanitized environment,
+proxy prohibition, no site/.pth/user site, network/credential prohibitions,
+and F/runtime/client revalidation remain in force.
+
+Regression tests cover the exact reviewed tuple, both families and descendants
+without PathFinder, preloaded top-level/descendant rejection through real
+child_probe, and an isolated CPython-compatible org.python.core import pattern.
+Ordinary PathFinder sees a malicious org tree, while G leaves it unexecuted,
+raises normal ModuleNotFoundError and generates no bytecode. Existing
+python_socks fallback and platform-absent stdlib tests remain green.
+
+Latest supplied G_NATIVE_PREFLIGHT=PASS accepted F transaction
+17fc3e0580ff007cdcd619ed2e2d3b34, result SHA
+d647c7b2241d7800a3c819cf86459e2be95c3ef58581d5ffef2dbf5bd1190941,
+COMMITTED SHA 24bb64cc8d885297e5696ddd733ec0dfab4b28a24e18a6996b667c186f2016e9.
+Runtime and F revalidation continue to PASS; source remained clean and no G
+evidence has been created. No PI3/PI5 access or production G/F/rollback
+execution occurred in this repository checkpoint.
+
+Validation: dedicated G 31/31 PASS; focused F/G/lifecycle 177 total,
+176 PASS and one platform skip; full repository 1221 total, 1174 PASS and
+47 platform skips. All 138 repository Python files and generated child
+compile in memory; schemas parse. Exact ten-file scope, complete diff review,
+document synchronization/history retention, and all 27 protected baseline
+blob comparisons PASSed. Closed D/E/F artifacts remain unchanged.
+git diff --check PASSed with line-ending warnings only; existing unclosed-file
+ResourceWarnings did not fail tests.
+
+D PASS/CLOSED; E PASS/CLOSED; Action E handoff ACCEPTED; F PASS/CLOSED;
+G NOT STARTED; rollback NOT PERFORMED; PE-4 not complete.
+Native compatibility remains pending. Next: separately authorize native retry.
+ACTION_G_NATIVE_COMPATIBILITY_RETRY_READY_FOR_SEPARATE_AUTHORIZATION
+
 ## Action G platform stdlib absence correction — 2026-10-05
 
 The initial native attempt stopped at HANDOFF because G misread F recovery
