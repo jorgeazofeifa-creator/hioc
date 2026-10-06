@@ -333,7 +333,7 @@ class LifecycleClarificationTests(unittest.TestCase):
         self.assertEqual(retired["summary"]["associated_devices"],0)
         self.assertEqual(retired["summary"]["historical_bindings"],1)
 
-    def test_no_new_authority_and_preparation_stays_next(self):
+    def test_no_new_authority_and_historical_preparation_boundary(self):
         self.assertEqual(RECORD["generic_integration_ingestion"],"PROHIBITED")
         for field in ("changes_hioc_identity","changes_canonical_mac","changes_canonical_ip","changes_liveness","changes_health","changes_incidents","changes_asset_fields"):
             self.assertIs(RECORD[field],False)
@@ -344,8 +344,8 @@ class LifecycleClarificationTests(unittest.TestCase):
         master=(ROOT/"docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
         current=master.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
         self.assertIn("| PE-4.0C.1 Association Lifecycle Clarification | PASS/CLOSED |",current)
-        self.assertIn("| PE-4 Home Assistant Association Adapter Implementation Preparation | NOT STARTED |",current)
-        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Implementation Preparation"))
+        self.assertIn("| PE-4 Home Assistant Association Adapter Implementation Preparation | PASS/CLOSED |",current)
+        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Runtime Credential Provisioning"))
         self.assertIn("Compatibility Diagnostics UX",master)
 
 

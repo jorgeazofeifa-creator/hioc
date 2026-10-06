@@ -2568,7 +2568,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 3. **PE-3 - Manufacturer Reference Enrichment** — complete. Actions 1–10,
    production deployment, generation, PI3 validation, final Evidence Report,
    administrative Action 10 closure, and final governance closure are complete.
-4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation NOT STARTED; PE-4 NOT COMPLETE.
+4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning NOT STARTED; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
 6. **PE-6 - Classification & Metadata Quality** — not started.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
@@ -3224,7 +3224,9 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4.0B.2b | PASS/CLOSED |
 | PE-4.0C | PASS/CLOSED |
 | PE-4.0C.1 Association Lifecycle Clarification | PASS/CLOSED |
-| PE-4 Home Assistant Association Adapter Implementation Preparation | NOT STARTED |
+| PE-4 Home Assistant Association Adapter Implementation Preparation | PASS/CLOSED |
+| PE-4 Home Assistant Runtime Credential Provisioning | NOT STARTED |
+| PE-4 Home Assistant Association Adapter Implementation | NOT STARTED |
 | PE-4 | NOT COMPLETE |
 | Phase 7A | ACTIVE |
 | Rollback | NOT PERFORMED |
@@ -3245,6 +3247,26 @@ filesystem/OS facilities and external APIs/protocols/file formats/data shapes
 actually consumed by HIOC. Counts, matrix and unresolved live proofs remain in
 [COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md); this checkpoint does
 not repeat the audit or claim deployment.
+
+### PE-4 Home Assistant Association Adapter Implementation Preparation - 2026-10-06
+
+Implementation Preparation PASS/CLOSED after resumed repository-only review using
+both closed 0C and 0C.1, with future private-state schema 1.1. The
+[prepared architecture](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md)
+freezes dedicated production module/entrypoint, accepted isolated runtime, canonical
+read-only inventory, dedicated lock and recoverable hardened publication. Generic
+integration ingestion remains prohibited. All four registry commands are mandatory;
+INCOMPLETE means safely unresolved relationships within successful reads.
+The sole recurring HA producer owns the complete six-capability ha_core map.
+
+No compliant unattended HA credential mechanism exists in the reviewed repository.
+Immediate next: **PE-4 Home Assistant Runtime Credential Provisioning**, NOT STARTED,
+for root-managed private delivery outside Git/releases. Adapter Implementation is
+NOT STARTED and must follow prerequisite closure. Public projection is separately
+DEFERRED to **PE-4 Home Assistant Association Public Projection** after private
+implementation and authorized production validation. No runtime source, deployment,
+credential or production action occurred. PE-4 NOT COMPLETE; Phase 7A ACTIVE;
+rollback NOT PERFORMED. Prior stopped review and original closures remain historical.
 
 ### PE-4.0C.1 Association Lifecycle Clarification - 2026-10-06
 
@@ -3396,21 +3418,21 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-**PE-4 Home Assistant Association Adapter Implementation Preparation** is the
-next separately governed objective after PE-4.0C and PE-4.0C.1 PASS/CLOSED. Phase 7A remains
-ACTIVE; PE-4 NOT COMPLETE. Runtime adapter implementation is NOT STARTED.
+**PE-4 Home Assistant Runtime Credential Provisioning** is the next separately
+governed objective after Implementation Preparation PASS/CLOSED. Both PE-4.0C and
+PE-4.0C.1 remain PASS/CLOSED. Phase 7A ACTIVE; PE-4 NOT COMPLETE. Runtime credential
+provisioning, adapter implementation and deployment remain NOT STARTED.
 
 ## Next Planned Task
 
-### PE-4 Home Assistant Association Adapter Implementation Preparation
+### PE-4 Home Assistant Runtime Credential Provisioning
 
-Resume repository-only implementation preparation using both the frozen
-[PE-4.0C association contract](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md) and
-[PE-4.0C.1 lifecycle clarification](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md),
-including schema 1.1. Finish credential prerequisite and writer/locking design
-before advancing separately to implementation.
-This preparation is NOT STARTED and separately governed; no adapter, deployment
-or production mutation is implemented or authorized by this contract freeze.
+Prepare and validate the root-managed unattended credential boundary frozen by
+[Implementation Preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md).
+Secret storage/delivery is outside Git and release ownership. This prerequisite is
+NOT STARTED, separately governed, and must close before **PE-4 Home Assistant
+Association Adapter Implementation**. No provisioning or implementation is authorized
+by this preparation closure. Public projection remains a later named checkpoint.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 

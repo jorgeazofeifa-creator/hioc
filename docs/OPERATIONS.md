@@ -1,5 +1,17 @@
 # HIOC Operations
 
+## PE-4 association adapter implementation preparation - 2026-10-06
+
+[Implementation architecture](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md) closes Preparation PASS/CLOSED using unchanged
+0C and 0C.1 and schema 1.1. Dedicated post-identity module, accepted isolated runtime,
+canonical inventory input, lock, recoverable private publication and sole full-map
+HA compatibility ownership are frozen. No secure unattended HA credential mechanism
+was found in repository source. Next is **PE-4 Home Assistant Runtime Credential
+Provisioning**, NOT STARTED, outside Git/release ownership; adapter implementation
+and deployment remain NOT STARTED. Public projection is separately deferred.
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. This repository-only
+preparation performs no runtime change, credential use, production access or action.
+
 ## PE-4.0C.1 association lifecycle clarification - 2026-10-06
 
 [Additive lifecycle authority](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md) closes 0C.1 PASS/CLOSED.

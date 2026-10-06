@@ -29,6 +29,14 @@ HIOC devices or acquire identity/liveness authority. Failed cycles preserve the
 entire prior state; successful cycles may retire unconfirmed pairs into bounded
 private history without changing canonical inventory.
 
+The [prepared adapter architecture](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md)
+consumes only reconciled state/inventory/inventory.json as read-only canonical input.
+Private schema-1.1 current associations and bounded history remain post-identity
+metadata; no generic integration ingestion, public projection, liveness or Asset
+writes. Dedicated locking and recoverable publication are future implementation
+requirements. Unattended credential provisioning is the immediate separate prerequisite;
+no runtime adapter or state is created by preparation.
+
 ## Living Inventory
 
 Inventory root object:
