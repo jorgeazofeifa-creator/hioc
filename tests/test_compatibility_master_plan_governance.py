@@ -20,12 +20,12 @@ class CompatibilityMasterPlanGovernanceTests(unittest.TestCase):
             with self.subTest(anchor=anchor): self.assertIn(anchor, MASTER)
     def test_current_lifecycle_and_sequence(self):
         text = section("# Implementation Status", "# Historical Operator Preparation Chronology")
-        for anchor in ("Authoritative Current PE-4 Lifecycle", "PE-4.0B.2a", "First PE-4.0B.2b live execution", "Corrected PE-4.0B.2b execution", "PE-4.0C", "Phase 7A", "Rollback", "PASS/CLOSED", "ATTEMPTED / NOT COMPLETE", "NOT STARTED", "ACTIVE", "NOT PERFORMED", "Corrected PE-4.0B.2b Execution Preparation", "Corrected PE-4.0B.2b Live Execution", "PE-4.0C Association Contract Freeze", "separately authorize corrected live 2b execution"):
+        for anchor in ("Authoritative Current PE-4 Lifecycle", "PE-4.0B.2a", "First PE-4.0B.2b live execution", "Corrected PE-4.0B.2b execution", "PE-4.0C", "Phase 7A", "Rollback", "PASS/CLOSED", "ATTEMPTED / NOT COMPLETE", "NOT STARTED", "ACTIVE", "NOT PERFORMED", "PE-4.0C Association Contract Freeze"):
             with self.subTest(anchor=anchor): self.assertIn(anchor, text)
         for obsolete in ("2a is not prepared", "repeat separate successor preparation", "no PE-3 dataset is deployed"):
             self.assertNotIn(obsolete, text)
-        self.assertLess(text.index("Corrected PE-4.0B.2b Execution Preparation"), text.index("Corrected PE-4.0B.2b Live Execution"))
-        self.assertLess(text.index("Corrected PE-4.0B.2b Live Execution"), text.index("PE-4.0C Association Contract Freeze"))
+        next_task = text.split("## Next Planned Task", 1)[1]
+        self.assertTrue(next_task.strip().startswith("### PE-4.0C Association Contract Freeze"))
     def test_development_and_operations_acceptance(self):
         self.assertIn("External Dependency Compatibility Review", section("# Working Agreement", "# Implementation Status"))
         self.assertIn("Operational Dependency Compatibility Acceptance", section("## Operations Acceptance Standard", "# Working Agreement"))

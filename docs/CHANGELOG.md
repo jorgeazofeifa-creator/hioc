@@ -1,5 +1,17 @@
 # HIOC Changelog
 
+## Corrected PE-4.0B.2b closure - 2026-10-06
+
+Operator-supplied completed execution and independent read-only review close
+2b PASS/CLOSED: observed HA Core 2026.9.4, baseline provenance 2026.8.1,
+COMPATIBLE_UPDATED, required capabilities PASS, failed capability NONE.
+[Canonical closure](../governance/pe4/pe4-0b2b-execution-closure.json) binds sanitized
+evidence, aggregate counts, accepted warnings and preserved first FAIL chronology.
+Corrected preparation PASS/CLOSED; D/E/F/G/2a remain closed; no protected rerun.
+Next: PE-4.0C Association Contract Freeze, NOT STARTED and separately governed.
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. No runtime change,
+production access, credentials, discovery execution, deployment or 0C in this closure.
+
 ## Compatibility roadmap governance synchronization - 2026-10-06
 
 Documentation-only completion follows the independently reviewed Compatibility

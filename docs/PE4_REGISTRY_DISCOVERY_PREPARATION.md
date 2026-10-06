@@ -1,5 +1,61 @@
 # PE-4.0B.2b registry/schema discovery preparation
 
+## Corrected PE-4.0B.2b execution closure - 2026-10-06
+
+**Current PE-4.0B.2b: PASS/CLOSED; PE-4.0C: NOT STARTED.**
+This repository closure records operator-supplied completed production execution
+and independent read-only review; Codex did not remotely inspect production.
+Canonical authority: [execution closure](../governance/pe4/pe4-0b2b-execution-closure.json).
+Original preparation completed, compatibility correction completed, corrected
+preparation PASS/CLOSED, one separately authorized corrected live execution PASS,
+and independent evidence review PASS. The initial synthetic probe failed because
+its harness replaced shared `socket.socket`, preventing asyncio's local socketpair;
+this was not a HIOC client or production failure. The corrected credential-free
+synthetic retest PASSed without real network, credentials, evidence or state mutation.
+
+Execution source was `063f3ab86c6f6c8c1ae649335856700dfeda6a22` on governed PI3
+`nutandpihole`, operator `jazofv1`, execution IPv4 `192.168.100.252`, logical HA
+instance `PI5_HA`. Source/governance/target/runtime prechecks, sanitized evidence
+validation and source postcheck PASSed. Client and operator block return codes
+were zero. The credential value was not persisted and is not repository evidence.
+
+Observed HA Core **2026.9.4**, source-review baseline **2026.8.1**:
+**COMPATIBLE_UPDATED**, failed capability **NONE**, no likely update compatibility
+break. Required capabilities passed, and authoritative central compatibility state
+agreed with the evidence. This demonstrates capability-first compatibility with
+the observed 2026.9.4 interface and the mechanism for later versions; it does not
+prove compatibility with every future HA release.
+
+Sanitized aggregate counts: devices **229**, entities **2425**, areas **22**,
+config entries **97**. Accepted PASS warnings: `CLASSIFICATION_NOT_DERIVED`
+(unproven identity classes deliberately not inferred), `UNKNOWN_FIELDS`
+(additive fields counted by type without publishing names/values), and
+`UNPUBLISHED_NAMESPACES` (non-allowlisted namespaces counted without literals).
+These warnings do not invalidate 2b or indicate a compatibility failure.
+
+Private evidence reference: `/tmp/hioc-pe4-ha-discovery-7bb82b7c`.
+Report SHA-256: `322e237404c3c721be782e9ce2dbc4ceb1e63b8374af00b6fe75a940624d2ded`.
+Result SHA-256: `685606f76aad93ede32b52c2ffa34984408d62d408185ab6141791eded478e43`.
+The operator's independent read-only review PASSed source/directory/hash/schema
+binding, report schema, success semantics, structure fingerprint, result marker,
+privacy scan, compatibility-state schema/HA binding and clean source postcheck.
+Review used no credential or network and did not execute the discovery client.
+Evidence is referenced only: not accessed, copied, recreated, mutated or deleted.
+
+The first exact-version-gate FAIL remains immutable historical evidence; this
+corrected PASS supersedes it as the authoritative current 2b outcome. D/E/F/G and
+2a retain PASS/CLOSED, E handoff ACCEPTED, Compatibility Resilience audit and
+Master Plan synchronization PASS/CLOSED. No 2a/F/G rerun occurred. PE-4 remains
+NOT COMPLETE, Phase 7A ACTIVE, rollback NOT PERFORMED. Next checkpoint:
+**PE-4.0C Association Contract Freeze**, separately governed and NOT STARTED.
+No PI3/PI5/HA access, credentials, discovery execution, rerun, deployment,
+rollback or PE-4.0C occurs during this repository closure.
+
+## Historical checkpoint chronology
+
+Earlier checkpoint statements below are historical and superseded by the current
+closure above; their historical evidence remains unchanged.
+
 ## Compatibility resilience correction - 2026-10-06
 
 The repository now governs capability-first external dependency contracts,
@@ -58,8 +114,10 @@ credential or installation will actually permit each command.
 
 Documented REST is `NOT_SUPPORTED_BY_DOCUMENTED_REST` for this registry metadata.
 These are version-pinned Core-source interfaces, not a versionless public
-compatibility promise. The tool requires the exact pinned version in both
-WebSocket authentication messages. Schema/interface changes fail closed.
+compatibility promise. Historical/superseded: the original tool required exact pinned version equality
+in both WebSocket authentication messages. Current capability-first behavior
+retains 2026.8.1 solely as source-review provenance and rejects required-capability
+or unsafe-schema failures; compatible additive evolution continues.
 There are no fallback, mutation, subscription, supported-features, linked-device,
 get-by-ID, recursive, polling, service, state, event, or flow commands.
 

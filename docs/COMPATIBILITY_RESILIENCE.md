@@ -1,5 +1,22 @@
 # HIOC Compatibility Resilience and Dependency Drift Audit
 
+## Corrected PE-4.0B.2b production proof and closure - 2026-10-06
+
+Operator-supplied completed execution and independent read-only review establish
+PE-4.0B.2b PASS/CLOSED. See the [canonical closure](../governance/pe4/pe4-0b2b-execution-closure.json)
+and [current Master Plan](HIOC_MASTER_PLAN.md#implementation-status).
+HA Core 2026.9.4 versus source baseline 2026.8.1 was COMPATIBLE_UPDATED:
+required capabilities passed, failed capability NONE, no likely update
+compatibility break, and central compatibility state agreed with the evidence.
+This proves compatibility with the observed interface, not every future HA
+release. PE-4.0C Association Contract Freeze is next and NOT STARTED.
+No production access or execution occurs during this repository closure.
+
+## Historical checkpoint chronology
+
+Earlier checkpoint statements below are historical and superseded by the current
+closure above; their historical evidence remains unchanged.
+
 ## Authority, boundary and defect
 
 Repository-only correction from clean synchronized main
