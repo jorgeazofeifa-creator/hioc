@@ -320,12 +320,44 @@ class FixtureTests(unittest.TestCase):
                 with self.assertRaises(P.BoundaryError): self.install()
                 self.assertEqual(final.read_bytes(), data)
 
-    def test_one_read_accepts_optional_single_lf(self):
-        for data in (b"TEST_ONLY", b"TEST_ONLY\n", b"X" * 4096, b"X" * 4096 + b"\n"):
+    def test_one_read_accepts_required_single_lf(self):
+        for data in (b"TEST_ONLY\n", b"X" * 4096 + b"\n"):
             self.fs.credential(data)
             before = self.fs.events.count("read")
             self.validate()
             self.assertEqual(self.fs.events.count("read") - before, 1)
+
+    def test_noncanonical_persisted_content_rejected(self):
+        for data in (b"",b"\n",b"TEST_ONLY",b"X"*4096,b"TEST_ONLY\n\n",b"TEST_ONLY\r\n",b"TEST\nONLY\n",b"TEST\rONLY\n",b"TEST ONLY\n",b"TEST\tONLY\n",b"TEST\x00ONLY\n",b"TEST\xffONLY\n",b"X"*4097+b"\n"):
+            with self.subTest(description=len(data)):
+                self.fs.credential(data)
+                with self.assertRaises(V.BoundaryError): self.validate()
+                with self.assertRaises(P.BoundaryError): P.content_policy(data)
+
+    def test_missing_final_lf_existing_file_rejected_before_acquisition(self):
+        for data in (b"TEST_ONLY",b"X"*4096):
+            with self.subTest(description=len(data)):
+                final=self.fs.credential(data)
+                self.fs.events.clear()
+                with self.assertRaises(P.BoundaryError) as caught:
+                    P.install(self.fs,GID,lambda:self.fail("invalid existing credential must not prompt"))
+                self.assertEqual(caught.exception.code,"EXISTING_CREDENTIAL_INVALID")
+                self.assertEqual(final.read_bytes(),data)
+                self.assertNotIn("create_stage",self.fs.events)
+                self.assertNotIn("replace",self.fs.events)
+                self.assertEqual(list(final.parent.iterdir()),[final])
+
+    def test_both_validator_cli_modes_reject_missing_final_lf_readonly(self):
+        final=self.fs.credential(b"TEST_ONLY")
+        for mode in ("--root","--runtime-operator"):
+            output,error=io.StringIO(),io.StringIO()
+            self.fs.events.clear()
+            with patch.object(V,"identities",return_value=GID),patch.object(V,"NativeFS",return_value=self.fs),contextlib.redirect_stdout(output),contextlib.redirect_stderr(error):
+                self.assertEqual(V.main([mode]),1)
+            self.assertIn("ERROR_CODE=CONTENT_INVALID",output.getvalue())
+            self.assertNotIn("TEST_ONLY",output.getvalue()+error.getvalue())
+            self.assertEqual(final.read_bytes(),b"TEST_ONLY")
+            self.assertFalse(set(self.fs.events)&{"write","mkdir","replace","cleanup","mode","ownership"})
 
     def test_short_read_rejected(self):
         self.fs.credential(); self.fs.short_read = True
@@ -610,6 +642,10 @@ class GovernanceTests(unittest.TestCase):
             value=copy.deepcopy(record); del value[key]
             with self.assertRaises(ValueError): validate_schema(value,schema)
         self.assertEqual(record["baseline_commit"],BASE)
+        self.assertEqual(record["pre_execution_correction"]["starting_commit"],"afa484620d24a1d6dec2a98e7c06e613f633bfb7")
+        self.assertTrue(record["pre_execution_correction"]["before_operator_execution"])
+        self.assertEqual(record["content_policy"]["read_normalization"],"REQUIRE_AND_REMOVE_EXACTLY_ONE_FINAL_LF_NO_TRIM")
+        self.assertEqual(record["independent_validation"]["normalization"],"REQUIRE_EXACTLY_ONE_FINAL_LF_NO_GENERIC_TRIM")
         self.assertEqual(record["next_checkpoint"],NEXT)
         self.assertEqual(record["credential_path"],P.CREDENTIAL_PATH)
         self.assertEqual((record["credential_owner"],record["credential_group"],record["credential_mode"],record["directory_mode"]),("root","jazofv1","0640","0750"))

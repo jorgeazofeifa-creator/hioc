@@ -31,8 +31,8 @@ def require(condition, code):
 
 
 def content_policy(data):
-    require(isinstance(data, bytes) and len(data) <= MAX_FILE, "CONTENT_INVALID")
-    value = data[:-1] if data.endswith(b"\n") else data
+    require(isinstance(data, bytes) and 2 <= len(data) <= MAX_FILE and data.endswith(b"\n"), "CONTENT_INVALID")
+    value = data[:-1]
     try:
         require(0 < len(value) <= MAX_TOKEN and all(0x21 <= b <= 0x7e for b in value), "CONTENT_INVALID")
     finally:
@@ -184,7 +184,7 @@ def read_credential(fs, parent, gid, name=FINAL_NAME, expected=None):
         require(fingerprint(initial) == fingerprint(before), "NAME_BINDING_CHANGED")
         require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1, "FILE_INVALID")
         require(before.st_uid == 0 and before.st_gid == gid and stat.S_IMODE(before.st_mode) == 0o640, "FILE_SECURITY_INVALID")
-        require(0 < before.st_size <= MAX_FILE, "CONTENT_INVALID")
+        require(2 <= before.st_size <= MAX_FILE, "CONTENT_INVALID")
         fs.acl(fd)
         data = fs.read(fd, MAX_FILE + 1)  # one bounded logical read; short reads fail.
         require(len(data) == before.st_size, "READ_INCOMPLETE")

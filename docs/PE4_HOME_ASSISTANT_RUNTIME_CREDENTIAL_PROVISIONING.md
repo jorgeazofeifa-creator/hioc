@@ -18,6 +18,25 @@ adapter implementation and bounded authentication validation. A policy-valid
 revoked or incorrect credential can pass local storage validation intentionally.
 There is no HA request, discovery, network import, MQTT, cron or HIOC-state write.
 
+## Pre-execution canonical-storage correction — 2026-10-06
+
+Original preparation commit `afa484620d24a1d6dec2a98e7c06e613f633bfb7`
+remains immutable Git history; historical preparation baseline is
+`d8e888023882770e2f158dc1fffebd5b354fb616`. Independent review found that both
+original tools accepted missing-final-LF files despite TOKEN_PLUS_EXACTLY_ONE_FINAL_LF.
+This corrective checkpoint updates the canonical record/schema and executable
+source bindings before any operator execution. It does not erase or amend the
+original preparation. Missing-final-LF files now fail CONTENT_INVALID; provisioning
+preflight maps invalid existing files to EXISTING_CREDENTIAL_INVALID before the
+hidden prompt, with no replacement. Both validator identity modes require the LF.
+
+Preparation remains PASS/CLOSED, corrected before execution. Parent remains
+PREPARED / NOT COMPLETE; Installation, Independent Validation, Governance Closure
+and Adapter Implementation remain NOT STARTED. No credential was provisioned.
+The previous proposed installation block is superseded; use only the corrected
+commit/identities in the new FOR REVIEW ONLY block after independent review.
+
+
 ## Exact boundary
 
 Logical name: `home_assistant_access_token`. Mechanism:
@@ -91,8 +110,9 @@ Input is `<entered locally through hidden terminal prompt>` only.
 Strict ASCII encoding permits only nonempty bytes 0x21 through 0x7E, at most
 4096 bytes. Spaces, tabs, CR, LF, NUL, controls and non-ASCII fail without trimming.
 No JWT, prefix, version or HA token-shape assumption is made. Provisioning stores
-exactly one final LF, for at most 4097 file bytes. Reading accepts no LF or one
-final LF, removes at most that one byte, then checks the identical token policy.
+exactly one final LF, for at most 4097 file bytes. Every persisted file must be 2 through 4097 bytes and end with exactly one
+final LF. Reading requires and removes that LF, then checks the identical token policy.
+Missing LF fails; existing noncanonical bytes are not normalized or overwritten.
 A second final LF, interior LF or other whitespace fails. No length, prefix,
 suffix, hash, entropy or credential-derived evidence is generated.
 
@@ -142,7 +162,7 @@ runtime mode requires real/effective `jazofv1` and an active approved group.
 
 Each opens the fixed hierarchy and regular file no-follow/nonblocking, checks
 owner/group/modes/nlink/ACL/size, performs one read bounded to 4098 bytes, requires
-exact size, verifies before/after fstat and current name binding, validates content,
+exact size, verifies before/after fstat and current name binding, requires exactly one final LF, validates canonical content,
 and rechecks ancestor bindings. Oversized, changed or short reads fail. References
 are released; physical memory zeroization is not claimed. Root mode prints runtime
 readability NOT_TESTED. Only a separate actual `jazofv1` read may print TRUE.
@@ -171,8 +191,10 @@ checks both exact SHA-256 identities and executes the already-verified in-memory
 provisioning bytes under isolated Python with bytecode disabled. Neither tool
 imports a mutable sibling; common security code is self-contained and regression
 checked identical. This avoids a path-reopen race between hash and root execution.
-The command block stops immediately after provisioning. It is provided for later
-manual execution and is not executed by Codex.
+The proposed command block stops immediately after provisioning. It is FOR REVIEW
+ONLY and is not executed by Codex. The operator-shell rule prohibits set -e, set -u,
+pipefail, shell exit/exec and logout; explicit return-code handling preserves the
+existing interactive shell after PASS or FAIL. No working directory is assumed.
 
 ## Evidence, recovery and closure
 
@@ -222,7 +244,7 @@ work must govern those independently. DATA_MODEL is unchanged.
 Synthetic tests use real temporary file bytes, exclusive create, short writes,
 atomic rename, hardlinks and cleanup with injected POSIX metadata, ACL/NSS, lock,
 privilege and syscall faults on Windows. Production CLI has no fixture override.
-Tests cover boundaries, first installation, rotation, optional LF, invalid prior
+Tests cover boundaries, first installation, rotation, required canonical LF, invalid prior
 state, interruption and post-commit errors, read-only validation and redaction.
 They do not prove actual PI3 ownership/ACL support, sudo TTY, directory fsync or
 non-root access until later operator execution. No production/network tests ran.

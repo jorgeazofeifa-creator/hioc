@@ -3252,6 +3252,21 @@ actually consumed by HIOC. Counts, matrix and unresolved live proofs remain in
 [COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md); this checkpoint does
 not repeat the audit or claim deployment.
 
+### PE-4 Canonical Credential Storage Pre-execution Correction - 2026-10-06
+
+Credential Provisioning Preparation remains PASS/CLOSED, corrected before execution.
+Independent review identified missing-final-LF acceptance in original preparation
+commit `afa484620d24a1d6dec2a98e7c06e613f633bfb7`, preserved in immutable Git
+history. The current [provisioning contract](PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md)
+and both tools require exactly one final LF; noncanonical existing files fail before
+the hidden prompt without replacement. The closed preparation record/schema binds
+corrected executable identities. The corrected PI3 block is FOR REVIEW ONLY and
+uses explicit return-code handling without shell-exiting options or commands.
+No operator execution occurred. Parent PREPARED / NOT COMPLETE; Installation,
+Independent Validation, Governance Closure and Adapter Implementation NOT STARTED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. Next remains the separately
+authorized **PE-4 Home Assistant Runtime Credential Provisioning — Operator Installation**.
+
 ### PE-4 Home Assistant Runtime Credential Provisioning Preparation - 2026-10-06
 
 Repository Preparation PASS/CLOSED; parent Runtime Credential Provisioning is
