@@ -321,6 +321,148 @@ class ClientTests(unittest.TestCase):
         self.assertIsNone(captured["proxy"])
         self.assertIs(captured["sock"], fake_socket)
 
+    def test_stalled_auth_send_closes_reaps_and_never_receives_again(self):
+        async def exercise(unblock_on_close):
+            close_event = asyncio.Event()
+            tasks = []
+            events = []
+            class StalledWebSocket(FakeWebSocket):
+                async def send(self, value):
+                    self.sent.append(value)
+                    tasks.append(asyncio.current_task())
+                    events.append("send")
+                    try:
+                        await close_event.wait()
+                    finally:
+                        events.append("send_finished")
+                async def close(self):
+                    events.append("close")
+                    if unblock_on_close:
+                        close_event.set()
+            ws = StalledWebSocket(['{"type":"auth_required","ha_version":"synthetic"}',
+                                   '{"type":"auth_ok","ha_version":"synthetic"}'])
+            def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None,
+                        proxy=None, **kwargs):
+                return ws
+            connect.process_redirect = reject_redirect
+            sock = mock.Mock()
+            with mock.patch.object(CLIENT.socket, "create_connection", return_value=sock):
+                with self.assertRaises(CLIENT.ContractFailure) as caught:
+                    await CLIENT._websockets_async_check(
+                        "synthetic-secret", deadline=CLIENT.time.monotonic() + 0.02,
+                        websockets_module=types.SimpleNamespace(connect=connect))
+            self.assertEqual((caught.exception.code, caught.exception.stage),
+                             ("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY"))
+            self.assertEqual(len(ws.sent), 1)
+            self.assertEqual(json.loads(ws.sent[0]), {"type": "auth", "access_token": "synthetic-secret"})
+            self.assertEqual(len(ws.messages), 1)
+            self.assertTrue(ws.closed)
+            self.assertLess(events.index("close"), events.index("send_finished"))
+            self.assertTrue(all(task.done() for task in tasks))
+            self.assertEqual(asyncio.all_tasks(), {asyncio.current_task()})
+            sock.close.assert_called_once_with()
+            output = CLIENT.failure_lines(caught.exception.code, caught.exception.stage)
+            CLIENT.validate_output(output)
+            for private in ("synthetic-secret", "access_token", "Bearer", "Authorization", "Traceback"):
+                self.assertNotIn(private, "\n".join(output))
+        for unblock_on_close in (True, False):
+            with self.subTest(unblock_on_close=unblock_on_close):
+                asyncio.run(exercise(unblock_on_close))
+
+    def test_stalled_close_aborts_transport_and_reaps_send(self):
+        async def exercise():
+            never = asyncio.Event()
+            tasks = []
+            class StalledClose:
+                transport = mock.Mock()
+                async def send(self, value):
+                    tasks.append(asyncio.current_task())
+                    await never.wait()
+                async def close(self):
+                    await never.wait()
+            ws = StalledClose()
+            with mock.patch.object(CLIENT, "CONNECT_TIMEOUT", 0.01):
+                with self.assertRaises(CLIENT.ContractFailure) as caught:
+                    await CLIENT._send_auth(ws, "synthetic-secret", CLIENT.time.monotonic() + 0.01)
+            self.assertEqual(caught.exception.code, "ENDPOINT_UNAVAILABLE")
+            ws.transport.abort.assert_called_once_with()
+            self.assertTrue(all(task.done() for task in tasks))
+            self.assertEqual(asyncio.all_tasks(), {asyncio.current_task()})
+        asyncio.run(exercise())
+
+    def test_run_stalled_send_failure_output_is_private(self):
+        class StalledWebSocket(FakeWebSocket):
+            async def send(self, value):
+                self.sent.append(value)
+                await asyncio.Event().wait()
+            async def close(self):
+                self.closed = True
+        ws = StalledWebSocket(['{"type":"auth_required","ha_version":"private-version"}'])
+        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None,
+                    proxy=None, **kwargs):
+            return ws
+        connect.process_redirect = reject_redirect
+        output = []
+        sock = mock.Mock()
+        with mock.patch.object(CLIENT, "validate_execution_host"), \
+             mock.patch.object(CLIENT, "local_ipv4_addresses", return_value=set()), \
+             mock.patch.object(CLIENT, "current_operator", return_value="fixture"), \
+             mock.patch.object(CLIENT, "proxy_influence_present", return_value=False), \
+             mock.patch.object(CLIENT, "detect_websocket_client", return_value="PYTHON_WEBSOCKETS"), \
+             mock.patch.object(CLIENT, "validate_terminal"), \
+             mock.patch.object(CLIENT, "acquire_token", return_value="synthetic-secret"), \
+             mock.patch.object(CLIENT, "rest_check"), \
+             mock.patch.object(CLIENT, "TOTAL_BUDGET", 0.02), \
+             mock.patch.object(CLIENT.importlib, "import_module", return_value=types.SimpleNamespace(connect=connect)), \
+             mock.patch.object(CLIENT.socket, "create_connection", return_value=sock):
+            self.assertEqual(CLIENT.run(ARGS, output.append), 1)
+        self.assertEqual(output, CLIENT.failure_lines(
+            "ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY", "PYTHON_WEBSOCKETS"))
+        self.assertEqual(len(ws.sent), 1)
+        self.assertTrue(ws.closed)
+        sock.close.assert_called_once_with()
+        for private in ("synthetic-secret", "private-version", "access_token", "Bearer", "Traceback"):
+            self.assertNotIn(private, "\n".join(output))
+
+    def test_auth_send_uses_remaining_shared_deadline(self):
+        async def exercise():
+            ws = FakeWebSocket([])
+            original_wait = asyncio.wait
+            captured = []
+            async def wait(tasks, *, timeout):
+                captured.append(timeout)
+                return await original_wait(tasks, timeout=timeout)
+            with mock.patch.object(CLIENT.time, "monotonic", return_value=7.0), \
+                 mock.patch.object(CLIENT.asyncio, "wait", side_effect=wait):
+                await CLIENT._send_auth(ws, "synthetic-secret", 20.0)
+            self.assertEqual(captured, [13.0])
+            self.assertEqual(len(ws.sent), 1)
+        asyncio.run(exercise())
+
+    def test_expired_auth_send_deadline_creates_no_send_work(self):
+        ws = mock.Mock()
+        with mock.patch.object(CLIENT.time, "monotonic", return_value=20.0):
+            self.failure(lambda: asyncio.run(CLIENT._send_auth(ws, "synthetic-secret", 20.0)),
+                         "ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
+        ws.send.assert_not_called()
+
+    def test_auth_send_exception_maps_without_secret_output(self):
+        class FailedSend(FakeWebSocket):
+            async def send(self, value):
+                raise OSError("synthetic-secret")
+        ws = FailedSend(['{"type":"auth_required","ha_version":"synthetic"}'])
+        def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None,
+                    proxy=None, **kwargs):
+            return ws
+        connect.process_redirect = reject_redirect
+        sock = mock.Mock()
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=sock):
+            self.failure(lambda: asyncio.run(CLIENT._websockets_async_check(
+                "synthetic-secret", websockets_module=types.SimpleNamespace(connect=connect))),
+                "ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
+        self.assertTrue(ws.closed)
+        sock.close.assert_called_once_with()
+
     def test_websockets_auth_invalid(self):
         ws = FakeWebSocket(['{"type":"auth_required","ha_version":"2026.8.1"}', '{"type":"auth_invalid","message":"Invalid access token or password"}'])
         def connect(uri, *, open_timeout=None, close_timeout=None, max_size=None, proxy=None,

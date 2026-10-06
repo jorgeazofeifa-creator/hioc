@@ -304,6 +304,33 @@ def _dependency_rejected_oversized_message(exc: Exception, module: object) -> bo
     return False
 
 
+async def _send_auth(ws: object, token: str, deadline: float | None) -> None:
+    timeout = remaining_timeout(deadline, TOTAL_BUDGET, "WEBSOCKET_CAPABILITY")
+    send_task = asyncio.create_task(ws.send(
+        json.dumps({"type": "auth", "access_token": token}, separators=(",", ":"))
+    ))
+    try:
+        done, _ = await asyncio.wait({send_task}, timeout=timeout)
+        if send_task not in done:
+            raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
+        await send_task
+    finally:
+        if not send_task.done():
+            # Close before cancellation: websockets discourages cancelling send.
+            # Cleanup has a finite grace period, not a new authentication budget.
+            try:
+                await asyncio.wait_for(ws.close(), CONNECT_TIMEOUT)
+            except Exception:
+                ws.transport.abort()
+            finally:
+                if not send_task.done():
+                    send_task.cancel()
+                try:
+                    await asyncio.wait_for(send_task, CONNECT_TIMEOUT)
+                except (asyncio.CancelledError, Exception):
+                    pass
+
+
 async def _websockets_async_check(
     token: str, deadline: float | None = None, websockets_module: object | None = None
 ) -> None:
@@ -334,7 +361,7 @@ async def _websockets_async_check(
                 ws.recv(), remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY")
             )
             _parse_auth_required(first)
-            await ws.send(json.dumps({"type": "auth", "access_token": token}, separators=(",", ":")))
+            await _send_auth(ws, token, deadline)
             _parse_auth_result(await asyncio.wait_for(
                 ws.recv(), remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY")
             ))

@@ -1,5 +1,33 @@
 # HIOC Changelog
 
+## Authentication send deadline correction - 2026-10-05
+
+Preparation found the unbounded WebSocket authentication send before execution.
+One send task now waits only for the remaining shared absolute network deadline.
+Timeout maps to ENDPOINT_UNAVAILABLE / WEBSOCKET_CAPABILITY, closes before
+cancelling pending send work, and reaps it with finite 5-second cleanup bounds;
+failed/timed-out close aborts the transport. Cleanup sends no authentication
+retry and performs no second receive. The existing context/socket cleanup remains.
+Parser, secure getpass, post-credential timing and receive bounds are unchanged.
+
+New successor blob: 260a4cb2904529983a73fa02ae6cfb13a4c18ab8.
+New successor SHA-256: f2c69691f00d9c5952e59b80642015447078509f462c7fc550bb6d4dbfc2e6ab.
+Supersedes repository-only candidate a16565101e4695c3c8658508a88d42b6b14e5dad:
+blob 9e61dc7758de67a3473961a8f2624ba1f96237b1; SHA-256
+561444e4961694072aab602e34227ec3be0598729b9fa778baf61fd9b1ac25b3.
+
+Validation: client/privacy 49 PASS, including six send/cleanup/deadline tests;
+98 historical F/G/runtime/API regressions PASS. Full suite: 1240 run,
+1193 PASS, 47 platform skips. In-memory compilation of 138 Python files,
+static output/privacy and release validation, complete diff and seven-file scope
+PASS. Diff checks report Git line-ending warnings only. The old flow fails the
+finite stalled-send check; corrected tests need no external client cancellation.
+
+Added stalled-send, close-unblocks-send, no-orphan, stalled-close transport-abort,
+remaining-deadline, expired-before-send, exception and run-level privacy tests.
+Historical F/G identity/runtime are unchanged; no authenticated operation occurred.
+2a remains NOT STARTED / NOT PREPARED; repeat preparation separately.
+
 ## Secure credential fallback correction - 2026-10-05
 
 Successor preparation found the insecure getpass fallback before execution.

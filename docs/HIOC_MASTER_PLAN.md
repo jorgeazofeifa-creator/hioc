@@ -1,5 +1,26 @@
 # HIOC Master Plan
 
+## Authentication send deadline correction - 2026-10-05
+
+Preparation found the unbounded WebSocket authentication send before execution.
+One send task now waits only for the remaining shared absolute network deadline.
+Timeout maps to ENDPOINT_UNAVAILABLE / WEBSOCKET_CAPABILITY, closes before
+cancelling pending send work, and reaps it with finite 5-second cleanup bounds;
+failed/timed-out close aborts the transport. Cleanup sends no authentication
+retry and performs no second receive. The existing context/socket cleanup remains.
+Parser, secure getpass, post-credential timing and receive bounds are unchanged.
+
+New successor blob: 260a4cb2904529983a73fa02ae6cfb13a4c18ab8.
+New successor SHA-256: f2c69691f00d9c5952e59b80642015447078509f462c7fc550bb6d4dbfc2e6ab.
+Supersedes repository-only candidate a16565101e4695c3c8658508a88d42b6b14e5dad:
+blob 9e61dc7758de67a3473961a8f2624ba1f96237b1; SHA-256
+561444e4961694072aab602e34227ec3be0598729b9fa778baf61fd9b1ac25b3.
+
+Successor remains CORRECTED / REPOSITORY_ONLY / NOT DEPLOYED; 2a NOT STARTED /
+NOT PREPARED. Repeat preparation review separately. D/E/F/G PASS/CLOSED;
+E handoff ACCEPTED; 2b NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE;
+rollback NOT PERFORMED. No authenticated operation occurred.
+
 ## Secure credential fallback correction - 2026-10-05
 
 Successor preparation found the insecure getpass fallback before execution.
@@ -2904,7 +2925,7 @@ Native compatibility PASS/CLOSED; rollback NOT PERFORMED. PE-4 NOT COMPLETE.
 The current Action G closure and repository successor correction above are
 authoritative. Successor source is corrected, REPOSITORY_ONLY / NOT DEPLOYED,
 not executed and not yet authorized; 2a is not prepared and remains NOT STARTED.
-The secure credential fallback correction supersedes the earlier candidate.
+The authentication send deadline correction supersedes the earlier candidate.
 Next: repeat separate successor preparation review for PE-4.0B.2a under
 REST_THEN_WEBSOCKET_2A; no automatic 2b registry/schema discovery.
 The accepted E historical bridge retains NO_PERSISTED_E_TIME_RECURSIVE_BASELINE
