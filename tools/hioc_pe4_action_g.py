@@ -97,7 +97,7 @@ def validate_f(files,result_sha=F_RESULT,committed_sha=F_COMMITTED):
     for i in range(14):
         raw=files[f'{i:04}.json'];d=H.parse(raw,'STAGED_INPUT',canonical_required=True);F.record(d)
         require(d['transaction_id']==F_ID and d['sequence']==i and d['previous_record_sha256']==previous)
-        require(d['bindings']['current_consumer']==F_CONSUMER and not d['recovery_required'] and not d['rollback_recommended'])
+        require(d['bindings']['current_consumer']==F_CONSUMER and not d['rollback_recommended'])
         docs.append(d);previous=H.digest(raw)
     result=H.parse(files['result.json'],'STAGED_INPUT',canonical_required=True);F.record(result)
     require(H.digest(files['result.json'])==result_sha and H.digest(files['0013.json'])==committed_sha)
@@ -105,16 +105,33 @@ def validate_f(files,result_sha=F_RESULT,committed_sha=F_COMMITTED):
         'PREVIOUS_INTENT','PREVIOUS_CONFIRMED','ACTIVE_STAGE_INTENT','ACTIVE_STAGE_CONFIRMED',
         'ACTIVE_SWITCH_INTENT','ACTIVE_SWITCH_CONFIRMED','POST_VERIFIED','RESULT_REFERENCE','COMMITTED']
     require([d['event'] for d in docs]==order)
+    # F records intent and confirmation while recovery remains required.
+    # Only the durable COMMITTED record establishes terminal acceptance.
+    publications=('NONE','NONE','CLIENT_ONLY','CLIENT_ONLY',
+        'ENVIRONMENT_PUBLISHED','ENVIRONMENT_PUBLISHED','ENVIRONMENT_PUBLISHED',
+        'ENVIRONMENT_PUBLISHED','ENVIRONMENT_PUBLISHED','ENVIRONMENT_PUBLISHED',
+        'ACTIVE_SWITCHED','ACTIVE_SWITCHED','ACTIVE_SWITCHED','COMPLETE')
+    for i,d in enumerate(docs):
+        committed=i==13
+        require(d['publication_state']==publications[i]
+            and d['evidence_state']==('CONFIRMED' if i>=12 else 'NOT_CREATED')
+            and d['recovery_required'] is (not committed)
+            and d['result']==('PASS' if committed else 'IN_PROGRESS')
+            and d['error_code']=='NONE'
+            and d['failure_stage']==('COMPLETE' if committed else 'JOURNAL')
+            and d['result_sha256']==(result_sha if i>=12 else 'NONE'))
     ref,tail=docs[-2:]
     require(result['event']=='RESULT' and result['transaction_id']==F_ID and result['result']=='PASS')
     require(ref['result_sha256']==result_sha==tail['result_sha256'] and
         ref['sequence']==result['sequence'] and ref['previous_record_sha256']==result['previous_record_sha256'])
-    require(result['publication_state']=='ACTIVE_SWITCHED' and result['evidence_state']=='UNCONFIRMED')
+    require(result['publication_state']=='ACTIVE_SWITCHED' and result['evidence_state']=='UNCONFIRMED'
+        and result['recovery_required'] is True and result['result_sha256']=='NONE')
     for d in (result,tail):
         require(d['result']=='PASS'
-            and not d['recovery_required'] and not d['rollback_recommended']
+            and not d['rollback_recommended']
             and d['error_code']=='NONE' and d['failure_stage']=='COMPLETE')
-    require(tail['publication_state']=='COMPLETE' and tail['evidence_state']=='CONFIRMED')
+    require(tail['publication_state']=='COMPLETE' and tail['evidence_state']=='CONFIRMED'
+        and tail['recovery_required'] is False)
     require(ref['publication_state']=='ACTIVE_SWITCHED' and ref['evidence_state']=='CONFIRMED')
     require(result['bindings']==ref['bindings']==tail['bindings'])
     b=tail['bindings'];a=F.accepted_manifest()

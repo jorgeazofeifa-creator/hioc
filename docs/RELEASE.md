@@ -1,5 +1,54 @@
 # HIOC Release Process
 
+## Action G F-journal recovery correction — 2026-10-05
+
+The first PI3 G native compatibility attempt safely stopped in G.Posix.preflight
+with ERROR_TYPE=Failure, FAILURE_CODE=MISMATCH and FAILURE_STAGE=HANDOFF.
+The controlled runtime probe and G evidence creation were not reached.
+Production/source state remained unchanged; no G execution, F rerun or rollback
+occurred. This was a G validator defect, not an F failure.
+
+G incorrectly required recovery FALSE for all numbered F records and the
+provisional RESULT. Accepted F version 2.0 intentionally requires recovery TRUE
+while its allocated transaction is incomplete. G now validates exact event,
+publication, evidence, recovery, result, error/stage and digest progression:
+0000–0011 retain recovery TRUE and evidence NOT_CREATED; RESULT retains recovery
+TRUE, ACTIVE_SWITCHED and UNCONFIRMED; 0012/RESULT_REFERENCE retains recovery TRUE,
+ACTIVE_SWITCHED and CONFIRMED; only 0013/COMMITTED has recovery FALSE, COMPLETE,
+CONFIRMED, PASS/NONE/COMPLETE and the exact referenced result digest.
+Rollback remains FALSE throughout.
+
+Exact transaction/file set, canonical/schema validation, sequence, chain, event
+order, F consumer, production result/COMMITTED SHA pins, reference linkage,
+bindings and live-publication checks remain mandatory. F implementation/schema,
+F production transaction/evidence, D/E/common/rollback/client/lock, accepted E
+manifest, G entrypoint and G result schema are unchanged.
+
+Regression fixtures use the real immutable F Journal serializer/validator with
+a small synthetic writer; no F executor or production preflight is invoked.
+Tests accept faithful successful incomplete states and reject premature recovery
+clearance, COMMITTED recovery TRUE, wrong publication/evidence progression,
+wrong result/COMMITTED digests, broken chain/order/sequence, wrong file set and
+invalid result/error/stage/rollback/reference contracts.
+
+D: PASS/CLOSED. E: PASS/CLOSED. Action E handoff: ACCEPTED. F: PASS/CLOSED.
+G: NOT STARTED. Rollback: NOT PERFORMED. Native compatibility is not yet PASS.
+The accepted historical continuity limitation remains
+NO_PERSISTED_E_TIME_RECURSIVE_BASELINE. PE-4 remains incomplete.
+
+Next checkpoint:
+`ACTION_G_NATIVE_COMPATIBILITY_RETRY_READY_FOR_SEPARATE_AUTHORIZATION`.
+This repository correction accesses neither PI3 nor PI5 and authorizes no
+production commands.
+
+Repository correction validation PASS: 15 dedicated G tests; 161 focused F/G
+and lifecycle/handoff regressions (160 PASS, one POSIX-only skip); full suite
+1205 tests (1158 PASS, 47 platform/tool-dependent skips), no failures/errors.
+Bytecode-suppressed compilation, schema parsing, exact ten-file scope, complete
+diff/document review and 27 protected-blob comparisons PASS. F implementation
+and F schema remain exactly unchanged. git diff --check PASS; line-ending
+conversion warnings and pre-existing test ResourceWarnings are not failures.
+
 ## Action G implementation status
 
 The dedicated controlled preflight and strict result contract are implemented.
