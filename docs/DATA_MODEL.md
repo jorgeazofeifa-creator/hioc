@@ -6,6 +6,21 @@ This document owns entities, relationships, JSON structures, MQTT payload shapes
 
 It should not contain roadmap or implementation-phase information. For roadmap and current phase, see [HIOC_MASTER_PLAN.md](HIOC_MASTER_PLAN.md). For topic names and publishing strategy, see [MQTT.md](MQTT.md).
 
+## Home Assistant Association Authority
+
+Home Assistant association occurs after HIOC identity reconciliation in a
+[dedicated association layer](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md),
+with future private state `state/inventory/associations/home_assistant.json`.
+It does not create devices, participate in weak-IP promotion, supersede normalized
+MAC identity, or become a liveness source. Generic integration inventory ingestion
+must not receive HA registry records. HIOC stable device ID references the
+existing canonical identity; private association state adds no authoritative MAC,
+IP or hostname. HA relationship/metadata fields cannot overwrite operator Asset
+fields, canonical identity, passive observations, health or incidents.
+Only one valid globally unique HA MAC mapping to exactly one existing HIOC
+MAC-backed canonical identity, without prior-binding conflict, permits automatic
+association. Public enrichment excludes private HA identifiers by default.
+
 ## Living Inventory
 
 Inventory root object:

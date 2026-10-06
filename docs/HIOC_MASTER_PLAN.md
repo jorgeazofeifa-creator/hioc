@@ -2568,7 +2568,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 3. **PE-3 - Manufacturer Reference Enrichment** — complete. Actions 1–10,
    production deployment, generation, PI3 validation, final Evidence Report,
    administrative Action 10 closure, and final governance closure are complete.
-4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C NOT STARTED; PE-4 NOT COMPLETE.
+4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C PASS/CLOSED; adapter implementation preparation NOT STARTED; PE-4 NOT COMPLETE.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
 6. **PE-6 - Classification & Metadata Quality** — not started.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
@@ -3222,7 +3222,8 @@ completion. Historical chronology elsewhere does not override it.
 | Exact-version HA runtime gate | CORRECTED IN REPOSITORY |
 | Corrected PE-4.0B.2b execution | PASS/CLOSED |
 | PE-4.0B.2b | PASS/CLOSED |
-| PE-4.0C | NOT STARTED |
+| PE-4.0C | PASS/CLOSED |
+| PE-4 Home Assistant Association Adapter Implementation Preparation | NOT STARTED |
 | PE-4 | NOT COMPLETE |
 | Phase 7A | ACTIVE |
 | Rollback | NOT PERFORMED |
@@ -3243,6 +3244,24 @@ filesystem/OS facilities and external APIs/protocols/file formats/data shapes
 actually consumed by HIOC. Counts, matrix and unresolved live proofs remain in
 [COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md); this checkpoint does
 not repeat the audit or claim deployment.
+
+### PE-4.0C Association Contract Freeze - 2026-10-06
+
+PE-4.0C PASS/CLOSED after repository-only validation. Automatic association
+requires one valid globally unique HA MAC mapping to one existing HIOC canonical
+MAC-backed identity, with no invalid evidence, HIOC ambiguity or prior-binding
+conflict. HA cannot create or mutate HIOC stable ID, MAC or canonical IP.
+A dedicated post-identity association layer is required; generic integration
+inventory ingestion is PROHIBITED. No liveness, health, incident or Asset authority
+is granted. Snapshot evidence of 169 no-MAC devices, 8 invalid MAC entries and
+9 colliding MAC values across 18 HA devices motivates fail-closed rules.
+The [human authority](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md) links the
+canonical frozen contract and bounded future private-state schema. No household
+values or production state are published. Compatibility Diagnostics UX and all
+other future roadmap work remain separately governed.
+
+The corrected 2b closure below is historical completed evidence; its then-next
+0C NOT STARTED statements do not override the current PASS/CLOSED lifecycle.
 
 ### Corrected PE-4.0B.2b execution closure - 2026-10-06
 
@@ -3363,19 +3382,18 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-**PE-4.0C Association Contract Freeze** is the next separately governed objective
-following PE-4.0B.2b PASS/CLOSED. Phase 7A remains ACTIVE and PE-4 NOT COMPLETE.
-This closure does not implement, authorize or execute PE-4.0C.
+**PE-4 Home Assistant Association Adapter Implementation Preparation** is the
+next separately governed objective after PE-4.0C PASS/CLOSED. Phase 7A remains
+ACTIVE; PE-4 NOT COMPLETE. Runtime adapter implementation is NOT STARTED.
 
 ## Next Planned Task
 
-### PE-4.0C Association Contract Freeze
+### PE-4 Home Assistant Association Adapter Implementation Preparation
 
-Use the successful sanitized PE-4.0B.2b evidence to freeze the actual Home
-Assistant association/schema contract required for implementation. This remains
-a separate future checkpoint; it is not implemented, authorized or executed by
-this closure. Then continue the existing PE-4 association implementation and
-production-validation roadmap under its existing gates.
+Design and implement the future runtime adapter under the frozen
+[PE-4.0C association contract](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md).
+This preparation is NOT STARTED and separately governed; no adapter, deployment
+or production mutation is implemented or authorized by this contract freeze.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 

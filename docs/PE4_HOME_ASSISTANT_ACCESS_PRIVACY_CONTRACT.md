@@ -1,5 +1,23 @@
 # PE-4 Home Assistant Access and Privacy Contract
 
+## PE-4.0C association authority frozen - 2026-10-06
+
+PE-4.0C PASS/CLOSED. The [association contract](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md)
+freezes automatic association as one valid distinct normalized HA device MAC,
+unique across the complete HA device response, mapping to exactly one existing
+HIOC canonical MAC-backed identity, with no invalid/ambiguous MAC condition or
+prior-binding conflict. Earlier STRONG CANDIDATE subject-to-0C language below is
+historical and is superseded by this exact rule. HA does not create identity,
+change HIOC IDs/MAC/IP, affect liveness/health/incidents or overwrite Asset fields.
+Dedicated post-identity association state is required; generic integration
+inventory ingestion is prohibited. Private identifiers remain private; runtime
+adapter implementation preparation is the next separate NOT STARTED checkpoint.
+
+## Historical checkpoint chronology
+
+Earlier dated checkpoint outcomes preserve their original chronology; current
+association authority is the frozen 0C contract above.
+
 ## PE-4.0B.2b bounded registry/schema discovery prepared - 2026-10-06
 
 Repository-only preparation follows the immutable 2a PASS/CLOSED closure at

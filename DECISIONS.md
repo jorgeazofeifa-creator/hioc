@@ -1,5 +1,18 @@
 # HIOC Architecture Decisions
 
+## PE-4.0C association contract freeze - 2026-10-06
+
+PE-4.0C PASS/CLOSED after repository validation. The [frozen authority](docs/PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md)
+requires one valid globally unique HA MAC mapping to one existing HIOC canonical
+MAC-backed identity; invalid, colliding, multiple/no-MAC or prior-conflict evidence
+cannot automatically associate. Dedicated post-identity state is required; generic
+integration ingestion, identity creation/mutation, liveness changes and Asset
+overwrite are prohibited. Private/public projection boundaries are frozen.
+2b remains PASS/CLOSED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+Next: PE-4 Home Assistant Association Adapter Implementation Preparation,
+NOT STARTED. No adapter or runtime procedures are introduced; no production access,
+credentials, discovery, protected rerun, deployment or state mutation occurred.
+
 ## Corrected PE-4.0B.2b closure - 2026-10-06
 
 Operator-supplied completed execution and independent read-only review close
