@@ -1,5 +1,15 @@
 # HIOC Operations
 
+## Authenticated 2a operator STOP boundary — 2026-10-05
+
+Do not use the historically published F/G client for authenticated 2a: its
+authentication-frame parser defect remains unresolved. G remains PASS/CLOSED
+for its credential-free contract. Historical identity is pinned in
+governance/pe4/historical-fg-client.json; canonical source is unchanged here.
+A successor requires separate parser correction, source identity binding and
+preparation review. Do not rerun F/G from an evolved successor-client HEAD.
+2a is BLOCKED / NOT STARTED; 2b NOT STARTED; PE-4 NOT COMPLETE.
+
 ## Current Action G production governance closure — 2026-10-05
 
 Action G is **PASS/CLOSED** after exactly one production execution using

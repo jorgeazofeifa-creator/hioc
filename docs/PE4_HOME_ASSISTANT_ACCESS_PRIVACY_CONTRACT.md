@@ -1,5 +1,36 @@
 # PE-4 Home Assistant Access and Privacy Contract
 
+## Historical F/G client and successor source boundary — 2026-10-05
+
+governance/pe4/historical-fg-client.json durably pins the immutable closed
+F/G client: F consumer 2a5e6299a0806c3f3d7c3bc11c84fddc8492333c,
+Git blob 09d66b041796dd6ec2efdb88f7a71b3f99e9a27a, SHA-256
+5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e,
+runtime path /home/jazofv1/hioc/tools/hioc-pe4-ha-auth-capability.py.
+Identity class is IMMUTABLE_CLOSED_ARTIFACT; F/G remain PASS/CLOSED.
+
+The canonical tools/hioc-pe4-ha-auth-capability.py source remains unchanged
+here but may evolve only through a separately reviewed successor checkpoint.
+Historical identity tests and F fixtures now read the pinned F-consumer Git
+artifact, not current source bytes. Other source/API tests review the current
+client's behavior; runtime identities and prior evidence remain historical.
+Changing source later neither rewrites nor invalidates F/G history.
+F/G executors and their historical source verifier must not be rerun from
+an evolved successor-client HEAD. Runtime common constants/verifier remain
+unchanged. Future 2a source execution needs its own governance commit, blob,
+SHA-256, source path and execution model; no successor identity exists yet
+and no claim of historical F publication extends to a successor.
+
+Repository-only preparation found the documented authentication-frame parser
+defect before any authenticated execution. It remains unresolved: the published
+client is valid historical evidence for G's credential-free contract but
+unsuitable for authenticated 2a. No parser correction, deployment, duplicate
+client, runtime mutation, F/G rerun or rollback occurs in this checkpoint.
+Next: separately governed parser correction, then successor preparation review.
+
+D/E/F/G PASS/CLOSED; Action E handoff ACCEPTED; 2a BLOCKED / NOT STARTED;
+2b NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+
 **Status:** Active PE-4.0A contract
 
 **Scope:** Repository governance before live discovery

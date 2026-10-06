@@ -1,12 +1,14 @@
 import hashlib
+import json
 import pathlib
+import subprocess
 import unittest
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CONTRACT = (ROOT / "docs" / "PE4_ISOLATED_RUNTIME_DEPENDENCY_CONTRACT.md").read_text(encoding="utf-8")
 LOCK = (ROOT / "requirements-pe4.lock").read_text(encoding="utf-8")
-CLIENT = ROOT / "tools" / "hioc-pe4-ha-auth-capability.py"
+HISTORICAL_CLIENT = ROOT / "governance" / "pe4" / "historical-fg-client.json"
 
 
 class PE4DependencyRuntimeGovernanceTests(unittest.TestCase):
@@ -37,10 +39,26 @@ class PE4DependencyRuntimeGovernanceTests(unittest.TestCase):
         self.assertIn("replace the pointer atomically", CONTRACT)
 
     def test_client_identity_remains_reviewed(self):
+        record = json.loads(HISTORICAL_CLIENT.read_bytes())
+        self.assertEqual(record, {
+            "schema_version": "1.0", "record_type": "HISTORICAL_FG_CLIENT_IDENTITY",
+            "source_path": "tools/hioc-pe4-ha-auth-capability.py",
+            "f_consumer": "2a5e6299a0806c3f3d7c3bc11c84fddc8492333c",
+            "git_blob": "09d66b041796dd6ec2efdb88f7a71b3f99e9a27a",
+            "sha256": "5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e",
+            "runtime_path": "/home/jazofv1/hioc/tools/hioc-pe4-ha-auth-capability.py",
+            "f_status": "PASS_CLOSED", "g_status": "PASS_CLOSED",
+            "identity_class": "IMMUTABLE_CLOSED_ARTIFACT",
+        })
+        self.assertEqual(HISTORICAL_CLIENT.read_text(encoding="utf-8"),
+                         json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
+        reference = record["f_consumer"] + ":" + record["source_path"]
+        raw = subprocess.check_output(["git", "--no-optional-locks", "-C", str(ROOT), "show", reference])
         self.assertEqual(
-            hashlib.sha256(CLIENT.read_bytes()).hexdigest(),
-            "5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e",
+            hashlib.sha256(raw).hexdigest(), record["sha256"],
         )
+        blob = subprocess.check_output(["git", "--no-optional-locks", "-C", str(ROOT), "rev-parse", reference])
+        self.assertEqual(blob.decode().strip(), record["git_blob"])
 
     def test_controlled_startup_contract_preserves_read_only_boundary(self):
         for value in ("-I -B -S", "Construction-read-only", "exclude atime", "52-member manifest",

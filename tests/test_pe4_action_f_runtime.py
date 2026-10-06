@@ -1,5 +1,5 @@
 """Synthetic Action F publication flow; no production object or interpreter runs."""
-import copy, contextlib, io, json, stat, types, unittest
+import copy, contextlib, io, json, stat, subprocess, types, unittest
 from unittest import mock
 from tools import hioc_pe4_action_f as F
 from tests.test_pe4_action_e_handoff import tree, info, directory
@@ -326,7 +326,9 @@ class PreflightTests(unittest.TestCase):
                              str(F.C.CLIENT_TARGET.parent):directory(F.C.CLIENT_TARGET.parent),
                              str(F.H.PE4/'transactions'):directory(F.H.PE4/'transactions')}
         adapter.fs=mock.Mock();adapter.fs.open.side_effect=lambda path,*args:objects[str(path)]
-        client=(F.H.REPOSITORY/'tools/hioc-pe4-ha-auth-capability.py').read_bytes().replace(b'\r\n',b'\n')
+        client=subprocess.check_output(['git','--no-optional-locks','-C',str(F.H.REPOSITORY),
+            'show','2a5e6299a0806c3f3d7c3bc11c84fddc8492333c:tools/hioc-pe4-ha-auth-capability.py'])
+        self.assertEqual(F.C.CLIENT_SHA256,'5c2886452a61185c7e7329777dbd4fa3de4da98dd4793a1a84501bc30016879e')
         self.assertEqual(F.H.digest(client),F.C.CLIENT_SHA256)
         def status(name,**kw):
             if name==collision:return info()
