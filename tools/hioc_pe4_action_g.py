@@ -393,7 +393,8 @@ class Finder(importlib.abc.MetaPathFinder):
             spec=f.find_spec(fullname,path)
             if spec is not None:return spec
         spec=importlib.machinery.PathFinder.find_spec(fullname,self.policy['paths'] if path is None else path)
-        child_require(spec is not None and spec.origin is not None and
+        if spec is None:return None
+        child_require(spec.origin is not None and
             any(spec.origin.startswith(p.rstrip('/')+'/') for p in self.policy['paths']))
         return spec
 

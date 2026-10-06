@@ -1,5 +1,62 @@
 # PE-4.0B.2a Isolated Runtime Lifecycle
 
+## Action G platform stdlib absence correction — 2026-10-05
+
+The initial native attempt stopped at HANDOFF because G misread F recovery
+semantics. Correction allowed F-to-G handoff to PASS. The next probe stopped
+because G removed distribution discovery before metadata validation.
+The ordering correction advanced into verified websockets imports; the next
+probe stopped because optional python_socks ImportError became RuntimeError.
+The optional-dependency correction advanced farther into stdlib imports.
+The latest supplied diagnostic identifies msvcrt with origin/search path None
+under the trusted POSIX base paths. CPython 3.11.2 subprocess intentionally
+catches ModuleNotFoundError for msvcrt to detect the POSIX platform.
+This is a G stdlib-loader semantics defect, not a production dependency failure.
+
+Finder still rejects unknown third-party names, retains verified websockets
+handling and the reviewed-absent python_socks policy, and returns built-in
+and frozen specs unchanged. For recognized stdlib names it searches only
+the existing approved path (or supplied package path). An absent spec now
+returns None so normal import machinery raises ModuleNotFoundError.
+An existing spec must still have a non-None origin within the unchanged
+trusted boundary. There is no msvcrt-specific production exception.
+
+Final sys.meta_path remains exactly G Finder, BuiltinImporter, FrozenImporter.
+No general PathFinder, cwd, site-packages, site/.pth/user-site loading is added.
+Startup -I -B -S, sanitized environment, proxy prohibition, verified
+source/native loaders, redirect validation, frozen-client detection,
+network/credential prohibitions and runtime/F/client revalidation remain.
+The explicit accepted D-evidence distribution identity is unchanged.
+
+Tests cover recognized msvcrt absence, unknown-name denial, accepted and
+forged origins, absent package submodules, real built-in/frozen specs, and
+an isolated representative platform import probe. A malicious platform-absent
+stdlib-name file is visible to ordinary PathFinder but invisible to restricted
+trusted lookup; ModuleNotFoundError occurs without execution or bytecode.
+Windows uses the actually absent macOS _scproxy analogue for this disk test.
+Existing optional dependency, metadata ordering and verified loader tests remain.
+
+Latest supplied G_NATIVE_PREFLIGHT=PASS accepted F transaction
+17fc3e0580ff007cdcd619ed2e2d3b34, result SHA
+d647c7b2241d7800a3c819cf86459e2be95c3ef58581d5ffef2dbf5bd1190941,
+COMMITTED SHA 24bb64cc8d885297e5696ddd733ec0dfab4b28a24e18a6996b667c186f2016e9.
+Runtime and F transaction post-diagnostic revalidation PASSed, source was clean,
+and no G evidence was created. No PI3/PI5 access or production G/F/rollback
+execution occurred in this repository correction.
+
+Validation: dedicated G 30/30 PASS; focused F/G/lifecycle 176 total,
+175 PASS and one platform skip; full repository 1220 total, 1173 PASS and
+47 platform skips. Compilation of 106 repository Python files and generated
+child, schema parsing, exact ten-file scope, complete diff inspection and
+all 27 protected baseline blob comparisons PASSed. Closed D/E/F artifacts
+remain unchanged. git diff --check PASSed with line-ending warnings only;
+existing unclosed-file ResourceWarnings did not fail tests.
+
+D PASS/CLOSED; E PASS/CLOSED; Action E handoff ACCEPTED; F PASS/CLOSED;
+G NOT STARTED; rollback NOT PERFORMED; PE-4 not complete.
+Native compatibility remains pending. Next: separately authorize native retry.
+ACTION_G_NATIVE_COMPATIBILITY_RETRY_READY_FOR_SEPARATE_AUTHORIZATION
+
 ## Action G reviewed optional dependency fallback correction — 2026-10-05
 
 The first native compatibility attempt stopped at HANDOFF because G

@@ -240,6 +240,88 @@ class DistributionOrderingTests(unittest.TestCase):
         self.assertIn("client.detect_websocket_client()=='PYTHON_WEBSOCKETS'",script)
 
 
+class PlatformStdlibAbsenceTests(unittest.TestCase):
+    def test_recognized_absence_and_unknown_third_party_are_distinct(self):
+        finder=G.Finder({'paths':['/trusted/stdlib']})
+        with mock.patch.object(importlib.machinery.BuiltinImporter,'find_spec',return_value=None),mock.patch.object(importlib.machinery.FrozenImporter,'find_spec',return_value=None),mock.patch.object(importlib.machinery.PathFinder,'find_spec',return_value=None) as lookup:
+            self.assertIn('msvcrt',sys.stdlib_module_names)
+            self.assertIsNone(finder.find_spec('msvcrt'))
+            lookup.assert_called_once_with('msvcrt',['/trusted/stdlib'])
+            with self.assertRaisesRegex(RuntimeError,'CONTROLLED_RUNTIME_INVALID'):finder.find_spec('unknown_vendor')
+            lookup.assert_called_once()
+
+    def test_existing_stdlib_specs_require_trusted_origin(self):
+        finder=G.Finder({'paths':['/trusted/stdlib']})
+        with mock.patch.object(importlib.machinery.BuiltinImporter,'find_spec',return_value=None),mock.patch.object(importlib.machinery.FrozenImporter,'find_spec',return_value=None):
+            for origin in ('/trusted/stdlib/json/__init__.py','/outside/json.py',None,'','/trusted/stdlib-shadow/json.py'):
+                spec=importlib.machinery.ModuleSpec('json',None,origin=origin)
+                with self.subTest(origin=origin),mock.patch.object(importlib.machinery.PathFinder,'find_spec',return_value=spec) as lookup:
+                    if origin=='/trusted/stdlib/json/__init__.py':self.assertIs(finder.find_spec('json'),spec)
+                    else:
+                        with self.assertRaisesRegex(RuntimeError,'CONTROLLED_RUNTIME_INVALID'):finder.find_spec('json')
+                    lookup.assert_called_once_with('json',['/trusted/stdlib'])
+
+    def test_package_search_uses_supplied_path_and_retains_origin_boundary(self):
+        finder=G.Finder({'paths':['/trusted/stdlib']})
+        with mock.patch.object(importlib.machinery.BuiltinImporter,'find_spec',return_value=None),mock.patch.object(importlib.machinery.FrozenImporter,'find_spec',return_value=None),mock.patch.object(importlib.machinery.PathFinder,'find_spec',return_value=None) as lookup:
+            self.assertIsNone(finder.find_spec('json.absent',['/trusted/stdlib/json']))
+            lookup.assert_called_once_with('json.absent',['/trusted/stdlib/json'])
+
+    def test_real_builtin_and_frozen_specs_bypass_pathfinder(self):
+        finder=G.Finder({'paths':[]})
+        with mock.patch.object(importlib.machinery.PathFinder,'find_spec') as lookup:
+            self.assertIs(finder.find_spec('sys').loader,importlib.machinery.BuiltinImporter)
+            self.assertIs(finder.find_spec('os').loader,importlib.machinery.FrozenImporter)
+            lookup.assert_not_called()
+
+    def test_isolated_platform_probe_blocks_searchable_malicious_shadow(self):
+        import inspect
+        with tempfile.TemporaryDirectory() as root:
+            sentinel=Path(root)/'EXECUTED'
+            # _scproxy is the macOS analogue of POSIX's absent msvcrt. Select
+            # an actually absent platform stdlib name on the test host.
+            code="import sys,os,importlib.abc,importlib.machinery,importlib.util\nfrom pathlib import Path\n"
+            code+='REVIEWED_MODULES='+repr(G.REVIEWED_MODULES)+'\n'
+            code+='REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL='+repr(G.REVIEWED_ABSENT_OPTIONAL_TOP_LEVEL)+'\n'
+            code+='\n'.join(inspect.getsource(x) for x in (G.child_require,G.Finder))
+            code+='''
+trusted=list(sys.path)
+name=next(n for n in ('msvcrt','_scproxy','winreg') if n in sys.stdlib_module_names and importlib.machinery.BuiltinImporter.find_spec(n) is None and importlib.machinery.FrozenImporter.find_spec(n) is None and importlib.machinery.PathFinder.find_spec(n,trusted) is None)
+fixture=Path(sys.argv[1])/(name+'.py')
+fixture.write_text("open("+repr(sys.argv[2])+",'w').write('executed')\\n",encoding='utf-8')
+sys.path.insert(0,sys.argv[1])
+assert importlib.machinery.PathFinder.find_spec(name).origin==str(fixture)
+finder=Finder({'paths':trusted})
+sys.meta_path=[finder,importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter]
+assert finder.find_spec(name) is None
+try:
+ __import__(name)
+except ModuleNotFoundError as exc:
+ assert exc.name==name
+ platform_probe=False
+else:
+ raise AssertionError('malicious shadow imported')
+assert platform_probe is False and name not in sys.modules
+assert finder.find_spec('python_socks') is None
+try:
+ __import__('unknown_vendor')
+except RuntimeError:
+ pass
+else:
+ raise AssertionError('unknown third-party import accepted')
+assert finder.find_spec('sys').loader is importlib.machinery.BuiltinImporter
+assert finder.find_spec('os').loader is importlib.machinery.FrozenImporter
+assert sys.meta_path==[finder,importlib.machinery.BuiltinImporter,importlib.machinery.FrozenImporter]
+print('PASS',name)
+'''
+            env=dict(G.ENV)
+            if os.name=='nt':env['SYSTEMROOT']=os.environ['SYSTEMROOT']
+            result=subprocess.run([sys.executable,'-I','-B','-S','-c',code,root,str(sentinel)],env=env,stdin=subprocess.DEVNULL,capture_output=True,timeout=10)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertTrue(result.stdout.startswith(b'PASS '),result.stdout)
+            self.assertFalse(sentinel.exists());self.assertFalse(list(Path(root).rglob('*.pyc')))
+
+
 class OptionalDependencyTests(unittest.TestCase):
     def test_only_reviewed_optional_names_skip_pathfinder(self):
         finder=G.Finder({'paths':list(sys.path)})
