@@ -1,5 +1,30 @@
 # PE-4 Home Assistant Access and Privacy Contract
 
+## PE-4.0B.2a consolidated client boundary correction - 2026-10-05
+
+The repository-only successor now enforces the shared absolute REST deadline at
+every low-level send/receive, beneath the standard-library HTTP parser. Partial
+progress cannot renew the budget; no worker thread or background REST work exists.
+Strict duplicate-safe JSON decoding is shared by REST and authentication frames,
+including nested duplicate rejection and decoder recursion/ValueError normalization.
+Both receives validate the deadline before creating their coroutine. Network
+KeyboardInterrupt returns RC 130 with ENDPOINT_UNAVAILABLE at ENDPOINT or
+WEBSOCKET_CAPABILITY, private terminal markers, cleanup, and 2b NOT_STARTED;
+finished send-task exceptions are retrieved to prevent delayed tracebacks.
+SystemExit still propagates. Exact parser schemas, secure getpass, post-credential
+network timing, and close-before-cancel authentication send bounds are retained.
+
+Supersedes candidate 10153c24c435a01a3b7074498b741320d1d5bfff:
+blob 260a4cb2904529983a73fa02ae6cfb13a4c18ab8; SHA-256
+f2c69691f00d9c5952e59b80642015447078509f462c7fc550bb6d4dbfc2e6ab.
+New successor blob: 85842a81c57187c9e119d1065fce433e5b067e1f.
+New successor SHA-256: aa0e58ed6c7bb4586625836cc71ad0cab9270e6b11a6a5db66497115b001decf.
+
+Historical F/G identity and runtime remain unchanged. No authenticated execution
+occurred. Successor is CORRECTED / REPOSITORY_ONLY / NOT DEPLOYED; 2a remains
+NOT STARTED / NOT PREPARED and 2b NOT STARTED. Preparation has not passed and no
+preparation record exists. Repeat comprehensive preparation under separate authorization.
+
 ## Authentication send deadline correction - 2026-10-05
 
 Preparation found the unbounded WebSocket authentication send before execution.

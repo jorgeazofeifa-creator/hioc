@@ -1,5 +1,19 @@
 # HIOC Architecture Decisions
 
+## PE-4.0B.2a consolidated client boundary correction - 2026-10-05
+
+Retain standard-library HTTP parsing with a deadline-aware socket/file adapter:
+each actual send/receive uses the remaining absolute budget, without REST workers
+or retries. Share strict duplicate-safe JSON decoding and normalize decoder recursion
+failures. Validate receive deadlines before creating coroutines. Handle network
+KeyboardInterrupt privately with RC 130 and retrieve completed send exceptions.
+These five corrections retain prior parser/getpass/timing/send controls in one batch.
+[Canonical successor identity](docs/PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md#pe-40b2a-consolidated-client-boundary-correction---2026-10-05).
+
+Historical F/G identity/runtime remain immutable. Successor is repository-only and
+not deployed; preparation has not passed, 2a NOT STARTED / NOT PREPARED, 2b NOT STARTED,
+and no authenticated execution occurred. Repeat comprehensive preparation separately.
+
 ## Authentication send deadline correction - 2026-10-05
 
 Preparation found the unbounded WebSocket authentication send before execution.

@@ -1,5 +1,19 @@
 # HIOC Master Plan
 
+## PE-4.0B.2a consolidated client boundary correction - 2026-10-05
+
+All five successor boundary defects are corrected together: absolute REST deadline,
+duplicate-safe JSON, decoder recursion normalization, receive-coroutine ordering,
+and bounded network interruption. Prior parser/getpass/timing/send corrections remain.
+[Canonical successor identity and validation scope](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md#pe-40b2a-consolidated-client-boundary-correction---2026-10-05).
+
+D/E/F/G remain PASS/CLOSED; Action E handoff ACCEPTED. Historical F/G identity and
+runtime are unchanged. Successor remains CORRECTED / REPOSITORY_ONLY / NOT DEPLOYED.
+2a is NOT STARTED / NOT PREPARED; 2b NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE;
+rollback NOT PERFORMED. No authenticated execution occurred and preparation has not
+passed. Next: separately authorized comprehensive successor authenticated proof
+preparation review. No preparation record or operator command is issued here.
+
 ## Authentication send deadline correction - 2026-10-05
 
 Preparation found the unbounded WebSocket authentication send before execution.

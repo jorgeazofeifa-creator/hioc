@@ -14,6 +14,7 @@ import http.client
 import importlib
 import importlib.util
 import inspect
+import io
 import json
 import os
 import re
@@ -217,13 +218,102 @@ def remaining_timeout(deadline: float | None, cap: float, stage: str) -> float:
     return min(cap, remaining)
 
 
-def rest_check(token: str, connection_factory: Callable[..., object] = http.client.HTTPConnection,
+class _DeadlineReader(io.RawIOBase):
+    def __init__(self, transport):
+        super().__init__()
+        self.transport = transport
+        transport.readers += 1
+
+    def close(self):
+        if not self.closed:
+            self.transport.readers -= 1
+            if self.transport.closing and not self.transport.readers:
+                self.transport.socket.close()
+        super().close()
+
+    def readable(self):
+        return True
+
+    def readinto(self, buffer):
+        self.transport._timeout(READ_TIMEOUT)
+        count = self.transport.socket.recv_into(buffer)
+        self.transport._timeout(READ_TIMEOUT)
+        return count
+
+
+class _DeadlineSocket:
+    """Refresh the absolute budget at every actual socket operation."""
+    def __init__(self, connected_socket, deadline):
+        self.socket, self.deadline = connected_socket, deadline
+        self.readers, self.closing = 0, False
+
+    def _timeout(self, cap):
+        self.socket.settimeout(remaining_timeout(self.deadline, cap, "ENDPOINT"))
+
+    def sendall(self, data):
+        pending = memoryview(data)
+        while pending:
+            self._timeout(CONNECT_TIMEOUT)
+            count = self.socket.send(pending)
+            self._timeout(CONNECT_TIMEOUT)
+            if count == 0:
+                raise OSError("closed transport")
+            pending = pending[count:]
+
+    def makefile(self, mode):
+        return io.BufferedReader(_DeadlineReader(self))
+
+    def settimeout(self, timeout):
+        self.socket.settimeout(timeout)
+
+    def close(self):
+        self.closing = True
+        if not self.readers:
+            self.socket.close()
+
+
+class _DeadlineHTTPConnection(http.client.HTTPConnection):
+    def __init__(self, host, port, *, timeout, deadline):
+        super().__init__(host, port, timeout=timeout)
+        self.deadline = deadline
+
+    def connect(self):
+        connected = socket.create_connection(
+            (self.host, self.port),
+            timeout=remaining_timeout(self.deadline, CONNECT_TIMEOUT, "ENDPOINT"),
+        )
+        self.sock = _DeadlineSocket(connected, self.deadline)
+        self.sock._timeout(CONNECT_TIMEOUT)
+
+
+def _strict_json(raw, stage):
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate JSON member")
+            result[key] = value
+        return result
+    try:
+        if isinstance(raw, bytes):
+            raw = raw.decode("utf-8")
+        return json.loads(raw, object_pairs_hook=unique_object)
+    except (UnicodeError, ValueError, RecursionError):
+        # ValueError also covers bounded-input integer conversion limits.
+        raise ContractFailure("UNEXPECTED_SCHEMA", stage) from None
+
+
+def rest_check(token: str, connection_factory: Callable[..., object] | None = None,
                deadline: float | None = None) -> None:
     connection = None
+    response = None
     try:
-        connection = connection_factory(
+        factory = connection_factory or _DeadlineHTTPConnection
+        extra = {"deadline": deadline} if connection_factory is None else {}
+        connection = factory(
             HA_IPV4, HA_PORT,
             timeout=remaining_timeout(deadline, CONNECT_TIMEOUT, "ENDPOINT"),
+            **extra,
         )
         connection.request("GET", REST_PATH, headers={
             "Authorization": "Bearer " + token,
@@ -242,10 +332,7 @@ def rest_check(token: str, connection_factory: Callable[..., object] = http.clie
         content_type = response.getheader("Content-Type", "").split(";", 1)[0].strip().lower()
         if content_type not in {"application/json", "application/vnd.api+json"} and not content_type.endswith("+json"):
             raise ContractFailure("UNEXPECTED_SCHEMA", "REST_CAPABILITY")
-        try:
-            value = json.loads(read_bounded(response).decode("utf-8"))
-        except (UnicodeError, json.JSONDecodeError):
-            raise ContractFailure("UNEXPECTED_SCHEMA", "REST_CAPABILITY") from None
+        value = _strict_json(read_bounded(response), "REST_CAPABILITY")
         if value != {"message": "API running."}:
             raise ContractFailure("UNEXPECTED_SCHEMA", "REST_CAPABILITY")
     except ContractFailure:
@@ -253,6 +340,11 @@ def rest_check(token: str, connection_factory: Callable[..., object] = http.clie
     except (TimeoutError, OSError, http.client.HTTPException):
         raise ContractFailure("ENDPOINT_UNAVAILABLE", "ENDPOINT") from None
     finally:
+        if response is not None:
+            try:
+                response.close()
+            except Exception:
+                pass
         if connection is not None:
             try:
                 connection.close()
@@ -265,10 +357,7 @@ def _parse_ws_message(raw: object) -> dict[str, object]:
         raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
     if len(raw) > MAX_MESSAGE:
         raise ContractFailure("RESPONSE_TOO_LARGE", "WEBSOCKET_CAPABILITY")
-    try:
-        value = json.loads(raw)
-    except (UnicodeError, json.JSONDecodeError):
-        raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY") from None
+    value = _strict_json(raw, "WEBSOCKET_CAPABILITY")
     if not isinstance(value, dict) or not isinstance(value.get("type"), str):
         raise ContractFailure("UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
     return value
@@ -304,6 +393,11 @@ def _dependency_rejected_oversized_message(exc: Exception, module: object) -> bo
     return False
 
 
+async def _recv_bounded(ws, deadline):
+    timeout = remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY")
+    return await asyncio.wait_for(ws.recv(), timeout)
+
+
 async def _send_auth(ws: object, token: str, deadline: float | None) -> None:
     timeout = remaining_timeout(deadline, TOTAL_BUDGET, "WEBSOCKET_CAPABILITY")
     send_task = asyncio.create_task(ws.send(
@@ -329,6 +423,10 @@ async def _send_auth(ws: object, token: str, deadline: float | None) -> None:
                     await asyncio.wait_for(send_task, CONNECT_TIMEOUT)
                 except (asyncio.CancelledError, Exception):
                     pass
+        elif not send_task.cancelled():
+            # An interrupt in the send task can stop the event loop before the
+            # parent awaits it. Retrieve its exception to prevent late traceback.
+            send_task.exception()
 
 
 async def _websockets_async_check(
@@ -357,14 +455,10 @@ async def _websockets_async_check(
             close_timeout=remaining_timeout(deadline, CONNECT_TIMEOUT, "WEBSOCKET_CAPABILITY"),
             max_size=MAX_MESSAGE, proxy=None, sock=connected_socket,
         ) as ws:
-            first = await asyncio.wait_for(
-                ws.recv(), remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY")
-            )
+            first = await _recv_bounded(ws, deadline)
             _parse_auth_required(first)
             await _send_auth(ws, token, deadline)
-            _parse_auth_result(await asyncio.wait_for(
-                ws.recv(), remaining_timeout(deadline, READ_TIMEOUT, "WEBSOCKET_CAPABILITY")
-            ))
+            _parse_auth_result(await _recv_bounded(ws, deadline))
     except ContractFailure:
         raise
     except (TimeoutError, OSError, asyncio.TimeoutError):
@@ -442,6 +536,7 @@ def emit(lines: Sequence[str], output: Callable[[str], None] = print) -> None:
 def run(argv: Sequence[str], output: Callable[[str], None] = print) -> int:
     ws_class: str | None = None
     token: str | None = None
+    network_stage: str | None = None
     try:
         args = parse_args(argv)
         validate_execution_host(
@@ -461,12 +556,15 @@ def run(argv: Sequence[str], output: Callable[[str], None] = print) -> int:
         token = acquire_token()
         started = time.monotonic()
         deadline = started + TOTAL_BUDGET
+        network_stage = "ENDPOINT"
         rest_check(token, deadline=deadline)
         if time.monotonic() - started >= TOTAL_BUDGET:
             raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
+        network_stage = "WEBSOCKET_CAPABILITY"
         websockets_check(token, deadline=deadline)
         if time.monotonic() - started > TOTAL_BUDGET:
             raise ContractFailure("ENDPOINT_UNAVAILABLE", "WEBSOCKET_CAPABILITY")
+        network_stage = None
         emit(success_lines(ws_class), output)
         return 0
     except ContractFailure as exc:
@@ -476,6 +574,11 @@ def run(argv: Sequence[str], output: Callable[[str], None] = print) -> int:
             for line in failure_lines("PRIVACY_CONTRACT_VIOLATION", "PRIVACY_VALIDATION"):
                 output(line)
         return 1
+    except KeyboardInterrupt:
+        if network_stage is None:
+            raise
+        emit(failure_lines("ENDPOINT_UNAVAILABLE", network_stage, ws_class), output)
+        return 130
     except SystemExit:
         raise
     except Exception:

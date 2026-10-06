@@ -723,5 +723,209 @@ class ClientTests(unittest.TestCase):
         self.assertIn('WS_URI = "ws://192.168.100.251:8123/api/websocket"', source)
 
 
+
+
+class BoundaryCorrectionTests(unittest.TestCase):
+    failure = ClientTests.failure
+    """Real HTTP parsing over deterministic, deadline-controlled socket I/O."""
+    class Socket:
+        def __init__(self, clock, *, write_step=0, header_step=0, body_step=0,
+                     body=b'{"message":"API running."}', interrupt=None):
+            self.clock = clock
+            self.write_step, self.header_step, self.body_step = write_step, header_step, body_step
+            self.header = (b'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n'
+                           b'Connection: close\r\nContent-Length: ' + str(len(body)).encode() + b'\r\n\r\n')
+            self.data = self.header + body
+            self.position, self.closed, self.close_calls = 0, False, 0
+            self.timeouts, self.sent, self.interrupt = [], bytearray(), interrupt
+        def settimeout(self, value): self.timeouts.append(value)
+        def send(self, value):
+            if self.interrupt == "write": raise KeyboardInterrupt("PRIVATE_SENTINEL")
+            step = self.write_step
+            if step >= self.timeouts[-1]:
+                self.clock[0] += self.timeouts[-1]
+                raise TimeoutError
+            self.clock[0] += step
+            self.sent.extend(value[:1]); return 1
+        def recv_into(self, buffer):
+            phase = "header" if self.position < len(self.header) else "body"
+            if self.interrupt == phase: raise KeyboardInterrupt("PRIVATE_SENTINEL")
+            step = self.header_step if phase == "header" else self.body_step
+            if step >= self.timeouts[-1]:
+                self.clock[0] += self.timeouts[-1]
+                raise TimeoutError
+            self.clock[0] += step
+            if self.position == len(self.data): return 0
+            buffer[0] = self.data[self.position]; self.position += 1; return 1
+        def close(self): self.closed = True; self.close_calls += 1
+
+    def transport_case(self, **kwargs):
+        clock = [0.0]; sock = self.Socket(clock, **kwargs)
+        with mock.patch.object(CLIENT.time, "monotonic", side_effect=lambda: clock[0]), \
+             mock.patch.object(CLIENT.socket, "create_connection", return_value=sock) as connect:
+            if any(kwargs.get(k, 0) for k in ("write_step", "header_step", "body_step")):
+                self.failure(lambda: CLIENT.rest_check("synthetic", deadline=20),
+                             "ENDPOINT_UNAVAILABLE", "ENDPOINT")
+                self.assertLessEqual(clock[0], 20)
+            else:
+                CLIENT.rest_check("synthetic", deadline=20)
+            connect.assert_called_once()
+        self.assertTrue(sock.closed)
+        self.assertEqual(sock.close_calls, 1)
+        return sock
+
+    def test_rest_slow_write_absolute_deadline(self): self.transport_case(write_step=.3)
+    def test_rest_slow_header_absolute_deadline(self): self.transport_case(header_step=.3)
+    def test_rest_slow_body_absolute_deadline(self): self.transport_case(body_step=1)
+    def test_rest_inside_deadline_real_parser(self):
+        sock = self.transport_case()
+        self.assertEqual(bytes(sock.sent).count(b'GET /api/ HTTP/1.1'), 1)
+        self.assertIn(b'Authorization: Bearer synthetic', sock.sent)
+    def test_rest_stalled_connect(self):
+        with mock.patch.object(CLIENT.time, "monotonic", return_value=0), \
+             mock.patch.object(CLIENT.socket, "create_connection", side_effect=TimeoutError) as connect:
+            self.failure(lambda: CLIENT.rest_check("synthetic", deadline=20),
+                         "ENDPOINT_UNAVAILABLE", "ENDPOINT")
+            self.assertEqual(connect.call_args.kwargs['timeout'], 5)
+    def test_rest_exact_expiry_never_connects(self):
+        with mock.patch.object(CLIENT.time, "monotonic", return_value=20), \
+             mock.patch.object(CLIENT.socket, "create_connection") as connect:
+            self.failure(lambda: CLIENT.rest_check("synthetic", deadline=20),
+                         "ENDPOINT_UNAVAILABLE", "ENDPOINT")
+            connect.assert_not_called()
+    def test_rest_real_parser_oversize_cleanup(self):
+        sock = self.Socket([0], body=b'x' * (CLIENT.MAX_MESSAGE + 1))
+        with mock.patch.object(CLIENT.socket, "create_connection", return_value=sock):
+            self.failure(lambda: CLIENT.rest_check("synthetic"), "RESPONSE_TOO_LARGE", "ENDPOINT")
+        self.assertTrue(sock.closed); self.assertEqual(sock.close_calls, 1)
+
+    def test_duplicate_members_all_auth_schemas(self):
+        cases = [
+            (CLIENT._parse_auth_required, '{"type":"event","type":"auth_required","ha_version":"x"}'),
+            (CLIENT._parse_auth_required, '{"type":"auth_required","ha_version":"x","ha_version":"y"}'),
+            (CLIENT._parse_auth_result, '{"type":"event","type":"auth_ok","ha_version":"x"}'),
+            (CLIENT._parse_auth_result, '{"type":"auth_invalid","type":"auth_ok","ha_version":"x"}'),
+            (CLIENT._parse_auth_result, '{"type":"auth_invalid","message":"x","message":"y"}'),
+            (CLIENT._parse_auth_result, '{"type":"auth_ok","ha_version":{"x":1,"x":2}}'),
+        ]
+        for parser, raw in cases:
+            with self.subTest(raw=raw):
+                self.failure(lambda: parser(raw), "UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+        connection = FakeConnection(FakeResponse(body=b'{"message":"wrong","message":"API running."}'))
+        self.failure(lambda: CLIENT.rest_check("synthetic", lambda *a, **k: connection),
+                     "UNEXPECTED_SCHEMA", "REST_CAPABILITY")
+        self.assertTrue(connection.closed)
+
+    def test_decoder_recursion_and_malformed_inputs(self):
+        depth = 100
+        while True:
+            raw = '[' * depth + '0' + ']' * depth
+            self.assertLessEqual(len(raw), CLIENT.MAX_MESSAGE)
+            try: json.loads(raw)
+            except RecursionError: break
+            depth *= 2
+        for raw in (raw, '{', b'\xff'):
+            self.failure(lambda: CLIENT._parse_auth_required(raw),
+                         "UNEXPECTED_SCHEMA", "WEBSOCKET_CAPABILITY")
+            payload = raw.encode() if isinstance(raw, str) else raw
+            connection = FakeConnection(FakeResponse(body=payload))
+            self.failure(lambda: CLIENT.rest_check("synthetic", lambda *a, **k: connection),
+                         "UNEXPECTED_SCHEMA", "REST_CAPABILITY")
+            self.assertTrue(connection.closed)
+
+    def test_both_expired_receives_never_create_coroutine(self):
+        for second in (False, True):
+            with self.subTest(second=second):
+                clock = [0]
+                ws = FakeWebSocket(['{"type":"auth_required","ha_version":"x"}'])
+                ws.recv = mock.AsyncMock(wraps=ws.recv)
+                async def enter():
+                    if not second: clock[0] = 20
+                    return ws
+                async def send(value): clock[0] = 20
+                ws.__class__ = type('ExpirySocket', (FakeWebSocket,), {'__aenter__': lambda self: enter()})
+                ws.send = send
+                def connect(uri, *, open_timeout, close_timeout, max_size, proxy, **kwargs): return ws
+                connect.process_redirect = reject_redirect
+                sock = mock.Mock()
+                with warnings.catch_warnings(record=True) as caught, \
+                     mock.patch.object(CLIENT.time, "monotonic", side_effect=lambda: clock[0]), \
+                     mock.patch.object(CLIENT.socket, "create_connection", return_value=sock):
+                    warnings.simplefilter('always')
+                    self.failure(lambda: CLIENT.websockets_check('synthetic', 20, types.SimpleNamespace(connect=connect)),
+                                 'ENDPOINT_UNAVAILABLE', 'WEBSOCKET_CAPABILITY')
+                    import gc; gc.collect()
+                self.assertEqual(ws.recv.call_count, int(second))
+                self.assertFalse(any('never awaited' in str(w.message) for w in caught))
+                self.assertTrue(ws.closed); sock.close.assert_called_once()
+
+    def run_network(self, rest, websocket):
+        output = []
+        with mock.patch.object(CLIENT, 'validate_execution_host'), \
+             mock.patch.object(CLIENT, 'local_ipv4_addresses', return_value=set()), \
+             mock.patch.object(CLIENT, 'current_operator', return_value='fixture'), \
+             mock.patch.dict(CLIENT.os.environ, {}, clear=True), \
+             mock.patch.object(CLIENT, 'detect_websocket_client', return_value='PYTHON_WEBSOCKETS'), \
+             mock.patch.object(CLIENT, 'validate_terminal'), \
+             mock.patch.object(CLIENT, 'acquire_token', return_value='PRIVATE_SYNTHETIC_TOKEN'), \
+             mock.patch.object(CLIENT, 'rest_check', side_effect=rest), \
+             mock.patch.object(CLIENT, 'websockets_check', side_effect=websocket) as ws:
+            rc = CLIENT.run(ARGS, output.append)
+        return rc, output, ws
+
+    def test_rest_interrupt_real_transport_cleanup_and_rc130(self):
+        original = CLIENT.rest_check
+        for phase in ('connect', 'write', 'header', 'body'):
+            sock = self.Socket([0], interrupt=phase)
+            def rest(token, deadline): return original(token, deadline=deadline)
+            effect = KeyboardInterrupt('PRIVATE_SENTINEL') if phase == 'connect' else None
+            with mock.patch.object(CLIENT.socket, 'create_connection', return_value=sock, side_effect=effect):
+                rc, output, ws = self.run_network(rest, mock.Mock())
+            self.assertEqual(rc, 130); ws.assert_not_called()
+            self.assertIn('FAILURE_STAGE=ENDPOINT', output)
+            self.assertIn('PE4_0B2B=NOT_STARTED', output)
+            self.assertNotIn('PRIVATE', '\n'.join(output)); CLIENT.validate_output(output)
+            if phase != 'connect': self.assertTrue(sock.closed)
+
+    def test_websocket_interrupt_cleanup_and_rc130(self):
+        import contextlib
+        import gc
+        original = CLIENT.websockets_check
+        for phase in ('connect', 'receive', 'send'):
+            with self.subTest(phase=phase):
+                sock = mock.Mock()
+                ws = FakeWebSocket(['{"type":"auth_required","ha_version":"x"}'])
+                tasks = []
+                async def recv(): raise KeyboardInterrupt('PRIVATE_SENTINEL')
+                async def send(value):
+                    tasks.append(asyncio.current_task())
+                    raise KeyboardInterrupt('PRIVATE_SENTINEL')
+                if phase == 'receive': ws.recv = recv
+                if phase == 'send': ws.send = send
+                def connect(uri, *, open_timeout, close_timeout, max_size, proxy, **kwargs):
+                    if phase == 'connect': raise KeyboardInterrupt('PRIVATE_SENTINEL')
+                    return ws
+                connect.process_redirect = reject_redirect
+                def websocket(token, deadline):
+                    return original(token, deadline, types.SimpleNamespace(connect=connect))
+                stderr = io.StringIO()
+                with mock.patch.object(CLIENT.socket, 'create_connection', return_value=sock), \
+                     contextlib.redirect_stderr(stderr):
+                    rc, output, _ = self.run_network(lambda *a, **k: None, websocket)
+                    self.assertTrue(all(task.done() for task in tasks))
+                    tasks.clear()
+                    gc.collect()
+                self.assertEqual(stderr.getvalue(), '')
+                self.assertEqual(rc, 130); sock.close.assert_called_once()
+                if phase != 'connect': self.assertTrue(ws.closed)
+                self.assertIn('FAILURE_STAGE=WEBSOCKET_CAPABILITY', output)
+                self.assertIn('PE4_0B2B=NOT_STARTED', output)
+                self.assertNotIn('PRIVATE', '\n'.join(output)); CLIENT.validate_output(output)
+
+    def test_network_system_exit_propagates(self):
+        with self.assertRaises(SystemExit):
+            self.run_network(SystemExit(7), mock.Mock())
+
+
 if __name__ == "__main__":
     unittest.main()

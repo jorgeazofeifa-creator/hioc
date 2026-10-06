@@ -1,5 +1,26 @@
 # HIOC Changelog
 
+## PE-4.0B.2a consolidated client boundary correction - 2026-10-05
+
+Corrected all five audited boundaries in one repository-only batch: absolute REST
+deadline, duplicate-safe JSON, decoder recursion normalization, receive-coroutine
+ordering, and bounded network interruption handling (RC 130). Previous parser,
+secure-getpass, network-budget and authentication-send corrections remain intact.
+
+Validation: 54 client tests PASS; 160 focused client/privacy/historical/runtime
+regressions PASS. Full suite: 1253 run, 1206 PASS, 47 platform skips. All 138 tracked
+Python files compile in memory; static privacy/output and Git Bash release checks
+PASS. Initial shell-alias platform failures were resolved by excluding WindowsApps
+bash from the test process PATH. Git diff checks have line-ending warnings only.
+The real HTTP parser over controlled transports reproduces baseline overruns and
+proves corrected slow writes/headers/bodies stop within the shared 20-second budget.
+
+New blob: 85842a81c57187c9e119d1065fce433e5b067e1f; SHA-256:
+aa0e58ed6c7bb4586625836cc71ad0cab9270e6b11a6a5db66497115b001decf.
+[Canonical correction and superseded identity](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md#pe-40b2a-consolidated-client-boundary-correction---2026-10-05).
+Historical F/G identity/runtime are unchanged; no authenticated execution occurred.
+2a remains NOT STARTED / NOT PREPARED. Preparation review must be repeated separately.
+
 ## Authentication send deadline correction - 2026-10-05
 
 Preparation found the unbounded WebSocket authentication send before execution.

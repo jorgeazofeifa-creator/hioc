@@ -1,5 +1,18 @@
 # HIOC Operations
 
+## PE-4.0B.2a consolidated client boundary correction - 2026-10-05
+
+The successor corrects absolute REST deadline enforcement, duplicate-safe JSON,
+decoder recursion normalization, receive-coroutine ordering, and private network
+interrupt handling with RC 130. Existing parser/getpass/timing/send controls remain.
+[Canonical identity and correction details](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md#pe-40b2a-consolidated-client-boundary-correction---2026-10-05).
+
+Historical F/G identity/runtime are untouched. No PI3/PI5/HA authenticated operation,
+F/G action, rollback, or 2b execution occurred. Successor remains repository-only,
+not deployed; 2a NOT STARTED / NOT PREPARED and 2b NOT STARTED. Preparation has not
+passed. Repeat the comprehensive preparation review separately before any future
+operator block or authenticated execution authorization; no preparation JSON is created.
+
 ## Authentication send deadline correction - 2026-10-05
 
 Preparation found the unbounded WebSocket authentication send before execution.
