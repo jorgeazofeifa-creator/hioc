@@ -1,5 +1,32 @@
 # HIOC Changelog
 
+## Secure credential fallback correction - 2026-10-05
+
+Successor preparation found the insecure getpass fallback before execution.
+GetPassWarning is now promoted to an exception only around the approved
+Python getpass prompt; warning filters are restored on success and failure.
+Failure is AUTHENTICATION_UNAVAILABLE / CREDENTIAL_ACQUISITION before fallback
+input, diagnostics, the network clock or network access. No custom credential
+reader, retry or alternate secret source was introduced. Parser strictness and
+the post-credential shared 20-second network budget are unchanged.
+
+New successor blob: 9e61dc7758de67a3473961a8f2624ba1f96237b1.
+New successor SHA-256: 561444e4961694072aab602e34227ec3be0598729b9fa778baf61fd9b1ac25b3.
+Supersedes repository-only candidate 92eb4c317f1a50716adbaea2f1d80d3e66ceacc7:
+blob be4499c81b0475b0320039ca2bfb74d926aefda4; SHA-256
+d41a4991c51bb95546c80e85c39df421b59d29574f8645c328826c3df2e29f65.
+
+Validation: client/privacy 43 PASS, including fallback and filter-scope tests;
+98 historical F/G/runtime/API regressions PASS. Full suite: 1234 run,
+1187 PASS, 47 platform skips. In-memory compilation of 138 Python files,
+static privacy/output and release checks, complete diff and seven-file scope
+PASS. Diff checks have Git line-ending warnings only.
+
+Added real fallback-reader, warning continuation, filter restoration and
+run-level no-clock/no-network regressions; normal prompt and existing failures
+remain covered. Historical F/G runtime is unchanged; no authenticated operation
+occurred. 2a remains NOT STARTED / NOT PREPARED; preparation must be repeated.
+
 ## Successor network-budget timing correction - 2026-10-05
 
 Preparation review found the network-budget timing defect before execution.

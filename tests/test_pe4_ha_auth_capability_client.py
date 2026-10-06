@@ -1,6 +1,8 @@
 import importlib.util
 import asyncio
 import json
+import io
+import warnings
 import pathlib
 import types
 import unittest
@@ -109,10 +111,71 @@ class ClientTests(unittest.TestCase):
 
     def test_prompt(self):
         self.assertEqual(CLIENT.acquire_token(lambda _: "secret"), "secret")
-        for result in ("", "bad\nvalue"):
+        for result in ("", "bad\nvalue", "bad\rvalue"):
             self.failure(lambda r=result: CLIENT.acquire_token(lambda _: r), "AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION")
-        self.failure(lambda: CLIENT.acquire_token(lambda _: (_ for _ in ()).throw(EOFError())),
+        for error in (EOFError, KeyboardInterrupt, OSError):
+            with self.subTest(error=error.__name__):
+                self.failure(lambda e=error: CLIENT.acquire_token(
+                    lambda _: (_ for _ in ()).throw(e())),
+                    "AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION")
+
+    def test_getpass_warning_fails_before_prompt_continuation(self):
+        continued = mock.Mock(return_value="must-not-return")
+        def prompt(label):
+            warnings.warn("PRIVATE_WARNING_SENTINEL", CLIENT.getpass.GetPassWarning)
+            return continued()
+        self.failure(lambda: CLIENT.acquire_token(prompt),
                      "AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION")
+        continued.assert_not_called()
+
+    def test_real_getpass_fallback_never_reads_input_or_prints_diagnostic(self):
+        stream = io.StringIO()
+        with mock.patch.object(CLIENT.getpass, "_raw_input") as raw_input:
+            self.failure(lambda: CLIENT.acquire_token(
+                lambda label: CLIENT.getpass.fallback_getpass(label, stream=stream)),
+                "AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION")
+        raw_input.assert_not_called()
+        self.assertEqual(stream.getvalue(), "")
+
+    def test_prompt_warning_filter_restored_on_success_and_failure(self):
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", CLIENT.getpass.GetPassWarning)
+            original_filters = warnings.filters[:]
+            self.assertEqual(CLIENT.acquire_token(lambda _: "synthetic-secret"), "synthetic-secret")
+            self.assertEqual(warnings.filters, original_filters)
+            self.failure(lambda: CLIENT.acquire_token(lambda _: warnings.warn(
+                "PRIVATE_WARNING_SENTINEL", CLIENT.getpass.GetPassWarning)),
+                "AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION")
+            self.assertEqual(warnings.filters, original_filters)
+            warnings.warn("outside-context", CLIENT.getpass.GetPassWarning)
+            self.assertEqual(len(caught), 1)
+            self.assertEqual(str(caught[0].message), "outside-context")
+
+    def test_run_getpass_warning_stops_before_clock_and_network(self):
+        original_acquire = CLIENT.acquire_token
+        stream = io.StringIO()
+        output = []
+        with mock.patch.object(CLIENT, "validate_execution_host"), \
+             mock.patch.object(CLIENT, "local_ipv4_addresses", return_value=set()), \
+             mock.patch.object(CLIENT, "current_operator", return_value="fixture"), \
+             mock.patch.object(CLIENT, "proxy_influence_present", return_value=False), \
+             mock.patch.object(CLIENT, "detect_websocket_client", return_value="PYTHON_WEBSOCKETS"), \
+             mock.patch.object(CLIENT, "validate_terminal"), \
+             mock.patch.object(CLIENT.getpass, "_raw_input") as raw_input, \
+             mock.patch.object(CLIENT, "acquire_token", side_effect=lambda: original_acquire(
+                 lambda label: CLIENT.getpass.fallback_getpass(label, stream=stream))), \
+             mock.patch.object(CLIENT.time, "monotonic") as clock, \
+             mock.patch.object(CLIENT, "rest_check") as rest, \
+             mock.patch.object(CLIENT, "websockets_check") as ws, \
+             mock.patch.object(CLIENT.socket, "create_connection") as connection:
+            self.assertEqual(CLIENT.run(ARGS, output.append), 1)
+        for operation in (raw_input, clock, rest, ws, connection):
+            operation.assert_not_called()
+        self.assertEqual(stream.getvalue(), "")
+        self.assertEqual(output, CLIENT.failure_lines(
+            "AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION", "PYTHON_WEBSOCKETS"))
+        for forbidden in ("Warning:", "GetPassWarning", "echoed", "Traceback"):
+            self.assertNotIn(forbidden, "\n".join(output))
 
     def check_rest_failure(self, response, code, stage):
         conn = FakeConnection(response)

@@ -1,5 +1,26 @@
 # PE-4 Home Assistant Access and Privacy Contract
 
+## Secure credential fallback correction - 2026-10-05
+
+Successor preparation found the insecure getpass fallback before execution.
+GetPassWarning is now promoted to an exception only around the approved
+Python getpass prompt; warning filters are restored on success and failure.
+Failure is AUTHENTICATION_UNAVAILABLE / CREDENTIAL_ACQUISITION before fallback
+input, diagnostics, the network clock or network access. No custom credential
+reader, retry or alternate secret source was introduced. Parser strictness and
+the post-credential shared 20-second network budget are unchanged.
+
+New successor blob: 9e61dc7758de67a3473961a8f2624ba1f96237b1.
+New successor SHA-256: 561444e4961694072aab602e34227ec3be0598729b9fa778baf61fd9b1ac25b3.
+Supersedes repository-only candidate 92eb4c317f1a50716adbaea2f1d80d3e66ceacc7:
+blob be4499c81b0475b0320039ca2bfb74d926aefda4; SHA-256
+d41a4991c51bb95546c80e85c39df421b59d29574f8645c328826c3df2e29f65.
+
+Secure non-echoing input remains mandatory; TTY checks do not authorize fallback
+input. Tokens remain process-memory only, with finally reference release and
+no guaranteed memory zeroization claim. No warning text enters terminal evidence.
+Historical F/G runtime remains unchanged; no authenticated operation occurred.
+
 ## Successor network-budget timing correction - 2026-10-05
 
 Preparation review found the network-budget timing defect before execution.

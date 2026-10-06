@@ -21,6 +21,7 @@ import socket
 import subprocess
 import sys
 import time
+import warnings
 from dataclasses import dataclass
 from typing import Callable, Sequence
 
@@ -183,7 +184,9 @@ def validate_terminal(stdin_tty: bool, stderr_tty: bool) -> None:
 
 def acquire_token(prompt: Callable[[str], str] = getpass.getpass) -> str:
     try:
-        token = prompt("Home Assistant access token: ")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", getpass.GetPassWarning)
+            token = prompt("Home Assistant access token: ")
     except (EOFError, KeyboardInterrupt, OSError, getpass.GetPassWarning):
         raise ContractFailure("AUTHENTICATION_UNAVAILABLE", "CREDENTIAL_ACQUISITION") from None
     if not token or "\r" in token or "\n" in token:
