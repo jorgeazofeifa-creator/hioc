@@ -5,6 +5,7 @@ from pathlib import Path
 HIOC_HOME = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(HIOC_HOME / "pi4" / "lib"))
 
+from hioc.core.compatibility import refresh_status, mqtt_observation
 from hioc.config import load_config
 from hioc.core.events import EventBus
 from hioc.core.schemas import INVENTORY_SCHEMA, INVENTORY_SUMMARY_SCHEMA
@@ -42,6 +43,7 @@ def main() -> int:
     try:
         inventory = discover_inventory(config, previous, include_hostname_evidence=True)
         store = StateStore(state_dir)
+        compatibility_observations = inventory.pop("_compatibility", {})
         capabilities = inventory.pop("_capabilities", [])
         hostname_evidence = inventory.pop("_hostname_evidence", None)
         store.write_json("inventory.json", inventory, INVENTORY_SCHEMA)
@@ -111,6 +113,15 @@ def main() -> int:
             event_bus.publish("InventoryChanged", inventory["updated"], {"device_count": inventory["summary"]["device_count"], "service_count": inventory["summary"]["service_count"], "capability_count": len(capabilities)})
         if inventory["topology"] != previous.get("topology"):
             event_bus.publish("TopologyChanged", inventory["updated"], {"topology_edges": inventory["summary"]["topology_edges"]})
+        compatibility = None
+        try:
+            compatibility = refresh_status(StateStore(home / "state" / "platform"), home,
+                compatibility_observations, now_iso(), HIOC_HOME)
+            for entry in compatibility["dependencies"]:
+                if entry["dependency_id"] == "pihole_leases" and entry["status"] not in {"COMPATIBLE", "COMPATIBLE_UPDATED"}:
+                    log.warning("%s", entry["diagnostic"])
+        except Exception:
+            log.warning("Compatibility state unavailable; inventory remains authoritative")
         base = config.get("HIOC_BASE_TOPIC", "home/infrastructure/hioc")
         payloads = {
             f"{base}/inventory": inventory,
@@ -125,10 +136,25 @@ def main() -> int:
             with MqttClient(config) as mqtt:
                 for topic, payload in payloads.items():
                     mqtt.publish(topic, payload)
+                try:
+                    compatibility = refresh_status(StateStore(home / "state" / "platform"), home,
+                        {"mqtt_transport": mqtt_observation()}, now_iso(), HIOC_HOME)
+                except Exception:
+                    compatibility = None
+                    log.warning("Compatibility state unavailable; inventory remains authoritative")
+                if compatibility is not None:
+                    mqtt.publish(f"{base}/platform/compatibility", compatibility)
         except Exception as exc:
-            log.error("inventory discovered but MQTT publish failed: %s", exc)
+            log.error("Inventory remains authoritative; MQTT publication unavailable")
+            try:
+                compatibility = refresh_status(StateStore(home / "state" / "platform"), home,
+                    {"mqtt_transport": mqtt_observation(exc)}, now_iso(), HIOC_HOME)
+                entry = next(e for e in compatibility["dependencies"] if e["dependency_id"] == "mqtt_transport")
+                log.warning("%s", entry["diagnostic"])
+            except Exception:
+                log.warning("Compatibility state unavailable; inventory remains authoritative")
             status["status"] = "degraded"
-            status["publish_errors"] = [str(exc)]
+            status["publish_errors"] = ["MQTT publication unavailable; see compatibility status"]
             save_json(status_file, status)
             return 0
         log.info("inventory updated devices=%s services=%s", inventory["summary"]["device_count"], inventory["summary"]["service_count"])

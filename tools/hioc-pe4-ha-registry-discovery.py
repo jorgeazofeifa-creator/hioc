@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PE-4.0B.2b: bounded, memory-only Core 2026.8.1 registry discovery.
+"""PE-4.0B.2b: bounded, memory-only capability-first HA registry discovery.
 
 No execution is authorized by repository preparation. No raw payload is logged,
 written, or included in an exception. This standalone artifact leaves 2a intact.
@@ -115,6 +115,7 @@ class Failure(Exception):
         if code not in ERROR_CODES or stage not in STAGES:
             code, stage = "UNEXPECTED_ERROR", "PRIVACY_VALIDATION"
         self.code, self.stage = code, stage
+        self.compatibility = None
         super().__init__(code)
 
 
@@ -366,16 +367,37 @@ class Reducer:
         return report
 
 
+def sanitized_version(value):
+    if type(value) is not str or len(value) > 32 or not re.fullmatch(r"[0-9]{4}\.[0-9]{1,2}\.[0-9]{1,3}(?:(?:a|b|rc|\.dev)[0-9]{1,8})?", value):
+        reject("HA_DEPLOYMENT_DISCOVERY", "UNEXPECTED_SCHEMA")
+    return value
+
+
+def compatibility_metadata(observed=None, failed=None, dependency="ha_core", status=None):
+    if status is None:
+        status = "INCOMPATIBLE" if failed else "COMPATIBILITY_UNKNOWN" if observed is None else "COMPATIBLE" if observed == CORE_TAG else "COMPATIBLE_UPDATED"
+    return {"dependency_id": dependency, "status": status, "observed_version": observed,
+            "compatibility_baseline": CORE_TAG if dependency == "ha_core" else None,
+            "failed_capability": failed, "likely_update_compatibility_break": False}
+
+
+def dependency_reject(dependency, capability, status="INCOMPATIBLE", code="UNSUPPORTED_INTERFACE", stage="INTERFACE_DISCOVERY"):
+    error = Failure(code, stage)
+    error.compatibility = compatibility_metadata(failed=capability, dependency=dependency, status=status)
+    raise error
+
+
 def base_report(code="NONE", stage="COMPLETE"):
-    return {"schema_version": "1.0", "result": "PASS" if code == "NONE" else "FAIL",
+    return {"schema_version": "1.1", "result": "PASS" if code == "NONE" else "FAIL",
             "target_classification": "APPROVED_PI3_TO_PI5_HA",
-            "interface_classification": "CORE_SOURCE_VERSION_PINNED_WEBSOCKET",
+            "interface_classification": "CAPABILITY_FIRST_SOURCE_BASELINE_WEBSOCKET",
             "deployment_classification": "REMOTE_HA_ENDPOINT_ONLY",
             "core_source_reference": CORE_TAG,
             "INSTANCE_REFERENCE_METHOD": "OPERATOR_LOGICAL_LABEL", "INSTANCE_REFERENCE": "PI5_HA",
             "classification_limit": "PHYSICAL_HELPER_INTEGRATION_VIRTUAL_CLOUD_NOT_DERIVED",
             "registries": {}, "structure_fingerprint": None, "warnings": [],
-            "privacy_validation": "PASS", "ERROR_CODE": code, "FAILURE_STAGE": stage}
+            "privacy_validation": "PASS", "ERROR_CODE": code, "FAILURE_STAGE": stage,
+            "compatibility": compatibility_metadata(status="COMPATIBILITY_UNKNOWN")}
 
 
 def validate_report(report):
@@ -389,10 +411,27 @@ def validate_report(report):
     base = base_report()
     if type(report) is not dict or set(report) != set(base):
         unsafe()
-    varying = {"result", "registries", "structure_fingerprint", "warnings", "ERROR_CODE", "FAILURE_STAGE"}
+    varying = {"result", "registries", "structure_fingerprint", "warnings", "ERROR_CODE", "FAILURE_STAGE", "compatibility"}
     for key in set(base) - varying:
         if report[key] != base[key] or type(report[key]) is not str:
             unsafe()
+    meta = report["compatibility"]
+    if type(meta) is not dict or set(meta) != set(compatibility_metadata()):
+        unsafe()
+    if meta["dependency_id"] not in {"ha_core", "pe4_python", "pe4_websockets", "iproute"}:
+        unsafe()
+    if meta["status"] not in {"COMPATIBLE", "COMPATIBLE_UPDATED", "COMPATIBILITY_UNKNOWN", "INCOMPATIBLE", "TRUST_ANCHOR_CHANGED", "DEPENDENCY_UNAVAILABLE"}:
+        unsafe()
+    if meta["observed_version"] is not None:
+        try:
+            sanitized_version(meta["observed_version"])
+        except Failure:
+            unsafe()
+    expected_baseline = CORE_TAG if meta["dependency_id"] == "ha_core" else None
+    if meta["compatibility_baseline"] != expected_baseline or meta["likely_update_compatibility_break"] is not False:
+        unsafe()
+    if meta["failed_capability"] not in {None, "authentication", "device_registry", "entity_registry", "area_registry", "config_entries", "runtime_identity", "import_api", "address_output", "version_metadata", "transport"}:
+        unsafe()
     code, stage = report["ERROR_CODE"], report["FAILURE_STAGE"]
     if type(code) is not str or type(stage) is not str or code not in ERROR_CODES | {"NONE"} or stage not in STAGES:
         unsafe()
@@ -455,7 +494,7 @@ def validate_report(report):
 def time_left(deadline, cap, stage):
     remaining = deadline - time.monotonic()
     if remaining <= 0:
-        reject(stage, "UNSUPPORTED_INTERFACE")
+        dependency_reject("ha_core", "transport", "DEPENDENCY_UNAVAILABLE", stage=stage)
     return min(remaining, cap)
 
 
@@ -476,12 +515,14 @@ async def bounded(factory, deadline, cap, stage, aborter=lambda: None):
             if (getattr(getattr(exc, "rcvd", None), "code", None) in {1000, 1001}
                     and getattr(getattr(exc, "sent", None), "code", None) in {1000, 1001}):
                 raise
-            reject(stage, "UNSUPPORTED_INTERFACE")
+            if isinstance(exc, OSError) or type(exc).__module__.startswith("websockets") or getattr(exc, "rcvd", None) is not None:
+                dependency_reject("ha_core", "transport", "DEPENDENCY_UNAVAILABLE", stage=stage)
+            dependency_reject("ha_core", "transport", "COMPATIBILITY_UNKNOWN", code="UNEXPECTED_ERROR", stage=stage)
     task = asyncio.create_task(invoke())
     try:
         done, _ = await asyncio.wait({task}, timeout=timeout)
         if task not in done:
-            reject(stage, "UNSUPPORTED_INTERFACE")
+            dependency_reject("ha_core", "transport", "DEPENDENCY_UNAVAILABLE", stage=stage)
         return await task
     finally:
         if not task.done():
@@ -491,7 +532,7 @@ async def bounded(factory, deadline, cap, stage, aborter=lambda: None):
             # Only task reaping receives a finite grace, never more networking.
             done, _ = await asyncio.wait({task}, timeout=CLOSE_TIMEOUT)
             if task not in done:
-                reject(stage, "UNSUPPORTED_INTERFACE")
+                dependency_reject("ha_core", "transport", "DEPENDENCY_UNAVAILABLE", stage=stage)
         if task.done() and not task.cancelled():
             task.exception()
 
@@ -512,20 +553,23 @@ async def close_bounded(ws, deadline):
 
 async def exchange(ws, token, deadline):
     reducer = Reducer()
+    observed = None
+    capability = "version_metadata"
     try:
         greeting = strict_message(await bounded(ws.recv, deadline, RECEIVE_TIMEOUT, "AUTHENTICATION", lambda: abort(ws)))
-        if set(greeting) != {"type", "ha_version"} or greeting["type"] != "auth_required":
+        if not {"type", "ha_version"}.issubset(greeting) or greeting["type"] != "auth_required":
             reject("AUTHENTICATION")
-        if greeting["ha_version"] != CORE_TAG:
-            reject("HA_DEPLOYMENT_DISCOVERY", "UNSUPPORTED_HA_DEPLOYMENT")
+        observed = sanitized_version(greeting["ha_version"])
+        capability = "authentication"
         await bounded(lambda: ws.send(json.dumps({"type": "auth", "access_token": token})), deadline, RECEIVE_TIMEOUT, "AUTHENTICATION", lambda: abort(ws))
         token = None
         auth = strict_message(await bounded(ws.recv, deadline, RECEIVE_TIMEOUT, "AUTHENTICATION", lambda: abort(ws)))
         if auth.get("type") == "auth_invalid":
             reject("AUTHENTICATION", "AUTHENTICATION_FAILED")
-        if auth != {"type": "auth_ok", "ha_version": CORE_TAG}:
+        if not {"type", "ha_version"}.issubset(auth) or auth["type"] != "auth_ok" or sanitized_version(auth["ha_version"]) != observed:
             reject("AUTHENTICATION")
         for command_id, (registry, command) in enumerate(zip(REGISTRIES, COMMANDS), 1):
+            capability = {"device": "device_registry", "entity": "entity_registry", "area": "area_registry", "config_entry": "config_entries"}[registry]
             await bounded(lambda: ws.send(json.dumps({"id": command_id, "type": command})), deadline, RECEIVE_TIMEOUT, "INTERFACE_DISCOVERY", lambda: abort(ws))
             raw = await bounded(ws.recv, deadline, RECEIVE_TIMEOUT, "INTERFACE_DISCOVERY", lambda: abort(ws))
             records = checked_result(raw, command_id)
@@ -543,7 +587,15 @@ async def exchange(ws, token, deadline):
                 raise
         else:
             reject("INTERFACE_DISCOVERY")
-        return reducer.finish()
+        report = reducer.finish()
+        report["compatibility"] = compatibility_metadata(observed)
+        validate_report(report)
+        return report
+    except Failure as error:
+        prior_status = error.compatibility["status"] if error.compatibility else None
+        failed = "transport" if prior_status == "DEPENDENCY_UNAVAILABLE" else capability
+        error.compatibility = compatibility_metadata(observed, failed, status=prior_status)
+        raise
     finally:
         token = None
         reducer.ids.clear()
@@ -554,10 +606,10 @@ async def exchange(ws, token, deadline):
 async def discover(token, module=None):
     module = module or importlib.import_module("websockets")
     if getattr(module, "__version__", None) != "16.1.1":
-        reject("INTERFACE_DISCOVERY", "UNSUPPORTED_INTERFACE")
-    connect = module.connect
+        dependency_reject("pe4_websockets", "import_api", "TRUST_ANCHOR_CHANGED")
+    connect = getattr(module, "connect", None)
     if not inspect.isclass(connect) or not callable(getattr(connect, "process_redirect", None)):
-        reject("INTERFACE_DISCOVERY", "UNSUPPORTED_INTERFACE")
+        dependency_reject("pe4_websockets", "import_api")
     class NoRedirect(connect):
         def process_redirect(self, exc):
             return exc
@@ -599,19 +651,22 @@ def preflight(argv):
         addresses = subprocess.run(["/usr/sbin/ip", "-o", "-4", "addr", "show"],
             capture_output=True, text=True, timeout=2, stdin=subprocess.DEVNULL, check=True).stdout
     except (OSError, subprocess.SubprocessError):
-        reject("TARGET_IDENTITY", "WRONG_TARGET")
+        dependency_reject("iproute", "address_output", "DEPENDENCY_UNAVAILABLE")
     if not re.search(r"\binet 192\.168\.100\.252/", addresses):
         reject("TARGET_IDENTITY", "WRONG_TARGET")
     environment = "/home/jazofv1/hioc/runtime/pe4/environments/cpython311-websockets16.1.1-lock-v1"
     if sys.version_info[:3] != (3, 11, 2) or os.path.realpath(sys.prefix) != environment:
-        reject("INTERFACE_DISCOVERY", "UNSUPPORTED_INTERFACE")
+        dependency_reject("pe4_python", "runtime_identity", "TRUST_ANCHOR_CHANGED")
     if not sys.flags.isolated or not sys.flags.dont_write_bytecode:
         reject("INTERFACE_DISCOVERY", "UNSUPPORTED_INTERFACE")
     if any(os.environ.get(k, "").strip() for k in os.environ if k.lower() in {"http_proxy", "https_proxy", "all_proxy", "no_proxy"}):
         reject("INTERFACE_DISCOVERY", "UNSUPPORTED_INTERFACE")
-    module = importlib.import_module("websockets")
+    try:
+        module = importlib.import_module("websockets")
+    except Exception:
+        dependency_reject("pe4_websockets", "import_api", "DEPENDENCY_UNAVAILABLE")
     if (module.__version__ != "16.1.1" or not os.path.realpath(module.__file__).startswith(environment + "/lib/python3.11/site-packages/websockets/")):
-        reject("INTERFACE_DISCOVERY", "UNSUPPORTED_INTERFACE")
+        dependency_reject("pe4_websockets", "import_api", "TRUST_ANCHOR_CHANGED")
     if not sys.stdin.isatty() or not sys.stderr.isatty():
         reject("AUTHENTICATION", "AUTHENTICATION_UNAVAILABLE")
 
@@ -725,6 +780,34 @@ def publish(report):
             os.close(parent)
 
 
+def record_compatibility(report):
+    if os.name != "posix":
+        return None  # Windows synthetic tests never touch production state.
+    from pathlib import Path
+    source_root = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(source_root / "pi4" / "lib"))
+    try:
+        from hioc.core.compatibility import refresh_status, observation_from_ha
+        from hioc.core.state import StateStore
+        from hioc.runtime import now_iso
+        home = Path("/home/jazofv1/hioc")
+        meta = report.get("compatibility", {})
+        dependency = meta.get("dependency_id", "ha_core")
+        if dependency == "ha_core":
+            observation = observation_from_ha(report)
+        else:
+            capability_sets = {"pe4_python": {"interpreter_start": None, "runtime_api": False},
+                "pe4_websockets": {"import_api": False, "bounded_connect": None},
+                "iproute": {"address_route_neighbor": False, "socket_columns": None}}
+            observation = {"available": meta.get("status") != "DEPENDENCY_UNAVAILABLE",
+                "identity_matches": False if meta.get("status") == "TRUST_ANCHOR_CHANGED" else None,
+                "capabilities": capability_sets[dependency]}
+        return refresh_status(StateStore(home / "state" / "platform"), source_root,
+            {dependency: observation}, now_iso(), source_root)
+    finally:
+        sys.path.pop(0)
+
+
 def run(argv=None, output=print):
     token = None
     ready = False
@@ -737,15 +820,29 @@ def run(argv=None, output=print):
         token = None
         publishing = True
         publish(report)
+        try:
+            record_compatibility(report)
+        except Exception:
+            output("Compatibility state unavailable; sanitized discovery evidence remains authoritative.")
         output("RESULT=PASS\nERROR_CODE=NONE\nFAILURE_STAGE=COMPLETE\nPRIVACY_VALIDATION=PASS")
         return 0
     except Failure as exc:
         if ready and not publishing:
             try:
-                publish(base_report(exc.code, exc.stage))
+                failure_report = base_report(exc.code, exc.stage)
+                if exc.compatibility is not None:
+                    failure_report["compatibility"] = exc.compatibility
+                publish(failure_report)
+                try:
+                    record_compatibility(failure_report)
+                except Exception:
+                    output("Compatibility state unavailable; sanitized failure evidence remains authoritative.")
             except (OSError, Failure):
                 exc = Failure("EVIDENCE_PUBLICATION_FAILED", "EVIDENCE_PUBLICATION")
         output(f"RESULT=FAIL\nERROR_CODE={exc.code}\nFAILURE_STAGE={exc.stage}")
+        if exc.compatibility is not None:
+            meta = exc.compatibility
+            output(f"Compatibility issue: {meta['dependency_id']}; {meta['status']}; version={meta['observed_version'] or 'unknown'}; capability={meta['failed_capability']}. Review the dependency contract. No update cause is established.")
         return 1
     except (KeyboardInterrupt, asyncio.CancelledError):
         # Publication cleans only invocation-owned unpublished temporary files;

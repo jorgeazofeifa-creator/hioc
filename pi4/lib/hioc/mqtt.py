@@ -4,7 +4,9 @@ import struct
 
 
 class MqttPublishError(RuntimeError):
-    pass
+    def __init__(self, message, capability=None):
+        self.capability = capability
+        super().__init__(message)
 
 
 def _encode_remaining_length(length: int) -> bytes:
@@ -59,13 +61,18 @@ class MqttClient:
         variable = _field("MQTT") + bytes([4, flags]) + struct.pack("!H", 60)
         packet = bytes([0x10]) + _encode_remaining_length(len(variable) + len(payload)) + variable + payload
         self.sock.sendall(packet)
-        response = self.sock.recv(4)
-        if len(response) != 4 or response[0] != 0x20 or response[1] != 0x02 or response[3] != 0x00:
-            raise MqttPublishError(f"MQTT connection rejected: {response!r}")
+        response = bytearray()
+        while len(response) < 4:
+            chunk = self.sock.recv(4 - len(response))
+            if not chunk:
+                raise ConnectionError("MQTT CONNACK connection closed before completion")
+            response.extend(chunk)
+        if response[0] != 0x20 or response[1] != 0x02 or response[2] != 0x00 or response[3] != 0x00:
+            raise MqttPublishError("MQTT CONNACK does not satisfy the transport contract", "connack")
 
     def publish(self, topic: str, payload, retain: bool = True) -> None:
         if self.sock is None:
-            raise MqttPublishError("MQTT client is not connected")
+            raise MqttPublishError("MQTT client is not connected", "publish")
         if isinstance(payload, (dict, list)):
             message = json.dumps(payload, sort_keys=True)
         else:

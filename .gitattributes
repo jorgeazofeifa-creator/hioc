@@ -6,3 +6,12 @@ tools/hioc-pe3-action5-deploy.sh text eol=lf
 tools/hioc-pe3-action5c-revalidate.sh text eol=lf
 tools/hioc_manufacturer_protection.py text eol=lf
 governance/python-runtime-support.json text eol=lf
+
+# Compatibility correction artifacts have reproducible governed LF bytes.
+pi4/lib/hioc/core/compatibility.py text eol=lf
+tools/hioc-pe4-ha-registry-discovery.py text eol=lf
+governance/compatibility-contracts.json text eol=lf
+governance/compatibility-contracts.schema.json text eol=lf
+governance/compatibility-status.schema.json text eol=lf
+governance/pe4/pe4-0b2b-compatibility-correction.json text eol=lf
+governance/pe4/pe4-0b2b-discovery-report.schema.json text eol=lf

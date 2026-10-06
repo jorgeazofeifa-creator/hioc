@@ -1,0 +1,175 @@
+{
+  "baseline_commit": "2c339bb3a597aaae152c3fb684c11b96eed9bfe9",
+  "bounds": {
+    "close_seconds": 2.0,
+    "connect_seconds": 5.0,
+    "max_distinct_field_names": 256,
+    "max_evidence_bytes": 262144,
+    "max_fields_per_record": 128,
+    "max_identity_namespace_string_characters": 1024,
+    "max_json_depth": 32,
+    "max_message_bytes": 16777216,
+    "max_namespaces": 128,
+    "max_records": {
+      "area": 2048,
+      "config_entry": 4096,
+      "device": 4096,
+      "entity": 65536
+    },
+    "max_warnings": 16,
+    "retries": 0,
+    "send_receive_seconds": 15.0,
+    "task_reaping_grace_seconds": 2.0,
+    "total_network_seconds": 90.0
+  },
+  "commands": [
+    "config/device_registry/list",
+    "config/entity_registry/list",
+    "config/area_registry/list",
+    "config_entries/get"
+  ],
+  "core_tag": "2026.8.1",
+  "credential_model": "PYTHON_GETPASS_ONLY_FATAL_LOCAL_GETPASSWARNING_STDIN_STDERR_TTY_PROCESS_MEMORY_ONLY",
+  "discovery_executed": false,
+  "evidence": {
+    "caller_path_permitted": false,
+    "directory": "/tmp/hioc-pe4-ha-discovery-XXXXXXXX",
+    "directory_mode": "0700",
+    "file_mode": "0600",
+    "files": [
+      "discovery-report.json",
+      "discovery-result.txt"
+    ],
+    "publication": "NON_OVERWRITING_HARD_LINK_FILE_AND_DIRECTORY_FSYNC_RESULT_LAST",
+    "raw_files_permitted": false,
+    "suffix": "EIGHT_RANDOM_HEX_CHARACTERS"
+  },
+  "evidence_schema": {
+    "path": "governance/pe4/pe4-0b2b-discovery-report.schema.json",
+    "sha256": "18b77585f4bffeaca971db6d90ba377b6378b952dd057c035fddae3bfb86a32e",
+    "version": "1.1"
+  },
+  "fingerprint_model": "KNOWN_FIELD_NAMES_OBSERVED_TYPES_OPTIONALITY_AND_REGISTRY_CLASSES_ONLY_NO_VALUES_COUNTS_NAMESPACES",
+  "first_execution": {
+    "error_code": "UNSUPPORTED_HA_DEPLOYMENT",
+    "evidence_basis": "USER_SUPPLIED_NO_REMOTE_ACCESS",
+    "evidence_directory": "/tmp/hioc-pe4-ha-discovery-22be880b",
+    "failure_stage": "HA_DEPLOYMENT_DISCOVERY",
+    "report_sha256": "efd3aa0cc2f5bc00a459a0c05055ac14e5a9a7ab6cc13aeeb34aa9aa616cb087",
+    "result": "FAIL",
+    "result_sha256": "1e11b6e512db860a8f9b2b6af1723c6aabafd75968d7fd643c891144a7a72195"
+  },
+  "framework_binding_basis": "CANONICAL_GIT_LF_BYTES_EXACT_ON_LINUX_RELEASE_SOURCE",
+  "framework_bindings": {
+    "governance/compatibility-contracts.json": "83493cacfef10ff85e936bcacbee215797c745e3fa6edff1954c3cc1f3c82227",
+    "pi4/lib/hioc/core/compatibility.py": "713c292c09282f3be524bc8a2090de43cf0fb78a81b3c71eed143b7a0d68e952",
+    "pi4/lib/hioc/core/state.py": "ff907db9b5a8a9cfb1413c8670475a9ff5f80203f553f12d1e565be42717772d",
+    "pi4/lib/hioc/runtime.py": "61800540e2c6ea9c588af89d654956c30978f9a209008beae2b6dd5ff4e74fa6"
+  },
+  "future_pre_token_gates": [
+    "MAIN_SYNCHRONIZED_CLEAN_NO_UNTRACKED_NO_GIT_OPERATION",
+    "SOURCE_BLOB_AND_SHA_AND_RELEASE_SOURCE_PATH",
+    "HOSTNAME_OPERATOR_IPV4",
+    "ACTIVE_TARGET_AND_FINAL_ENVIRONMENT",
+    "APPROVED_COMPLETE_TREE_BYTES_AND_METADATA",
+    "CPYTHON_VERSION_PREFIX_SOABI_ARCHITECTURE",
+    "WEBSOCKETS_VERSION_ORIGIN_AND_EXACT_ACCEPTED_DISTRIBUTIONS",
+    "SUPPORTED_SHELL_AND_INTERACTIVE_TTY",
+    "2A_CLOSURE_RECORD_AND_2B_TOOL_SCHEMA_SOURCE_REVIEW_IDENTITIES",
+    "SEPARATE_2B_EXECUTION_AUTHORIZATION"
+  ],
+  "interface_classification": "CAPABILITY_FIRST_BASELINE_PROVENANCE_ONLY",
+  "lifecycle": {
+    "corrected_execution": "NOT_STARTED",
+    "d": "PASS_CLOSED",
+    "e": "PASS_CLOSED",
+    "e_handoff": "ACCEPTED",
+    "f": "PASS_CLOSED",
+    "g": "PASS_CLOSED",
+    "pe4": "NOT_COMPLETE",
+    "pe4_0b2a": "PASS_CLOSED",
+    "pe4_0b2b": "FIRST_EXECUTION_ATTEMPTED_NOT_COMPLETE",
+    "pe4_0c": "NOT_STARTED",
+    "phase_7a": "ACTIVE",
+    "rollback": "NOT_PERFORMED"
+  },
+  "live_only_uncertainties": [
+    "ACTUAL_COMMAND_PERMISSION_AVAILABILITY",
+    "ACTUAL_REGISTRY_SHAPE_AND_SIZE",
+    "ACTUAL_RELATIONSHIP_SNAPSHOT_COMPLETENESS",
+    "ACTUAL_MAC_STRUCTURE_AND_COLLISIONS"
+  ],
+  "namespace_model": {
+    "other_namespace_names": "COUNT_ONLY",
+    "published_literal_allowlist": [
+      "bluetooth",
+      "esphome",
+      "hue",
+      "mac",
+      "mqtt",
+      "upnp",
+      "zha",
+      "zigbee",
+      "zwave",
+      "zwave_js"
+    ]
+  },
+  "network_model": "ONE_NUMERIC_AF_INET_PRECONNECTED_SOCKET_NO_DNS_PROXY_REDIRECT_RETRY_PING_SUBSCRIPTION_FALLBACK",
+  "permission_classification": "AUTHENTICATED_USER_SUFFICIENT_NO_REQUIRE_ADMIN_DECORATOR",
+  "prerequisite": {
+    "commit": "09814b8ab19553f21ff68c3a617a5164c47ef59f",
+    "pe4_0b2a": "PASS_CLOSED",
+    "record": "governance/pe4/pe4-0b2a-execution-closure.json",
+    "record_sha256": "4255f74c64da4753f285d8d7d046caceb9481fcc3fe35d2b52ab66318eff250e"
+  },
+  "privacy_model": "RAW_MEMORY_ONLY_IMMEDIATE_AGGREGATE_REDUCTION_NO_RAW_VALUES_OR_MAC_HASHES",
+  "protected_2a_identity": {
+    "git_blob": "85842a81c57187c9e119d1065fce433e5b067e1f",
+    "sha256": "aa0e58ed6c7bb4586625836cc71ad0cab9270e6b11a6a5db66497115b001decf"
+  },
+  "record_type": "PE4_0B2B_COMPATIBILITY_CORRECTION",
+  "runtime": {
+    "accepted_action_e_record": "governance/pe4/accepted-action-e.json",
+    "accepted_action_e_sha256": "1ac94f233bf543cafdc81b1f530177bd1c84d46ae13a7a686b33d34032d50c14",
+    "action_d_result_sha256": "a31f1e841f437dece13d327f14a99a93d5f96a8e258b9786cc6e49358821350d",
+    "active_target": "environments/cpython311-websockets16.1.1-lock-v1",
+    "approved_distribution_names": [
+      "pip",
+      "setuptools",
+      "websockets"
+    ],
+    "architecture": "aarch64",
+    "construction_tree_sha256": "4a929181d69f7391b3e39a0fd27fb17aa9c8883f42d9707af559c9a986d514a9",
+    "distribution_versions_source": "DIGEST_BOUND_ACTION_D_RESULT_INSTALLED_DISTRIBUTIONS",
+    "environment": "/home/jazofv1/hioc/runtime/pe4/environments/cpython311-websockets16.1.1-lock-v1",
+    "mutation_permitted": false,
+    "python_version": "3.11.2",
+    "soabi": "cpython-311-aarch64-linux-gnu",
+    "tree_policy": "EXACT_ACCEPTED_TREE_EXCEPT_PUBLICATION_ROOT_CTIME",
+    "websockets_version": "16.1.1"
+  },
+  "schema_version": "1.0",
+  "source": {
+    "execution_path": "/home/jazofv1/hioc-release-source/tools/hioc-pe4-ha-registry-discovery.py",
+    "git_blob": "9e77993c3f6a533b3d394017d4d97e2366959797",
+    "repository_path": "tools/hioc-pe4-ha-registry-discovery.py",
+    "sha256": "b074608e98e887767be964120e8bfad8b5f7fba5fa17d671b0a1a1704f35c1b8"
+  },
+  "source_review": {
+    "record": "governance/pe4/pe4-0b2b-core-source-contract.json",
+    "sha256": "d4cf21eb469517d70da369c5839395be4b91d489883c12b2eb8e1ae24fe37a58",
+    "source_files": [
+      "homeassistant/components/config/device_registry.py",
+      "homeassistant/components/config/entity_registry.py",
+      "homeassistant/components/config/area_registry.py",
+      "homeassistant/components/config/config_entries.py",
+      "homeassistant/helpers/device_registry.py",
+      "homeassistant/helpers/entity_registry.py",
+      "homeassistant/helpers/area_registry.py",
+      "homeassistant/config_entries.py",
+      "homeassistant/components/websocket_api/messages.py",
+      "homeassistant/components/websocket_api/connection.py"
+    ]
+  },
+  "status": "CORRECTED_PREPARED_FOR_SEPARATE_AUTHORIZATION"
+}

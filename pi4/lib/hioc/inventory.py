@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .runtime import run_command, now_iso
+from .core.compatibility import lease_observation
 from .core.capabilities import CapabilityRegistry
 from .core.drivers import DriverRegistry, DriverResult
 from .core.monitoring import is_dhcp_assignment_only, is_operationally_monitored, record_sources as _record_sources
@@ -1774,4 +1775,5 @@ def discover_inventory(config: dict, previous: dict, include_hostname_evidence: 
     }
     if include_hostname_evidence:
         inventory["_hostname_evidence"] = hostname_evidence_bindings
+        inventory["_compatibility"] = {"pihole_leases": lease_observation([source.status for source in dhcp_snapshot])}
     return inventory

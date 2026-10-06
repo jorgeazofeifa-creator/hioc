@@ -1,0 +1,202 @@
+{
+  "$id": "urn:hioc:compatibility-status:1.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "affected_components": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "compatible_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "compatible_updated_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "degraded_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "dependencies": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "affected_hioc_component": {
+            "type": "string"
+          },
+          "capabilities": {
+            "additionalProperties": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "type": "object"
+          },
+          "compatibility_baseline": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dependency_id": {
+            "type": "string"
+          },
+          "diagnostic": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "failed_capability": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "first_detection_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_known_compatible_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_known_compatible_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "likely_update_compatibility_break": {
+            "type": "boolean"
+          },
+          "observed_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "previous_known_compatible_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recommended_action": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "COMPATIBILITY_DEGRADED",
+              "COMPATIBILITY_UNKNOWN",
+              "COMPATIBLE",
+              "COMPATIBLE_UPDATED",
+              "DEPENDENCY_UNAVAILABLE",
+              "INCOMPATIBLE",
+              "TRUST_ANCHOR_CHANGED"
+            ]
+          },
+          "updated": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dependency_id",
+          "display_name",
+          "status",
+          "updated",
+          "observed_version",
+          "previous_known_compatible_version",
+          "last_known_compatible_version",
+          "last_known_compatible_at",
+          "compatibility_baseline",
+          "failed_capability",
+          "likely_update_compatibility_break",
+          "first_detection_time",
+          "affected_hioc_component",
+          "recommended_action",
+          "capabilities",
+          "diagnostic"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "dependency_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "incompatible_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "overall_compatibility": {
+      "enum": [
+        "COMPATIBILITY_DEGRADED",
+        "COMPATIBILITY_UNKNOWN",
+        "COMPATIBLE",
+        "COMPATIBLE_UPDATED",
+        "DEPENDENCY_UNAVAILABLE",
+        "INCOMPATIBLE",
+        "TRUST_ANCHOR_CHANGED"
+      ]
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "enum": [
+        "online",
+        "degraded"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "trust_anchor_changed_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "unavailable_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "unknown_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "updated": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "updated",
+    "overall_compatibility",
+    "dependency_count",
+    "compatible_count",
+    "compatible_updated_count",
+    "degraded_count",
+    "incompatible_count",
+    "unknown_count",
+    "trust_anchor_changed_count",
+    "unavailable_count",
+    "affected_components",
+    "summary",
+    "dependencies"
+  ],
+  "type": "object"
+}

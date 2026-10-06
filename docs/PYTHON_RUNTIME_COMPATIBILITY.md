@@ -1,5 +1,19 @@
 # HIOC Python Runtime Compatibility
 
+## Dependency compatibility diagnostics - 2026-10-06
+
+This checkpoint executed the final complete repository suite on CPython 3.12.14:
+1362 tests passed with 25 platform skips. This adds tested patch evidence and
+does not promote a production or Windows operational support line. Earlier
+3.12.13 evidence and the supported Windows 3.13.x decision remain historical
+and authoritative in their respective scopes.
+
+[Compatibility resilience](COMPATIBILITY_RESILIENCE.md) preserves this policy.
+Windows 3.13 patch drift does not change support identity; exact3.13.15 remains
+tested evidence. Platform CPython floor observations do not promote a supported
+operational line. PE-4 isolated 3.11.2/websockets 16.1.1 identities remain frozen
+construction/provenance contracts with separate startup/import/API diagnostics.
+
 ## Authority and scope
 
 This document is the authoritative compatibility policy for every Python

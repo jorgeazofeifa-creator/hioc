@@ -382,6 +382,15 @@ def emit(states,result,code,stage,remote=""):
     print(f"EVIDENCE_STATE={states['EVIDENCE_STATE']}")
     print(f"ACTION_B={'COMPLETE' if result=='PASS' else 'NOT_COMPLETE'}"); terminal(result,code,stage,False)
     if remote: print(f"TRANSFER_DIRECTORY={remote}")
+    trust_codes={"OPENSSH_EXECUTABLE_IDENTITY_MISMATCH", "SSH_PUBLIC_FINGERPRINT_MISMATCH",
+                 "SSH_PUBLIC_KEY_IDENTITY_MISMATCH", "SSH_KEY_PAIR_MISMATCH", "KNOWN_HOSTS_IDENTITY_MISMATCH"}
+    if code in trust_codes:
+        print("COMPATIBILITY_DEPENDENCY=openssh_trust\nCOMPATIBILITY_STATUS=TRUST_ANCHOR_CHANGED")
+        print("Compatibility trust change detected: Microsoft OpenSSH executable/key/host identity requires governed review. Action B is blocked; the new identity has not been trusted. No software update cause is established.")
+    elif code == "OPENSSH_TOOL_MISSING":
+        print("COMPATIBILITY_DEPENDENCY=openssh_protocol\nCOMPATIBILITY_STATUS=DEPENDENCY_UNAVAILABLE")
+        print("Microsoft OpenSSH executable unavailable. Action B is blocked pending operator prerequisite review.")
+
 
 def main():
     states={k:False for k in STATE_KEYS}; states["EVIDENCE_STATE"]="NOT_PUBLISHED"

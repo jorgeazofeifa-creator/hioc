@@ -1,0 +1,1439 @@
+{
+  "architecture": "CAPABILITY_FIRST_EXTERNAL_DEPENDENCIES",
+  "audit_scope": "ALL_TRACKED_SOURCE_TEST_GOVERNANCE_SCHEMA_RELEASE_INSTALLER_DOCUMENTATION_FILES",
+  "dependencies": [
+    {
+      "audit_patterns": [
+        "Home Assistant Core",
+        "ha_version",
+        "CORE_TAG",
+        "core_source_reference",
+        "ha core",
+        "homeassistant/core"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": "2026.8.1",
+      "compatibility_probe": "Prepared producer validates bounded auth envelopes then the four read-only commands, correlated results and required fields/types. No live execution in this checkpoint.",
+      "dependency_class": "A",
+      "dependency_id": "ha_core",
+      "display_name": "Home Assistant Core",
+      "exact_version": null,
+      "failure_isolation": "PE-4 Home Assistant Association",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "version_metadata",
+        "authentication",
+        "device_registry",
+        "entity_registry",
+        "area_registry",
+        "config_entries"
+      ],
+      "schema_protocol_expectations": "Four approved read commands, strict JSON, mandatory field core and recognized types; unknown optional fields counted, never exposed. HA release token informational.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "PE-4 Home Assistant Association"
+      ],
+      "version_discovery_method": "bounded sanitized HA WebSocket greeting",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "config/device_registry",
+        "config/entity_registry",
+        "config/area_registry",
+        "config_entries/get",
+        "auth_required",
+        "auth_ok",
+        "WebSocket",
+        "websocket_api"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "Same producer checked_result and Reducer validate IDs, success, bounded lists, mandatory fields and recognized types; additive fields are reduced to counts.",
+      "dependency_class": "E",
+      "dependency_id": "ha_registry_schema",
+      "display_name": "Home Assistant WebSocket registry schema",
+      "exact_version": null,
+      "failure_isolation": "PE-4 Home Assistant Association",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "correlated_results"
+      ],
+      "schema_protocol_expectations": "Integer correlation; one result per command; auth envelope; bounded arrays/objects; no unsafe widening.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "PE-4 Home Assistant Association"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "value_json",
+        "state_topic",
+        "availability_topic",
+        "json_attributes_topic",
+        "value_template",
+        "states\\(",
+        "state_attr\\(",
+        "binary_sensor\\.",
+        "sensor\\.",
+        "homeassistant/packages"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate yaml_templates against HA package YAML, MQTT state/attribute keys, entity names, Jinja templates; ha core check is applicable execution probe. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "E",
+      "dependency_id": "ha_yaml",
+      "display_name": "Home Assistant YAML and template/MQTT integration",
+      "exact_version": null,
+      "failure_isolation": "Home Assistant dashboard and telemetry",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "yaml_templates"
+      ],
+      "schema_protocol_expectations": "HA package YAML, MQTT state/attribute keys, entity names, Jinja templates; ha core check is applicable execution probe.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "Home Assistant dashboard and telemetry"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "/config",
+        "HA_CONFIG",
+        "command -v ha",
+        "ha core"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate config_mount, core_check against Configurable HA_CONFIG, readable/writable package directory and core-check command; OS version alone never gates. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "ha_config_path",
+      "display_name": "Home Assistant config mount and CLI",
+      "exact_version": null,
+      "failure_isolation": "Home Assistant installation",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "config_mount",
+        "core_check"
+      ],
+      "schema_protocol_expectations": "Configurable HA_CONFIG, readable/writable package directory and core-check command; OS version alone never gates.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "Home Assistant installation"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "Pi-hole",
+        "pihole",
+        "pi-hole",
+        "FTL"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate lease_source against FTL service name and optional package observation; ingestion shape isolated separately. No FTL API client exists here. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "pihole_ftl",
+      "display_name": "Pi-hole FTL",
+      "exact_version": null,
+      "failure_isolation": "inventory and DNS observations",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "lease_source"
+      ],
+      "schema_protocol_expectations": "FTL service name and optional package observation; ingestion shape isolated separately. No FTL API client exists here.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "inventory and DNS observations"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "dhcp.leases",
+        "dnsmasq.leases",
+        "dhcpd.leases",
+        "lease_expires",
+        "dhcp_lease",
+        "dnsmasq"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "Existing capture_dhcp_lease_snapshot classifies found/empty/malformed/partial/unsupported/missing/unreadable/io_error; lease_observation converts those classifications without rereading household data.",
+      "dependency_class": "E",
+      "dependency_id": "pihole_leases",
+      "display_name": "Pi-hole/dnsmasq DHCP lease format",
+      "exact_version": null,
+      "failure_isolation": "passive DHCP inventory",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "lease_columns"
+      ],
+      "schema_protocol_expectations": "Configured path; 3\u20135 whitespace columns; nonnegative expiry; MAC; IPv4; optional hostname/client ID. ISC/IPv6 unsupported. Empty alone is unknown, not format failure.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "passive DHCP inventory"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\bNUT\\b",
+        "nut-server",
+        "nut-monitor",
+        "ups\\.status",
+        "ups_status"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "Current service/dashboard consumption is audited; pure nut_observation validates a supplied ups.status token set. No upsc invocation exists and no live variable/protocol proof is claimed.",
+      "dependency_class": "A",
+      "dependency_id": "nut",
+      "display_name": "NUT service and UPS observation",
+      "exact_version": null,
+      "failure_isolation": "UPS observations",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "ups_status"
+      ],
+      "schema_protocol_expectations": "Current repository consumes systemd/dashboard status; no upsc invocation or UPS wire-port use found. Pure adapter separates unknown status from unavailable service.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "UPS observations"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "go2rtc",
+        "1986",
+        "streams_object"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "Current dashboard entities are audited; pure go2rtc_observation validates a supplied streams mapping. No HTTP caller exists; API port1986 and endpoints require separately authorized integration validation.",
+      "dependency_class": "A",
+      "dependency_id": "go2rtc",
+      "display_name": "go2rtc camera observation",
+      "exact_version": null,
+      "failure_isolation": "camera integration",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "informational only",
+      "required_capabilities": [
+        "streams_object"
+      ],
+      "schema_protocol_expectations": "Current checkout contains dashboard entities, no standalone go2rtc HTTP caller. Governed external port 1986 remains informational contract pending integration, never changed to upstream default. No API request authorized.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "camera integration"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "MQTT",
+        "mqtt",
+        "mosquitto",
+        "1883",
+        "8883",
+        "CONNACK"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "Existing client reads a complete four-byte MQTT3.1.1 CONNACK including fragmented reads, validates flags/return code, then completes a retained QoS0 socket write. No broker delivery acknowledgement exists at QoS0.",
+      "dependency_class": "E",
+      "dependency_id": "mqtt_transport",
+      "display_name": "MQTT broker transport",
+      "exact_version": null,
+      "failure_isolation": "telemetry publication",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "connack",
+        "publish"
+      ],
+      "schema_protocol_expectations": "MQTT 3.1.1 TCP, bounded CONNACK, retained QoS0; configurable port default1883. No TLS implementation in minimal publisher; configured secure transport requires separate reviewed support.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "telemetry publication"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "mosquitto_pub",
+        "mosquitto_sub"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate publish_cli, subscribe_cli against Configured host/port credentials; -C 1 retained retrieval, timeouts, byte payload shape. Version informational; no broker-version pin. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "mqtt_cli",
+      "display_name": "Mosquitto CLI utilities",
+      "exact_version": null,
+      "failure_isolation": "telemetry and retained validation",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "publish_cli",
+        "subscribe_cli"
+      ],
+      "schema_protocol_expectations": "Configured host/port credentials; -C 1 retained retrieval, timeouts, byte payload shape. Version informational; no broker-version pin.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "telemetry and retained validation"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "3\\.13",
+        "pymanager",
+        "ExpectedMajorMinor",
+        "ExpectedPythonMajorMinor",
+        "PYTHON313"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": "3.13.15",
+      "compatibility_probe": "Existing managed3.13 selection and execution probe verify CPython major/minor; python_observation supports patch float. Governed full validation remains required for support promotion.",
+      "dependency_class": "D",
+      "dependency_id": "windows_python",
+      "display_name": "Windows operator CPython",
+      "exact_version": null,
+      "failure_isolation": "Windows operator checkpoints",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "supported-line",
+      "required_capabilities": [
+        "cpython_line"
+      ],
+      "schema_protocol_expectations": "CPython3.13.x floats patch after capability probe;3.13.15 historical tested evidence. Manager resolution must select approved line.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "Windows operator checkpoints"
+      ],
+      "version_discovery_method": "authorized CPython execution probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "python3",
+        "sys\\.version_info",
+        "sys\\.implementation",
+        "sysconfig",
+        "CPython",
+        "Python Runtime",
+        "stdlib"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "Platform collector observes current CPython implementation and language floor; this is a language capability only and does not promote an operational supported line.",
+      "dependency_class": "D",
+      "dependency_id": "system_python",
+      "display_name": "System Python and stdlib",
+      "exact_version": null,
+      "failure_isolation": "collector and repository tooling",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "supported-line",
+      "required_capabilities": [
+        "cpython_line"
+      ],
+      "schema_protocol_expectations": "CPython language floor3.10; production exact version unverified, not supported-line promotion. Validate imported APIs, subprocess, asyncio and filesystem capabilities.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "collector and repository tooling"
+      ],
+      "version_discovery_method": "sys.version_info from the current collector (language observation only)",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "3\\.11\\.2",
+        "cpython311",
+        "cpython-311",
+        "SOABI",
+        "aarch64",
+        "sys\\.prefix"
+      ],
+      "automatic_continuation_after_version_drift": false,
+      "changed_version_alone_can_fail": true,
+      "compatibility_baseline": "3.11.2",
+      "compatibility_probe": "Existing immutable pre-token identity gates retained; pure isolated_runtime_observations offers bounded local interpreter startup/API diagnostics only after governed trust validation.",
+      "dependency_class": "B",
+      "dependency_id": "pe4_python",
+      "display_name": "Governed PE-4 CPython runtime",
+      "exact_version": "3.11.2",
+      "failure_isolation": "PE-4 isolated runtime",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "HIOC",
+      "policy": "intentional exact pin",
+      "required_capabilities": [
+        "interpreter_start",
+        "runtime_api"
+      ],
+      "schema_protocol_expectations": "CPython3.11.2, aarch64/SOABI/prefix/tree exact approved construction; host interpreter/shared-library usability probed before import.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "PE-4 isolated runtime"
+      ],
+      "version_discovery_method": "authorized CPython execution probe",
+      "version_role": "gating"
+    },
+    {
+      "audit_patterns": [
+        "websockets",
+        "16\\.1\\.1",
+        "WHEEL_SIZE",
+        "WHEEL_NAME",
+        "manylinux"
+      ],
+      "automatic_continuation_after_version_drift": false,
+      "changed_version_alone_can_fail": true,
+      "compatibility_baseline": "16.1.1",
+      "compatibility_probe": "Existing exact wheel/origin/API gates retained; bounded local import/connect-class surface probe separates API/import failure from identity drift.",
+      "dependency_class": "B",
+      "dependency_id": "pe4_websockets",
+      "display_name": "Governed websockets wheel and API",
+      "exact_version": "16.1.1",
+      "failure_isolation": "PE-4 isolated runtime",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "HIOC",
+      "policy": "intentional exact pin",
+      "required_capabilities": [
+        "import_api",
+        "bounded_connect"
+      ],
+      "schema_protocol_expectations": "websockets16.1.1 exact governed wheel/distribution origin; async connect class, process_redirect, max_size, proxy controls and cancellation surface.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "PE-4 isolated runtime"
+      ],
+      "version_discovery_method": "validated module __version__ in approved isolated runtime",
+      "version_role": "gating"
+    },
+    {
+      "audit_patterns": [
+        "pip==",
+        "setuptools==",
+        "23\\.0\\.1",
+        "66\\.1\\.1",
+        "requirements-pe4.lock",
+        "installed_distributions"
+      ],
+      "automatic_continuation_after_version_drift": false,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate locked_distributions against Exact accepted pip/setuptools distribution versions originate digest-bound ActionD record; offline/hash-locked installation, no automatic upgrades. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "B",
+      "dependency_id": "pe4_packaging",
+      "display_name": "Governed PE-4 pip/setuptools lock",
+      "exact_version": null,
+      "failure_isolation": "PE-4 isolated runtime",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "HIOC",
+      "policy": "intentional exact pin",
+      "required_capabilities": [
+        "locked_distributions"
+      ],
+      "schema_protocol_expectations": "Exact accepted pip/setuptools distribution versions originate digest-bound ActionD record; offline/hash-locked installation, no automatic upgrades.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "PE-4 isolated runtime"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "[0-9a-fA-F]{40,64}",
+        "Git blob",
+        "SHA-256",
+        "SHA256",
+        "sha256sum",
+        "git_blob",
+        "hash-object",
+        "cat-file",
+        "signature",
+        "Authenticode",
+        "TRUST_ANCHOR"
+      ],
+      "automatic_continuation_after_version_drift": false,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate identity against Git blobs/full commits, SHA256 wheel/database/manifests, immutable D/E/F/G evidence. Cryptographic transforms of household IDs are separate privacy mechanisms, not version gates. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "C",
+      "dependency_id": "artifact_trust",
+      "display_name": "Git objects, wheel/data hashes and immutable evidence",
+      "exact_version": null,
+      "failure_isolation": "governance and release provenance",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "HIOC",
+      "policy": "security trust anchor",
+      "required_capabilities": [
+        "identity"
+      ],
+      "schema_protocol_expectations": "Git blobs/full commits, SHA256 wheel/database/manifests, immutable D/E/F/G evidence. Cryptographic transforms of household IDs are separate privacy mechanisms, not version gates.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "governance and release provenance"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "OpenSSH",
+        "ssh-keygen",
+        "ssh.exe",
+        "scp.exe",
+        "StrictHostKeyChecking",
+        "known_hosts",
+        "ed25519",
+        "Get-AuthenticodeSignature"
+      ],
+      "automatic_continuation_after_version_drift": false,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "Existing Action B hash/key/known-host checks remain exact; terminal compatibility diagnostics classify precise identity mismatch codes without adopting a replacement.",
+      "dependency_class": "C",
+      "dependency_id": "openssh_trust",
+      "display_name": "Microsoft OpenSSH executable and SSH host/key trust",
+      "exact_version": null,
+      "failure_isolation": "operator Action B and artifact transfer",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "HIOC",
+      "policy": "security trust anchor",
+      "required_capabilities": [
+        "identity"
+      ],
+      "schema_protocol_expectations": "Pinned signed Microsoft executable hashes/signatures, host/key trust and explicit tool path. Servicing drift requires trust-anchor refresh, never automatic adoption.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "operator Action B and artifact transfer"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "ssh",
+        "scp",
+        "SFTP",
+        "BatchMode",
+        "IdentitiesOnly"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate secure_transfer against Required SSH options, noninteractive authentication, no forwarding, explicit known-hosts trust, fail-closed result handling. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "openssh_protocol",
+      "display_name": "OpenSSH execution/SFTP protocol",
+      "exact_version": null,
+      "failure_isolation": "operator transfer",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "secure_transfer"
+      ],
+      "schema_protocol_expectations": "Required SSH options, noninteractive authentication, no forwarding, explicit known-hosts trust, fail-closed result handling.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "operator transfer"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\bgit\\b",
+        "rev-parse",
+        "rev-list",
+        "merge-base",
+        "ls-remote",
+        "--no-replace-objects"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate object_commands, clean_sync against Object commands, no-replace/filter semantics, clean index/worktree, synchronized branches; no exact Git executable version gate. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "git",
+      "display_name": "Git CLI",
+      "exact_version": null,
+      "failure_isolation": "source and release validation",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "object_commands",
+        "clean_sync"
+      ],
+      "schema_protocol_expectations": "Object commands, no-replace/filter semantics, clean index/worktree, synchronized branches; no exact Git executable version gate.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "source and release validation"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\bbash\\b",
+        "BASH_SOURCE",
+        "pipefail",
+        "/dev/tcp",
+        "process substitution"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate bash_semantics against Arrays/process substitution/pipefail/source and /dev/tcp where used. Windows WSL launcher does not resolve Windows paths like Git Bash; choose an applicable shell. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "bash",
+      "display_name": "Bash",
+      "exact_version": null,
+      "failure_isolation": "shell operators and collectors",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "bash_semantics"
+      ],
+      "schema_protocol_expectations": "Arrays/process substitution/pipefail/source and /dev/tcp where used. Windows WSL launcher does not resolve Windows paths like Git Bash; choose an applicable shell.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "shell operators and collectors"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "PowerShell",
+        "powershell.exe",
+        "pwsh",
+        "ProcessStartInfo",
+        "LASTEXITCODE",
+        "PSVersion"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate native_process against Native argv/stdout/stderr/exit and direct Python invocation behavior; PowerShell5.1 stderr promotion recorded; no patch-version pin. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "powershell",
+      "display_name": "Windows PowerShell/Core",
+      "exact_version": null,
+      "failure_isolation": "Windows operator checkpoints",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "native_process"
+      ],
+      "schema_protocol_expectations": "Native argv/stdout/stderr/exit and direct Python invocation behavior; PowerShell5.1 stderr promotion recorded; no patch-version pin.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "Windows operator checkpoints"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "winget",
+        "pymanager",
+        "PYTHON_MANAGER",
+        "PYLAUNCHER",
+        "9NQ7512CXL7T"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate managed_line_resolution against Official package ID provenance; list --one --format=exe/json --only-managed3.13; disable automatic install; manager default is not a runtime compatibility promise. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "python_manager",
+      "display_name": "Python Install Manager and WinGet",
+      "exact_version": null,
+      "failure_isolation": "Windows Python prerequisite",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "managed_line_resolution"
+      ],
+      "schema_protocol_expectations": "Official package ID provenance; list --one --format=exe/json --only-managed3.13; disable automatic install; manager default is not a runtime compatibility promise.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "Windows Python prerequisite"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\bip\\b",
+        "\\bss\\b",
+        "NEIGHBOR_STATES",
+        "neigh",
+        "listening_sockets"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate address_route_neighbor, socket_columns against Consumed ip -o -4 addr, route default, neigh token semantics; ss -ltnup endpoint columns; no exact utility version. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "iproute",
+      "display_name": "iproute2 ip/ss",
+      "exact_version": null,
+      "failure_isolation": "passive inventory and identity",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "address_route_neighbor",
+        "socket_columns"
+      ],
+      "schema_protocol_expectations": "Consumed ip -o -4 addr, route default, neigh token semantics; ss -ltnup endpoint columns; no exact utility version.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "passive inventory and identity"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "arp -an",
+        "\"arp\"",
+        "arp_table"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate arp_columns against arp -an fallback host/IP/MAC parser; failed collection distinct from empty neighbor set. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "nettools",
+      "display_name": "Legacy arp fallback",
+      "exact_version": null,
+      "failure_isolation": "passive inventory",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "arp_columns"
+      ],
+      "schema_protocol_expectations": "arp -an fallback host/IP/MAC parser; failed collection distinct from empty neighbor set.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "passive inventory"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "systemctl",
+        "systemd",
+        "\\.service"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate unit_columns against list-units --type=service --all --no-pager --plain; unit/load/active/sub columns; configured unit names may differ by distribution. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "systemd",
+      "display_name": "systemd/systemctl service observation",
+      "exact_version": null,
+      "failure_isolation": "service observations",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "unit_columns"
+      ],
+      "schema_protocol_expectations": "list-units --type=service --all --no-pager --plain; unit/load/active/sub columns; configured unit names may differ by distribution.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "service observations"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "crontab",
+        "\\bcron\\b",
+        "\\bflock\\b",
+        "CRON_"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate scheduling, locking against Cron line semantics and nonblocking flock; locks prevent overlapping compatibility-state writers when configured. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "scheduler",
+      "display_name": "cron/crontab/flock",
+      "exact_version": null,
+      "failure_isolation": "collector scheduling",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "scheduling",
+        "locking"
+      ],
+      "schema_protocol_expectations": "Cron line semantics and nonblocking flock; locks prevent overlapping compatibility-state writers when configured.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "collector scheduling"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\bjq\\b"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate json_filter against Required jq filters, -e/-r/-n and schema fields; exact implementation version unnecessary. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "jq",
+      "display_name": "jq JSON CLI",
+      "exact_version": null,
+      "failure_isolation": "install and governed validation",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "json_filter"
+      ],
+      "schema_protocol_expectations": "Required jq filters, -e/-r/-n and schema fields; exact implementation version unnecessary.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "install and governed validation"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\bcurl\\b"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate http_options against Consumed bounded timeout/status/body behavior; transport failure distinct from API shape; no automatic secret/body diagnostics. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "curl",
+      "display_name": "curl HTTP CLI",
+      "exact_version": null,
+      "failure_isolation": "probe HTTP transport",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "http_options"
+      ],
+      "schema_protocol_expectations": "Consumed bounded timeout/status/body behavior; transport failure distinct from API shape; no automatic secret/body diagnostics.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "probe HTTP transport"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "openssl",
+        "\\bssl\\b"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate crypto_api against Invoked options/imported SSL API as consumed; no direct executable version gate discovered. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "openssl",
+      "display_name": "OpenSSL CLI and SSL library",
+      "exact_version": null,
+      "failure_isolation": "transport and tooling",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "crypto_api"
+      ],
+      "schema_protocol_expectations": "Invoked options/imported SSL API as consumed; no direct executable version gate discovered.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "transport and tooling"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\bdig\\b",
+        "nslookup",
+        "gethostby",
+        "reverse_dns",
+        "dns_time"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate dns_answer against Query status/answer/time syntax and socket reverse resolution; no DNS listener version gate. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "dns_tools",
+      "display_name": "DNS dig/nslookup/host and libc DNS",
+      "exact_version": null,
+      "failure_isolation": "DNS observations",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "dns_answer"
+      ],
+      "schema_protocol_expectations": "Query status/answer/time syntax and socket reverse resolution; no DNS listener version gate.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "DNS observations"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "snmpget",
+        "SNMP",
+        "1\\.3\\.6\\.1\\.2\\.1\\.1\\.1\\.0"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate sysdescr against SNMPv2c sysDescr OID and -Oqv output; secret community excluded from compatibility status. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "E",
+      "dependency_id": "snmp",
+      "display_name": "SNMP snmpget",
+      "exact_version": null,
+      "failure_isolation": "optional firmware enrichment",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "sysdescr"
+      ],
+      "schema_protocol_expectations": "SNMPv2c sysDescr OID and -Oqv output; secret community excluded from compatibility status.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "optional firmware enrichment"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\bping\\b",
+        "packet loss",
+        "rtt",
+        "avg_latency"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate ping_result against -c/-W, exit status, packet-loss and RTT parsers; active discovery remains separately governed. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "ping",
+      "display_name": "ICMP ping",
+      "exact_version": null,
+      "failure_isolation": "network health",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "ping_result"
+      ],
+      "schema_protocol_expectations": "-c/-W, exit status, packet-loss and RTT parsers; active discovery remains separately governed.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "network health"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "vcgencmd",
+        "measure_temp",
+        "\\bdf\\b",
+        "\\bfree\\b",
+        "/proc/",
+        "/sys/",
+        "/etc/os-release",
+        "os\\.uname"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate metrics_shape against df -P/free fields, measure_temp token, proc/sys Linux paths; unavailable board-specific metrics remain isolated. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "linux_metrics",
+      "display_name": "Linux df/free/vcgencmd/proc/sys/os-release",
+      "exact_version": null,
+      "failure_isolation": "local metrics",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "metrics_shape"
+      ],
+      "schema_protocol_expectations": "df -P/free fields, measure_temp token, proc/sys Linux paths; unavailable board-specific metrics remain isolated.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "local metrics"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "dpkg-query",
+        "\\bapt\\b",
+        "apt-get",
+        "\\bdpkg\\b"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate package_metadata against dpkg-query -W -f=${Version} informational; missing distro package tool does not mean version incompatibility. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "dpkg",
+      "display_name": "Debian dpkg-query/apt",
+      "exact_version": null,
+      "failure_isolation": "package observations and installation",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "informational only",
+      "required_capabilities": [
+        "package_metadata"
+      ],
+      "schema_protocol_expectations": "dpkg-query -W -f=${Version} informational; missing distro package tool does not mean version incompatibility.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "package observations and installation"
+      ],
+      "version_discovery_method": "existing dpkg-query informational lookup",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\brsync\\b"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate archive_exclusions against Archive/exclusion/backup semantics preserve runtime, manufacturer data, state; version informational. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "rsync",
+      "display_name": "rsync deployment",
+      "exact_version": null,
+      "failure_isolation": "release install and upgrade",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "archive_exclusions"
+      ],
+      "schema_protocol_expectations": "Archive/exclusion/backup semantics preserve runtime, manufacturer data, state; version informational.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "release install and upgrade"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "os\\.open",
+        "os\\.stat",
+        "os\\.link",
+        "os\\.rename",
+        "os\\.replace",
+        "dir_fd",
+        "O_NOFOLLOW",
+        "fsync",
+        "MoveFileEx",
+        "fcntl",
+        "ctypes",
+        "st_ino",
+        "st_dev",
+        "st_uid",
+        "st_gid",
+        "os\\.name",
+        "platform\\."
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate atomic_state, private_binding against Atomic replace for HIOC state, no-replace link for immutable evidence, permissions/UID/GID/sticky tmp, no-follow descriptors; Windows equivalent adapters are not production certification. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "filesystem",
+      "display_name": "POSIX/Windows filesystem and process facilities",
+      "exact_version": null,
+      "failure_isolation": "state and governed publication",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "atomic_state",
+        "private_binding"
+      ],
+      "schema_protocol_expectations": "Atomic replace for HIOC state, no-replace link for immutable evidence, permissions/UID/GID/sticky tmp, no-follow descriptors; Windows equivalent adapters are not production certification.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "state and governed publication"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\b(stat",
+        "find",
+        "awk",
+        "sed",
+        "grep",
+        "date",
+        "timeout",
+        "readlink",
+        "realpath",
+        "sha256sum",
+        "mktemp",
+        "sync",
+        "tar",
+        "gzip",
+        "unzip",
+        "sort",
+        "head",
+        "tail",
+        "cut",
+        "tr",
+        "wc",
+        "tee",
+        "xargs",
+        "install",
+        "chmod",
+        "chown",
+        "mkdir",
+        "rmdir",
+        "touch",
+        "cp",
+        "mv",
+        "rm",
+        "ln",
+        "cat",
+        "dirname",
+        "basename",
+        "hostname",
+        "id",
+        "test",
+        "printf",
+        "du",
+        "sleep",
+        "diff",
+        "chattr",
+        "lsattr",
+        "pgrep",
+        "kill",
+        "env",
+        "read",
+        "uname)\\b"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate utility_semantics against Exact consumed options/output in source; classify utility availability/shape, not OS/distribution release. GNU-specific -c/-f/-T and procfs semantics must be probed on execution host. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "linux_utils",
+      "display_name": "Linux coreutils/findutils/text/archive commands",
+      "exact_version": null,
+      "failure_isolation": "release, collectors and operators",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "utility_semantics"
+      ],
+      "schema_protocol_expectations": "Exact consumed options/output in source; classify utility availability/shape, not OS/distribution release. GNU-specific -c/-f/-T and procfs semantics must be probed on execution host.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "release, collectors and operators"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "\\byaml\\b",
+        "PyYAML",
+        "safe_load"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate yaml_parse against Optional import/parser path in validators; missing parser explicitly skipped or unknown, never HA compatibility proof. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "pyyaml",
+      "display_name": "PyYAML optional validator",
+      "exact_version": null,
+      "failure_isolation": "HA/repository YAML validation",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "yaml_parse"
+      ],
+      "schema_protocol_expectations": "Optional import/parser path in validators; missing parser explicitly skipped or unknown, never HA compatibility proof.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "HA/repository YAML validation"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "schema_version",
+        "SCHEMA_VERSION",
+        "MANUFACTURER_.*VERSION",
+        "mqtt_api",
+        "VERSION.yaml",
+        "version_manifest",
+        "parser_version"
+      ],
+      "automatic_continuation_after_version_drift": false,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate schema against HIOC-owned schema IDs/versions/parser identity stay exact; additive external contract handling does not widen internal schemas. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "B",
+      "dependency_id": "internal_schemas",
+      "display_name": "HIOC checked-in schemas and protocol versions",
+      "exact_version": null,
+      "failure_isolation": "HIOC internal artifacts",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "HIOC",
+      "policy": "internal schema",
+      "required_capabilities": [
+        "schema"
+      ],
+      "schema_protocol_expectations": "HIOC-owned schema IDs/versions/parser identity stay exact; additive external contract handling does not widen internal schemas.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "HIOC internal artifacts"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "IEEE",
+        "oui",
+        "OUI",
+        "Assignment",
+        "Registry",
+        "Organization Name",
+        "vendor_manifest",
+        "local-ieee-ra",
+        "manufacturer-db"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate csv_columns against Three source CSV contracts, UTF8/field/assignment semantics; generated vendored database trust hashes remain governed separately. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "E",
+      "dependency_id": "manufacturer_data",
+      "display_name": "IEEE RA CSV vendor dataset and HIOC database",
+      "exact_version": null,
+      "failure_isolation": "manufacturer enrichment",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "csv_columns"
+      ],
+      "schema_protocol_expectations": "Three source CSV contracts, UTF8/field/assignment semantics; generated vendored database trust hashes remain governed separately.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "manufacturer enrichment"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "custom:mushroom",
+        "mini-graph-card",
+        "mushroom",
+        "card_mod"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate card_resources against Mushroom and mini-graph-card resources in historical dashboard; no version gate; rendering capability not proven by repository tests. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "A",
+      "dependency_id": "ha_frontend",
+      "display_name": "HA frontend custom cards",
+      "exact_version": null,
+      "failure_isolation": "dashboard presentation",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "card_resources"
+      ],
+      "schema_protocol_expectations": "Mushroom and mini-graph-card resources in historical dashboard; no version gate; rendering capability not proven by repository tests.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "dashboard presentation"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    },
+    {
+      "audit_patterns": [
+        "Frigate",
+        "frigate",
+        "Ring",
+        "ring",
+        "ups_",
+        "uptime",
+        "toolkit.conf",
+        "network_probe",
+        "probe_json",
+        "dns_intelligence",
+        "pi4_infrastructure"
+      ],
+      "automatic_continuation_after_version_drift": true,
+      "changed_version_alone_can_fail": false,
+      "compatibility_baseline": null,
+      "compatibility_probe": "At an authorized consumer boundary, validate payload_fields against Existing external entity/state/topic names from toolkit/Frigate/Ring camera and UPS provider; numeric/status keys consumed; changes affect corresponding presentation/integration only. No new host probe is scheduled; compatibility remains unknown without observation.",
+      "dependency_class": "E",
+      "dependency_id": "upstream_entities",
+      "display_name": "External HA entity providers and toolkit payloads",
+      "exact_version": null,
+      "failure_isolation": "external observations and dashboards",
+      "operator_remediation": "Review the named dependency contract; restore capability or authorize a governed trust refresh.",
+      "optional_capabilities": [],
+      "owner_system": "external software or protocol owner",
+      "policy": "capability-based",
+      "required_capabilities": [
+        "payload_fields"
+      ],
+      "schema_protocol_expectations": "Existing external entity/state/topic names from toolkit/Frigate/Ring camera and UPS provider; numeric/status keys consumed; changes affect corresponding presentation/integration only.",
+      "security_provenance_requirements": "preserve governed identities, credentials and transport trust; never auto-adopt identity drift",
+      "used_by_components": [
+        "external observations and dashboards"
+      ],
+      "version_discovery_method": "optional sanitized producer observation; no automatic version command or network probe",
+      "version_role": "informational"
+    }
+  ],
+  "schema_version": "1.0",
+  "states": [
+    "COMPATIBLE",
+    "COMPATIBLE_UPDATED",
+    "COMPATIBILITY_UNKNOWN",
+    "COMPATIBILITY_DEGRADED",
+    "INCOMPATIBLE",
+    "TRUST_ANCHOR_CHANGED",
+    "DEPENDENCY_UNAVAILABLE"
+  ],
+  "unresolved_contract_policy": "UNKNOWN_UNTIL_REQUIRED_EXECUTION_CAPABILITY_OBSERVATION; NO_LIVE_PROBES_AUTHORIZED_BY_THIS_CHECKPOINT"
+}

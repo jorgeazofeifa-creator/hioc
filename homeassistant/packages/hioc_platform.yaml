@@ -49,3 +49,10 @@ mqtt:
       state_topic: home/infrastructure/hioc/platform/status
       value_template: "{{ value_json.build | default('unknown', true) }}"
       icon: mdi:calendar-clock
+
+    - name: HIOC Dependency Compatibility
+      unique_id: hioc_dependency_compatibility
+      state_topic: home/infrastructure/hioc/platform/compatibility
+      value_template: "{{ value_json.overall_compatibility | default('COMPATIBILITY_UNKNOWN', true) }}"
+      json_attributes_topic: home/infrastructure/hioc/platform/compatibility
+      icon: mdi:puzzle-check

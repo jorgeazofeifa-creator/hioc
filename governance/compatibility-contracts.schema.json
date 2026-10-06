@@ -1,0 +1,155 @@
+{
+  "$id": "urn:hioc:compatibility-contracts:1.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "architecture": {
+      "const": "CAPABILITY_FIRST_EXTERNAL_DEPENDENCIES"
+    },
+    "audit_scope": {
+      "type": "string"
+    },
+    "dependencies": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "audit_patterns": {
+            "type": "array"
+          },
+          "automatic_continuation_after_version_drift": {
+            "type": "boolean"
+          },
+          "changed_version_alone_can_fail": {
+            "type": "boolean"
+          },
+          "compatibility_baseline": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "compatibility_probe": {
+            "type": "string"
+          },
+          "dependency_class": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E"
+            ]
+          },
+          "dependency_id": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "exact_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "failure_isolation": {
+            "type": "string"
+          },
+          "operator_remediation": {
+            "type": "string"
+          },
+          "optional_capabilities": {
+            "type": "array"
+          },
+          "owner_system": {
+            "type": "string"
+          },
+          "policy": {
+            "enum": [
+              "capability-based",
+              "supported-line",
+              "intentional exact pin",
+              "security trust anchor",
+              "internal schema",
+              "informational only"
+            ]
+          },
+          "required_capabilities": {
+            "type": "array"
+          },
+          "schema_protocol_expectations": {
+            "type": "string"
+          },
+          "security_provenance_requirements": {
+            "type": "string"
+          },
+          "used_by_components": {
+            "type": "array"
+          },
+          "version_discovery_method": {
+            "type": "string"
+          },
+          "version_role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "audit_patterns",
+          "automatic_continuation_after_version_drift",
+          "changed_version_alone_can_fail",
+          "compatibility_baseline",
+          "compatibility_probe",
+          "dependency_class",
+          "dependency_id",
+          "display_name",
+          "exact_version",
+          "failure_isolation",
+          "operator_remediation",
+          "optional_capabilities",
+          "owner_system",
+          "policy",
+          "required_capabilities",
+          "schema_protocol_expectations",
+          "security_provenance_requirements",
+          "used_by_components",
+          "version_discovery_method",
+          "version_role"
+        ],
+        "type": "object"
+      },
+      "maxItems": 256,
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "states": {
+      "items": {
+        "enum": [
+          "COMPATIBLE",
+          "COMPATIBLE_UPDATED",
+          "COMPATIBILITY_UNKNOWN",
+          "COMPATIBILITY_DEGRADED",
+          "INCOMPATIBLE",
+          "TRUST_ANCHOR_CHANGED",
+          "DEPENDENCY_UNAVAILABLE"
+        ]
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "unresolved_contract_policy": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "architecture",
+    "audit_scope",
+    "dependencies",
+    "schema_version",
+    "states",
+    "unresolved_contract_policy"
+  ],
+  "type": "object"
+}

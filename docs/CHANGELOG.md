@@ -1,5 +1,29 @@
 # HIOC Changelog
 
+## Compatibility resilience correction - 2026-10-06
+
+The repository now governs capability-first external dependency contracts,
+sanitized persistent compatibility status and retained platform diagnostics.
+See [COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md) for the complete
+42-family audit, exact-pin inventory, implementation boundaries and deferred
+host proofs. HA Core 2026.8.1 remains source-review provenance; it is no longer
+an exact live-version gate. All four required registry commands and unsafe-schema
+failure gates remain. Isolated runtime, SSH and cryptographic identities stay exact.
+
+The first authorized 2b attempt failed safely with UNSUPPORTED_HA_DEPLOYMENT at
+HA_DEPLOYMENT_DISCOVERY because of the old version gate. Preserved user-supplied
+evidence: `/tmp/hioc-pe4-ha-discovery-22be880b`; report SHA256
+`efd3aa0cc2f5bc00a459a0c05055ac14e5a9a7ab6cc13aeeb34aa9aa616cb087`;
+result SHA256 `1e11b6e512db860a8f9b2b6af1723c6aabafd75968d7fd643c891144a7a72195`.
+No remote evidence was read or changed. The new correction record binds current
+source; the original preparation record and earlier exact-version evidence remain
+historical. This notice supersedes older current-status statements below.
+
+D/E/F/G PASS/CLOSED; E handoff ACCEPTED; 2a PASS/CLOSED; first 2b ATTEMPTED /
+NOT COMPLETE; corrected 2b NOT STARTED; 0C NOT STARTED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; rollback NOT PERFORMED. No PI3/PI5/HA access, credentials,
+deployment or corrected execution occurs in this repository checkpoint.
+
 ## PE-4.0B.2b bounded registry/schema discovery prepared - 2026-10-06
 
 Repository-only preparation follows the immutable 2a PASS/CLOSED closure at

@@ -277,10 +277,13 @@ class NetworkTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(m.Failure) as got: await m.exchange(ws,'synthetic', m.time.monotonic()+10)
         self.assertEqual(got.exception.code, 'AUTHENTICATION_FAILED')
         self.assertEqual(len(ws.sent),1)
-        ws = WS(); ws.messages[0] = json.dumps({'type':'auth_required','ha_version':'2026.8.2'})
-        with self.assertRaises(m.Failure) as got: await m.exchange(ws,'synthetic',m.time.monotonic()+10)
-        self.assertEqual(got.exception.code,'UNSUPPORTED_HA_DEPLOYMENT')
-        self.assertEqual(ws.sent, [])
+        ws = WS()
+        ws.messages[0] = json.dumps({'type':'auth_required','ha_version':'2026.8.2'})
+        ws.messages[1] = json.dumps({'type':'auth_ok','ha_version':'2026.8.2'})
+        r = await m.exchange(ws,'synthetic',m.time.monotonic()+10)
+        self.assertEqual(r['compatibility']['status'],'COMPATIBLE_UPDATED')
+        self.assertEqual(r['compatibility']['observed_version'],'2026.8.2')
+        self.assertEqual(len(ws.sent),5)
     async def test_extra_response_rejected_after_fourth(self):
         ws = WS(); ws.messages.append(result(4, []))
         with self.assertRaises(m.Failure): await m.exchange(ws,'synthetic',m.time.monotonic()+10)
@@ -466,6 +469,54 @@ class SourceAndSchemaTests(unittest.TestCase):
         self.assertEqual(len(raw.encode()),m.MAX_MESSAGE)
         m.strict_message(raw)
         with self.assertRaises(m.Failure): m.strict_message(raw+' ')
+
+
+class CapabilityVersionTests(unittest.IsolatedAsyncioTestCase):
+    async def test_updated_version_additive_schema_passes(self):
+        ws=WS();ws.messages[0]=json.dumps({'type':'auth_required','ha_version':'2026.10.1','optional':'private'})
+        ws.messages[1]=json.dumps({'type':'auth_ok','ha_version':'2026.10.1','optional':'private'})
+        data=rows();data[0][0]['unknown_optional']={'secret':'private-value'};ws.messages[2]=result(1,data[0])
+        r=await m.exchange(ws,'synthetic',m.time.monotonic()+10)
+        self.assertEqual(r['compatibility']['status'],'COMPATIBLE_UPDATED')
+        self.assertNotIn('private-value',m.canonical(r).decode())
+    async def test_updated_version_required_field_removed_or_type_changed(self):
+        for mode in ['removed','type']:
+            ws=WS();ws.messages[0]=json.dumps({'type':'auth_required','ha_version':'2026.10.1'});ws.messages[1]=json.dumps({'type':'auth_ok','ha_version':'2026.10.1'})
+            data=rows()
+            if mode=='removed':del data[0][0]['connections']
+            else:data[0][0]['connections']='wrong'
+            ws.messages[2]=result(1,data[0])
+            with self.assertRaises(m.Failure) as got:await m.exchange(ws,'synthetic',m.time.monotonic()+10)
+            self.assertEqual(got.exception.compatibility['observed_version'],'2026.10.1')
+            self.assertEqual(got.exception.compatibility['failed_capability'],'device_registry')
+            self.assertEqual(got.exception.compatibility['status'],'INCOMPATIBLE')
+    async def test_removed_command_and_permission_change_identified(self):
+        for code in ['unknown_command','unauthorized']:
+            ws=WS();ws.messages[2]=json.dumps({'id':1,'type':'result','success':False,'error':{'code':code,'message':'private'}})
+            with self.assertRaises(m.Failure) as got:await m.exchange(ws,'synthetic',m.time.monotonic()+10)
+            self.assertEqual(got.exception.compatibility['dependency_id'],'ha_core')
+            self.assertEqual(got.exception.compatibility['failed_capability'],'device_registry')
+    async def test_invalid_or_inconsistent_version_stops(self):
+        for version in ['private-host','2026.10.1\n','x'*100,None]:
+            ws=WS();ws.messages[0]=json.dumps({'type':'auth_required','ha_version':version})
+            with self.assertRaises(m.Failure):await m.exchange(ws,'synthetic',m.time.monotonic()+10)
+            self.assertEqual(ws.sent,[])
+        ws=WS();ws.messages[1]=json.dumps({'type':'auth_ok','ha_version':'2026.10.1'})
+        with self.assertRaises(m.Failure):await m.exchange(ws,'synthetic',m.time.monotonic()+10)
+    async def test_unexpected_local_probe_error_stays_unknown(self):
+        ws=WS()
+        async def local_bug():raise ValueError('private-local-detail')
+        ws.recv=local_bug
+        with self.assertRaises(m.Failure) as got:await m.exchange(ws,'synthetic',m.time.monotonic()+10)
+        self.assertEqual(got.exception.compatibility['status'],'COMPATIBILITY_UNKNOWN')
+        self.assertFalse(got.exception.compatibility['likely_update_compatibility_break'])
+    async def test_connection_unavailability_not_version_break(self):
+        ws=WS()
+        async def unavailable():raise ConnectionRefusedError('private')
+        ws.recv=unavailable
+        with self.assertRaises(m.Failure) as got:await m.exchange(ws,'synthetic',m.time.monotonic()+10)
+        self.assertEqual(got.exception.compatibility['status'],'DEPENDENCY_UNAVAILABLE')
+        self.assertFalse(got.exception.compatibility['likely_update_compatibility_break'])
 
 
 class ConnectionPolicyTests(unittest.IsolatedAsyncioTestCase):
@@ -707,7 +758,7 @@ class AdditionalBoundaryTests(unittest.TestCase):
             ops.open=opened;m.publish_files(1,report(),ops)
             self.assertEqual(seen,[(ops.O_WRONLY|ops.O_CREAT|ops.O_EXCL|ops.O_NOFOLLOW,0o600,1)]*2)
     def test_preparation_record_bindings(self):
-        path=ROOT/'governance/pe4/pe4-0b2b-discovery-preparation.json'
+        path=ROOT/'governance/pe4/pe4-0b2b-compatibility-correction.json'
         record=json.loads(path.read_text())
         raw=(ROOT/record['source']['repository_path']).read_bytes()
         self.assertEqual(record['source']['sha256'],hashlib.sha256(raw).hexdigest())
@@ -716,7 +767,7 @@ class AdditionalBoundaryTests(unittest.TestCase):
         self.assertEqual(record['core_tag'],m.CORE_TAG)
         self.assertEqual(record['commands'],list(m.COMMANDS))
         self.assertEqual(record['lifecycle']['pe4_0b2a'],'PASS_CLOSED')
-        self.assertEqual(record['lifecycle']['pe4_0b2b'],'NOT_STARTED')
+        self.assertEqual(record['lifecycle']['corrected_execution'],'NOT_STARTED')
         self.assertFalse(record['discovery_executed'])
         self.assertEqual(record['bounds']['max_records'],m.MAX_RECORDS)
         self.assertEqual(record['prerequisite']['commit'],'09814b8ab19553f21ff68c3a617a5164c47ef59f')

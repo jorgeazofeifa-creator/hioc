@@ -396,7 +396,7 @@ class ProtectedInvariantTests(unittest.TestCase):
         protected = ("id", "ip", "hostname", "name", "display_name", "health_status", "observation_status", "source", "sources")
         self.assertEqual({key: result[0].get(key) for key in protected}, {key: baseline[0].get(key) for key in protected})
 
-    def test_engine_writes_private_sidecars_without_public_or_mqtt_changes(self):
+    def test_engine_writes_private_sidecars_and_sanitized_compatibility_topic(self):
         module = load_engine_module()
         CapturingMqttClient.calls = []
         logger = logging.getLogger("test-pe1-engine")
@@ -422,8 +422,14 @@ class ProtectedInvariantTests(unittest.TestCase):
         self.assertEqual([topic for topic, _ in CapturingMqttClient.calls], [
             "hioc/inventory", "hioc/inventory/devices", "hioc/inventory/services",
             "hioc/inventory/topology", "hioc/inventory/dependencies", "hioc/inventory/summary", "hioc/inventory/status",
+            "hioc/platform/compatibility",
         ])
-        self.assertNotIn("enrichment", json.dumps(CapturingMqttClient.calls))
+        compatibility = CapturingMqttClient.calls[-1][1]
+        self.assertIn("overall_compatibility", compatibility)
+        self.assertNotIn("public-host", json.dumps(compatibility))
+        self.assertNotIn("enrichment", json.dumps(CapturingMqttClient.calls[:-1]))
+        for private_value in (DEVICE_ID, MAC, "Public Name", "192.0.2.10"):
+            self.assertNotIn(private_value, json.dumps(compatibility))
 
     def test_engine_failure_is_fail_open_and_preserves_previous_artifact(self):
         module = load_engine_module()
@@ -447,7 +453,9 @@ class ProtectedInvariantTests(unittest.TestCase):
         self.assertEqual(status["status"], "error")
         self.assertEqual(status["error_code"], "generation_failed")
         self.assertEqual(public["devices"][0]["hostname"], "public-host")
-        self.assertEqual(len(CapturingMqttClient.calls), 7)
+        self.assertEqual(len(CapturingMqttClient.calls), 8)
+        self.assertEqual(CapturingMqttClient.calls[-1][0], "hioc/platform/compatibility")
+        self.assertNotIn("private-host-value", json.dumps(CapturingMqttClient.calls[-1][1]))
         self.assertNotIn("private-host-value", "\n".join(logs.output))
 
     def test_engine_malformed_prior_artifact_generates_degraded_current_artifact(self):

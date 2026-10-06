@@ -649,5 +649,19 @@ class PE4ActionBTransferTests(unittest.TestCase):
                                       "TRANSFER_DIRECTORY=/tmp/hioc-pe4-artifact-transfer-Ab12Cd34"])
 
 
+
+
+class CompatibilityDiagnosticTests(unittest.TestCase):
+    def test_identity_drift_diagnostic_without_trust_refresh(self):
+        states={k:False for k in ACTION_B.STATE_KEYS};states['EVIDENCE_STATE']='NOT_PUBLISHED'
+        output=io.StringIO()
+        with mock.patch('sys.stdout',output):
+            ACTION_B.emit(states,'FAIL','OPENSSH_EXECUTABLE_IDENTITY_MISMATCH','OPENSSH_IDENTITY')
+        text=output.getvalue()
+        self.assertIn('COMPATIBILITY_STATUS=TRUST_ANCHOR_CHANGED',text)
+        self.assertIn('ACTION_B=NOT_COMPLETE',text)
+        self.assertIn('new identity has not been trusted',text)
+        self.assertIn('No software update cause is established',text)
+
 if __name__ == "__main__":
     unittest.main()

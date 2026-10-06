@@ -2928,7 +2928,7 @@
       "type": "object"
     }
   },
-  "$id": "urn:hioc:pe4:registry-discovery-report:1.0",
+  "$id": "urn:hioc:pe4:registry-discovery-report:1.1",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "allOf": [
@@ -3059,6 +3059,74 @@
     "classification_limit": {
       "const": "PHYSICAL_HELPER_INTEGRATION_VIRTUAL_CLOUD_NOT_DERIVED"
     },
+    "compatibility": {
+      "additionalProperties": false,
+      "properties": {
+        "compatibility_baseline": {
+          "enum": [
+            "2026.8.1",
+            null
+          ]
+        },
+        "dependency_id": {
+          "enum": [
+            "ha_core",
+            "pe4_python",
+            "pe4_websockets",
+            "iproute"
+          ]
+        },
+        "failed_capability": {
+          "enum": [
+            null,
+            "authentication",
+            "device_registry",
+            "entity_registry",
+            "area_registry",
+            "config_entries",
+            "runtime_identity",
+            "import_api",
+            "address_output",
+            "version_metadata",
+            "transport"
+          ]
+        },
+        "likely_update_compatibility_break": {
+          "const": false
+        },
+        "observed_version": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "maxLength": 32,
+              "pattern": "^[0-9]{4}\\.[0-9]{1,2}\\.[0-9]{1,3}(?:(?:a|b|rc|\\.dev)[0-9]{1,8})?$",
+              "type": "string"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "COMPATIBLE",
+            "COMPATIBLE_UPDATED",
+            "COMPATIBILITY_UNKNOWN",
+            "INCOMPATIBLE",
+            "TRUST_ANCHOR_CHANGED",
+            "DEPENDENCY_UNAVAILABLE"
+          ]
+        }
+      },
+      "required": [
+        "dependency_id",
+        "status",
+        "observed_version",
+        "compatibility_baseline",
+        "failed_capability",
+        "likely_update_compatibility_break"
+      ],
+      "type": "object"
+    },
     "core_source_reference": {
       "const": "2026.8.1"
     },
@@ -3066,7 +3134,7 @@
       "const": "REMOTE_HA_ENDPOINT_ONLY"
     },
     "interface_classification": {
-      "const": "CORE_SOURCE_VERSION_PINNED_WEBSOCKET"
+      "const": "CAPABILITY_FIRST_SOURCE_BASELINE_WEBSOCKET"
     },
     "privacy_validation": {
       "const": "PASS"
@@ -3112,7 +3180,7 @@
       ]
     },
     "schema_version": {
-      "const": "1.0"
+      "const": "1.1"
     },
     "structure_fingerprint": {
       "anyOf": [
@@ -3157,7 +3225,8 @@
     "schema_version",
     "structure_fingerprint",
     "target_classification",
-    "warnings"
+    "warnings",
+    "compatibility"
   ],
   "title": "Sanitized PE-4.0B.2b registry discovery report",
   "type": "object"
