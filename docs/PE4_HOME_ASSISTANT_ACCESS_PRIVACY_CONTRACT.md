@@ -1,5 +1,14 @@
 # PE-4 Home Assistant Access and Privacy Contract
 
+## PE-4.0C.1 private binding-history boundary
+
+[Lifecycle clarification](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md)
+separates currently confirmed strong associations from private retired binding
+episodes. History retains only HIOC/HA device IDs, timestamps and bounded reasons;
+no MAC/IP, entity/unique IDs, names, raw values or credentials. It never becomes
+public projection, identity, liveness or health authority. Only active associations
+may later project associated=true. Schema 1.1 is the future private-state authority.
+
 ## PE-4.0C association authority frozen - 2026-10-06
 
 PE-4.0C PASS/CLOSED. The [association contract](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md)

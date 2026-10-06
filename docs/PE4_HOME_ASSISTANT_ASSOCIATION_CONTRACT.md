@@ -1,5 +1,12 @@
 # PE-4 Home Assistant Association Contract
 
+## Current lifecycle clarification
+
+[PE-4.0C.1](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md) supplements
+this closed 0C authority with successful-cycle retirement, private binding history
+and safe registry-ID recreation. Future implementation uses successor private-state
+schema 1.1; the original canonical 0C contract and schema 1.0 remain unchanged.
+
 ## Authority and lifecycle
 
 PE-4.0C PASS/CLOSED: repository-only contract freeze; no runtime adapter exists.

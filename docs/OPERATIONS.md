@@ -1,5 +1,18 @@
 # HIOC Operations
 
+## PE-4.0C.1 association lifecycle clarification - 2026-10-06
+
+[Additive lifecycle authority](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md) closes 0C.1 PASS/CLOSED.
+Successful complete cycles keep only reconfirmed active associations and preserve
+retired pairs in private bounded history; failed cycles preserve entire prior state.
+Safe new HA-ID recreation requires the same HIOC identity and all uniqueness/
+history checks. Schema 1.1 adds closed history; original 0C JSON/schema hashes
+remain unchanged. Prior preparation correctly stopped with no changes; next is
+implementation preparation, still NOT STARTED. Credential provisioning and writer
+locking/durability remain separate preparation findings. No runtime implementation,
+production access/action, state migration, secret, MQTT publication or rollback.
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+
 ## PE-4.0C association contract freeze - 2026-10-06
 
 PE-4.0C PASS/CLOSED after repository validation. The [frozen authority](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md)

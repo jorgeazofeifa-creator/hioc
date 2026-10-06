@@ -2568,7 +2568,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 3. **PE-3 - Manufacturer Reference Enrichment** — complete. Actions 1–10,
    production deployment, generation, PI3 validation, final Evidence Report,
    administrative Action 10 closure, and final governance closure are complete.
-4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C PASS/CLOSED; adapter implementation preparation NOT STARTED; PE-4 NOT COMPLETE.
+4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation NOT STARTED; PE-4 NOT COMPLETE.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
 6. **PE-6 - Classification & Metadata Quality** — not started.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
@@ -3223,6 +3223,7 @@ completion. Historical chronology elsewhere does not override it.
 | Corrected PE-4.0B.2b execution | PASS/CLOSED |
 | PE-4.0B.2b | PASS/CLOSED |
 | PE-4.0C | PASS/CLOSED |
+| PE-4.0C.1 Association Lifecycle Clarification | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Implementation Preparation | NOT STARTED |
 | PE-4 | NOT COMPLETE |
 | Phase 7A | ACTIVE |
@@ -3244,6 +3245,19 @@ filesystem/OS facilities and external APIs/protocols/file formats/data shapes
 actually consumed by HIOC. Counts, matrix and unresolved live proofs remain in
 [COMPATIBILITY_RESILIENCE.md](COMPATIBILITY_RESILIENCE.md); this checkpoint does
 not repeat the audit or claim deployment.
+
+### PE-4.0C.1 Association Lifecycle Clarification - 2026-10-06
+
+PE-4.0C.1 PASS/CLOSED, additive to unchanged closed 0C JSON and schema 1.0.
+The prior implementation-preparation attempt correctly stopped with no changes
+because successful-snapshot lifecycle semantics were incomplete. The
+[lifecycle authority](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md)
+now freezes current confirmed associations versus private retired binding history,
+safe same-HIOC HA registry-ID recreation, bounded history without silent eviction,
+and full last-known-good retention on failed cycles. Future state uses schema 1.1.
+Preparation remains NOT STARTED; this checkpoint does not resume or close it.
+The likely unattended credential-provisioning prerequisite and stronger writer/
+locking design remain for resumed preparation. No runtime or production action.
 
 ### PE-4.0C Association Contract Freeze - 2026-10-06
 
@@ -3383,15 +3397,18 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 
 **PE-4 Home Assistant Association Adapter Implementation Preparation** is the
-next separately governed objective after PE-4.0C PASS/CLOSED. Phase 7A remains
+next separately governed objective after PE-4.0C and PE-4.0C.1 PASS/CLOSED. Phase 7A remains
 ACTIVE; PE-4 NOT COMPLETE. Runtime adapter implementation is NOT STARTED.
 
 ## Next Planned Task
 
 ### PE-4 Home Assistant Association Adapter Implementation Preparation
 
-Design and implement the future runtime adapter under the frozen
-[PE-4.0C association contract](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md).
+Resume repository-only implementation preparation using both the frozen
+[PE-4.0C association contract](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md) and
+[PE-4.0C.1 lifecycle clarification](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md),
+including schema 1.1. Finish credential prerequisite and writer/locking design
+before advancing separately to implementation.
 This preparation is NOT STARTED and separately governed; no adapter, deployment
 or production mutation is implemented or authorized by this contract freeze.
 

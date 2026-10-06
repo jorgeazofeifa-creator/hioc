@@ -21,6 +21,14 @@ Only one valid globally unique HA MAC mapping to exactly one existing HIOC
 MAC-backed canonical identity, without prior-binding conflict, permits automatic
 association. Public enrichment excludes private HA identifiers by default.
 
+The [0C.1 lifecycle clarification](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md)
+adds private binding_history in association-state schema 1.1. Current associations
+and historical binding safety memory are both post-identity metadata. Only
+current confirmed bindings can project associated=true; history cannot resurrect
+HIOC devices or acquire identity/liveness authority. Failed cycles preserve the
+entire prior state; successful cycles may retire unconfirmed pairs into bounded
+private history without changing canonical inventory.
+
 ## Living Inventory
 
 Inventory root object:
