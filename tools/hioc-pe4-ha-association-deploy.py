@@ -17,7 +17,7 @@ import sys
 
 SOURCE = Path("/home/jazofv1/hioc-release-source")
 HOME = Path("/home/jazofv1/hioc")
-BASELINE = "e4d5a19afecccb1584708e3da57ba3c0c4258523"
+BASELINE = "84635cb88380c590d2adfb655c37afd2118c629f"
 RECORD = "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json"
 ENDPOINT = "ws://192.168.100.251:8123/api/websocket"
 CONFIG = "config/hioc.conf"
@@ -266,17 +266,17 @@ class NativeFS:
 REQUIRED_POLICY = "REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED"
 ADDITIVE_POLICY = "ABSENT_INSTALL_EXACT_PRESERVE_DIFFERENT_FAIL_CLOSED"
 DEPENDENCIES = frozenset({"pi4/lib/hioc/__init__.py", "pi4/lib/hioc/core/__init__.py",
-    "pi4/lib/hioc/core/config.py", "pi4/lib/hioc/core/compatibility.py",
+    "pi4/lib/hioc/core/config.py",
     "pi4/lib/hioc/core/state.py", "pi4/lib/hioc/core/schemas.py"})
 TRANSACTIONS = {"NOT_STARTED": "NOT_STARTED", "PREPARED": "INCOMPLETE", "COMMITTED": "PASS"}
 
 def check_manifest(manifest):
     required = manifest["dependencies"]
     additive = manifest["deploy"]
-    require(len(required) == 6 and {i["path"] for i in required} == DEPENDENCIES, "SOURCE_BINDING")
+    require(len(required) == 5 and {i["path"] for i in required} == DEPENDENCIES, "SOURCE_BINDING")
     require(all(i["classification"] == "B_EXISTING_EXACT_DEPENDENCY" and
                 i["policy"] == REQUIRED_POLICY for i in required), "SOURCE_BINDING")
-    require(len(additive) == 8 and len({i["path"] for i in additive}) == 8 and
+    require(len(additive) == 9 and len({i["path"] for i in additive}) == 9 and
             not DEPENDENCIES.intersection(i["path"] for i in additive), "SOURCE_BINDING")
     require(all(i["classification"] in {"A_NEW_FILE_TO_DEPLOY", "C_RUNTIME_GOVERNANCE"} and
                 i["policy"] == ADDITIVE_POLICY for i in additive), "SOURCE_BINDING")
@@ -413,7 +413,7 @@ def source_binding(expected):
     def git(*args): return command(["/usr/bin/git", "-C", str(SOURCE), *args], "SOURCE_BINDING").decode().strip()
     require(git("rev-parse", "--show-toplevel") == str(SOURCE) and git("branch", "--show-current") == "main", "SOURCE_BINDING")
     require(git("rev-parse", "HEAD") == git("rev-parse", "origin/main") == expected and
-            git("rev-parse", "HEAD^") == BASELINE and git("log", "-1", "--format=%s") == "PE-4: fix deployment runtime prefix validation", "SOURCE_BINDING")
+            git("rev-parse", "HEAD^") == BASELINE and git("log", "-1", "--format=%s") == "PE-4: correct production compatibility dependency", "SOURCE_BINDING")
     require(git("rev-list", "--left-right", "--count", "HEAD...origin/main") == "0\t0" and
             git("status", "--porcelain=v1", "--untracked-files=all") == "", "SOURCE_BINDING")
     for op in ("MERGE_HEAD", "REBASE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "BISECT_LOG", "rebase-apply", "rebase-merge", "sequencer"):

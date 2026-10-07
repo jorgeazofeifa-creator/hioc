@@ -3201,6 +3201,91 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## Production compatibility dependency classification correction — 2026-10-06
+
+Production Dependency Classification Correction PASS/CLOSED. The production observations
+below are **OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE**, provenance OPERATOR_SUPPLIED;
+Codex did not access PI3, collect production evidence or execute the adapter/platform-status.
+
+1. First deployment attempt failed RUNTIME_DRIFT / NOT_STARTED at 2ef66a2.
+2. Exact accepted-runtime customization validation was corrected at e4d5a19.
+3. Second attempt failed RUNTIME_DRIFT / NOT_STARTED at e4d5a19.
+4. The raw-prefix child-probe construction was corrected at 84635cb.
+5. Third attempt at `84635cb88380c590d2adfb655c37afd2118c629f` failed safely with
+   DEPENDENCY_DRIFT / NOT_STARTED. No durable intent, production mutation, adapter
+   execution, HA network/authentication, scheduler installation or rollback occurred.
+6. Read-only evidence showed five category-B objects present/exact and compatibility.py absent.
+7. Production platform-status is the known PRE_COMPATIBILITY_KNOWN_VERSION, SHA-256
+   `b65464e722bf9a4da0004ecf3bb05e4105f345a87c62405ce92d97c6298b2af8`,
+   jazofv1:jazofv1 mode 0755. Its existing cron is preserved. Current repository
+   platform-status SHA-256 is `55f75b7945b02f5d23759cf277b0e008a407d9d71e51a9c12b40a3cd1855c733`.
+8. The recent production compatibility state does not prove module deployment:
+   tools/hioc-pe4-ha-registry-discovery.py record_compatibility() inserts its source-root
+   pi4/lib into sys.path on POSIX, imports compatibility from the release-source tree,
+   and calls refresh_status with StateStore under /home/jazofv1/hioc/state/platform.
+   The PE-4.0B.2b source-tree writer can therefore produce sanitized central state
+   without installing compatibility.py in production. No private state contents are recorded.
+9. compatibility.py was introduced at `8187114c7233be82b188f0fc03b93a022787e7bb`,
+   “HIOC: add compatibility resilience and drift diagnostics”. Its classification as
+   an already existing production dependency was a preparation defect, not byte drift.
+10. It is now A_NEW_FILE_TO_DEPLOY, using the ordinary additive transaction path.
+11. No platform-status upgrade or general compatibility-framework deployment is bundled.
+
+Current manifest: **five required existing dependencies, nine additive targets**.
+Only compatibility.py moved category; its source bytes are unchanged. Remaining B files
+retain REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED. compatibility.py
+is installed only when absent, preserved when exact, and rejected when different/unsafe;
+source blob `1ba46d4ebf3819e2fa3ee9365e5b0088ba0b4a1a`, SHA-256
+`713c292c09282f3be524bc8a2090de43cf0fb78a81b3c71eed143b7a0d68e952`,
+owner/group jazofv1:jazofv1, mode 0644. The supplied request's SHA text had 63 characters;
+the specified immutable Git blob and existing manifest establish this 64-character SHA.
+The record preserves that transcription separately from the verified source identity.
+
+Adapter direct local imports remain core.config, core.compatibility and core.state;
+StateStore requires core.schemas. compatibility module-load imports are standard-library
+only. The consumed safe_version/load_registry/assess/update_status call closure adds no
+local dependency and does not reach mqtt_observation(), whose conditional ..mqtt import
+is therefore outside the adapter path. No additional mandatory dependency was found.
+Adapter, entrypoint, compatibility module and all runtime-policy source bytes are unchanged.
+
+Compatibility installation is code-file publication only: durable intent records its
+exact target/hash and created-file status; generic staged renameat2 NOREPLACE publication,
+post-verification, resume and committed idempotence protections apply. Deployment never
+imports compatibility.py, runs refresh_status/update_status/mqtt_observation/platform-status,
+rewrites compatibility state or inventory, publishes MQTT or executes the adapter.
+The accepted runtime, launch flags, customization policy and resolved-prefix correction
+remain unchanged. Transaction evidence remains NOT_STARTED -> NOT_STARTED,
+PREPARED -> INCOMPLETE, COMMITTED -> PASS. All three previous attempts remained NOT_STARTED.
+
+The [production dependency correction record](../governance/pe4/pe4-ha-association-production-dependency-correction.json)
+and [closed schema](../governance/pe4/pe4-ha-association-production-dependency-correction.schema.json)
+bind the source/classification and operator provenance. All correction records are
+repository-only governance, not additional production contracts. Runtime.contracts()
+still reads six governance files. Prior correction records and commits remain immutable.
+Older six-B/eight-additive statements below describe historical preparation and are
+superseded by the five-B/nine-additive current manifest. Current helper source binding
+requires the exact successor subject `PE-4: correct production compatibility dependency`,
+immediate parent 84635cb, main/origin equality, clean tree, 0/0 and no Git operation.
+
+Validation: deployment focused 83, runtime customization 8, adapter 73, production
+dependency correction 14, other regressions 275; total 453 run, 452 passed, one existing
+rsync-unavailable release skip on Windows. Tests cover absent/exact/different/unsafe,
+intent, interruption immediately before/after compatibility publication, resume,
+idempotence, all five required dependencies, state/platform/cron preservation and import
+closure. No accepted interpreter, actual adapter/platform-status, live host or credential
+is exercised. Syntax/import safety, canonical closed schemas, links, source identities,
+privacy/prohibited-operation checks and diff checks are repository-only.
+
+Adapter Implementation PASS/CLOSED, corrected before deployment; Runtime Validation
+Correction PASS/CLOSED; Deployment Runtime Probe Correction PASS/CLOSED; Production
+Dependency Classification Correction PASS/CLOSED; Deployment Preparation PASS/CLOSED,
+corrected and rebound. Deployment, Bounded Manual Production Validation, Independent
+Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection DEFERRED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; Rollback NOT PERFORMED. Next unchanged:
+**PE-4 Home Assistant Association Adapter Deployment Execution**. Complete operator block
+is FOR REVIEW ONLY and was not run. Stop after repository correction.
+
+
 ## Deployment runtime probe resolved-prefix correction — 2026-10-06
 
 Deployment Runtime Probe Correction PASS/CLOSED. The following chronology is
@@ -3373,6 +3458,7 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Adapter Pre-deployment Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Runtime Validation Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment Runtime Probe Correction | PASS/CLOSED |
+| PE-4 Home Assistant Association Adapter Production Dependency Classification Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment Preparation | PASS/CLOSED, corrected and rebound |
 | PE-4 Home Assistant Association Adapter Deployment Preparation Pre-execution Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment | NOT STARTED |

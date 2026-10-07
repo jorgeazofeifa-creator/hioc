@@ -95,7 +95,7 @@ class DeploymentPreparationTests(unittest.TestCase):
             self.assertEqual(D.sha(raw),i["sha256"],i["path"])
             self.assertEqual(hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\0"+raw).hexdigest(),i["git_blob"])
     def test_complete_dependency_manifest(self):
-        self.assertEqual({i["path"] for i in R["production_dependencies"]},{"pi4/lib/hioc/__init__.py","pi4/lib/hioc/core/__init__.py","pi4/lib/hioc/core/config.py","pi4/lib/hioc/core/compatibility.py","pi4/lib/hioc/core/state.py","pi4/lib/hioc/core/schemas.py"})
+        self.assertEqual({i["path"] for i in R["production_dependencies"]},{"pi4/lib/hioc/__init__.py","pi4/lib/hioc/core/__init__.py","pi4/lib/hioc/core/config.py","pi4/lib/hioc/core/state.py","pi4/lib/hioc/core/schemas.py"})
         tree=ast.parse((ROOT/'pi4/lib/hioc/home_assistant_association.py').read_text())
         local={n.module for n in ast.walk(tree) if isinstance(n,ast.ImportFrom) and n.level}
         self.assertEqual(local,{'core.config','core.compatibility','core.state'})
@@ -317,7 +317,7 @@ class DeploymentEvidenceCorrectionTests(unittest.TestCase):
             self.assertEqual(item['classification'],'B_EXISTING_EXACT_DEPENDENCY')
             self.assertEqual(item['policy'],'REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED')
             self.assertNotEqual(item['policy'],D.ADDITIVE_POLICY)
-        self.assertEqual(len(self.m['deploy']),8)
+        self.assertEqual(len(self.m['deploy']),9)
         self.assertFalse(D.DEPENDENCIES.intersection(i['path'] for i in self.m['deploy']))
         for item in self.m['deploy']:self.assertEqual(item['policy'],D.ADDITIVE_POLICY)
 
@@ -619,9 +619,9 @@ class ResolvedPrefixProbeTests(unittest.TestCase):
         for suffix in ('.json','.schema.json'):
             raw=base.with_suffix(suffix).read_bytes();self.assertEqual(raw,D.canonical(json.loads(raw)))
         for item in record['sources'].values():
-            raw=(ROOT/item['path']).read_bytes();self.assertEqual(D.sha(raw),item['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
-        self.assertEqual(record['starting_commit'],D.BASELINE);self.assertEqual(D.BASELINE,'e4d5a19afecccb1584708e3da57ba3c0c4258523')
-        self.assertEqual(R['source_binding']['parent'],D.BASELINE);self.assertEqual(R['source_binding']['subject'],'PE-4: fix deployment runtime prefix validation')
-        self.assertEqual(R['helper'],record['sources']['deployment_helper']);self.assertFalse(record['runtime_contract_consumption']);self.assertFalse(record['production_installation'])
+            raw=subprocess.check_output(['git','show','84635cb88380c590d2adfb655c37afd2118c629f:'+item['path']],cwd=ROOT);self.assertEqual(D.sha(raw),item['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
+        self.assertEqual(record['starting_commit'],'e4d5a19afecccb1584708e3da57ba3c0c4258523');self.assertEqual(D.BASELINE,'84635cb88380c590d2adfb655c37afd2118c629f')
+        self.assertEqual(R['source_binding']['parent'],D.BASELINE);self.assertEqual(R['source_binding']['subject'],'PE-4: correct production compatibility dependency')
+        historical=json.loads(subprocess.check_output(['git','show','84635cb88380c590d2adfb655c37afd2118c629f:'+D.RECORD],cwd=ROOT));self.assertEqual(historical['helper'],record['sources']['deployment_helper']);self.assertFalse(record['runtime_contract_consumption']);self.assertFalse(record['production_installation'])
 
 if __name__ == '__main__':unittest.main()
