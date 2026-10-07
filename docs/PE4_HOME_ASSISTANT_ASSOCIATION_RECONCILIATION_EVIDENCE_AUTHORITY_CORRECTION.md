@@ -1,5 +1,11 @@
 # PE-4 Reconciliation Evidence Authority Correction
 
+Successor governance closure: [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md). Durable reconciliation
+and bounded manual validation are now PASS/CLOSED with the original-artifact limitation retained.
+The preparation lifecycle and review-only reconciliation block below are historical; they do not
+request another execution. Current next objective is Independent Production Acceptance, NOT STARTED.
+
+
 Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
 The first live adapter run completed once (PASS/rc0); historical wrapper FAIL/rc1 and manual
 review remain unchanged. Scope correction PASS/CLOSED was followed by operator-supplied PI3

@@ -91,14 +91,37 @@ class PE4RuntimeLifecycleTests(unittest.TestCase):
         self.assertIn("(HA_IPV4,HA_PORT)",route); self.assertNotIn("urllib",route)
 
     def test_every_entrypoint_binds_to_governance_and_bounds_unexpected_errors(self):
-        for path in TOOLS.glob("hioc-pe4-*.py"):
-            source=path.read_text(encoding="utf-8")
-            # Standalone HA clients are governed by separately bound preparation
-            # records and operator pre-token gates, not lifecycle CLI arguments.
-            if path.name in {"hioc-pe4-ha-auth-capability.py",
-                             "hioc-pe4-ha-registry-discovery.py"}: continue
-            self.assertIn("--governance-commit",source,path.name)
-            self.assertIn("UNEXPECTED_ERROR",source,path.name)
+        # Fixed scope from PE4_ISOLATED_RUNTIME_LIFECYCLE.md: identity, A-G,
+        # rollback, D-PREP and E handoff capture/preservation. Later HA tools
+        # have separately governed CLI and sanitized failure contracts.
+        lifecycle_entrypoints = (
+            "hioc-pe4-windows-ssh-identity-provision.py",
+            "hioc-pe4-artifact-acquire.py",
+            "hioc-pe4-artifact-transfer.py",
+            "hioc-pe4-route-proof.py",
+            "hioc-pe4-runtime-construct.py",
+            "hioc-pe4-dependency-validate.py",
+            "hioc-pe4-runtime-publish.py",
+            "hioc-pe4-runtime-preflight.py",
+            "hioc-pe4-runtime-rollback.py",
+            "hioc-pe4-runtime-hierarchy-prepare.py",
+            "hioc-pe4-action-e-handoff-capture.py",
+            "hioc-pe4-action-e-handoff-preserve.py",
+        )
+        separately_governed_ha_tools = {
+            "hioc-pe4-ha-association-deploy.py",
+            "hioc-pe4-ha-association-manual-reconcile.py",
+            "hioc-pe4-ha-association-manual-validate.py",
+            "hioc-pe4-ha-runtime-credential-provision.py",
+            "hioc-pe4-ha-runtime-credential-validate.py",
+        }
+        self.assertTrue(set(lifecycle_entrypoints).isdisjoint(separately_governed_ha_tools))
+        for name in lifecycle_entrypoints:
+            path = TOOLS / name
+            self.assertTrue(path.is_file(), name)
+            source = path.read_text(encoding="utf-8")
+            self.assertIn("--governance-commit", source, name)
+            self.assertIn("UNEXPECTED_ERROR", source, name)
         action_d=(TOOLS/"hioc-pe4-runtime-construct.py").read_text(encoding="utf-8")
         self.assertIn("SANITIZED_FAILURE",action_d)
         self.assertIn("failure-result.json",action_d)

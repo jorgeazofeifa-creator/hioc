@@ -1,3 +1,4 @@
+import ast
 import os
 import pathlib
 import subprocess
@@ -47,6 +48,24 @@ class NetworkProbeGovernanceTests(unittest.TestCase):
                             self.assertEqual(text.count("192.168.100.152"), 2)
                             self.assertIn('[ "$HOME_ASSISTANT_IP" != "192.168.100.152" ]', text)
                             self.assertIn('.ip != "192.168.100.152"', text)
+                            continue
+                        if path == ROOT / "pi4" / "lib" / "hioc" / "home_assistant_association.py":
+                            # PE-4 separately freezes this endpoint and one numeric socket;
+                            # this exception does not permit literals in other production files.
+                            self.assertNotIn("192.168.100.152", text)
+                            self.assertEqual(text.count("192.168.100.251"), 2)
+                            self.assertEqual(text.count('ENDPOINT = "ws://192.168.100.251:8123/api/websocket"'), 1)
+                            tree = ast.parse(text)
+                            direct_targets = [
+                                ast.literal_eval(call.args[1])
+                                for call in ast.walk(tree)
+                                if isinstance(call, ast.Call)
+                                and isinstance(call.func, ast.Attribute)
+                                and call.func.attr == "sock_connect"
+                                and len(call.args) == 2
+                                and isinstance(call.args[1], ast.Tuple)
+                            ]
+                            self.assertEqual(direct_targets, [("192.168.100.251", 8123)])
                             continue
                         offenders.append(str(path.relative_to(ROOT)))
         self.assertEqual(offenders, [], f"PI5 address literals found: {offenders}")

@@ -71,9 +71,9 @@ class DeploymentClosureTests(unittest.TestCase):
  def test_next_task_exact_and_separate_authorization(self):self.assertEqual(R['next_task'],NEXT);self.assertTrue(R['first_adapter_run_requires_separate_authorization']);self.reject('next_task','PE-4 Home Assistant Association Adapter Deployment Execution')
  def test_master_authoritative_lifecycle_objective_and_next_agree(self):
   master=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf-8');current=master.split('## Current Objective',1)[1].split('### Future Compatibility Diagnostics UX Checkpoint',1)[0]
-  self.assertIn('**PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**',current);self.assertIn('### PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation',current);self.assertNotIn('six existing',current);self.assertNotIn('eight additive',current);self.assertIn('five preserved',current);self.assertIn('nine newly created',current)
+  self.assertIn('**PE-4 Home Assistant Association Adapter Independent Production Acceptance**',current);self.assertIn('### PE-4 Home Assistant Association Adapter Independent Production Acceptance',current);self.assertNotIn('six existing',current);self.assertNotIn('eight additive',current);self.assertIn('five preserved',current);self.assertIn('nine newly created',current)
   table=master.split('Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0];self.assertIn('| PE-4 Home Assistant Association Adapter Deployment | PASS/CLOSED |',table)
-  self.assertIn('| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | ATTEMPTED / REVIEW REQUIRED |',table)
+  self.assertIn('| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | PASS/CLOSED |',table)
   for checkpoint in ('Independent Production Acceptance','Scheduler Deployment'):self.assertIn('| PE-4 Home Assistant Association Adapter '+checkpoint+' | NOT STARTED |',table)
  def test_credential_semantics_local_validation_separate_static_check(self):
   self.assertEqual(R['credential_local_validation'],'PASS');c=R['credential_semantics'];self.assertEqual(c['deployment_file_access'],'GOVERNED_LOCAL_VALIDATOR_ONLY')

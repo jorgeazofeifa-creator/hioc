@@ -3201,6 +3201,30 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Independent Production Acceptance**.
+Durable Post-Run Reconciliation and Bounded Manual Production Validation are PASS/CLOSED
+through explicit repository governance closure. OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE:
+PI3 source synchronization to 96150db5e28b065a587ae09ce0522ef6bd66f3be PASS/rc0, independent
+source review, then one separately authorized durable reconciliation PASS/rc0. All protected
+production surfaces and current durable gates passed without another adapter invocation.
+Historical adapter execution remains COMPLETED ONCE / PASS; historical wrapper FAIL/rc1 /
+MANUAL REVIEW REQUIRED and PRODUCTION_FILES_UNCHANGED=FALSE remain unchanged. First reconciliation
+attempt remains FAIL / HISTORICAL_EVIDENCE. Original ephemeral files remain unavailable for
+byte, metadata, canonical JSON or cross-file revalidation; the mandatory limitation is RECORDED.
+The disappearance cause is UNKNOWN; no cause is inferred. Committed operator-supplied historical
+report authority remains separate from current durable-state evidence.
+Independent Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection
+DEFERRED; PE-4 NOT COMPLETE; Phase 7A Passive Living Inventory ACTIVE; rollback NOT PERFORMED;
+second adapter execution NOT AUTHORIZED. Active Discovery remains postponed except already-governed
+PE-4 work. Codex performed repository-only governance work and no production access or execution.
+Next operator action: source synchronization to this closure commit only, STOP and independent
+review. Independent Production Acceptance remains the next separately governed project checkpoint.
+
+See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
+
+## Historical evidence-authority preparation — superseded current sequencing
+
+
 Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
 The first live adapter run completed once (PASS/rc0); historical wrapper FAIL/rc1 and manual
 review remain unchanged. Scope correction PASS/CLOSED was followed by operator-supplied PI3
@@ -3570,13 +3594,13 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Adapter Deployment Preparation Pre-execution Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Bounded Manual Validation Preparation | PASS/CLOSED |
-| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | ATTEMPTED / REVIEW REQUIRED |
+| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Bounded Validation Scope Correction | PASS/CLOSED |
 | First Live Adapter Invocation | COMPLETED ONCE / ADAPTER PASS |
 | Historical Wrapper | FAIL / MANUAL REVIEW REQUIRED |
 | Post-Run Reconciliation Attempt 1 | FAIL / HISTORICAL_EVIDENCE |
 | Reconciliation Evidence Authority Correction | PASS/CLOSED |
-| PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation | PREPARED FOR SEPARATE AUTHORIZATION |
+| PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation | PASS/CLOSED |
 | Second Adapter Execution | NOT AUTHORIZED |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
@@ -3822,35 +3846,38 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
-The first live adapter run completed once (PASS/rc0); historical wrapper FAIL/rc1 and manual
-review remain unchanged. Scope correction PASS/CLOSED was followed by operator-supplied PI3
-source synchronization PASS to d767ad4 and one separately authorized reconciler attempt:
-FAIL at HISTORICAL_EVIDENCE before durable checks. A narrow diagnostic reported
-FileNotFoundError; a separate presence check proved the exact original /tmp directory absent
-and zero matching manual-evidence directories. No disappearance cause is inferred.
-No historical artifacts were recreated. The frozen committed operator report remains available;
-original file metadata, bytes, canonical JSON and cross-file equality are unavailable for
-revalidation. The evidence-authority correction is PASS/CLOSED; durable reconciliation is
-PREPARED FOR SEPARATE AUTHORIZATION and eventual closure must retain the evidence limitation.
-Next operator action: **PI3 source synchronization to the evidence-authority correction commit**,
-STOP, independent review, then separate authorization for read-only durable reconciliation.
-Independent acceptance and scheduler NOT STARTED; projection DEFERRED; PE-4 NOT COMPLETE;
-Phase 7A ACTIVE; rollback NOT PERFORMED; second adapter execution NOT AUTHORIZED.
+Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Independent Production Acceptance**.
+Durable Post-Run Reconciliation and Bounded Manual Production Validation are PASS/CLOSED
+through explicit repository governance closure. OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE:
+PI3 source synchronization to 96150db5e28b065a587ae09ce0522ef6bd66f3be PASS/rc0, independent
+source review, then one separately authorized durable reconciliation PASS/rc0. All protected
+production surfaces and current durable gates passed without another adapter invocation.
+Historical adapter execution remains COMPLETED ONCE / PASS; historical wrapper FAIL/rc1 /
+MANUAL REVIEW REQUIRED and PRODUCTION_FILES_UNCHANGED=FALSE remain unchanged. First reconciliation
+attempt remains FAIL / HISTORICAL_EVIDENCE. Original ephemeral files remain unavailable for
+byte, metadata, canonical JSON or cross-file revalidation; the mandatory limitation is RECORDED.
+The disappearance cause is UNKNOWN; no cause is inferred. Committed operator-supplied historical
+report authority remains separate from current durable-state evidence.
+Independent Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection
+DEFERRED; PE-4 NOT COMPLETE; Phase 7A Passive Living Inventory ACTIVE; rollback NOT PERFORMED;
+second adapter execution NOT AUTHORIZED. Active Discovery remains postponed except already-governed
+PE-4 work. Codex performed repository-only governance work and no production access or execution.
+Next operator action: source synchronization to this closure commit only, STOP and independent
+review. Independent Production Acceptance remains the next separately governed project checkpoint.
 
 Deployment retains five preserved dependencies and nine newly created deployment targets,
-exact deployed source 4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2 and COMMITTED authority.
-Historical config/inventory preservation TRUE remains operator evidence; no execution-time
-comparison is recreated. See [evidence-authority correction](PE4_HOME_ASSISTANT_ASSOCIATION_RECONCILIATION_EVIDENCE_AUTHORITY_CORRECTION.md).
+COMMITTED authority and exact deployed source 4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2.
+Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE original-artifact
+revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
 
-### PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation
+### PE-4 Home Assistant Association Adapter Independent Production Acceptance
 
-Next operator action: **PI3 source synchronization to the evidence-authority correction commit**.
-Source synchronization only, STOP, independent review. Second future action requires separate
-read-only reconciliation authorization. Then STOP and independently review before any later
-repository closure retaining the unavailable original-artifact limitation.
+Next project checkpoint: separately governed Independent Production Acceptance, NOT STARTED.
+Immediate operator action: **PI3 source synchronization to the durable reconciliation closure commit**,
+source synchronization only, STOP and independent review. This closure authorizes no acceptance
+execution, adapter rerun, scheduler deployment, production mutation or Public Projection.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 

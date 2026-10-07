@@ -1,5 +1,29 @@
 ## Deployment Execution governance closure — 2026-10-06
 
+Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Independent Production Acceptance**.
+Durable Post-Run Reconciliation and Bounded Manual Production Validation are PASS/CLOSED
+through explicit repository governance closure. OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE:
+PI3 source synchronization to 96150db5e28b065a587ae09ce0522ef6bd66f3be PASS/rc0, independent
+source review, then one separately authorized durable reconciliation PASS/rc0. All protected
+production surfaces and current durable gates passed without another adapter invocation.
+Historical adapter execution remains COMPLETED ONCE / PASS; historical wrapper FAIL/rc1 /
+MANUAL REVIEW REQUIRED and PRODUCTION_FILES_UNCHANGED=FALSE remain unchanged. First reconciliation
+attempt remains FAIL / HISTORICAL_EVIDENCE. Original ephemeral files remain unavailable for
+byte, metadata, canonical JSON or cross-file revalidation; the mandatory limitation is RECORDED.
+The disappearance cause is UNKNOWN; no cause is inferred. Committed operator-supplied historical
+report authority remains separate from current durable-state evidence.
+Independent Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection
+DEFERRED; PE-4 NOT COMPLETE; Phase 7A Passive Living Inventory ACTIVE; rollback NOT PERFORMED;
+second adapter execution NOT AUTHORIZED. Active Discovery remains postponed except already-governed
+PE-4 work. Codex performed repository-only governance work and no production access or execution.
+Next operator action: source synchronization to this closure commit only, STOP and independent
+review. Independent Production Acceptance remains the next separately governed project checkpoint.
+
+[Durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
+
+Earlier dated checkpoint notices below are historical and superseded for current sequencing.
+
+
 Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
 The first live adapter run completed once (PASS/rc0); historical wrapper FAIL/rc1 and manual
 review remain unchanged. Scope correction PASS/CLOSED was followed by operator-supplied PI3
