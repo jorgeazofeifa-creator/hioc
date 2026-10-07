@@ -3832,3 +3832,21 @@ independent sync review, then separate live-execution authorization. Do not comb
 Independent Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection DEFERRED;
 PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. No PI3/PI5/SSH/HA/credential access,
 adapter/platform-status execution, deployment, production mutation, scheduler, MQTT or projection.
+
+## PE-4 bounded manual validation production-scope correction - 2026-10-07
+
+Repository-only correction PASS/CLOSED. [Correction procedure](docs/PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_CORRECTION.md)
+and [canonical record](governance/pe4/pe4-ha-association-bounded-manual-validation-correction.json)
+preserve OPERATOR_SUPPLIED first-run adapter PASS/rc0 and historical wrapper FAIL/rc1.
+The adapter executed once and published valid private state. Historical PRODUCTION_FILES_UNCHANGED=FALSE
+retains its original meaning; unrelated runtime churn makes that global invariant unsuitable.
+Explicit protected surfaces replace it for corrected checks. No adapter defect or original differing
+file is established. A second adapter execution is NOT AUTHORIZED.
+Current objective: **PE-4 Home Assistant Association Adapter Post-Run Reconciliation**.
+Bounded Manual Production Validation ATTEMPTED / REVIEW REQUIRED; correction PASS/CLOSED;
+Post-Run Reconciliation PREPARED FOR SEPARATE AUTHORIZATION. Next operator action:
+**PI3 source synchronization to the correction commit**, STOP, independent sync review, then
+separately authorize READ-ONLY reconciliation of existing evidence/state without adapter/credential/HA.
+Deployment and preparation PASS/CLOSED; Independent Production Acceptance and Scheduler Deployment
+NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+Codex performed no production access/execution/mutation, deployment, scheduler, MQTT or projection.

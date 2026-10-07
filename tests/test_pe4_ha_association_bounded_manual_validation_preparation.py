@@ -28,7 +28,7 @@ def fields(**changes):
  r=dict(RESULT='PASS',ERROR_CODE='NONE',FAILURE_STAGE='NONE',COMPATIBILITY_STATUS='COMPATIBLE',OBSERVED_HA_VERSION='2026.8.1',ASSOCIATED_COUNT='1',REVIEW_ONLY_COUNT='0',REJECTED_COUNT='0',UNMATCHED_COUNT='0',HISTORICAL_BINDING_COUNT='0',STATE_PUBLISHED='TRUE',LAST_KNOWN_GOOD_PRESERVED='FALSE');r.update(changes);return r
 def raw(r):return ('\n'.join(k+'='+r[k] for k in M.FIELDS)+'\n').encode()
 def checks(**changes):
- r=dict(STATE_SCHEMA_VALIDATION='PASS',TRANSACTION_NAMESPACE_CLEAN='TRUE',CONFIG_UNCHANGED='TRUE',CANONICAL_INVENTORY_UNCHANGED='TRUE',PLATFORM_STATUS_UNCHANGED='TRUE',PLATFORM_CRON_UNCHANGED='TRUE',ASSOCIATION_SCHEDULER_PRESENT='FALSE',PRODUCTION_FILES_UNCHANGED='TRUE',COMPATIBILITY_STATE_VALIDATION='PASS');r.update(changes);return r
+ r=dict(STATE_SCHEMA_VALIDATION='PASS',TRANSACTION_NAMESPACE_CLEAN='TRUE',CONFIG_UNCHANGED='TRUE',CANONICAL_INVENTORY_UNCHANGED='TRUE',PLATFORM_STATUS_UNCHANGED='TRUE',PLATFORM_CRON_UNCHANGED='TRUE',ASSOCIATION_SCHEDULER_PRESENT='FALSE',PROTECTED_PRODUCTION_SURFACES_UNCHANGED='TRUE',COMPATIBILITY_STATE_VALIDATION='PASS');r.update(changes);return r
 class PreparationTests(unittest.TestCase):
  def reject(self,key,value):
   bad=copy.deepcopy(R);bad[key]=value
@@ -56,7 +56,7 @@ class PreparationTests(unittest.TestCase):
    self.assertEqual(b,(ROOT/x['path']).read_bytes().replace(b'\r\n',b'\n'));self.assertEqual(hashlib.sha256(b).hexdigest(),x['sha256'])
  def test_wrapper_and_compatibility_schema_identity(self):
   for name in ('source_only_wrapper','compatibility_status_schema'):
-   x=R[name];b=(ROOT/x['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(hashlib.sha256(b).hexdigest(),x['sha256'])
+   x=R[name];b=subprocess.check_output(['git','show','abae01b6eb60aecb12396d8078dee719d75801b7:'+x['path']],cwd=ROOT);self.assertEqual(hashlib.sha256(b).hexdigest(),x['sha256'])
  def test_command_exact_no_application_arguments(self):
   self.assertEqual(R['adapter_command'],M.ADAPTER_COMMAND);self.assertEqual(R['adapter_arguments'],[]);self.assertEqual(M.ADAPTER_COMMAND[1:3],['-I','-B']);self.assertEqual(len(M.ADAPTER_COMMAND),4);self.reject('adapter_arguments',['--force'])
  def test_minimal_environment_and_proxy_override_boundary(self):
@@ -91,7 +91,7 @@ class PreparationTests(unittest.TestCase):
   self.assertTrue(R['credential_policy']['adapter_governed_path_only']);self.assertTrue(all(v is False for k,v in R['credential_policy'].items() if k!='adapter_governed_path_only'))
   self.assertNotIn('read_credential(',TEXT);self.assertNotIn('credential-validate.py',TEXT);self.assertNotIn('.prerequisites(',TEXT)
  def test_private_evidence_allowlist(self):
-  self.assertEqual(set(R['evidence_report_fields']),set(M.FIELDS+M.EXTRA));self.assertEqual(R['evidence']['files'],['result.txt','validation.json','report.txt']);self.assertEqual(R['evidence']['directory_mode'],'0700');self.assertEqual(R['evidence']['file_mode'],'0600')
+  self.assertEqual(set(R['evidence_report_fields']),set(M.FIELDS+tuple('PRODUCTION_FILES_UNCHANGED' if k=='PROTECTED_PRODUCTION_SURFACES_UNCHANGED' else k for k in M.EXTRA)));self.assertEqual(R['evidence']['files'],['result.txt','validation.json','report.txt']);self.assertEqual(R['evidence']['directory_mode'],'0700');self.assertEqual(R['evidence']['file_mode'],'0600')
  def test_pass_exact_good_states_and_lkg(self):
   self.assertEqual(set(R['pass']['good_compatibility_states']),C.GOOD);self.assertEqual(M.classify(fields(),0,checks()),'PASS')
   for change in ({'STATE_PUBLISHED':'FALSE'},{'LAST_KNOWN_GOOD_PRESERVED':'TRUE'},{'ERROR_CODE':'TRANSACTION_CLEANUP_FAILED'},{'FAILURE_STAGE':'COMPATIBILITY'}):
@@ -123,9 +123,9 @@ class PreparationTests(unittest.TestCase):
   self.assertIn('--approved-preparation-commit',block);self.assertIn('return_code=$?',block)
  def test_current_master_lifecycle_and_next_action(self):
   text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');current=text.split('## Current Objective',1)[1].split('### Future Compatibility',1)[0]
-  self.assertIn('PREPARED FOR SEPARATE AUTHORIZATION',current);self.assertIn('PI3 source synchronization to the approved preparation commit',current)
+  self.assertIn('Post-Run Reconciliation',current);self.assertIn('PI3 source synchronization to the correction commit',current)
   table=text.split('## Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
-  self.assertIn('| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | PREPARED FOR SEPARATE AUTHORIZATION |',table)
+  self.assertIn('| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | ATTEMPTED / REVIEW REQUIRED |',table)
   for name in ('Independent Production Acceptance','Scheduler Deployment'):self.assertIn('| PE-4 Home Assistant Association Adapter '+name+' | NOT STARTED |',table)
  def test_valid_parser_retains_exact_sanitized_result(self):
   f=fields();self.assertEqual(M.parse_result(raw(f),C),f)
@@ -219,13 +219,13 @@ class SyntheticWrapperFlowTests(unittest.TestCase):
    for name in ('getuid','geteuid','getgid','getegid'):stack.enter_context(patch.object(M.os,name,lambda:1000,create=True))
    stack.enter_context(patch.object(M.socket,'gethostname',lambda:'nutandpihole'))
    stack.enter_context(patch.object(M,'command',return_value=b'inet 192.168.100.252/24'))
-   stack.enter_context(patch.object(M,'source_binding',side_effect=M.Stop if mode=='precondition' else lambda x:(c,R)))
+   stack.enter_context(patch.object(M,'source_binding',side_effect=M.Stop if mode=='precondition' else lambda x:(c,{'second_adapter_execution_authorized':True})))
    stack.enter_context(patch.object(M,'load_module',side_effect=load))
    stack.enter_context(patch.object(M,'deployment_integrity'))
    stack.enter_context(patch.object(M,'runtime_probe'))
    stack.enter_context(patch.object(M,'namespace',side_effect=names))
    stack.enter_context(patch.object(M,'scheduler',return_value=b'synthetic cron'))
-   stack.enter_context(patch.object(M,'production_snapshot',return_value={'synthetic':'RAM_ONLY'}))
+   stack.enter_context(patch.object(M,'protected_snapshot',return_value={'synthetic':'RAM_ONLY'}))
    stack.enter_context(patch.object(M,'evidence_directory',return_value=Path(tmp)))
    stack.enter_context(patch.object(M,'invoke_once',side_effect=invoke))
    stack.enter_context(patch.object(M,'compatibility_validation',return_value='PASS'))

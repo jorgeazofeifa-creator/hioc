@@ -21,7 +21,9 @@ import time
 
 SOURCE = Path('/home/jazofv1/hioc-release-source')
 HOME = Path('/home/jazofv1/hioc')
-BASE = '560a7810ed1e57c861b38a3fe9d75397cba59eea'
+BASE = 'abae01b6eb60aecb12396d8078dee719d75801b7'
+PREPARATION_PARENT = '560a7810ed1e57c861b38a3fe9d75397cba59eea'
+CORRECTION = 'governance/pe4/pe4-ha-association-bounded-manual-validation-correction.json'
 DEPLOYED = '4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2'
 RECORD = 'governance/pe4/pe4-ha-association-bounded-manual-validation-preparation.json'
 CLOSURE = 'governance/pe4/pe4-ha-association-adapter-deployment-closure.json'
@@ -33,7 +35,7 @@ STAGES = ('TARGET_VALIDATION','RUNTIME_VALIDATION','LOCK_ACQUISITION','CONTRACT_
 WARNINGS = ('TRANSACTION_CLEANUP_FAILED','COMPATIBILITY_REPORTING_FAILED')
 GOOD = ('COMPATIBLE','COMPATIBLE_UPDATED','COMPATIBILITY_DEGRADED')
 STATUS = GOOD + ('COMPATIBILITY_UNKNOWN','INCOMPATIBLE','TRUST_ANCHOR_CHANGED','DEPENDENCY_UNAVAILABLE','UNKNOWN')
-EXTRA = ('TARGET','SOURCE_GOVERNANCE_COMMIT','DEPLOYED_SOURCE_COMMIT','DEPLOYMENT_CLOSURE','ADAPTER_EXECUTION_COUNT','ADAPTER_RETURN_CODE','PRE_RUN_PRIVATE_STATE','POST_RUN_PRIVATE_STATE','STATE_SCHEMA_VALIDATION','TRANSACTION_NAMESPACE_CLEAN','CONFIG_UNCHANGED','CANONICAL_INVENTORY_UNCHANGED','PLATFORM_STATUS_UNCHANGED','PLATFORM_CRON_UNCHANGED','ASSOCIATION_SCHEDULER_PRESENT','COMPATIBILITY_STATE_VALIDATION','CREDENTIAL_EXPOSED','RAW_HA_DATA_PERSISTED','PRIVATE_ASSOCIATION_CONTENT_EXPOSED','PRODUCTION_FILES_UNCHANGED','OUTPUT_VALIDATION','WRAPPER_STATUS','OVERALL_VALIDATION','MANUAL_REVIEW_REQUIRED')
+EXTRA = ('TARGET','SOURCE_GOVERNANCE_COMMIT','DEPLOYED_SOURCE_COMMIT','DEPLOYMENT_CLOSURE','ADAPTER_EXECUTION_COUNT','ADAPTER_RETURN_CODE','PRE_RUN_PRIVATE_STATE','POST_RUN_PRIVATE_STATE','STATE_SCHEMA_VALIDATION','TRANSACTION_NAMESPACE_CLEAN','CONFIG_UNCHANGED','CANONICAL_INVENTORY_UNCHANGED','PLATFORM_STATUS_UNCHANGED','PLATFORM_CRON_UNCHANGED','ASSOCIATION_SCHEDULER_PRESENT','COMPATIBILITY_STATE_VALIDATION','CREDENTIAL_EXPOSED','RAW_HA_DATA_PERSISTED','PRIVATE_ASSOCIATION_CONTENT_EXPOSED','PROTECTED_PRODUCTION_SURFACES_UNCHANGED','OUTPUT_VALIDATION','WRAPPER_STATUS','OVERALL_VALIDATION','MANUAL_REVIEW_REQUIRED')
 LIMIT = 16 * 1024 * 1024
 class Stop(Exception): pass
 
@@ -90,29 +92,38 @@ def source_binding(commit):
     require(re.fullmatch('[0-9a-f]{40}',commit) is not None)
     require(git('branch','--show-current')=='main' and git('rev-parse','HEAD')==git('rev-parse','origin/main')==commit)
     require(git('rev-parse','HEAD^')==BASE and git('rev-list','--left-right','--count','HEAD...origin/main')=='0\t0')
-    require(git('show','-s','--format=%s','HEAD')=='PE-4: prepare bounded association validation')
+    require(git('show','-s','--format=%s','HEAD')=='PE-4: correct bounded validation production scope')
     require(git('status','--porcelain','--untracked-files=all')=='')
     for n in ('MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_LOG','BISECT_START','sequencer','rebase-apply','rebase-merge'):
         p=Path(git('rev-parse','--git-path',n));require(not (p if p.is_absolute() else SOURCE/p).exists())
     # The prior source-sync review proves remote equality; this action performs no fetch/pull.
-    for p in (RECORD,RECORD.replace('.json','.schema.json'),CLOSURE,CLOSURE.replace('.json','.schema.json'),'tools/hioc-pe4-ha-association-manual-validate.py'):
+    for p in (RECORD,RECORD.replace('.json','.schema.json'),CORRECTION,CORRECTION.replace('.json','.schema.json'),CLOSURE,CLOSURE.replace('.json','.schema.json'),'tools/hioc-pe4-ha-association-manual-validate.py','tools/hioc-pe4-ha-association-manual-reconcile.py'):
         require(command(['/usr/bin/git','show',commit+':'+p],SOURCE)==(SOURCE/p).read_bytes())
     raw=(SOURCE/CLOSURE).read_bytes();require(sha(raw)==CLOSURE_SHA)
     closure=strict(raw);require(closure['status']=='PASS_CLOSED' and closure['deployment_transaction']=='COMMITTED' and closure['deployed_source_commit']==DEPLOYED)
     record=strict((SOURCE/RECORD).read_bytes());schema_validate(record,strict((SOURCE/RECORD.replace('.json','.schema.json')).read_bytes()))
-    require(record['starting_commit']==BASE and record['deployed_source_commit']==DEPLOYED)
+    require(record['starting_commit']==PREPARATION_PARENT and record['deployed_source_commit']==DEPLOYED)
+    # Preparation binds historical wrapper bytes, never the corrected wrapper.
     for key in ('source_only_wrapper','compatibility_status_schema'):
-        item=record[key];require(sha((SOURCE/item['path']).read_bytes())==item['sha256'])
+        item=record[key];require(sha(command(['/usr/bin/git','show',BASE+':'+item['path']],SOURCE))==item['sha256'])
+    correction=strict((SOURCE/CORRECTION).read_bytes());schema_validate(correction,strict((SOURCE/CORRECTION.replace('.json','.schema.json')).read_bytes()))
+    require(correction['starting_commit']==BASE and correction['deployed_source_commit']==DEPLOYED)
+    for key in ('corrected_wrapper','reconciliation_tool'):
+        item=correction[key];require(sha((SOURCE/item['path']).read_bytes())==item['sha256'])
     for item in closure['sources'].values():
         raw=(SOURCE/item['path']).read_bytes();require(sha(raw)==item['sha256'])
-    return closure,record
+    return closure,correction
 
-def scheduler():
-    raw=command(['/usr/bin/crontab','-l']);require(len(raw)<=65536)
+def validate_cron(raw):
+    require(type(raw) is bytes and len(raw)<=65536)
     text=raw.decode('utf8');lines=[line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith('#')]
     require(not re.search(r'(?i)(?:home.assistant|ha.association|associations)',text))
     expected='17 3 * * * flock -n /tmp/hioc-platform-status.lock /home/jazofv1/hioc/pi4/bin/hioc-platform-status.py'
     require([l for l in lines if 'hioc-platform-status' in l]==[expected])
+    return raw
+
+def scheduler():
+    raw=validate_cron(command(['/usr/bin/crontab','-l']))
     # Check additional scheduler surfaces; never inspect credential storage.
     for p in (Path('/etc/crontab'),Path('/etc/cron.d'),Path('/etc/systemd/system'),Path('/home/jazofv1/.config/systemd/user')):
         if not p.exists():continue
@@ -159,24 +170,37 @@ def namespace(fs,d,first=False):
     if first:require(not present and not tx)
     return present,not tx
 
-def production_snapshot(fs):
-    # Bounded private comparison values stay in RAM; no hashes/names enter evidence.
-    result={};total=0;count=0
-    for base,dirs,files in os.walk(HOME,followlinks=False):
-        dirs.sort();files.sort()
-        for name in dirs+files:
-            p=Path(base)/name;rel=p.relative_to(HOME).as_posix();count+=1;require(count<=50000)
-            if rel=='state/inventory/associations' or rel.startswith('state/inventory/associations/'):
-                if name in dirs:dirs.remove(name)
-                continue
-            if rel in ('state/platform/compatibility.json','state/platform/.compatibility.lock'):continue
-            info=p.lstat();meta=(info.st_mode,info.st_uid,info.st_gid)
-            if stat.S_ISLNK(info.st_mode):value=('link',os.readlink(p))
-            elif stat.S_ISDIR(info.st_mode):value=('directory',)
-            else:
-                require(stat.S_ISREG(info.st_mode));total+=info.st_size;require(total<=512*1024*1024)
-                raw=fs.read(rel);require(raw is not None);value=('file',info.st_nlink,sha(raw))
-            result[rel]=(meta,value)
+PROTECTED_FILE_GROUPS = ('DEPLOYED_ADAPTER_ENTRYPOINT_COMPATIBILITY','FIVE_DEPENDENCIES','SIX_RUNTIME_GOVERNANCE','EXACT_CONFIG','EXECUTION_TIME_CANONICAL_INVENTORY','PLATFORM_STATUS','COMMITTED_JOURNAL_AUTHORITY')
+JOURNAL_FILES = ('intent.json','committed.json','config-prior','config-candidate')
+
+def protected_snapshot(fs,closure,deployment,include_inventory=True):
+    """Explicit adapter-specific surfaces only; never walk the production tree.
+
+    Private comparison values stay in RAM. Inventory comparison applies only to a
+    future authorized bounded execution; reconciliation never recreates that history.
+    """
+    deployment_integrity(deployment,fs,closure)
+    runtime_probe(deployment)
+    scheduler_raw=scheduler()
+    paths={item['path']:int(item['mode'],8) for item in closure['deployed_targets']}
+    paths.update({item['path']:None for item in closure['dependencies']})
+    paths.update({deployment.CONFIG:None,'pi4/bin/hioc-platform-status.py':None,deployment.LOCK:0o600})
+    paths.update({deployment.TX+'/'+name:0o600 for name in JOURNAL_FILES})
+    if include_inventory:paths['state/inventory/inventory.json']=None
+    require(len(closure['dependencies'])==5 and len(closure['deployed_targets'])==9)
+    result={}
+    for path,mode in sorted(paths.items()):
+        raw=fs.read(path,mode);require(raw is not None)
+        info=fs.info(path);require(stat.S_ISREG(info.st_mode) and info.st_nlink==1)
+        result[path]=(info.st_mode,info.st_uid,info.st_gid,info.st_nlink,sha(raw))
+    require(fs.check_directory(deployment.ASSOCIATIONS,0o700))
+    info=fs.info(deployment.ASSOCIATIONS)
+    result['ASSOCIATION_DIRECTORY_SECURITY']=(info.st_mode,info.st_uid,info.st_gid)
+    active=HOME/'runtime/pe4/active';info=active.lstat()
+    require(stat.S_ISLNK(info.st_mode) and active.resolve()==deployment.ENVIRONMENT)
+    result['RUNTIME_ACTIVE_IDENTITY']=(info.st_uid,info.st_gid,os.readlink(active),str(active.resolve()))
+    result['PLATFORM_CRON_AND_SCHEDULER']=sha(scheduler_raw)
+    result['RUNTIME_IDENTITY_SECURITY']='EXACT_REVIEWED_POLICY_PASS'
     return result
 
 def parse_result(raw,compat):
@@ -320,6 +344,8 @@ def main(argv=None):
         require(uid>0 and os.getuid()==os.geteuid()==uid and os.getgid()==os.getegid()==gid)
         require(re.search(rb'\binet 192\.168\.100\.252/',command(['/usr/sbin/ip','-o','-4','addr','show'])) is not None)
         closure,record=source_binding(commit)
+        # Correction authorizes reconciliation only; a second adapter execution is prohibited.
+        require(record['second_adapter_execution_authorized'] is True)
         d=load_module(SOURCE/'tools/hioc-pe4-ha-association-deploy.py','reviewed_deployment')
         d.LIMIT=LIMIT
         fs=d.NativeFS(HOME,uid,gid);deployment_integrity(d,fs,closure);runtime_probe(d)
@@ -330,7 +356,7 @@ def main(argv=None):
         adapter=load_module(SOURCE/'pi4/lib/hioc/home_assistant_association.py','reviewed_state_validation')
         compat=load_module(SOURCE/'pi4/lib/hioc/core/compatibility.py','reviewed_compatibility')
         schema=adapter.strict_json(fs.read(adapter.SCHEMA_PATH),'CONTRACT_VALIDATION');adapter.check_schema_contract(schema)
-        registry=strict(fs.read('governance/compatibility-contracts.json'));snapshot=production_snapshot(fs)
+        registry=strict(fs.read('governance/compatibility-contracts.json'));snapshot=protected_snapshot(fs,closure,d)
         # Final read-only gates immediately before the sole child invocation.
         source_binding(commit);deployment_integrity(d,fs,closure);namespace(fs,d,True)
         require(scheduler()==cron and fs.read(d.CONFIG)==config and fs.read('state/inventory/inventory.json')==inventory)
@@ -361,10 +387,10 @@ def main(argv=None):
         check('PLATFORM_STATUS_UNCHANGED',lambda:'TRUE' if sha(fs.read('pi4/bin/hioc-platform-status.py'))==closure['platform_status_sha256'] else 'FALSE')
         check('PLATFORM_CRON_UNCHANGED',lambda:'TRUE' if scheduler()==cron else 'FALSE')
         report['ASSOCIATION_SCHEDULER_PRESENT']='FALSE' if report['PLATFORM_CRON_UNCHANGED'] in ('TRUE','FALSE') else 'UNKNOWN'
-        check('PRODUCTION_FILES_UNCHANGED',lambda:'TRUE' if production_snapshot(fs)==snapshot else 'FALSE')
+        check('PROTECTED_PRODUCTION_SURFACES_UNCHANGED',lambda:'TRUE' if protected_snapshot(fs,closure,d)==snapshot else 'FALSE')
         check('COMPATIBILITY_STATE_VALIDATION',lambda:compatibility_validation(before,strict(fs.read('state/platform/compatibility.json',0o600)),parsed,compat,compat_schema,registry) if parsed else 'UNKNOWN')
         require(parsed is not None and report['ADAPTER_RETURN_CODE']!='UNKNOWN')
-        checks={k:report[k] for k in ('STATE_SCHEMA_VALIDATION','TRANSACTION_NAMESPACE_CLEAN','CONFIG_UNCHANGED','CANONICAL_INVENTORY_UNCHANGED','PLATFORM_STATUS_UNCHANGED','PLATFORM_CRON_UNCHANGED','ASSOCIATION_SCHEDULER_PRESENT','PRODUCTION_FILES_UNCHANGED','COMPATIBILITY_STATE_VALIDATION')}
+        checks={k:report[k] for k in ('STATE_SCHEMA_VALIDATION','TRANSACTION_NAMESPACE_CLEAN','CONFIG_UNCHANGED','CANONICAL_INVENTORY_UNCHANGED','PLATFORM_STATUS_UNCHANGED','PLATFORM_CRON_UNCHANGED','ASSOCIATION_SCHEDULER_PRESENT','PROTECTED_PRODUCTION_SURFACES_UNCHANGED','COMPATIBILITY_STATE_VALIDATION')}
         report['OVERALL_VALIDATION']=classify(parsed,rc,checks);report['MANUAL_REVIEW_REQUIRED']='FALSE' if report['OVERALL_VALIDATION']=='PASS' else 'TRUE';report['WRAPPER_STATUS']='COMPLETE'
     except BaseException:
         # Deliberately suppress exception values, malformed stdout, paths and private diagnostics.

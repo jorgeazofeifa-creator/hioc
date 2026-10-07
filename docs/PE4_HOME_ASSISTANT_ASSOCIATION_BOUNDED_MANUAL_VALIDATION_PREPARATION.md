@@ -1,5 +1,18 @@
 # PE-4 Home Assistant Association Adapter Bounded Manual Production Validation Preparation
 
+## Historical preparation; execution completed once
+
+This document preserves the original preparation at abae01b6eb60aecb12396d8078dee719d75801b7.
+Its whole-tree PRODUCTION_FILES_UNCHANGED requirement and future-run block are now superseded
+for acceptance by the [scope correction](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_CORRECTION.md).
+The historical wrapper FAIL and adapter PASS remain unchanged. Do not run the old block or rerun
+the adapter. Current next action is source synchronization to the correction commit, followed
+by separately authorized read-only Post-Run Reconciliation after independent sync review.
+Historical preparation record/schema remain immutable. Sections below describe pre-run authority,
+not current authorization or current unexecuted status.
+
+# Historical preparation content
+
 FOR REVIEW ONLY - DO NOT RUN WITHOUT SEPARATE AUTHORIZATION
 
 This repository-only preparation follows deployment PASS/CLOSED at closure commit

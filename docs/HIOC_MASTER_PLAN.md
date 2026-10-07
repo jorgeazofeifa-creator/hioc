@@ -3201,6 +3201,26 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## PE-4 bounded manual validation production-scope correction - 2026-10-07
+
+Repository-only correction PASS/CLOSED. [Correction procedure](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_CORRECTION.md)
+and [canonical record](../governance/pe4/pe4-ha-association-bounded-manual-validation-correction.json)
+preserve OPERATOR_SUPPLIED first-run adapter PASS/rc0 and historical wrapper FAIL/rc1.
+The adapter executed once and published valid private state. Historical PRODUCTION_FILES_UNCHANGED=FALSE
+retains its original meaning; unrelated runtime churn makes that global invariant unsuitable.
+Explicit protected surfaces replace it for corrected checks. No adapter defect or original differing
+file is established. A second adapter execution is NOT AUTHORIZED.
+Current objective: **PE-4 Home Assistant Association Adapter Post-Run Reconciliation**.
+Bounded Manual Production Validation ATTEMPTED / REVIEW REQUIRED; correction PASS/CLOSED;
+Post-Run Reconciliation PREPARED FOR SEPARATE AUTHORIZATION. Next operator action:
+**PI3 source synchronization to the correction commit**, STOP, independent sync review, then
+separately authorize READ-ONLY reconciliation of existing evidence/state without adapter/credential/HA.
+Deployment and preparation PASS/CLOSED; Independent Production Acceptance and Scheduler Deployment
+NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+Codex performed no production access/execution/mutation, deployment, scheduler, MQTT or projection.
+
+
+
 ## PE-4 bounded manual association validation preparation - 2026-10-06
 
 Repository-only preparation PASS/CLOSED. [Preparation procedure](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_PREPARATION.md)
@@ -3527,7 +3547,10 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Adapter Deployment Preparation | PASS/CLOSED, corrected and rebound |
 | PE-4 Home Assistant Association Adapter Deployment Preparation Pre-execution Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment | PASS/CLOSED |
-| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | PREPARED FOR SEPARATE AUTHORIZATION |
+| PE-4 Home Assistant Association Adapter Bounded Manual Validation Preparation | PASS/CLOSED |
+| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | ATTEMPTED / REVIEW REQUIRED |
+| PE-4 Home Assistant Association Adapter Bounded Validation Scope Correction | PASS/CLOSED |
+| PE-4 Home Assistant Association Adapter Post-Run Reconciliation | PREPARED FOR SEPARATE AUTHORIZATION |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED |
@@ -3772,38 +3795,34 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-**PE-4 Home Assistant Association Adapter Bounded Manual Production Validation**.
-Deployment PASS/CLOSED at deployed source `4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2`,
-based on two separate OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE sets: governed deployment PASS,
-transaction COMMITTED, and independent read-only static deployment acceptance PASS.
-The [deployment closure](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_CLOSURE.md)
-and [canonical record](../governance/pe4/pe4-ha-association-adapter-deployment-closure.json)
-bind five preserved existing dependencies, nine newly created deployment targets,
-endpoint addition and exact durable intent/marker authority. Three historical attempts
-failed before intent; none partially deployed files or performed rollback.
+**PE-4 Home Assistant Association Adapter Post-Run Reconciliation**.
+Deployment PASS/CLOSED at deployed source `4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2` retains
+five preserved dependencies and nine newly created deployment targets and COMMITTED authority.
+Repository preparation PASS/CLOSED; operator-supplied source sync PASS followed by exactly one
+live adapter invocation. Adapter PASS/rc0, COMPATIBLE/2026.9.4 and valid private publication with
+counts 25/170/26/8/history0. Config/inventory/platform/cron/privacy checks passed.
+Historical wrapper OVERALL_VALIDATION=FAIL/rc1 remains exact because its overbroad global snapshot
+field was FALSE. Directory timestamps and later file churn do not identify the original differing file.
+The [scope correction](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_CORRECTION.md)
+replaces whole-tree equality with explicit protected production surfaces; no adapter defect is
+established and no second execution is authorized. Codex has performed no production access or run.
 
-The deployed adapter has not been executed, made an HA network connection, attempted
-HA authentication or published association state. Association scheduler absent. Deployment-local
-credential validation PASS did not expose or persist credential content or use it for HA;
-separate static acceptance accessed no credential. Platform-status/cron and compatibility
-state metadata remain preserved. Codex accessed no PI3/PI5/HA/real credential and performed
-no production mutation or deployment.
-
-Bounded Manual Production Validation is PREPARED FOR SEPARATE AUTHORIZATION; Independent Production Acceptance remains NOT STARTED;
-Scheduler Deployment NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE;
-Rollback NOT PERFORMED. First adapter execution requires separate authorization.
+Bounded Manual Production Validation ATTEMPTED / REVIEW REQUIRED; scope correction PASS/CLOSED;
+Post-Run Reconciliation PREPARED FOR SEPARATE AUTHORIZATION / NOT_PERFORMED. Independent Production
+Acceptance and Scheduler Deployment NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; rollback NOT PERFORMED.
 
 ## Next Planned Task
 
-### PE-4 Home Assistant Association Adapter Bounded Manual Production Validation
+### PE-4 Home Assistant Association Adapter Post-Run Reconciliation
 
-Repository preparation is PASS/CLOSED; actual Bounded Manual Production Validation is
-PREPARED FOR SEPARATE AUTHORIZATION. The [review-only procedure](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_PREPARATION.md)
-binds immutable deployed source, exactly one future invocation and sanitized evidence.
-Next operator action: **PI3 source synchronization to the approved preparation commit**.
-Synchronize only, STOP and independently review; then separately authorize the live adapter run.
-Independent Production Acceptance and Scheduler Deployment remain NOT STARTED; Public Projection
-DEFERRED. No adapter execution or production acceptance has occurred in this preparation.
+Next operator action: **PI3 source synchronization to the correction commit**. Synchronize only,
+STOP and independently review. Then separately authorize READ-ONLY reconciliation of existing
+`/tmp/hioc-pe4-ha-association-manual-3ciclqi7` evidence and durable state. No adapter rerun,
+credential acquisition, HA access, production mutation or evidence rewrite. A reconciliation PASS
+requires independent review before a separate repository Bounded Manual Production Validation
+closure. Independent Production Acceptance, Scheduler Deployment and Public Projection retain
+separate later sequencing.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 
