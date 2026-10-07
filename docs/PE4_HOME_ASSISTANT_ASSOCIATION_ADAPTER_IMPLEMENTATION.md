@@ -1,3 +1,12 @@
+## Current deployment preparation pointer
+
+Deployment Preparation PASS/CLOSED; the current next checkpoint is
+**PE-4 Home Assistant Association Adapter Deployment Execution**.
+[Deployment preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_PREPARATION.md)
+owns the FOR REVIEW ONLY operator block. Deployment remains NOT STARTED. The earlier
+checkpoint closure narratives below preserve their historical sequencing and validation;
+corrected executable identities and immutable records remain unchanged.
+
 # PE-4 Home Assistant Association Adapter Implementation
 
 ## Current pre-deployment correction — 2026-10-06

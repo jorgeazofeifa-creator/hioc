@@ -3232,7 +3232,11 @@ completion. Historical chronology elsewhere does not override it.
 | Credential Provisioning Governance Closure | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Pre-deployment Correction | PASS/CLOSED |
+| PE-4 Home Assistant Association Adapter Deployment Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment | NOT STARTED |
+| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | NOT STARTED |
+| PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT STARTED |
+| PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED |
 | PE-4 | NOT COMPLETE |
 | Phase 7A | ACTIVE |
@@ -3475,39 +3479,39 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-Adapter Implementation PASS/CLOSED, corrected before deployment. Independent review of
-original implementation `0bdb9340157daba4a6948251922d762cc4fc97ff` found incomplete
-canonical-envelope type checks and state security failure-stage leakage. Both are
-corrected; the namespace audit confirms the frozen combined connection/identifier
-128-name bound. Original implementation record/schema and Git history remain immutable
-historical evidence. [Current correction](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json)
-binds current executable sources. 70 focused tests and required regressions passed
-(345 run, 344 passed, one existing rsync skip). No deployment or production adapter
-execution/authentication occurred before correction; Deployment Preparation has not begun.
+Adapter Implementation PASS/CLOSED, corrected before deployment at
+`5e9d1ff3d74bb22c6cc0c4f726517c1d0b86d7f2`. Historical implementation commit
+`0bdb9340157daba4a6948251922d762cc4fc97ff`, original records and frozen contracts
+remain immutable. [Current correction](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json)
+binds the corrected executable identities.
 
-**PE-4 Home Assistant Association Adapter Deployment Preparation** is the current
-objective after repository-only Adapter Implementation PASS/CLOSED. The
-[implementation closure](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION.md)
-binds production module/entrypoint source and Windows synthetic validation.
-Current credential exact-final-LF closure supersedes historical optional-LF wording.
-No Codex PI3/PI5/HA access, real token, network validation, production state mutation,
-deployment, scheduler activation, MQTT association publication, public projection or
-rollback occurred. Deployment and Scheduler Deployment NOT STARTED; PE-4 NOT COMPLETE;
-Phase 7A ACTIVE; Rollback NOT PERFORMED. Prior D/E/F/G, 2a/2b, 0C/0C.1,
-implementation preparation and credential closures remain preserved.
+Deployment Preparation PASS/CLOSED: the [deployment preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_PREPARATION.md)
+and [dedicated record](../governance/pe4/pe4-ha-association-adapter-deployment-preparation.json)
+freeze six existing Python dependency checks, eight additive code/governance targets,
+explicit endpoint configuration, private prerequisites, durable deployment intent,
+interruption policy, rollback boundaries and sanitized evidence. The complete proposed
+operator block is FOR REVIEW ONLY. No production action is authorized by preparation.
+
+**PE-4 Home Assistant Association Adapter Deployment Execution** is the current
+objective. Deployment, Bounded Manual Production Validation, Independent Production
+Acceptance and Scheduler Deployment remain NOT STARTED. Public Projection DEFERRED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; Rollback NOT PERFORMED. Credential exact-final-LF
+closure and corrected implementation supersede their explicitly historical wording.
+No PI3/PI5/HA access, real credential access, adapter execution/network, production
+mutation, deployment, scheduler activation, MQTT or projection occurred.
 
 ## Next Planned Task
 
-### PE-4 Home Assistant Association Adapter Deployment Preparation
+### PE-4 Home Assistant Association Adapter Deployment Execution
 
-Prepare the separately governed deployment boundary using the
-[current correction record](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json),
-[frozen implementation preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md)
-and [credential closure](PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md).
-Deployment, bounded manual production validation and scheduler activation require
-separate authorization/acceptance. No deployment command is supplied in this checkpoint.
-Public Projection and PE-5 remain later separate checkpoints; unrelated roadmap work
-retains its sequence and scope.
+Independently review the source-bound FOR REVIEW ONLY block in
+[Deployment Preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_PREPARATION.md).
+Execution requires separate authorization and the exact preparation successor commit.
+Stop after production-file verification; do not invoke the adapter. Subsequent checkpoints
+are **PE-4 Home Assistant Association Adapter Bounded Manual Production Validation**,
+then Independent Production Acceptance, then separately authorized Scheduler Deployment.
+Public Projection and PE-5 remain later separate checkpoints; other roadmap work retains
+its sequence and scope.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 

@@ -1,3 +1,18 @@
+## PE-4 Home Assistant Association Adapter Deployment Preparation — 2026-10-06
+
+Deployment Preparation PASS/CLOSED, repository-only, from corrected implementation
+`5e9d1ff3d74bb22c6cc0c4f726517c1d0b86d7f2`. The dedicated deployment preparation
+freezes exact existing dependencies, additive runtime governance/code, endpoint config,
+private state/lock prerequisites, local credential/runtime checks and durable deployment
+intent. The proposed source-bound PI3 block is FOR REVIEW ONLY; no deployment authority
+or production execution follows from repository preparation. No PI3/PI5/HA/credential
+access, adapter execution, production mutation, scheduler, MQTT, projection or rollback.
+Deployment, Manual Production Validation, Independent Acceptance and Scheduler NOT STARTED;
+Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; Rollback NOT PERFORMED.
+Next: **PE-4 Home Assistant Association Adapter Deployment Execution**.
+
+[Deployment preparation](docs/PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_PREPARATION.md) freezes the complete operator review block and rollback boundary.
+
 # HIOC Architecture Decisions
 
 ## PE-4 association adapter pre-deployment correction — 2026-10-06
