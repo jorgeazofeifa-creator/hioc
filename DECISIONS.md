@@ -1,3 +1,19 @@
+## PE-4 deployment preparation pre-execution correction — 2026-10-06
+
+Deployment Preparation PASS/CLOSED, corrected before execution. Historical preparation
+`0040bdc79e66c10db4f180f952d04f97b1070065` is immutable. Current category B policy requires
+existing exact dependencies and prohibits install/replace; A/C targets remain additive.
+Durable secured journal authority now determines NOT_STARTED/PREPARED/COMMITTED, mapped
+to production deployment NOT_STARTED/INCOMPLETE/PASS independently of overall acceptance.
+A postcommit failure reports RESULT=FAIL, transaction COMMITTED, deployment PASS; no
+automatic rollback. The full corrected operator block is FOR REVIEW ONLY.
+72 focused tests plus 345 regressions: 417 run, 416 passed, one existing rsync skip.
+No PI3/PI5/HA/real credential access, adapter/network execution, production mutation,
+deployment, scheduler activation, MQTT, projection or rollback occurred.
+Next remains **PE-4 Home Assistant Association Adapter Deployment Execution**.
+
+[Current corrected preparation](docs/PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_PREPARATION.md) preserves historical evidence and the separate execution boundary.
+
 ## PE-4 Home Assistant Association Adapter Deployment Preparation — 2026-10-06
 
 Deployment Preparation PASS/CLOSED, repository-only, from corrected implementation

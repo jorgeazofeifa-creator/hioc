@@ -17,7 +17,7 @@ import sys
 
 SOURCE = Path("/home/jazofv1/hioc-release-source")
 HOME = Path("/home/jazofv1/hioc")
-BASELINE = "5e9d1ff3d74bb22c6cc0c4f726517c1d0b86d7f2"
+BASELINE = "0040bdc79e66c10db4f180f952d04f97b1070065"
 RECORD = "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json"
 ENDPOINT = "ws://192.168.100.251:8123/api/websocket"
 CONFIG = "config/hioc.conf"
@@ -263,7 +263,68 @@ class NativeFS:
                 yield
             finally: os.close(fd)
 
+REQUIRED_POLICY = "REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED"
+ADDITIVE_POLICY = "ABSENT_INSTALL_EXACT_PRESERVE_DIFFERENT_FAIL_CLOSED"
+DEPENDENCIES = frozenset({"pi4/lib/hioc/__init__.py", "pi4/lib/hioc/core/__init__.py",
+    "pi4/lib/hioc/core/config.py", "pi4/lib/hioc/core/compatibility.py",
+    "pi4/lib/hioc/core/state.py", "pi4/lib/hioc/core/schemas.py"})
+TRANSACTIONS = {"NOT_STARTED": "NOT_STARTED", "PREPARED": "INCOMPLETE", "COMMITTED": "PASS"}
+
+def check_manifest(manifest):
+    required = manifest["dependencies"]
+    additive = manifest["deploy"]
+    require(len(required) == 6 and {i["path"] for i in required} == DEPENDENCIES, "SOURCE_BINDING")
+    require(all(i["classification"] == "B_EXISTING_EXACT_DEPENDENCY" and
+                i["policy"] == REQUIRED_POLICY for i in required), "SOURCE_BINDING")
+    require(len(additive) == 8 and len({i["path"] for i in additive}) == 8 and
+            not DEPENDENCIES.intersection(i["path"] for i in additive), "SOURCE_BINDING")
+    require(all(i["classification"] in {"A_NEW_FILE_TO_DEPLOY", "C_RUNTIME_GOVERNANCE"} and
+                i["policy"] == ADDITIVE_POLICY for i in additive), "SOURCE_BINDING")
+
+def reviewed_intent(fs, manifest, source_commit, raw):
+    """Validate immutable journal authority, independently of current target/config drift."""
+    fs.check_directory(TX, 0o700)
+    intent = json.loads(raw)
+    require(type(intent) is dict and raw == canonical(intent), "TRANSACTION_CONFLICT")
+    require(set(intent) == {"version", "source_commit", "created_files", "created_directories",
+        "lock_created", "endpoint_added", "config_mode", "prior_sha256", "candidate_sha256", "targets"}, "TRANSACTION_CONFLICT")
+    require(type(intent["version"]) is int and intent["version"] == 1 and
+            intent["source_commit"] == source_commit and intent["targets"] ==
+            {i["path"]: i["sha256"] for i in manifest["deploy"]}, "TRANSACTION_CONFLICT")
+    for key in ("created_files", "created_directories"):
+        require(type(intent[key]) is list and all(type(v) is str for v in intent[key]) and
+                len(intent[key]) == len(set(intent[key])), "TRANSACTION_CONFLICT")
+    require(set(intent["created_files"]) <= set(intent["targets"]) and
+            set(intent["created_directories"]) <= {p for i in manifest["deploy"] for p in fs.parents(i["path"])} | {ASSOCIATIONS}, "TRANSACTION_CONFLICT")
+    require(type(intent["lock_created"]) is bool and type(intent["endpoint_added"]) is bool and
+            type(intent["config_mode"]) is str and re.fullmatch(r"0[0-7]{3}", intent["config_mode"]) is not None and
+            not int(intent["config_mode"], 8) & 0o022, "TRANSACTION_CONFLICT")
+    prior = fs.read(TX + "/config-prior", 0o600)
+    candidate = fs.read(TX + "/config-candidate", 0o600)
+    require(prior is not None and candidate is not None and sha(prior) == intent["prior_sha256"] and
+            sha(candidate) == intent["candidate_sha256"] and endpoint_config(prior) == candidate and
+            intent["endpoint_added"] == (prior != candidate), "TRANSACTION_CONFLICT")
+    return intent, prior, candidate
+
+def transaction_state(fs, manifest, source_commit):
+    """Read bounded, secured journal objects only; never execute/recover/delete anything.
+
+    Invalid or incomplete intent cannot prove PREPARED. An invalid committed marker
+    cannot prove COMMITTED. Post-commit target/runtime drift does not alter valid journal
+    authority. Read/security errors propagate instead of asserting an unobserved state.
+    """
+    raw = fs.read(TX + "/intent.json", 0o600)
+    if raw is None: return "NOT_STARTED"
+    try:
+        intent, _, _ = reviewed_intent(fs, manifest, source_commit, raw)
+    except (Failure, ValueError, TypeError, KeyError):
+        return "NOT_STARTED"
+    committed = fs.read(TX + "/committed.json", 0o600)
+    expected = canonical({"status": "COMMITTED", "source_commit": source_commit, "intent_sha256": sha(raw)})
+    return "COMMITTED" if committed == expected else "PREPARED"
+
 def preflight(fs, manifest, resume=False):
+    check_manifest(manifest)
     for item in manifest["dependencies"]:
         destination(fs.read(item["path"]), item["sha256"], True)
     for item in manifest["deploy"]:
@@ -286,6 +347,7 @@ def preflight(fs, manifest, resume=False):
     return raw, endpoint_config(raw)
 
 def deploy(fs, manifest, source_commit, fault=lambda point: None):
+    check_manifest(manifest)
     intent_path = TX + "/intent.json"
     expected_names = {"config-prior", "config-candidate", "config-next", "intent.json", "committed.json"}
     staged_paths = [i["path"] for i in manifest["deploy"]] + [LOCK, intent_path, TX + "/config-prior", TX + "/config-candidate", TX + "/config-next", TX + "/committed.json"]
@@ -313,16 +375,7 @@ def deploy(fs, manifest, source_commit, fault=lambda point: None):
         fs.add(intent_path, canonical(intent), 0o600)
         fault("PREPARED")
     else:
-        fs.check_directory(TX, 0o700)
-        intent = json.loads(intent_raw)
-        require(intent_raw == canonical(intent) and intent["source_commit"] == source_commit and
-                intent["targets"] == {i["path"]: i["sha256"] for i in manifest["deploy"]}, "TRANSACTION_CONFLICT")
-        require(set(intent) == {"version", "source_commit", "created_files", "created_directories", "lock_created", "endpoint_added", "config_mode", "prior_sha256", "candidate_sha256", "targets"} and intent["version"] == 1, "TRANSACTION_CONFLICT")
-        require(set(intent["created_files"]) <= set(intent["targets"]) and
-                set(intent["created_directories"]) <= {p for i in manifest["deploy"] for p in fs.parents(i["path"])} | {ASSOCIATIONS}, "TRANSACTION_CONFLICT")
-        prior = fs.read(TX + "/config-prior", 0o600); candidate = fs.read(TX + "/config-candidate", 0o600)
-        require(prior is not None and candidate is not None and sha(prior) == intent["prior_sha256"] and
-                sha(candidate) == intent["candidate_sha256"] and endpoint_config(prior) == candidate, "TRANSACTION_CONFLICT")
+        intent, prior, candidate = reviewed_intent(fs, manifest, source_commit, intent_raw)
         require(fs.read(CONFIG) in (prior, candidate) and format(stat.S_IMODE(fs.info(CONFIG).st_mode), "04o") == intent["config_mode"], "CONFIG_CONFLICT")
         preflight(fs, manifest, True)
     for directory in intent["created_directories"]:
@@ -360,7 +413,7 @@ def source_binding(expected):
     def git(*args): return command(["/usr/bin/git", "-C", str(SOURCE), *args], "SOURCE_BINDING").decode().strip()
     require(git("rev-parse", "--show-toplevel") == str(SOURCE) and git("branch", "--show-current") == "main", "SOURCE_BINDING")
     require(git("rev-parse", "HEAD") == git("rev-parse", "origin/main") == expected and
-            git("rev-parse", "HEAD^") == BASELINE and git("log", "-1", "--format=%s") == "PE-4: prepare Home Assistant association adapter deployment", "SOURCE_BINDING")
+            git("rev-parse", "HEAD^") == BASELINE and git("log", "-1", "--format=%s") == "PE-4: harden association deployment evidence", "SOURCE_BINDING")
     require(git("rev-list", "--left-right", "--count", "HEAD...origin/main") == "0\t0" and
             git("status", "--porcelain=v1", "--untracked-files=all") == "", "SOURCE_BINDING")
     for op in ("MERGE_HEAD", "REBASE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "BISECT_LOG", "rebase-apply", "rebase-merge", "sequencer"):
@@ -379,6 +432,7 @@ def source_binding(expected):
     require(Path(__file__).read_bytes() == command(["/usr/bin/git", "-C", str(SOURCE), "show", expected + ":tools/hioc-pe4-ha-association-deploy.py"], "SOURCE_BINDING"), "SOURCE_BINDING")
     manifest = {"dependencies": record["production_dependencies"], "deploy": record["deployment_files"]}
     manifest["deploy"] = [dict(i, bytes=(SOURCE / i["path"]).read_bytes()) for i in manifest["deploy"]]
+    check_manifest(manifest)
     return manifest
 
 def local_prerequisites():
@@ -425,12 +479,14 @@ EVIDENCE = {"TARGET": "PI3 NUT&PIHOLE", "SOURCE_BINDING": "PASS", "PRODUCTION_DE
     "ROLLBACK": "NOT_PERFORMED", "RESULT": "PASS"}
 
 def evidence(commit, code="COMPLETE", transaction="NOT_STARTED"):
+    require(transaction in TRANSACTIONS, "INVALID")
     commit = commit if re.fullmatch(r"[0-9a-f]{40}", commit) else "INVALID"
     result = dict(EVIDENCE, SOURCE_COMMIT=commit, ERROR_CODE=code, DEPLOYMENT_TRANSACTION=transaction)
     if code != "COMPLETE":
         for key, value in result.items():
             if value == "PASS": result[key] = "NOT_PROVEN"
-        result.update(RESULT="FAIL", PRODUCTION_DEPLOYMENT="INCOMPLETE", PREEXISTING_ASSOCIATION_STATE="NOT_PROVEN", SCHEDULER_PRESENT_BEFORE="NOT_PROVEN")
+        result.update(RESULT="FAIL", PREEXISTING_ASSOCIATION_STATE="NOT_PROVEN", SCHEDULER_PRESENT_BEFORE="NOT_PROVEN")
+    result["PRODUCTION_DEPLOYMENT"] = TRANSACTIONS[transaction]
     return result
 
 def main(argv=None):
@@ -438,11 +494,14 @@ def main(argv=None):
     parser.add_argument("--expected-commit", required=True)
     args = parser.parse_args(argv)
     transaction = "NOT_STARTED"
+    fs = manifest = None
+    code = "COMPLETE"
     try:
         uid, gid = local_prerequisites()
         manifest = source_binding(args.expected_commit)
-        prerequisites()
         fs = NativeFS(HOME, uid, gid)
+        transaction = transaction_state(fs, manifest, args.expected_commit)
+        prerequisites()
         # All source, dependencies, destinations, config and private state checked before mutation.
         prior, candidate = preflight(fs, manifest)
         toolkit_fs = NativeFS(Path("/home/jazofv1/pi4-tools"), uid, gid)
@@ -451,18 +510,31 @@ def main(argv=None):
         effective_configuration(toolkit, candidate)
         with fs.lock():
             prerequisites()
-            transaction = "PREPARED_OR_INTERRUPTED"
             require(toolkit_fs.read("config/toolkit.conf") == toolkit, "CONFIG_CONFLICT")
             deploy(fs, manifest, args.expected_commit)
-            transaction = "COMMITTED"
+            observed = transaction_state(fs, manifest, args.expected_commit)
+            require(transaction != "COMMITTED" or observed == "COMMITTED", "TRANSACTION_CONFLICT")
+            transaction = observed
             effective_configuration(toolkit, fs.read(CONFIG))
             require(toolkit_fs.read("config/toolkit.conf") == toolkit, "CONFIG_CONFLICT")
             prerequisites()
-            transaction = "COMMITTED"
-        result = evidence(args.expected_commit, transaction=transaction)
-        rc = 0
-    except Failure as exc: result = evidence(args.expected_commit, exc.code, transaction); rc = 1
-    except BaseException: result = evidence(args.expected_commit, "IO_FAILED", transaction); rc = 1
+        require(transaction == "COMMITTED", "TRANSACTION_CONFLICT")
+    except Failure as exc: code = exc.code
+    except BaseException: code = "IO_FAILED"
+    # Classify actual journal authority on both normal and exceptional paths. A failed
+    # re-read preserves an already verified durable state and fails overall acceptance.
+    if fs is not None and manifest is not None:
+        try:
+            observed = transaction_state(fs, manifest, args.expected_commit)
+            if transaction == "COMMITTED" and observed != "COMMITTED":
+                # This invocation already verified a durable commit. Later journal
+                # verification failure fails acceptance without hiding that commit.
+                if code == "COMPLETE": code = "TRANSACTION_CONFLICT"
+            else: transaction = observed
+        except BaseException:
+            if code == "COMPLETE": code = "TRANSACTION_CONFLICT"
+    result = evidence(args.expected_commit, code, transaction)
+    rc = 0 if code == "COMPLETE" else 1
     for key, value in result.items(): print(key + "=" + value)
     return rc
 

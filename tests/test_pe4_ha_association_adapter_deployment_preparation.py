@@ -279,4 +279,204 @@ class DeploymentPreparationTests(unittest.TestCase):
         self.assertEqual(R['next_checkpoint'],'PE-4 Home Assistant Association Adapter Deployment Execution')
         self.assertTrue(all(v is False for v in R['negative_evidence'].values()))
 
+class DeploymentEvidenceCorrectionTests(unittest.TestCase):
+    setUp = DeploymentPreparationTests.setUp
+    expect_failure = DeploymentPreparationTests.expect_failure
+
+    def run_main(self, *, source_error=None, prerequisite_errors=None, deploy_fault=None, post_config_error=False):
+        output = []
+        original_deploy = D.deploy
+        original_config = D.effective_configuration
+        calls = [0]
+        def execute(fs, m, commit):
+            return original_deploy(fs, m, commit, deploy_fault or (lambda point: None))
+        def config(toolkit, candidate):
+            calls[0] += 1
+            if post_config_error and calls[0] == 2: raise D.Failure('CONFIG_CONFLICT')
+            return original_config(toolkit, candidate)
+        with patch.object(D,'local_prerequisites',return_value=(1000,1000)),patch.object(D,'source_binding',side_effect=source_error,return_value=self.m),patch.object(D,'prerequisites',side_effect=prerequisite_errors),patch.object(D,'NativeFS',return_value=self.fs),patch.object(D,'deploy',side_effect=execute),patch.object(D,'effective_configuration',side_effect=config),patch('builtins.print',side_effect=output.append):
+            rc = D.main(['--expected-commit',COMMIT])
+        return rc, dict(line.split('=',1) for line in output)
+
+    def check_report(self, result, state, deployment, overall='FAIL'):
+        rc, report = result
+        self.assertEqual(rc,0 if overall=='PASS' else 1)
+        self.assertEqual(report['RESULT'],overall)
+        self.assertEqual(report['DEPLOYMENT_TRANSACTION'],state)
+        self.assertEqual(report['PRODUCTION_DEPLOYMENT'],deployment)
+        self.assertEqual(set(report),set(R['evidence']['fields']))
+        for key in ('ADAPTER_EXECUTED','HA_NETWORK_ATTEMPTED','HA_AUTHENTICATION_ATTEMPTED'):
+            self.assertEqual(report[key],'FALSE')
+        self.assertEqual(report['SCHEDULER_DEPLOYMENT'],'NOT_STARTED')
+        self.assertEqual(report['ROLLBACK'],'NOT_PERFORMED')
+        return report
+
+    def test_required_existing_dependency_policy_distinct(self):
+        for item in self.m['dependencies']:
+            self.assertEqual(item['classification'],'B_EXISTING_EXACT_DEPENDENCY')
+            self.assertEqual(item['policy'],'REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED')
+            self.assertNotEqual(item['policy'],D.ADDITIVE_POLICY)
+        self.assertEqual(len(self.m['deploy']),8)
+        self.assertFalse(D.DEPENDENCIES.intersection(i['path'] for i in self.m['deploy']))
+        for item in self.m['deploy']:self.assertEqual(item['policy'],D.ADDITIVE_POLICY)
+
+    def test_no_dependency_path_can_enter_deploy(self):
+        for item in self.m['dependencies']:
+            changed=copy.deepcopy(self.m);changed['deploy'][0]=dict(item,bytes=source_bytes(item['path']))
+            self.expect_failure('SOURCE_BINDING',lambda:D.deploy(self.fs,changed,COMMIT))
+        self.assertFalse(self.fs.mutations)
+
+    def test_exact_dependencies_preserved_without_mutation(self):
+        before={i['path']:(self.fs.files[i['path']],self.fs.modes[i['path']]) for i in self.m['dependencies']}
+        self.check_report(self.run_main(),'COMMITTED','PASS','PASS')
+        for p,pair in before.items():
+            self.assertEqual((self.fs.files[p],self.fs.modes[p]),pair)
+            self.assertNotIn('add:'+p,self.fs.mutations)
+
+    def test_source_binding_failure_not_started(self):
+        self.check_report(self.run_main(source_error=D.Failure('SOURCE_BINDING')),'NOT_STARTED','NOT_STARTED')
+        self.assertFalse(self.fs.mutations)
+
+    def test_missing_dependency_not_started(self):
+        del self.fs.files[self.m['dependencies'][0]['path']]
+        report=self.check_report(self.run_main(),'NOT_STARTED','NOT_STARTED')
+        self.assertEqual(report['ERROR_CODE'],'DEPENDENCY_DRIFT');self.assertFalse(self.fs.mutations)
+
+    def test_different_dependency_not_started(self):
+        self.fs.files[self.m['dependencies'][0]['path']]=b'drift'
+        report=self.check_report(self.run_main(),'NOT_STARTED','NOT_STARTED')
+        self.assertEqual(report['ERROR_CODE'],'DEPENDENCY_DRIFT');self.assertFalse(self.fs.mutations)
+
+    def test_endpoint_conflict_not_started(self):
+        self.fs.files[D.CONFIG]=b'HIOC_HA_ENDPOINT="wrong"\n'
+        report=self.check_report(self.run_main(),'NOT_STARTED','NOT_STARTED')
+        self.assertEqual(report['ERROR_CODE'],'CONFIG_CONFLICT');self.assertFalse(self.fs.mutations)
+
+    def test_private_state_not_started(self):
+        self.fs.dirs[D.ASSOCIATIONS]=0o700;self.fs.files[D.ASSOCIATIONS+'/home_assistant.json']=b'private'
+        report=self.check_report(self.run_main(),'NOT_STARTED','NOT_STARTED')
+        self.assertEqual(report['ERROR_CODE'],'UNEXPECTED_PREEXISTING_ASSOCIATION_STATE');self.assertFalse(self.fs.mutations)
+
+    def test_scheduler_runtime_credential_failures_not_started(self):
+        for code in ('SCHEDULER_PRESENT','RUNTIME_DRIFT','CREDENTIAL_INVALID'):
+            self.fs=SyntheticFS()
+            report=self.check_report(self.run_main(prerequisite_errors=D.Failure(code)),'NOT_STARTED','NOT_STARTED')
+            self.assertEqual(report['ERROR_CODE'],code);self.assertFalse(self.fs.mutations)
+
+    def test_preintent_namespace_interruption_and_rerun(self):
+        def fault(point):
+            if point=='NAMESPACE_CREATED':raise RuntimeError('private exception text')
+        self.check_report(self.run_main(deploy_fault=fault),'NOT_STARTED','NOT_STARTED')
+        self.assertEqual(D.transaction_state(self.fs,self.m,COMMIT),'NOT_STARTED')
+        self.assertFalse(any(i['path'] in self.fs.files for i in self.m['deploy']))
+        before=copy.deepcopy(self.fs.files)
+        report=self.check_report(self.run_main(),'NOT_STARTED','NOT_STARTED')
+        self.assertEqual(report['ERROR_CODE'],'TRANSACTION_CONFLICT');self.assertEqual(self.fs.files,before)
+
+    def test_preintent_config_staging_remains_not_started(self):
+        for name in ('config-prior','config-candidate'):
+            self.fs=SyntheticFS();self.fs.dirs[D.TX]=0o700;self.fs.files[D.TX+'/'+name]=b'stage';self.fs.modes[D.TX+'/'+name]=0o600
+            report=self.check_report(self.run_main(),'NOT_STARTED','NOT_STARTED')
+            self.assertEqual(report['ERROR_CODE'],'TRANSACTION_CONFLICT')
+
+    def test_prepared_and_every_additive_lock_config_boundary(self):
+        for point in ['PREPARED']+['FILE:'+i['path'] for i in self.m['deploy']]+['LOCK_CREATED','CONFIG_REPLACED']:
+            with self.subTest(point=point):
+                self.fs=SyntheticFS()
+                def fault(actual):
+                    if actual==point:raise RuntimeError('private exception text')
+                report=self.check_report(self.run_main(deploy_fault=fault),'PREPARED','INCOMPLETE')
+                self.assertEqual(D.transaction_state(self.fs,self.m,COMMIT),'PREPARED')
+                self.assertNotIn('private exception text',str(report))
+
+    def test_precommit_validation_failure_is_prepared(self):
+        def fault(point):
+            if point=='CONFIG_REPLACED':self.fs.files[self.m['dependencies'][0]['path']]=b'drift'
+        report=self.check_report(self.run_main(deploy_fault=fault),'PREPARED','INCOMPLETE')
+        self.assertEqual(report['ERROR_CODE'],'DEPENDENCY_DRIFT')
+
+    def test_committed_marker_then_interruption_is_committed(self):
+        def fault(point):
+            if point=='COMMITTED':raise RuntimeError('interrupted after fsync')
+        self.check_report(self.run_main(deploy_fault=fault),'COMMITTED','PASS')
+
+    def test_postcommit_config_check_failure_is_committed(self):
+        report=self.check_report(self.run_main(post_config_error=True),'COMMITTED','PASS')
+        self.assertEqual(report['ERROR_CODE'],'CONFIG_CONFLICT')
+
+    def test_postcommit_runtime_credential_scheduler_failure_is_committed(self):
+        for code in ('RUNTIME_DRIFT','CREDENTIAL_INVALID','SCHEDULER_PRESENT'):
+            self.fs=SyntheticFS()
+            report=self.check_report(self.run_main(prerequisite_errors=[None,None,D.Failure(code)]),'COMMITTED','PASS')
+            self.assertEqual(report['ERROR_CODE'],code)
+
+    def test_committed_rerun_preflight_drift_not_downgraded(self):
+        self.check_report(self.run_main(),'COMMITTED','PASS','PASS')
+        self.fs.files[self.m['dependencies'][0]['path']]=b'drift'
+        self.check_report(self.run_main(),'COMMITTED','PASS')
+
+    def test_success_and_idempotent_committed_rerun(self):
+        self.check_report(self.run_main(),'COMMITTED','PASS','PASS')
+        self.fs.mutations=[];before=copy.deepcopy(self.fs.files)
+        self.check_report(self.run_main(),'COMMITTED','PASS','PASS')
+        self.assertFalse(self.fs.mutations);self.assertEqual(self.fs.files,before)
+
+    def test_classifier_is_read_only_and_marker_bound(self):
+        D.deploy(self.fs,self.m,COMMIT);self.fs.mutations=[]
+        self.assertEqual(D.transaction_state(self.fs,self.m,COMMIT),'COMMITTED');self.assertFalse(self.fs.mutations)
+        self.fs.files[D.TX+'/committed.json']=D.canonical({'status':'COMMITTED','source_commit':'b'*40,'intent_sha256':'0'*64})
+        self.assertEqual(D.transaction_state(self.fs,self.m,COMMIT),'PREPARED')
+        self.fs.files[D.TX+'/intent.json']=b'{}\n'
+        self.assertEqual(D.transaction_state(self.fs,self.m,COMMIT),'NOT_STARTED')
+
+    def test_verified_commit_not_downgraded_by_later_journal_verification(self):
+        original = D.transaction_state
+        count = [0]
+        def observe(fs,m,commit):
+            count[0] += 1
+            if count[0] == 3: return 'NOT_STARTED'
+            return original(fs,m,commit)
+        with patch.object(D,'transaction_state',side_effect=observe):
+            report=self.check_report(self.run_main(),'COMMITTED','PASS')
+        self.assertEqual(report['ERROR_CODE'],'TRANSACTION_CONFLICT')
+
+    def test_correction_record_schema_and_historical_binding(self):
+        path=ROOT/'governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.json'
+        correction=json.loads(path.read_bytes())
+        self.assertEqual(path.read_bytes(),D.canonical(correction))
+        self.assertEqual(correction['historical_preparation_commit'],D.BASELINE)
+        self.assertEqual(correction['production_deployment_mapping'],D.TRANSACTIONS)
+        self.assertEqual(correction['evidence_fields'],R['evidence']['fields'])
+        self.assertEqual(correction['required_existing_dependency_policy'],D.REQUIRED_POLICY)
+        for key in ('corrected_helper','corrected_preparation_record','corrected_preparation_schema'):
+            item=correction[key];raw=(ROOT/item['path']).read_bytes()
+            self.assertEqual(D.sha(raw),item['sha256'])
+        for key in ('historical_preparation_record','historical_preparation_schema'):
+            item=correction[key];raw=subprocess.check_output(['git','show',D.BASELINE+':'+item['path']],cwd=ROOT)
+            self.assertEqual(D.sha(raw),item['sha256'])
+        schema=json.loads(path.with_suffix('.schema.json').read_bytes())
+        def validate(value,node):
+            if 'const' in node:
+                self.assertIs(type(value),type(node['const']));self.assertEqual(value,node['const']);return
+            if node['type']=='object':
+                self.assertIs(type(value),dict);self.assertFalse(node['additionalProperties'])
+                self.assertEqual(set(value),set(node['required']));self.assertEqual(set(value),set(node['properties']))
+                for key,child in node['properties'].items():validate(value[key],child)
+            else:
+                self.assertIs(type(value),list);self.assertFalse(node['items'])
+                self.assertEqual(len(value),node['minItems']);self.assertEqual(len(value),node['maxItems'])
+                for item,child in zip(value,node['prefixItems']):validate(item,child)
+        validate(correction,schema)
+        changed=copy.deepcopy(correction);changed['transaction_states'].append('AMBIGUOUS')
+        with self.assertRaises(AssertionError):validate(changed,schema)
+
+    def test_evidence_only_three_durable_states(self):
+        self.assertEqual(D.TRANSACTIONS,{'NOT_STARTED':'NOT_STARTED','PREPARED':'INCOMPLETE','COMMITTED':'PASS'})
+        for state,deployment in D.TRANSACTIONS.items():
+            for code in ('COMPLETE','IO_FAILED'):
+                e=D.evidence(COMMIT,code,state);self.assertEqual(e['PRODUCTION_DEPLOYMENT'],deployment)
+        self.expect_failure('INVALID',lambda:D.evidence(COMMIT,'IO_FAILED','ambiguous'))
+        self.assertNotIn('PREPARED_OR_INTERRUPTED',HELPER.read_text(encoding='utf-8'))
+
+
 if __name__ == '__main__':unittest.main()

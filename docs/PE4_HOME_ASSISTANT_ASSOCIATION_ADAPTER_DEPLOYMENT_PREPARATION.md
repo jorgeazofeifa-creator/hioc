@@ -1,6 +1,53 @@
 # PE-4 Home Assistant Association Adapter Deployment Preparation
 
-## Repository closure and authorization boundary
+
+## Current pre-execution governance and evidence correction — 2026-10-06
+
+Deployment Preparation PASS/CLOSED, corrected before execution. Historical preparation
+commit `0040bdc79e66c10db4f180f952d04f97b1070065` passed repository tests but independent
+review found an incorrect additive policy on category B and ambiguous/control-flow-based
+transaction evidence. No deployment, helper/adapter execution or HA authentication occurred.
+The [dedicated correction record](../governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.json)
+and [closed schema](../governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.schema.json)
+bind the corrected helper and current preparation record/schema. The historical commit
+and its records remain immutable Git evidence; current policy/source identities below are
+corrected. The complete current proposed block remains FOR REVIEW ONLY.
+
+All six B_EXISTING_EXACT_DEPENDENCY files use
+REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED:
+ABSENT/DIFFERENT -> DEPENDENCY_DRIFT; EXACT -> PRESERVE; INSTALL/REPLACE -> PROHIBITED.
+Their source identities are unchanged. The eight A/C targets retain
+ABSENT_INSTALL_EXACT_PRESERVE_DIFFERENT_FAIL_CLOSED. A manifest guard enforces exactly six
+reviewed B paths, eight distinct additive paths, their classifications/policies and disjoint
+sets before any installation. No broad HIOC upgrade or dependency installation is authorized.
+
+DEPLOYMENT_TRANSACTION has exactly NOT_STARTED, PREPARED, COMMITTED. A bounded read-only
+classifier validates secured canonical intent, its source/target authority and config backups,
+then the canonical COMMITTED marker bound to intent/source. It never executes recovery,
+modifies targets or deletes artifacts. Missing/invalid intent proves no PREPARED state;
+a pre-intent namespace still stops TRANSACTION_CONFLICT without guessed cleanup. Valid
+intent without valid committed marker is PREPARED. Valid committed marker is COMMITTED
+regardless of later target, effective config, toolkit, runtime, credential or scheduler
+acceptance failure. An already verified durable commit is not concealed by later failed
+journal verification; overall acceptance fails and operator review is required.
+
+| Durable transaction | PRODUCTION_DEPLOYMENT | Overall RESULT |
+| --- | --- | --- |
+| NOT_STARTED | NOT_STARTED | PASS/FAIL according to operation result |
+| PREPARED | INCOMPLETE | FAIL for interrupted/incomplete operation |
+| COMMITTED | PASS | PASS, or FAIL if later acceptance/recheck fails |
+
+The 22-field evidence allowlist is unchanged. Prerequisites may be NOT_PROVEN on failure;
+durable transaction/deployment evidence stays factual. Adapter/network/authentication FALSE,
+scheduler NOT_STARTED and rollback NOT_PERFORMED remain fixed. No automatic rollback.
+72 focused tests include 22 new correction tests with the full preflight/interruption/
+postcommit/idempotence matrix, immutable source identities and closed schemas. Required
+regressions: adapter 70, remaining 275; total 417 run, 416 passed, one existing rsync skip.
+Deployment, Bounded Manual Production Validation, Independent Production Acceptance and
+Scheduler NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE;
+Rollback NOT PERFORMED. Next unchanged: **PE-4 Home Assistant Association Adapter Deployment Execution**.
+
+## Historical preparation closure and unchanged operational boundaries
 
 Deployment Preparation PASS/CLOSED from clean synchronized main
 `5e9d1ff3d74bb22c6cc0c4f726517c1d0b86d7f2`. Adapter Implementation PASS/CLOSED,
@@ -260,8 +307,8 @@ Next exactly: **PE-4 Home Assistant Association Adapter Deployment Execution**.
 ## Complete future operator block — FOR REVIEW ONLY
 
 DO NOT RUN in this preparation. Independent review must bind EXPECTED to the exact single
-preparation successor commit before separate authorization. The final repository report
-provides the literal completed commit. The block verifies helper/record/schema against
+corrective successor commit before separate authorization. The final repository report
+provides the literal completed corrective commit. The block verifies helper/record/schema against
 both reviewed SHA-256 and that Git commit before starting the source-bound helper. It does
 not assume cwd, fetch, SSH, invoke the adapter or perform manual validation. Explicit
 Python/shell return codes always return control to the existing interactive shell; no
@@ -276,9 +323,11 @@ from pathlib import Path
 EXPECTED = "REPLACE_WITH_INDEPENDENTLY_REVIEWED_PREPARATION_COMMIT"
 ROOT = Path("/home/jazofv1/hioc-release-source")
 FILES = {
-    "tools/hioc-pe4-ha-association-deploy.py": "283dbfb71e538afdcf97c6466e0222b4234133f3f0fda1101f711b4a56eae9c0",
-    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json": "269a33072db69177a5218afa2a129535a346d316b3341b9363b5ba0f2d9f3c67",
-    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.schema.json": "580bb21f77558f3214dcccd99275bbcf1118827bcaea4d2b86e1d3bddce3342b",
+    "governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.json": "bcf5338a7d8735a8ff16ada200985d6cc48e5a65c7f860ab083f3b5aed05f5cb",
+    "governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.schema.json": "06b703a89cd021b2c9df82ba9aeb2022a37a984b9e101f4f322ac54deec6c382",
+    "tools/hioc-pe4-ha-association-deploy.py": "2510f8996e80f2b779a9764bc5c685808f3f0d6ec64adc3fabbcebaf0d0e588c",
+    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json": "744c67b9f638ed0d66c1bc9c4d9e6f81c7fea47a9ca11d4fc4ff4b6490d984d0",
+    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.schema.json": "31a5e50caadb78e79059e94547d854346458eabde92e2024f9ca497bf9cba544",
 }
 ENV = {"PATH": "/usr/sbin:/usr/bin:/bin", "HOME": "/home/jazofv1", "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"}
 rc = 1

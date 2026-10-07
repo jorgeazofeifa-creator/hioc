@@ -3233,6 +3233,7 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Pre-deployment Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment Preparation | PASS/CLOSED |
+| PE-4 Home Assistant Association Adapter Deployment Preparation Pre-execution Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT STARTED |
@@ -3485,7 +3486,14 @@ Adapter Implementation PASS/CLOSED, corrected before deployment at
 remain immutable. [Current correction](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json)
 binds the corrected executable identities.
 
-Deployment Preparation PASS/CLOSED: the [deployment preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_PREPARATION.md)
+Deployment Preparation PASS/CLOSED, corrected before execution. Independent review of
+preparation `0040bdc79e66c10db4f180f952d04f97b1070065` corrected category B machine-readable
+policy and durable transaction/deployment evidence. The
+[current correction](../governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.json)
+binds corrected helper/preparation identities. NOT_STARTED/PREPARED/COMMITTED maps to
+NOT_STARTED/INCOMPLETE/PASS independently of overall acceptance; postcommit verification
+failure does not hide a durable COMMITTED deployment. Original preparation history is
+immutable. The [deployment preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_PREPARATION.md)
 and [dedicated record](../governance/pe4/pe4-ha-association-adapter-deployment-preparation.json)
 freeze six existing Python dependency checks, eight additive code/governance targets,
 explicit endpoint configuration, private prerequisites, durable deployment intent,
