@@ -1,8 +1,61 @@
 # PE-4 Home Assistant Association Adapter Implementation
 
+## Current pre-deployment correction — 2026-10-06
+
+Adapter Implementation PASS/CLOSED, corrected before deployment. Original implementation
+commit `0bdb9340157daba4a6948251922d762cc4fc97ff` passed repository tests but received
+an independent pre-deployment review identifying incomplete canonical-envelope type
+validation and shared filesystem helpers capable of misclassifying state failures.
+No deployment or production adapter execution/authentication occurred before correction.
+The [current correction record](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json)
+and [closed schema](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.schema.json)
+bind the CURRENT executable identities. The original implementation record/schema
+and original commit remain unchanged historical evidence; their source bindings are
+historical, not current executable identities.
+
+Canonical input now requires an exact dict root, schema_version 1.0, timezone-aware
+updated string, devices/services lists, and topology/dependencies/summary dicts.
+Malformed shape fails CANONICAL_INVENTORY_INPUT before credentials/HA. Only devices[].mac
+remains association authority; the other root types establish envelope integrity.
+
+NativeFS credential ACL checks retain CREDENTIAL_ACQUISITION. PosixFS explicitly owns
+STATE_PUBLICATION security checks; shared name binding dispatches through the filesystem's
+security context. Lock, contract, prior and inventory call boundaries retain their respective
+LOCK_ACQUISITION, CONTRACT_VALIDATION, PRIOR_STATE_VALIDATION and CANONICAL_INVENTORY_INPUT
+stages. Recovery/publication security never originates credential acquisition errors.
+No owner, mode, ACL, no-follow, inode/name or durability check was removed.
+
+Namespace conclusion B: the limit is the combined distinct namespace union across
+connections and optional identifiers. Frozen preparation transport.max_namespaces is
+128; its source_review binding pins the historical 2b reducer to Git blob
+`9e77993c3f6a533b3d394017d4d97e2366959797`, SHA-256
+`b074608e98e887767be964120e8bfad8b5f7fba5fa17d671b0a1a1704f35c1b8`.
+That reducer's consume() loops over connections and identifiers and inserts both
+into one namespace_union before enforcing MAX_NAMESPACES. The 0C contract's
+Identifier namespaces section denies them HIOC identity authority. Optional identifiers
+therefore require reviewed exact two-string pairs, bounded/nonempty strings, and
+share the 128-name transport counter. They are never MAC-indexed, matched or persisted.
+Connection MAC decision semantics and all other frozen identity/lifecycle rules are unchanged.
+
+Current focused validation: 70 tests passed, including 10 new correction tests with
+separate envelope cases, real production ACL/name helpers, native lock validation,
+recovery/publication stage assertions, exact LKG/absence and namespace boundaries.
+Regressions: 275 run, 274 passed, one existing rsync-unavailable release skip.
+Total: 345 run, 344 passed, one skipped. Syntax/import safety, canonical schema/JSON,
+links, source identities, privacy/prohibited-path and diff checks passed.
+
+Deployment and Scheduler Deployment NOT STARTED; Public Projection DEFERRED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; Rollback NOT PERFORMED. No real credential,
+PI3/PI5/HA access, adapter network execution, production mutation, deployment,
+scheduler activation, MQTT, public projection or rollback occurred.
+Next remains **PE-4 Home Assistant Association Adapter Deployment Preparation**;
+that checkpoint has not begun.
+
+## Historical original implementation closure
+
 Repository implementation and Windows synthetic validation: PASS/CLOSED.
 Starting commit: `8923a074ac304a5cfe46367330819291caed6550`.
-[Implementation record](../governance/pe4/pe4-ha-association-adapter-implementation.json)
+[Historical implementation record](../governance/pe4/pe4-ha-association-adapter-implementation.json)
 and [closed schema](../governance/pe4/pe4-ha-association-adapter-implementation.schema.json)
 bind source blobs and SHA-256 identities without a circular implementation-commit binding.
 

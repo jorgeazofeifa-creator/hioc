@@ -3231,6 +3231,7 @@ completion. Historical chronology elsewhere does not override it.
 | Independent Credential Validation | PASS/CLOSED |
 | Credential Provisioning Governance Closure | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED |
+| PE-4 Home Assistant Association Adapter Pre-deployment Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED |
 | PE-4 | NOT COMPLETE |
@@ -3474,6 +3475,16 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+Adapter Implementation PASS/CLOSED, corrected before deployment. Independent review of
+original implementation `0bdb9340157daba4a6948251922d762cc4fc97ff` found incomplete
+canonical-envelope type checks and state security failure-stage leakage. Both are
+corrected; the namespace audit confirms the frozen combined connection/identifier
+128-name bound. Original implementation record/schema and Git history remain immutable
+historical evidence. [Current correction](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json)
+binds current executable sources. 70 focused tests and required regressions passed
+(345 run, 344 passed, one existing rsync skip). No deployment or production adapter
+execution/authentication occurred before correction; Deployment Preparation has not begun.
+
 **PE-4 Home Assistant Association Adapter Deployment Preparation** is the current
 objective after repository-only Adapter Implementation PASS/CLOSED. The
 [implementation closure](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION.md)
@@ -3490,7 +3501,7 @@ implementation preparation and credential closures remain preserved.
 ### PE-4 Home Assistant Association Adapter Deployment Preparation
 
 Prepare the separately governed deployment boundary using the
-[implementation record](../governance/pe4/pe4-ha-association-adapter-implementation.json),
+[current correction record](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json),
 [frozen implementation preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md)
 and [credential closure](PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md).
 Deployment, bounded manual production validation and scheduler activation require

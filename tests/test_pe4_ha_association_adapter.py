@@ -31,6 +31,7 @@ def inventory(ds=None,updated=T0):return a.encoded(dict(schema_version="1.0",upd
 def cycle(prior=None,ds=None,es=None,areas=None,entries=None,inv=None,ts=T0):
  return a.reconcile(prior,[[device()] if ds is None else ds,es or [],areas or [],entries or []],a.validate_inventory(inventory(inv,ts),a.instant(ts)),ts,"2026.9.4",SCHEMA)
 class TemporaryFS:
+ security_stage="STATE_PUBLICATION"
  """Real Windows files/hardlinks/rename; injected POSIX ownership/ACL/flock/fsync."""
  def __init__(self,root):self.root=self.parent=Path(root);self.events=[];self.at=None;self.persistent=False;self.fault=None;self.locked=False;self.renamed={}
  def hit(self,kind):
@@ -470,7 +471,12 @@ class ImplementationGovernanceTests(unittest.TestCase):
  def test_closed_record_sources_and_authority_hashes(self):
   record=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-implementation.json").read_bytes());schema=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-implementation.schema.json").read_bytes())
   a.check_schema_contract(schema);a.validate_schema(record,schema)
-  for binding in record["sources"].values():self.assertEqual(a.digest((ROOT/binding["path"]).read_bytes()),binding["sha256"])
+  import subprocess
+  for binding in record["sources"].values():self.assertEqual(a.digest(subprocess.check_output(["git","show","0bdb9340157daba4a6948251922d762cc4fc97ff:"+binding["path"]],cwd=ROOT)),binding["sha256"])
+  correction=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-predeployment-correction.json").read_bytes())
+  correction_schema=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-predeployment-correction.schema.json").read_bytes())
+  a.check_schema_contract(correction_schema);a.validate_schema(correction,correction_schema)
+  for binding in correction["sources"].values():self.assertEqual(a.digest((ROOT/binding["path"]).read_bytes()),binding["sha256"])
   for path,binding in record["authorities"].items():
    if path!="docs/HIOC_MASTER_PLAN.md":self.assertEqual(a.digest((ROOT/path).read_bytes()),binding["sha256"])
   bad=copy.deepcopy(record);bad["production_execution"]=True
@@ -478,7 +484,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
   bad=copy.deepcopy(record);bad["raw_token"]="SYNTHETIC_INVALID_HA_CREDENTIAL"
   with self.assertRaises(a.Failure):a.validate_schema(bad,schema)
  def test_canonical_json_and_document_links(self):
-  for name in ("pe4-ha-association-adapter-implementation.json","pe4-ha-association-adapter-implementation.schema.json"):
+  for name in ("pe4-ha-association-adapter-implementation.json","pe4-ha-association-adapter-implementation.schema.json","pe4-ha-association-adapter-predeployment-correction.json","pe4-ha-association-adapter-predeployment-correction.schema.json"):
    raw=(ROOT/"governance/pe4"/name).read_bytes();self.assertEqual(raw,a.encoded(json.loads(raw)))
   doc=ROOT/"docs/PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION.md"
   for link in a.re.findall(r"\]\(([^)]+)\)",doc.read_text(encoding="utf-8")):
@@ -544,3 +550,122 @@ class LockBindingTests(unittest.TestCase):
   before=SimpleNamespace(**attrs);swapped=SimpleNamespace(**{**attrs,"st_ino":2})
   with patch.object(fs,"security"),patch.object(fs,"fstat",return_value=before),patch.object(fs,"lstat",return_value=swapped):
    with self.assertRaises(a.Failure):fs.guard()
+
+class PredeploymentCorrectionTests(unittest.TestCase):
+ def test_each_malformed_envelope_type_presecret_and_lkg(self):
+  cases=[(key,value) for key,values in (("services",(None,{},"invalid")),("topology",([],None,"invalid")),("dependencies",([],None,"invalid")),("summary",([],None,"invalid")),("updated",(123,"2026-10-06T13:00:00","invalid")),("devices",(None,{},"invalid")),("schema_version",("wrong",))) for value in values]
+  for key,value in cases:
+   for present in (False,True):
+    with self.subTest(key=key,value=value,prior=present),tempfile.TemporaryDirectory() as root:
+     fs=TemporaryFS(root);old=a.encoded(cycle()) if present else None
+     if present:(fs.root/"home_assistant.json").write_bytes(old)
+     rt=SyntheticRuntime(fs);v=json.loads(rt.raw);v[key]=value;rt.raw=a.encoded(v)
+     result=a.run_cycle(rt);self.assertIn("ERROR_CODE=CANONICAL_INVENTORY_INPUT_FAILED",result);self.assertIn("FAILURE_STAGE=CANONICAL_INVENTORY_INPUT",result)
+     self.assertNotIn("CREDENTIAL_ACQUISITION",rt.calls);self.assertNotIn("HA_CONNECTION",rt.calls)
+     self.assertEqual((fs.root/"home_assistant.json").read_bytes() if present else None,old)
+     if not present:self.assertFalse((fs.root/"home_assistant.json").exists())
+ def test_identifiers_128_129_and_combined_namespace_union(self):
+  d=dict(id="old",connections=[],identifiers=[["namespace-"+str(i),"support"] for i in range(128)])
+  a.registry_cores([[d],[],[],[]]);self.assertEqual(cycle(ds=[d])["summary"]["associated_devices"],0)
+  d["identifiers"].append(["extra","support"])
+  with self.assertRaises(a.Failure) as caught:a.registry_cores([[d],[],[],[]])
+  self.assertEqual(caught.exception.stage,"REGISTRY_SCHEMA")
+  d["identifiers"].pop();d["connections"]=[["mac",MAC]]
+  with self.assertRaises(a.Failure):a.registry_cores([[d],[],[],[]])
+  d["identifiers"].pop();state=cycle(ds=[d]);self.assertEqual(state["summary"]["associated_devices"],1);self.assertNotIn("namespace-",a.encoded(state).decode())
+ def test_optional_identifier_pair_shapes(self):
+  self.assertIn("REJECT_INVALID_MAC",{d["reason"] for d in cycle(ds=[device(mac="")])["diagnostics"]})
+  for identifiers in (None,{},"invalid",[["only"]],[["a","b","c"]],[[1,"value"]],[["namespace",None]],[["","value"]]):
+   d=device();d["identifiers"]=identifiers
+   with self.subTest(identifiers=identifiers):
+    with self.assertRaises(a.Failure) as caught:a.registry_cores([[d],[],[],[]])
+    self.assertEqual(caught.exception.stage,"REGISTRY_SCHEMA")
+ def test_production_acl_helper_context_separation(self):
+  for fs,stage in ((a.NativeFS(),"CREDENTIAL_ACQUISITION"),(a.PosixFS(101,101),"STATE_PUBLICATION")):
+   for response in (b"bad",OSError(errno.EPERM,"SYNTHETIC")):
+    with patch.object(os,"getxattr",return_value=response,side_effect=response if isinstance(response,OSError) else None,create=True):
+     with self.assertRaises(a.Failure) as caught:fs.acl(1,True)
+     self.assertEqual(caught.exception.stage,stage)
+ def state_acl_fs(self,root,boundary):
+  class StateACLFS(TemporaryFS):
+   acl=a.PosixFS.acl
+   def security(inner,fd,directory=False,mode=0o600,links=1,owner=None):
+    if boundary=="recovery":inner.acl(fd,True)
+    return super().security(fd,directory,mode,links,owner)
+   def file(inner,parent,name,limit=a.LIMIT,links=1,private=True):
+    if boundary=="prior" and name=="home_assistant.json":inner.acl(parent)
+    return super().file(parent,name,limit,links,private)
+   def mkdir(inner,parent,name):
+    if boundary=="publication":inner.acl(parent,True)
+    return super().mkdir(parent,name)
+   @contextlib.contextmanager
+   def lock(inner):
+    if boundary=="lock":
+     try:inner.acl(inner.parent)
+     except a.Failure:raise a.Failure("LOCK_ACQUISITION") from None
+    with super().lock():yield
+  return StateACLFS(root)
+ def test_recovery_state_acl_stage_presecret(self):
+  with tempfile.TemporaryDirectory() as root:
+   fs=self.state_acl_fs(root,"recovery");(fs.root/(".home_assistant.txn-"+"a"*32)).mkdir();rt=SyntheticRuntime(fs)
+   with patch.object(os,"getxattr",return_value=b"bad",create=True):result=a.run_cycle(rt)
+   self.assertIn("ERROR_CODE=STATE_PUBLICATION_FAILED",result);self.assertIn("FAILURE_STAGE=STATE_PUBLICATION",result);self.assertNotIn("CREDENTIAL_ACQUISITION",rt.calls);self.assertNotIn("HA_CONNECTION",rt.calls)
+ def test_recovery_name_binding_stage_presecret(self):
+  with tempfile.TemporaryDirectory() as root:
+   fs=TemporaryFS(root);txn=fs.root/(".home_assistant.txn-"+"a"*32);txn.mkdir();rt=SyntheticRuntime(fs);original=fs.lstat
+   def drift(parent,name):
+    info=original(parent,name)
+    if name==txn.name:
+     attrs={key:getattr(info,key) for key in ("st_dev","st_ino","st_mode","st_uid","st_gid","st_nlink","st_size","st_mtime_ns","st_ctime_ns")};attrs["st_ino"]+=1;return SimpleNamespace(**attrs)
+    return info
+   with patch.object(fs,"lstat",side_effect=drift):result=a.run_cycle(rt)
+   self.assertIn("STATE_PUBLICATION_FAILED",result);self.assertNotIn("CREDENTIAL_ACQUISITION_FAILED",result);self.assertNotIn("CREDENTIAL_ACQUISITION",rt.calls);self.assertNotIn("HA_CONNECTION",rt.calls)
+ def test_prior_lock_publication_acl_stages_and_exact_lkg(self):
+  for boundary,stage in (("prior","PRIOR_STATE_VALIDATION"),("lock","LOCK_ACQUISITION"),("publication","STATE_PUBLICATION")):
+   with self.subTest(boundary=boundary),tempfile.TemporaryDirectory() as root:
+    fs=self.state_acl_fs(root,boundary);old=a.encoded(cycle());(fs.root/"home_assistant.json").write_bytes(old);rt=SyntheticRuntime(fs)
+    with patch.object(os,"getxattr",return_value=b"bad",create=True):result=a.run_cycle(rt)
+    self.assertIn("ERROR_CODE="+stage+"_FAILED",result);self.assertNotIn("CREDENTIAL_ACQUISITION_FAILED",result);self.assertEqual((fs.root/"home_assistant.json").read_bytes(),old)
+    if boundary!="publication":self.assertNotIn("CREDENTIAL_ACQUISITION",rt.calls);self.assertNotIn("HA_CONNECTION",rt.calls)
+    else:self.assertIn("LAST_KNOWN_GOOD_PRESERVED=TRUE",result)
+ def test_actual_credential_acl_stage_in_cycle(self):
+  with tempfile.TemporaryDirectory() as root:
+   fs=TemporaryFS(root);rt=SyntheticRuntime(fs)
+   def credential():
+    rt.calls.append("CREDENTIAL_ACQUISITION");a.NativeFS().acl(1)
+   with patch.object(rt,"credential",side_effect=credential),patch.object(os,"getxattr",return_value=b"bad",create=True):result=a.run_cycle(rt)
+   self.assertIn("CREDENTIAL_ACQUISITION_FAILED",result);self.assertNotIn("HA_CONNECTION",rt.calls)
+
+class CorrectionBoundaryTests(unittest.TestCase):
+ def test_production_lock_mode_acl_binding_failure_stage(self):
+  for defect in ("mode","acl","binding","guard","postflock"):
+   with self.subTest(defect=defect),tempfile.TemporaryDirectory() as root:
+    info=SimpleNamespace(st_dev=1,st_ino=1,st_mode=stat.S_IFREG|(0o644 if defect=="mode" else 0o600),st_uid=101,st_gid=101,st_nlink=1,st_size=0,st_mtime_ns=0,st_ctime_ns=0)
+    class LockFS(TemporaryFS):
+     uid=gid=101
+     guards=0
+     def guard(inner):
+      inner.guards+=1
+      if defect=="guard" or (defect=="postflock" and inner.guards==2):raise a.Failure("STATE_PUBLICATION")
+      super().guard()
+     lock=a.PosixFS.lock
+     security=a.PosixFS.security
+     acl=a.PosixFS.acl
+     def fstat(inner,fd):return info
+     def lstat(inner,parent,name):
+      if name==".home_assistant.lock" and defect=="binding":return SimpleNamespace(**{**vars(info),"st_ino":2})
+      return info
+    fs=LockFS(root);rt=SyntheticRuntime(fs)
+    fcntl=SimpleNamespace(LOCK_EX=2,LOCK_NB=4,LOCK_UN=8,flock=lambda *_:None)
+    with patch.dict(sys.modules,{"fcntl":fcntl}),patch.object(os,"open",return_value=11),patch.object(os,"O_NOFOLLOW",0,create=True),patch.object(os,"O_CLOEXEC",0,create=True),patch.object(os,"O_NONBLOCK",0,create=True),patch.object(os,"getxattr",return_value=b"bad" if defect=="acl" else None,side_effect=None if defect=="acl" else OSError(errno.ENODATA,"SYNTHETIC"),create=True):result=a.run_cycle(rt)
+    self.assertIn("LOCK_ACQUISITION_FAILED",result);self.assertNotIn("CREDENTIAL_ACQUISITION",rt.calls);self.assertNotIn("HA_CONNECTION",rt.calls)
+ def test_publication_binding_drift_exact_prior_preservation(self):
+  with tempfile.TemporaryDirectory() as root:
+   fs=TemporaryFS(root);old=a.encoded(cycle());(fs.root/"home_assistant.json").write_bytes(old);rt=SyntheticRuntime(fs);original=fs.lstat;drifted=[]
+   def drift(parent,name):
+    info=original(parent,name)
+    if name.startswith(".home_assistant.txn-") and not drifted:
+     drifted.append(True);attrs={key:getattr(info,key) for key in ("st_dev","st_ino","st_mode","st_uid","st_gid","st_nlink","st_size","st_mtime_ns","st_ctime_ns")};attrs["st_ino"]+=1;return SimpleNamespace(**attrs)
+    return info
+   with patch.object(fs,"lstat",side_effect=drift):result=a.run_cycle(rt)
+   self.assertIn("STATE_PUBLICATION_FAILED",result);self.assertIn("LAST_KNOWN_GOOD_PRESERVED=TRUE",result);self.assertNotIn("CREDENTIAL_ACQUISITION_FAILED",result);self.assertEqual((fs.root/"home_assistant.json").read_bytes(),old)

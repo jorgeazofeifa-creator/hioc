@@ -1,5 +1,23 @@
 # HIOC Changelog
 
+## PE-4 association adapter pre-deployment correction — 2026-10-06
+
+Independent review of implementation `0bdb9340157daba4a6948251922d762cc4fc97ff`
+identified two contract defects before deployment: incomplete canonical-envelope types
+and state security checks capable of originating credential failure stages. Both are
+corrected. Connection/identifier namespaces share the frozen 128-name bound, established
+by the preparation's pinned historical 2b reducer; identifiers remain supporting-only.
+[Correction details and current source bindings](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION.md) preserve the original
+implementation record/schema and commit as historical evidence. 70 focused tests and
+275 regression tests ran: 344 passed, one existing rsync-dependent skip (345 total).
+Adapter Implementation PASS/CLOSED, corrected before deployment. Deployment and
+Scheduler Deployment NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; Rollback NOT PERFORMED. No production deployment occurred before
+correction. No real credential, PI3/PI5/HA access, adapter network, production mutation,
+MQTT, public projection, scheduler activation or rollback occurred in this checkpoint.
+Next: **PE-4 Home Assistant Association Adapter Deployment Preparation**, not begun.
+Earlier entries below remain historical implementation evidence.
+
 ## PE-4 association adapter implementation — 2026-10-06
 
 Repository-only Adapter Implementation PASS/CLOSED. [Implementation contract](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION.md)

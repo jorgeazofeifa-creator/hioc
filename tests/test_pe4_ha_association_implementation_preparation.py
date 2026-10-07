@@ -65,7 +65,7 @@ class ImplementationPreparationTests(unittest.TestCase):
         for key in ("module_path", "entrypoint_path"):
             # Absence belongs to the frozen preparation baseline, not the current tree.
             self.assertEqual(git("ls-tree","-r","--name-only",BASE,"--",RECORD[key]),b"")
-            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-implementation.json").read_bytes())
+            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-predeployment-correction.json").read_bytes())
             binding=next(v for v in implementation["sources"].values() if v["path"]==RECORD[key])
             self.assertEqual(hashlib.sha256((ROOT/RECORD[key]).read_bytes()).hexdigest(),binding["sha256"])
         runtime = RECORD["runtime"]

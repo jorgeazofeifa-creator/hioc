@@ -136,7 +136,7 @@ class CredentialClosureTests(unittest.TestCase):
                 self.assertEqual(git("show",BASE+":"+path),(ROOT/path).read_bytes().replace(b"\r\n",b"\n"),path)
         for path in ("pi4/lib/hioc/home_assistant_association.py","pi4/bin/hioc-home-assistant-association.py"):
             self.assertEqual(git("ls-tree","-r","--name-only",BASE,"--",path),b"")
-            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-implementation.json").read_bytes())
+            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-predeployment-correction.json").read_bytes())
             binding=next(v for v in implementation["sources"].values() if v["path"]==path)
             self.assertEqual(hashlib.sha256((ROOT/path).read_bytes()).hexdigest(),binding["sha256"])
         doc=ROOT/"docs/PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md"

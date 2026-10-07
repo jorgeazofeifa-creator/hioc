@@ -229,7 +229,10 @@ def validate_inventory(raw, now):
     stage = "CANONICAL_INVENTORY_INPUT"
     value = strict_json(raw, stage)
     require(type(value) is dict and {"schema_version", "updated", "devices", "services", "topology", "dependencies", "summary"} <= value.keys(), stage)
-    require(value["schema_version"] == "1.0" and type(value["devices"]) is list and len(value["devices"]) <= 65536, stage)
+    require(value["schema_version"] == "1.0" and type(value["updated"]) is str and
+            all(type(value[key]) is kind for key, kind in (("devices", list), ("services", list),
+                ("topology", dict), ("dependencies", dict), ("summary", dict))) and
+            len(value["devices"]) <= 65536, stage)
     try: age = (now - instant(value["updated"])).total_seconds()
     except Failure: raise Failure(stage) from None
     require(-60 <= age <= 5400, stage)
@@ -273,9 +276,15 @@ def registry_cores(registries):
             for key in keys:
                 require(record[key] and record[key] not in unique[key], stage); unique[key].add(record[key])
             if "connections" in core:
-                for pair in record["connections"]:
-                    require(type(pair) is list and len(pair) == 2 and all(type(v) is str for v in pair), stage)
-                    namespaces.add(pair[0]); require(len(namespaces) <= 128, stage)
+                # The pinned 2b model bounds the union of both pair namespaces.
+                # Optional identifiers remain supporting-only and are never indexed.
+                for field in ("connections", "identifiers"):
+                    if field not in record: continue
+                    require(type(record[field]) is list, stage)
+                    for pair in record[field]:
+                        require(type(pair) is list and len(pair) == 2 and
+                                all(type(v) is str and (field == "connections" or 0 < len(v) <= 1024) for v in pair), stage)
+                        namespaces.add(pair[0]); require(len(namespaces) <= 128, stage)
     return registries
 
 
@@ -507,7 +516,8 @@ def fingerprint(info):
 
 
 class NativeFS:
-    """Descriptor-relative Linux operations; imports alone perform no I/O."""
+    """Descriptor-relative Linux credential operations; imports perform no I/O."""
+    security_stage = "CREDENTIAL_ACQUISITION"
     def open_root(self):
         return os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
 
@@ -535,14 +545,14 @@ class NativeFS:
                 raw = os.getxattr(fd, attr)
             except OSError as exc:
                 # ENODATA is an authoritative absent ACL; ENOTSUP/EPERM etc fail.
-                credential_require(exc.errno == errno.ENODATA, "ACL_UNVERIFIABLE")
+                require(exc.errno == errno.ENODATA, self.security_stage)
                 continue
-            credential_require(attr.endswith("access"), "ACL_UNEXPECTED")
-            credential_require(len(raw) == 28 and struct.unpack("<I", raw[:4])[0] == 2, "ACL_UNEXPECTED")
+            require(attr.endswith("access"), self.security_stage)
+            require(len(raw) == 28 and struct.unpack("<I", raw[:4])[0] == 2, self.security_stage)
             entries = [struct.unpack("<HHI", raw[i:i+8]) for i in range(4, 28, 8)]
             mode = stat.S_IMODE(self.fstat(fd).st_mode)
             expected = [(1, (mode >> 6) & 7, 0xffffffff), (4, (mode >> 3) & 7, 0xffffffff), (32, mode & 7, 0xffffffff)]
-            credential_require(entries == expected, "ACL_UNEXPECTED")
+            require(entries == expected, self.security_stage)
 
 
 def check_directory(fs, fd, gid=None):
@@ -556,7 +566,8 @@ def check_directory(fs, fd, gid=None):
 
 
 def bound_name(fs, parent, name, fd):
-    credential_require(fingerprint(fs.lstat(parent, name)) == fingerprint(fs.fstat(fd)), "NAME_BINDING_CHANGED")
+    require(fingerprint(fs.lstat(parent, name)) == fingerprint(fs.fstat(fd)),
+            getattr(fs, "security_stage", "CREDENTIAL_ACQUISITION"))
 
 
 def open_hierarchy(fs, gid):
@@ -609,7 +620,8 @@ def read_credential(fs, parent, gid, name=FINAL_NAME, expected=None):
 
 
 class PosixFS(NativeFS):
-    """Pinned descriptor-relative storage. Every mutation rechecks its directory."""
+    """Pinned state storage; its security errors never originate from credentials."""
+    security_stage = "STATE_PUBLICATION"
     def __init__(self, uid, gid):
         self.uid, self.gid = uid, gid
         self.chain = []
@@ -709,27 +721,30 @@ class PosixFS(NativeFS):
     @contextlib.contextmanager
     def lock(self):
         import fcntl
-        self.guard()
-        fd = os.open(".home_assistant.lock", os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC,
-                     0o600, dir_fd=self.parent)
-        locked = False
+        fd, locked, entered = None, False, False
         try:
+            self.guard()
+            fd = os.open(".home_assistant.lock", os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC,
+                         0o600, dir_fd=self.parent)
             self.security(fd); bound_name(self, self.parent, ".home_assistant.lock", fd)
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB); locked = True
             self.lock_fd = fd
             self.guard()
+            entered = True
             yield
         except (OSError, Failure):
-            if not locked: raise Failure("LOCK_ACQUISITION") from None
+            if not entered: raise Failure("LOCK_ACQUISITION") from None
             raise
         finally:
             try:
                 if locked:
-                    try: self.guard()
+                    try:
+                        if entered: self.guard()
                     finally:
                         self.lock_fd = None
                         fcntl.flock(fd, fcntl.LOCK_UN)
-            finally: self.close(fd)
+            finally:
+                if fd is not None: self.close(fd)
 
 
 def read_prior(fs, schema):
