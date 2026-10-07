@@ -7,6 +7,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path, PurePosixPath
+import sys
 import stat
 import subprocess
 from types import SimpleNamespace
@@ -479,7 +480,6 @@ class DeploymentEvidenceCorrectionTests(unittest.TestCase):
         self.assertNotIn('PREPARED_OR_INTERRUPTED',HELPER.read_text(encoding='utf-8'))
 
 
-if __name__ == '__main__':unittest.main()
 
 class RuntimeCustomizationDeploymentTests(unittest.TestCase):
     def test_reviewed_components_accepted(self):
@@ -498,3 +498,130 @@ class RuntimeCustomizationDeploymentTests(unittest.TestCase):
                     self.assertEqual(D.main(['--expected-commit',COMMIT]),1)
                 lines='\n'.join(str(call.args[0]) for call in output.call_args_list)
                 self.assertIn('DEPLOYMENT_TRANSACTION=NOT_STARTED',lines);self.assertIn('PRODUCTION_DEPLOYMENT=NOT_STARTED',lines);self.assertEqual(fs.mutations,[])
+
+
+class ResolvedPrefixProbeTests(unittest.TestCase):
+    """Execute the generated child body with injected Linux paths/modules, never a runtime."""
+    ACTIVE='/home/jazofv1/hioc/runtime/pe4/active'
+    ACCEPTED='/home/jazofv1/hioc/runtime/pe4/environments/cpython311-websockets16.1.1-lock-v1'
+    def model(self,resolved=None):
+        active=self.ACTIVE;resolved=resolved or self.ACCEPTED
+        class LinuxPath(PurePosixPath):
+            def resolve(inner):
+                value=str(inner)
+                return LinuxPath(resolved+value[len(active):]) if value==active or value.startswith(active+'/') else inner
+            def absolute(inner):return inner
+            def is_symlink(inner):return str(inner)==active
+            def exists(inner):return True
+        return LinuxPath
+    def identity(self):
+        return dict(implementation='cpython',python='3.11.2',architecture='aarch64',soabi='cpython-311-aarch64-linux-gnu',websockets='16.1.1',prefix=self.ACCEPTED,executable=self.ACTIVE+'/bin/python',isolated=True,bytecode_disabled=True,origins_valid=True,distributions_valid=True)
+    @contextlib.contextmanager
+    def host(self,active_target=None):
+        from tests.pe4_runtime_customization_fixtures import observation
+        path=self.model(active_target);site=path(self.ACCEPTED)/'lib/python3.11/site-packages'
+        with patch.object(D,'SOURCE',ROOT):namespace=D.runtime_policy_namespace()
+        namespace['runtime_customization_observation']=lambda _:observation(site)
+        with patch.object(D,'SOURCE',ROOT),patch.object(D,'HOME',path('/home/jazofv1/hioc')),patch.object(D,'ENVIRONMENT',path(self.ACCEPTED)),patch.object(D,'INTERPRETER',path(self.ACTIVE+'/bin/python')),patch.object(D,'runtime_policy_namespace',return_value=namespace),patch.object(D.subprocess,'run',return_value=SimpleNamespace(returncode=0,stdout=b'',stderr=b'')):
+            yield path
+    def generated_probe(self):
+        captured=[]
+        def command(args,code):
+            if '-c' in args:captured.append(args[-1]);return json.dumps(self.identity()).encode()
+            return b'RESULT=PASS\nCREDENTIAL_READABLE_BY_RUNTIME_OPERATOR=TRUE\nNETWORK_CONNECTION_ATTEMPTED=FALSE\nHA_AUTHENTICATION_ATTEMPTED=FALSE\n'
+        with self.host(),patch.object(D,'command',side_effect=command):D.prerequisites()
+        self.assertEqual(len(captured),1);return captured[0]
+    def execute_child(self,probe,*,resolved=None,change=None):
+        from tests.pe4_runtime_customization_fixtures import observation
+        with patch.object(D,'SOURCE',ROOT):validator=D.runtime_policy_namespace()['validate_runtime_customization']
+        path=self.model(resolved);site=path(resolved or self.ACCEPTED)/'lib/python3.11/site-packages';seen=[];printed=[]
+        def observe(actual):
+            seen.append(actual)
+            if str(actual).startswith(self.ACTIVE+'/'):raise NotADirectoryError('synthetic active symlink')
+            self.assertEqual(actual,site)
+            value=observation(site)
+            if change=='pth':value['pth_names'].append('unreviewed.pth')
+            if change=='sitecustomize':value['site_module']='/other/sitecustomize.py'
+            if change=='usercustomize':value['user_loaded']=True
+            return value
+        distributions=[SimpleNamespace(metadata={'Name':name},version=version) for name,version in [('websockets','wrong' if change=='websockets' else '16.1.1'),('pip','23.0.1'),('setuptools','66.1.1')]]
+        if change=='distribution':distributions.append(SimpleNamespace(metadata={'Name':'extra'},version='1'))
+        fake_sys=SimpleNamespace(prefix=self.ACTIVE,executable=self.ACTIVE+'/bin/python',implementation=SimpleNamespace(name='cpython'),version_info=(3,11,2),flags=SimpleNamespace(isolated=1,dont_write_bytecode=1),path=['/usr/lib/python311.zip','/usr/lib/python3.11','/usr/lib/python3.11/lib-dynload',str(site)]+(['/usr/lib/python3/dist-packages'] if change=='path' else []),modules={})
+        namespace=dict(Path=path,sys=fake_sys,platform=SimpleNamespace(machine=lambda:'aarch64'),sysconfig=SimpleNamespace(get_config_var=lambda _:'cpython-311-aarch64-linux-gnu'),json=json,importlib=SimpleNamespace(util=SimpleNamespace(find_spec=lambda _:SimpleNamespace(origin=str(site/'websockets/__init__.py'))),metadata=SimpleNamespace(distributions=lambda **_:distributions)),validate_runtime_customization=validator,runtime_customization_observation=observe,print=lambda value:printed.append(value))
+        # Keep the generated executable probe logic; replace only imports and the
+        # separately source-verified native observation definitions with injected APIs.
+        tree=ast.parse(probe);tree.body=[n for n in tree.body if not isinstance(n,(ast.Import,ast.ImportFrom,ast.FunctionDef)) and not (isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='CUSTOMIZATION_POLICY' for t in n.targets))]
+        module=SimpleNamespace(__version__='wrong' if change=='websockets' else '16.1.1',__file__=str(site/'websockets/__init__.py'))
+        with patch.dict(sys.modules,{'websockets':module}):exec(compile(tree,'synthetic generated child probe','exec'),namespace)
+        return json.loads(printed[0]),seen
+    def test_raw_active_prefix_uses_resolved_site_for_observation(self):
+        probe=self.generated_probe();value,seen=self.execute_child(probe)
+        self.assertEqual([str(p) for p in seen],[self.ACCEPTED+'/lib/python3.11/site-packages'])
+        with self.host():D.runtime_identity(value)
+    def test_original_unresolved_construction_reproduces_safe_failure(self):
+        probe=self.generated_probe().replace("site=resolved_prefix/", "site=raw_prefix/")
+        with self.assertRaises(NotADirectoryError):self.execute_child(probe)
+    def test_different_resolved_prefix_remains_runtime_drift(self):
+        value,_=self.execute_child(self.generated_probe(),resolved='/unreviewed/environment')
+        with self.host(),self.assertRaises(D.Failure) as caught:D.runtime_identity(value)
+        self.assertEqual(caught.exception.code,'RUNTIME_DRIFT')
+    def test_active_target_drift_precedes_child_and_credential(self):
+        with self.host('/unreviewed/environment'),patch.object(D,'command') as command,self.assertRaises(D.Failure) as caught:D.prerequisites()
+        self.assertEqual(caught.exception.code,'RUNTIME_DRIFT');command.assert_not_called()
+    def test_generated_child_retains_exact_customization_failures(self):
+        for change in ('pth','sitecustomize','usercustomize'):
+            with self.subTest(change=change),self.assertRaises(ValueError):self.execute_child(self.generated_probe(),change=change)
+    def test_generated_child_retains_package_and_path_failures(self):
+        probe=self.generated_probe()
+        for change in ('distribution','websockets','path'):
+            with self.subTest(change=change):
+                value,_=self.execute_child(probe,change=change)
+                with self.host(),self.assertRaises(D.Failure) as caught:D.runtime_identity(value)
+                self.assertEqual(caught.exception.code,'RUNTIME_DRIFT')
+    def test_actual_runtime_prerequisite_failures_never_reach_intent(self):
+        probe=self.generated_probe()
+        for change in ('pth','sitecustomize','usercustomize','distribution','websockets','path','prefix','active'):
+            fs=SyntheticFS();m=manifest();called=[]
+            def command(args,code):
+                called.append(args)
+                self.assertIn('-c',args,'Credential command must not be reached')
+                try:value,_=self.execute_child(args[-1],resolved='/unreviewed/environment' if change=='prefix' else None,change=change)
+                except (ValueError,NotADirectoryError):raise D.Failure('RUNTIME_DRIFT') from None
+                return json.dumps(value).encode()
+            with self.subTest(change=change),self.host('/unreviewed/environment' if change=='active' else None),patch.object(D,'command',side_effect=command),patch.object(D,'local_prerequisites',return_value=(1000,1000)),patch.object(D,'source_binding',return_value=m),patch.object(D,'NativeFS',return_value=fs),patch('builtins.print') as output:
+                self.assertEqual(D.main(['--expected-commit',COMMIT]),1)
+            lines='\n'.join(str(call.args[0]) for call in output.call_args_list)
+            for text in ('ERROR_CODE=RUNTIME_DRIFT','DEPLOYMENT_TRANSACTION=NOT_STARTED','PRODUCTION_DEPLOYMENT=NOT_STARTED','ADAPTER_EXECUTED=FALSE','HA_NETWORK_ATTEMPTED=FALSE','HA_AUTHENTICATION_ATTEMPTED=FALSE'):self.assertIn(text,lines)
+            self.assertEqual(fs.mutations,[])
+    def test_policy_and_adapter_source_bytes_remain_exact(self):
+        raw=(ROOT/'pi4/lib/hioc/home_assistant_association.py').read_bytes()
+        self.assertEqual(D.sha(raw),'9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1');self.assertEqual(D.RUNTIME_POLICY_MODULE_SHA,D.sha(raw))
+        self.assertEqual(raw,subprocess.check_output(['git','show','e4d5a19afecccb1584708e3da57ba3c0c4258523:pi4/lib/hioc/home_assistant_association.py'],cwd=ROOT))
+
+    def test_probe_correction_closed_governance_and_source_binding(self):
+        base=ROOT/'governance/pe4/pe4-ha-association-deployment-runtime-probe-correction'
+        record=json.loads(base.with_suffix('.json').read_bytes());schema=json.loads(base.with_suffix('.schema.json').read_bytes())
+        def validate(value,node):
+            if 'const' in node:self.assertIs(type(value),type(node['const']));self.assertEqual(value,node['const']);return
+            if node['type']=='object':
+                self.assertFalse(node['additionalProperties']);self.assertEqual(set(value),set(node['required']));self.assertEqual(set(value),set(node['properties']))
+                for key,child in node['properties'].items():validate(value[key],child)
+            else:
+                self.assertFalse(node['items']);self.assertEqual(len(value),node['minItems']);self.assertEqual(len(value),node['maxItems'])
+                for item,child in zip(value,node['prefixItems']):validate(item,child)
+        validate(record,schema)
+        bad=copy.deepcopy(record);bad['operator_evidence']['provenance']='CODEX_OBSERVED'
+        with self.assertRaises(AssertionError):validate(bad,schema)
+        bad=copy.deepcopy(record);bad['runtime_trust_policy_changed']=True
+        with self.assertRaises(AssertionError):validate(bad,schema)
+        bad=copy.deepcopy(record);bad['extra']=True
+        with self.assertRaises(AssertionError):validate(bad,schema)
+        for suffix in ('.json','.schema.json'):
+            raw=base.with_suffix(suffix).read_bytes();self.assertEqual(raw,D.canonical(json.loads(raw)))
+        for item in record['sources'].values():
+            raw=(ROOT/item['path']).read_bytes();self.assertEqual(D.sha(raw),item['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
+        self.assertEqual(record['starting_commit'],D.BASELINE);self.assertEqual(D.BASELINE,'e4d5a19afecccb1584708e3da57ba3c0c4258523')
+        self.assertEqual(R['source_binding']['parent'],D.BASELINE);self.assertEqual(R['source_binding']['subject'],'PE-4: fix deployment runtime prefix validation')
+        self.assertEqual(R['helper'],record['sources']['deployment_helper']);self.assertFalse(record['runtime_contract_consumption']);self.assertFalse(record['production_installation'])
+
+if __name__ == '__main__':unittest.main()

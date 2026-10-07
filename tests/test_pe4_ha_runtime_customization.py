@@ -40,7 +40,7 @@ class CorrectionTests(unittest.TestCase):
   for suffix in ('.json','.schema.json'):
    raw=base.with_suffix(suffix).read_bytes();self.assertEqual(raw,D.canonical(json.loads(raw)))
   for item in record['sources'].values():
-   raw=(ROOT/item['path']).read_bytes();self.assertEqual(D.sha(raw),item['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
+   raw=__import__('subprocess').check_output(['git','show','e4d5a19afecccb1584708e3da57ba3c0c4258523:'+item['path']],cwd=ROOT);self.assertEqual(D.sha(raw),item['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
   self.assertFalse(record['runtime_contract_consumption']);self.assertFalse(record['production_installation'])
  def file_info(self,raw,**changes):
   return SimpleNamespace(**dict(dict(st_dev=1,st_ino=2,st_mode=stat.S_IFREG|0o640,st_uid=1000,st_gid=1000,st_nlink=1,st_size=len(raw),st_mtime_ns=1,st_ctime_ns=1),**changes))

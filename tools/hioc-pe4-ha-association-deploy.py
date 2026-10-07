@@ -17,7 +17,7 @@ import sys
 
 SOURCE = Path("/home/jazofv1/hioc-release-source")
 HOME = Path("/home/jazofv1/hioc")
-BASELINE = "2ef66a2d575c923c6939a4cd4d5bb2c8aab2f816"
+BASELINE = "e4d5a19afecccb1584708e3da57ba3c0c4258523"
 RECORD = "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json"
 ENDPOINT = "ws://192.168.100.251:8123/api/websocket"
 CONFIG = "config/hioc.conf"
@@ -413,7 +413,7 @@ def source_binding(expected):
     def git(*args): return command(["/usr/bin/git", "-C", str(SOURCE), *args], "SOURCE_BINDING").decode().strip()
     require(git("rev-parse", "--show-toplevel") == str(SOURCE) and git("branch", "--show-current") == "main", "SOURCE_BINDING")
     require(git("rev-parse", "HEAD") == git("rev-parse", "origin/main") == expected and
-            git("rev-parse", "HEAD^") == BASELINE and git("log", "-1", "--format=%s") == "PE-4: align runtime validation with accepted environment", "SOURCE_BINDING")
+            git("rev-parse", "HEAD^") == BASELINE and git("log", "-1", "--format=%s") == "PE-4: fix deployment runtime prefix validation", "SOURCE_BINDING")
     require(git("rev-list", "--left-right", "--count", "HEAD...origin/main") == "0\t0" and
             git("status", "--porcelain=v1", "--untracked-files=all") == "", "SOURCE_BINDING")
     for op in ("MERGE_HEAD", "REBASE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "BISECT_LOG", "rebase-apply", "rebase-merge", "sequencer"):
@@ -493,7 +493,9 @@ def prerequisites():
     except BaseException: raise Failure("RUNTIME_DRIFT") from None
     probe = "import os,stat,hashlib,contextlib,sys\nfrom pathlib import Path\n" + runtime_validation_source() + "\n" + """import sys,platform,sysconfig,json,importlib.util,importlib.metadata
 from pathlib import Path
-site=Path(sys.prefix)/'lib/python3.11/site-packages'
+raw_prefix=Path(sys.prefix)
+resolved_prefix=raw_prefix.resolve()
+site=resolved_prefix/'lib/python3.11/site-packages'
 spec=importlib.util.find_spec('websockets')
 d={x.metadata['Name'].lower().replace('_','-'):x.version for x in importlib.metadata.distributions(path=[str(site)])}
 valid=spec is not None and spec.origin is not None and Path(spec.origin).resolve()==site/'websockets/__init__.py'
@@ -503,7 +505,7 @@ if valid:
  valid=websockets.__version__=='16.1.1' and Path(websockets.__file__).resolve()==site/'websockets/__init__.py'
 validate_runtime_customization(runtime_customization_observation(site),site)
 valid=valid and all(Path(p).resolve() in paths for p in sys.path) and 'usercustomize' not in sys.modules
-print(json.dumps(dict(implementation=sys.implementation.name,python='.'.join(map(str,sys.version_info[:3])),architecture=platform.machine(),soabi=sysconfig.get_config_var('SOABI'),websockets=d.get('websockets'),prefix=str(Path(sys.prefix).resolve()),executable=str(Path(sys.executable).absolute()),isolated=bool(sys.flags.isolated),bytecode_disabled=bool(sys.flags.dont_write_bytecode),origins_valid=valid,distributions_valid=set(d)<= {'websockets','pip','setuptools'})))
+print(json.dumps(dict(implementation=sys.implementation.name,python='.'.join(map(str,sys.version_info[:3])),architecture=platform.machine(),soabi=sysconfig.get_config_var('SOABI'),websockets=d.get('websockets'),prefix=str(resolved_prefix),executable=str(Path(sys.executable).absolute()),isolated=bool(sys.flags.isolated),bytecode_disabled=bool(sys.flags.dont_write_bytecode),origins_valid=valid,distributions_valid=set(d)<= {'websockets','pip','setuptools'})))
 """
     runtime_identity(json.loads(command([str(INTERPRETER), "-I", "-B", "-c", probe], "RUNTIME_DRIFT")))
     output = command([str(INTERPRETER), "-I", "-B", str(SOURCE / "tools/hioc-pe4-ha-runtime-credential-validate.py"), "--runtime-operator"], "CREDENTIAL_INVALID")

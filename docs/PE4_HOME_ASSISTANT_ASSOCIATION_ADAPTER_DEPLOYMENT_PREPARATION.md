@@ -1,3 +1,75 @@
+## Deployment runtime probe resolved-prefix correction — 2026-10-06
+
+Deployment Runtime Probe Correction PASS/CLOSED. The following chronology is
+**OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE**, provenance OPERATOR_SUPPLIED; Codex did not
+access PI3 or collect the production observations:
+
+1. First Deployment Execution attempt at 2ef66a2 failed RUNTIME_DRIFT, with durable
+   transaction and production deployment NOT_STARTED.
+2. Accepted-runtime customization correction at
+   `e4d5a19afecccb1584708e3da57ba3c0c4258523` closed the exact reviewed customization policy.
+3. Second Deployment Execution attempt at e4d5a19 again failed RUNTIME_DRIFT, with
+   durable transaction and production deployment NOT_STARTED; no production mutation,
+   adapter execution, HA connection/authentication, scheduling or rollback occurred.
+4. Read-only diagnostic passed bootstrap policy extraction and exact customization
+   observation, then isolated child NotADirectoryError at active: raw sys.prefix retained
+   the governed `/home/jazofv1/hioc/runtime/pe4/active` symlink.
+5. The operator's resolved-prefix diagnostic passed customization_validation, RESULT
+   and RESOLVED_PREFIX_VALIDATION using the accepted environment's real site-packages.
+   It accessed no credential, attempted no HA network and performed no production mutation.
+6. The production adapter is unaffected: Runtime.runtime() already derives site from
+   the fixed accepted ENVIRONMENT. Its module/entrypoint source bytes remain unchanged.
+7. The deployment helper now resolves sys.prefix before site-packages observation;
+   runtime_identity() still requires the exact accepted environment. The separately
+   governed active link must resolve there before the child starts. No trust policy,
+   O_NOFOLLOW traversal, filesystem observation helper or launch flag was weakened.
+
+The child now uses:
+
+```python
+raw_prefix = Path(sys.prefix)
+resolved_prefix = raw_prefix.resolve()
+site = resolved_prefix / "lib/python3.11/site-packages"
+```
+
+Its reported prefix is `str(resolved_prefix)`, verified by the unchanged exact runtime
+identity contract. Accepted resolved environment remains
+`/home/jazofv1/hioc/runtime/pe4/environments/cpython311-websockets16.1.1-lock-v1`;
+accepted adapter/runtime child launch remains `/home/jazofv1/hioc/runtime/pe4/active/bin/python -I -B`.
+The existing stdlib deployment bootstrap uses -S independently of that accepted launch.
+CUSTOMIZATION_POLICY, validate_runtime_customization, runtime_directory,
+runtime_file_observation and runtime_customization_observation are unchanged because the
+entire approved adapter module remains byte-for-byte identical. .pth, sitecustomize,
+usercustomize, package, origin and sys.path gates retain the exact prior trust policy.
+
+The [probe correction record](../governance/pe4/pe4-ha-association-deployment-runtime-probe-correction.json)
+and [closed schema](../governance/pe4/pe4-ha-association-deployment-runtime-probe-correction.schema.json)
+bind the new helper and unchanged adapter/entrypoint. Prior runtime correction records
+and their helper identities remain immutable historical e4d5a19 evidence. Current deployment
+preparation is rebound to the successor with immediate parent e4d5a19 and exact subject
+`PE-4: fix deployment runtime prefix validation`; all main/origin/clean/0/0/no-operation
+guards remain. This correction record is governance-only, not read by Runtime.contracts()
+or installed in production. Eight additive targets, six runtime governance contracts and
+six category-B dependencies remain unchanged. B policy remains
+REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED.
+
+Validation: deployment focused 83 (including nine resolved-prefix/correction tests),
+runtime customization 8, adapter 73, other regressions 275; total 439 run, 438 passed,
+one existing release skip because rsync is unavailable on Windows. Behavioral tests execute
+the generated child body with injected Linux paths/modules; the old construction reproduces
+the safe failure, the resolved construction passes, and every tested runtime prerequisite
+failure remains before credential validation, durable intent or production target mutation.
+No accepted interpreter, actual adapter, credential, host or network is exercised by tests.
+
+Adapter Implementation PASS/CLOSED, corrected before deployment; Runtime Validation
+Correction PASS/CLOSED; Deployment Runtime Probe Correction PASS/CLOSED; Deployment
+Preparation PASS/CLOSED, corrected and rebound. Deployment, Bounded Manual Production
+Validation, Independent Production Acceptance and Scheduler Deployment NOT STARTED;
+Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; Rollback NOT PERFORMED.
+Both failed attempts remain pre-intent failures. Next unchanged:
+**PE-4 Home Assistant Association Adapter Deployment Execution**. The regenerated complete
+operator block is FOR REVIEW ONLY and was not run. Stop after repository correction.
+
 ## Accepted runtime validation correction — 2026-10-06
 
 Runtime Validation Correction PASS/CLOSED. **OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE**:
@@ -67,7 +139,7 @@ repository correction; the regenerated deployment block remains FOR REVIEW ONLY.
 
 | Source | Git blob | SHA-256 |
 | --- | --- | --- |
-| `tools/hioc-pe4-ha-association-deploy.py` | `7b2a058d97798f071c7f08d0b017b9409753f178` | `de9acf1504452bd6280cf410aa6aa1be4ae2b9f8f6fb77befa2d30ec07fc8bc8` |
+| `tools/hioc-pe4-ha-association-deploy.py` | `2d7d4d59e6f31c03581d62362769d1f746bbd806` | `a7cfb6109804dc4f6b88ae6a356fafac41650610ab2e078b0274d62a27f0719b` |
 | `pi4/bin/hioc-home-assistant-association.py` | `2864361fac7cd48e947dac1e4e40aeeeb525adef` | `005fae482a4e2c42b48bfb991abf14ddf1d9de60f81169a2ed1573a767958b8c` |
 | `pi4/lib/hioc/home_assistant_association.py` | `e71e4c45e21e9f1a25298471b48387cb19f53e1f` | `9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1` |
 
@@ -395,14 +467,14 @@ shell set flags, exit, exec or logout.
 /usr/bin/python3 -I -B -S - <<'PY'
 import hashlib, os, subprocess, sys
 from pathlib import Path
-EXPECTED = "REPLACE_WITH_INDEPENDENTLY_REVIEWED_RUNTIME_CORRECTION_COMMIT"
+EXPECTED = "REPLACE_WITH_INDEPENDENTLY_REVIEWED_PROBE_CORRECTION_COMMIT"
 ROOT = Path("/home/jazofv1/hioc-release-source")
 FILES = {
-    "tools/hioc-pe4-ha-association-deploy.py": "de9acf1504452bd6280cf410aa6aa1be4ae2b9f8f6fb77befa2d30ec07fc8bc8",
-    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json": "ee850341f9ce535046756ecb3eb7e9b0e2765717af0096c0282edd78e17ccee1",
-    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.schema.json": "cc8af9771e6609f88a5b78e15decb281519e4ada2a26a84e2828016fd6749091",
-    "governance/pe4/pe4-ha-association-runtime-validation-correction.json": "8c1aff21da7b5a4cd022f4cf7de15d6563c41b4ce31917b9cf56e17199fa5775",
-    "governance/pe4/pe4-ha-association-runtime-validation-correction.schema.json": "286492798c218bb3f341f17dada44ec11bb3a531b05d391cc1df2caa9271f569",
+    "tools/hioc-pe4-ha-association-deploy.py": "a7cfb6109804dc4f6b88ae6a356fafac41650610ab2e078b0274d62a27f0719b",
+    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json": "999cb387318f88f34e9772d622ad46032c71721e140da3dff21c44df4d6c6058",
+    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.schema.json": "a438402476ffb37ca123ca7fe7a2c09a7be0d0890a40769164ff88765276f8aa",
+    "governance/pe4/pe4-ha-association-deployment-runtime-probe-correction.json": "7c3daea378c7fa86e299be6f6ee4f85ba6b5c9f0a715ebb3a71cf3282119d593",
+    "governance/pe4/pe4-ha-association-deployment-runtime-probe-correction.schema.json": "69018660ae807986759eed48484efa42f83311a249ec48bc82b2b460265de754",
 }
 ENV = {"PATH": "/usr/sbin:/usr/bin:/bin", "HOME": "/home/jazofv1", "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"}
 rc = 1
