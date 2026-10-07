@@ -700,9 +700,9 @@ class GovernanceTests(unittest.TestCase):
     def test_lifecycle_links_and_unrelated_roadmap_preserved(self):
         text=(ROOT/"docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
         current=text.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
-        for row in ("| PE-4 Home Assistant Runtime Credential Provisioning Preparation | PASS/CLOSED |","| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |","| Operator Credential Installation | PASS/CLOSED |","| Independent Credential Validation | PASS/CLOSED |","| Credential Provisioning Governance Closure | PASS/CLOSED |","| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED |","| PE-4 | NOT COMPLETE |","| Phase 7A | ACTIVE |","| Rollback | NOT PERFORMED |"):
+        for row in ("| PE-4 Home Assistant Runtime Credential Provisioning Preparation | PASS/CLOSED |","| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |","| Operator Credential Installation | PASS/CLOSED |","| Independent Credential Validation | PASS/CLOSED |","| Credential Provisioning Governance Closure | PASS/CLOSED |","| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED, corrected before deployment |","| PE-4 | NOT COMPLETE |","| Phase 7A | ACTIVE |","| Rollback | NOT PERFORMED |"):
             self.assertIn(row,current)
-        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Deployment Execution"))
+        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Bounded Manual Production Validation"))
         before=subprocess.check_output(["git","show",BASE+":docs/HIOC_MASTER_PLAN.md"],cwd=ROOT).decode("utf-8")
         for start,end in (("## Future Enhancements","# Repository Rules"),("### Future Compatibility Diagnostics UX Checkpoint","# Historical Operator Preparation Chronology"),("# Historical Operator Preparation Chronology",None)):
             previous=before.split(start,1)[1]; now=text.split(start,1)[1]

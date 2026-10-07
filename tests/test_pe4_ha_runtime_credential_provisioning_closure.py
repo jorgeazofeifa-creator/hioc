@@ -115,9 +115,9 @@ class CredentialClosureTests(unittest.TestCase):
         current=text.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
         for name in ("PE-4 Home Assistant Runtime Credential Provisioning Preparation","PE-4 Home Assistant Runtime Credential Provisioning","Operator Credential Installation","Independent Credential Validation","Credential Provisioning Governance Closure"):
             self.assertIn("| "+name+" | PASS/CLOSED |",current)
-        self.assertIn("| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED |",current)
-        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Deployment Execution"))
-        self.assertIn("**PE-4 Home Assistant Association Adapter Deployment Execution",current.split("## Current Objective",1)[1])
+        self.assertIn("| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED, corrected before deployment |",current)
+        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Bounded Manual Production Validation"))
+        self.assertIn("**PE-4 Home Assistant Association Adapter Bounded Manual Production Validation",current.split("## Current Objective",1)[1])
 
     def test_other_roadmap_and_history_unchanged(self):
         before=git("show",BASE+":docs/HIOC_MASTER_PLAN.md").decode("utf-8")

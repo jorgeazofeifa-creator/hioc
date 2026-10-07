@@ -1,3 +1,28 @@
+## Deployment Execution governance closure — 2026-10-06
+
+**Deployment PASS/CLOSED.** The operator reported successful governed deployment at
+`4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2` and a separate PASS read-only static acceptance.
+Both are OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE, provenance OPERATOR_SUPPLIED; Codex did
+not collect them or access PI3. Transaction COMMITTED; five dependencies preserved;
+nine targets verified, all nine newly created; endpoint added. The three earlier failures
+remain historical pre-intent NOT_STARTED attempts, with no partial deployment or rollback.
+
+Deployment-local credential validation PASS used the governed local validator; this is
+not a claim that deployment never read the credential file. No credential content was
+exposed/persisted in evidence, placed in argv/environment or used for HA authentication.
+The separate static acceptance accessed no credential. Codex accessed no real credential.
+Adapter/platform-status remained unexecuted; no adapter HA network/authentication or
+association state publication occurred. Association scheduler absent; existing platform
+cron unchanged; pre-compatibility platform-status and compatibility-state metadata preserved.
+
+Current objective and exact next task: **PE-4 Home Assistant Association Adapter Bounded Manual Production Validation**.
+It remains NOT STARTED and requires separate first-run authorization. Independent Production
+Acceptance and Scheduler Deployment NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; Rollback NOT PERFORMED. Stop before first adapter execution.
+[Focused deployment closure](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_CLOSURE.md)
+consolidates the two evidence sets and boundaries. Earlier checkpoint narratives retain
+historical states and next tasks; this closure supersedes their current-authority wording.
+
 ## Production compatibility dependency classification correction — 2026-10-06
 
 Production Dependency Classification Correction PASS/CLOSED. The production observations
@@ -219,7 +244,7 @@ DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; Rollback NOT PERFORMED.
 Next: **PE-4 Home Assistant Association Adapter Deployment Execution**. Stop after
 repository correction; the regenerated deployment block remains FOR REVIEW ONLY.
 
-### Current corrected executable identities
+### Deployed executable identities at 4912f20d
 
 | Source | Git blob | SHA-256 |
 | --- | --- | --- |
@@ -535,9 +560,9 @@ No PI3/PI5/HA access, real credential access, adapter/network execution, product
 mutation, deployment, scheduler activation, MQTT, public projection or rollback occurred.
 Next exactly: **PE-4 Home Assistant Association Adapter Deployment Execution**.
 
-## Complete future operator block — FOR REVIEW ONLY
+## Historical deployment block — executed by operator at 4912f20d
 
-DO NOT RUN in this preparation. Independent review must bind EXPECTED to the exact single
+Historical block only; do not rerun as part of closure. The operator previously bound EXPECTED to the exact single
 corrective successor commit before separate authorization. The final repository report
 provides the literal completed corrective commit. The block verifies helper/record/schema against
 both reviewed SHA-256 and that Git commit before starting the source-bound helper. It does
@@ -551,7 +576,7 @@ shell set flags, exit, exec or logout.
 /usr/bin/python3 -I -B -S - <<'PY'
 import hashlib, os, subprocess, sys
 from pathlib import Path
-EXPECTED = "REPLACE_WITH_INDEPENDENTLY_REVIEWED_DEPENDENCY_CORRECTION_COMMIT"
+EXPECTED = "4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2"
 ROOT = Path("/home/jazofv1/hioc-release-source")
 FILES = {
     "tools/hioc-pe4-ha-association-deploy.py": "9f1903c99206348722584a976c57ac9e1bcbf53178e0c8d472719687259a48da",
