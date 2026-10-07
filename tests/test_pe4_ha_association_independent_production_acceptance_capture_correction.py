@@ -40,7 +40,7 @@ class CaptureTests(unittest.TestCase):
   v=synthetic();v['RESULT']='FAIL';self.reject(M.canonical(v),1)
  def test_return_code_mismatch(self):self.reject(M.canonical(synthetic()),1)
  def test_valid_failure_original_bytes(self):
-  v=synthetic();v.update(RESULT='FAIL',FAILURE_STAGE='PRIVATE_STATE',PRIVATE_STATE='FAIL');raw=M.canonical(v);self.assertIs(M.validate_received(raw,COMMIT,1),raw)
+  v=synthetic();v.update(RESULT='FAIL',FAILURE_STAGE='PRIVATE_STATE',PRIVATE_STATE='FAIL');raw=M.canonical(v);self.assertIs(M.validate_received(raw,COMMIT,2),raw)
  def test_nonfinite(self):self.reject(M.canonical(synthetic()).replace(b'false',b'NaN',1))
  def test_noncanonical_whitespace(self):self.reject(M.canonical(synthetic()).replace(b':',b': ',1))
  def test_false_integer_rejected(self):
@@ -92,7 +92,7 @@ class CaptureTests(unittest.TestCase):
  def test_canonical_closed_governance(self):
   validate(R,S);self.assertEqual(P.read_bytes(),canonical(R));self.assertEqual(P.with_suffix('.schema.json').read_bytes(),canonical(S))
  def test_helper_identity_bound(self):
-  self.assertEqual(hashlib.sha256((ROOT/R['workstation_helper']['path']).read_bytes()).hexdigest(),R['workstation_helper']['sha256'])
+  self.assertEqual(hashlib.sha256(subprocess.check_output(['git','show','27377b95658010bf35c2b1fab8009de3d6f24bb6:'+R['workstation_helper']['path']],cwd=ROOT)).hexdigest(),R['workstation_helper']['sha256'])
  def test_attempt_one_remains_lost(self):
   a=R['attempt_1'];self.assertFalse(a['raw_stdout_durably_available']);self.assertFalse(a['evidence_recreated']);self.assertEqual(a['raw_stdout_revalidation'],'UNAVAILABLE');self.assertEqual(a['capture_result'],'FAIL')
  def test_no_remote_or_inspection_engine(self):

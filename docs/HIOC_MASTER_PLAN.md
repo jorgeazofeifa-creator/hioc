@@ -3201,6 +3201,23 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## Independent Production Acceptance operator-path integration — 2026-10-07
+
+Operator Path Integration **PASS/CLOSED**; native Windows synthetic durability **PASS**.
+The committed thin remote read-only wrapper, Windows binary transport orchestrator and capture
+helper now share the historical producer's exact PASS=0 / FAIL=2 return-code contract. No ad hoc
+acceptance program is needed. Windows PowerShell system module isolation fixes the native ACL
+prerequisite. Actual synthetic Windows filesystem and PASS/FAIL subprocess transport tests passed.
+Attempt 1 remains inspection PASS (operator supplied), durable capture FAIL, evidence NOT PUBLISHED,
+raw stdout UNAVAILABLE; no evidence recreated. Independent Production Acceptance NOT CLOSED.
+Attempt 2 **NOT STARTED / READY FOR SEPARATE AUTHORIZATION**, **NOT AUTHORIZED**.
+Immediate next action: **PI3 source synchronization to the operator-path integration commit only**;
+STOP and independent review, then separate explicit Attempt 2 authorization. No PI3 action here.
+Second adapter execution NOT AUTHORIZED; scheduler NOT STARTED; projection DEFERRED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. Earlier capture/preparation wording
+below is historical. [Operator-path contract](PE4_HOME_ASSISTANT_ASSOCIATION_INDEPENDENT_PRODUCTION_ACCEPTANCE_OPERATOR_PATH.md).
+
+
 ## Independent Production Acceptance capture correction — 2026-10-07
 
 Preparation PASS/CLOSED. Attempt 1 **FAIL / DURABLE CAPTURE**; read-only inspection portion
@@ -3641,7 +3658,9 @@ completion. Historical chronology elsewhere does not override it.
 | Read-only inspection portion | PASS (operator-supplied) |
 | Durable acceptance evidence | NOT PUBLISHED |
 | Independent Production Acceptance Capture Correction | PASS/CLOSED |
-| Independent Production Acceptance Attempt 2 | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |
+| Independent Production Acceptance Operator Path Integration | PASS/CLOSED |
+| Native Windows capture durability prerequisite | PASS |
+| Independent Production Acceptance Attempt 2 | NOT STARTED / READY FOR SEPARATE AUTHORIZATION |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT CLOSED |
 | PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED |
@@ -3886,6 +3905,12 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+Operator Path Integration PASS/CLOSED; native Windows durability PASS. Attempt 2 NOT STARTED /
+READY FOR SEPARATE AUTHORIZATION and NOT AUTHORIZED. Immediate action: PI3 source synchronization
+to the operator-path integration commit ONLY; STOP and independent review. Acceptance NOT CLOSED.
+Earlier correction/preparation sequencing below is historical.
+
+
 Current acceptance NOT CLOSED: Attempt 1 inspection PASS, capture FAIL; evidence NOT PUBLISHED.
 Capture Correction PASS/CLOSED; Attempt 2 NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION
 and NOT AUTHORIZED. Immediate action: PI3 source synchronization to the capture correction
@@ -3927,10 +3952,11 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ### PE-4 Home Assistant Association Adapter Independent Production Acceptance
 
 Current checkpoint: Independent Production Acceptance NOT CLOSED. Attempt 1 inspection PASS,
-durable capture FAIL; Attempt 2 NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION.
-Immediate operator action: **PI3 source synchronization to the capture correction commit only**,
-then STOP and independent review; Attempt 2 requires separate authorization and native synthetic
-capture security/durability validation. Completed historical handoff: source synchronization to
+durable capture FAIL; Attempt 2 NOT STARTED / READY FOR SEPARATE AUTHORIZATION.
+Immediate operator action: **PI3 source synchronization to the operator-path integration commit only**,
+then STOP and independent review; Attempt 2 requires separate explicit authorization.
+Native synthetic capture security/durability prerequisite PASS. Historical correction-sync handoff
+remains preserved below. Completed historical handoff: source synchronization to
 the acceptance preparation commit.
 Completed historical handoff: PI3 source synchronization to the durable reconciliation closure commit.
 This preparation authorizes no acceptance execution, adapter rerun, scheduler deployment,

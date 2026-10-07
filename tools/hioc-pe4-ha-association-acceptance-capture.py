@@ -3,8 +3,8 @@ Separately authorized Attempt 2 only. No retry or evidence reconstruction.
 """
 import argparse,hashlib,json,os,re,subprocess,sys
 from pathlib import Path
-BASE='16b7dd412cde7503ea45c62734915096654aa690'
-SUBJECT='PE-4: correct independent acceptance capture'
+BASE='27377b95658010bf35c2b1fab8009de3d6f24bb6'
+SUBJECT='PE-4: harden independent acceptance operator path'
 LIMIT=4096
 GATES=('DEPLOYMENT','RUNTIME','PRIVATE_STATE','COMPATIBILITY','INVENTORY','CRON_SCHEDULER','PROTECTED_SURFACES_UNCHANGED','CHECKPOINT_COUNTS_AGREE')
 ACTIVITY=('ADAPTER_EXECUTED','HA_NETWORK_ATTEMPTED','CREDENTIAL_ACCESSED','PRODUCTION_MUTATED')
@@ -16,7 +16,7 @@ def require(v):
 def canonical(v):return (json.dumps(v,sort_keys=True,separators=(',',':'),ensure_ascii=True,allow_nan=False)+'\n').encode('ascii')
 def validate_received(raw,commit,return_code):
  require(type(raw) is bytes and 1<=len(raw)<=LIMIT and raw.endswith(b'\n') and b'\r' not in raw and raw.isascii())
- require(type(return_code) is int and return_code in (0,1) and re.fullmatch('[0-9a-f]{40}',commit) is not None)
+ require(type(return_code) is int and return_code in (0,2) and re.fullmatch('[0-9a-f]{40}',commit) is not None)
  def pairs(items):
   v={}
   for k,x in items:require(k not in v);v[k]=x
@@ -31,7 +31,7 @@ def validate_received(raw,commit,return_code):
  require(all(value[k] is False for k in ACTIVITY))
  require(value['RESULT'] in ('PASS','FAIL') and value['FAILURE_STAGE'] in STAGES)
  if value['RESULT']=='PASS':require(return_code==0 and value['FAILURE_STAGE']=='NONE' and all(value[k]=='PASS' for k in GATES))
- else:require(return_code==1 and value['FAILURE_STAGE']!='NONE')
+ else:require(return_code==2 and value['FAILURE_STAGE']!='NONE')
  require(canonical(value)==raw)
  return raw  # Identity of the original bytes, never canonical(value).
 def source_binding(root,commit):
@@ -46,9 +46,11 @@ def source_binding(root,commit):
  for name in ('MERGE_HEAD','REBASE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','sequencer','rebase-merge','rebase-apply','BISECT_LOG','BISECT_START'):
   v=Path(git('rev-parse','--git-path',name).strip().decode());require(not (v if v.is_absolute() else root/v).exists())
  return True
-def secure_directory(path):
+def powershell_environment():
+ env=os.environ.copy();env['PSModulePath']=str(Path(os.environ['SystemRoot'])/'System32/WindowsPowerShell/v1.0/Modules');return env
+def secure_directory(path,file=False):
  # Validate every existing directory from the governed base down; no ACL changes.
- require(os.name=='nt' and path.is_dir() and not path.is_symlink() and not path.is_junction())
+ require(os.name=='nt' and (path.is_file() if file else path.is_dir()) and not path.is_symlink() and not path.is_junction())
  script="""$p=[Console]::In.ReadToEnd();$a=Get-Acl -LiteralPath $p -ErrorAction Stop;
 $ids=@('S-1-5-18','S-1-5-32-544',[System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value);
 $owner=(New-Object System.Security.Principal.NTAccount($a.Owner)).Translate([System.Security.Principal.SecurityIdentifier]).Value;
@@ -56,17 +58,18 @@ $ok=$a.AreAccessRulesProtected -and ($owner -eq $ids[2]);$seen=@();
 foreach($r in $a.Access){$id=$r.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value;
 if(($id -notin $ids) -or ($r.AccessControlType -ne 'Allow') -or ($r.IsInherited) -or ($r.FileSystemRights -ne 'FullControl')){$ok=$false};$seen+=$id};
 foreach($id in $ids){if($id -notin $seen){$ok=$false}};[Console]::Write([int]$ok)"""
- p=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],input=str(path).encode(),stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=15)
+ p=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],input=str(path).encode(),stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=15,env=powershell_environment())
  require(p.returncode==0 and p.stdout==b'1')
-def protect_new_directory(path):
- require(os.name=='nt' and path.is_dir() and not path.is_symlink() and not path.is_junction())
+def protect_new_directory(path,file=False):
+ require(os.name=='nt' and (path.is_file() if file else path.is_dir()) and not path.is_symlink() and not path.is_junction())
  script="""$p=[Console]::In.ReadToEnd();$u=[System.Security.Principal.WindowsIdentity]::GetCurrent().User;
 $a=New-Object System.Security.AccessControl.DirectorySecurity;$a.SetOwner($u);$a.SetAccessRuleProtection($true,$false);
 foreach($id in @($u.Value,'S-1-5-18','S-1-5-32-544')){
 $sid=New-Object System.Security.Principal.SecurityIdentifier($id);
 $r=New-Object System.Security.AccessControl.FileSystemAccessRule($sid,'FullControl','ContainerInherit,ObjectInherit','None','Allow');$a.AddAccessRule($r)};
 Set-Acl -LiteralPath $p -AclObject $a -ErrorAction Stop"""
- p=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],input=str(path).encode(),stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=15)
+ if file:script=script.replace('DirectorySecurity','FileSecurity').replace("'ContainerInherit,ObjectInherit'","'None'")
+ p=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],input=str(path).encode(),stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=15,env=powershell_environment())
  require(p.returncode==0)
 def durable_directory(path):
  import ctypes
@@ -80,8 +83,10 @@ def durable_directory(path):
  try:require(bool(k.FlushFileBuffers(h)))
  finally:k.CloseHandle(h)
 def exclusive_file(path,raw):
- with path.open('xb') as f:f.write(raw);f.flush();os.fsync(f.fileno())
- require(path.read_bytes()==raw)
+ with path.open('xb') as f:
+  protect_new_directory(path,file=True);secure_directory(path,file=True)
+  f.write(raw);f.flush();os.fsync(f.fileno())
+ secure_directory(path,file=True);require(path.read_bytes()==raw)
 def publish_original(raw,commit,return_code,directory,security=secure_directory,sync=durable_directory,write=exclusive_file,protect=protect_new_directory):
  original=validate_received(raw,commit,return_code)
  require(re.fullmatch(r'[0-9]{8}T[0-9]{6}-[0-9a-f]{12}',directory.name) is not None)
@@ -116,7 +121,7 @@ def main(argv=None):
   for path in security_chain:secure_directory(path)
   directory=base/args.source_commit/args.new_run_id
   publish_original(raw,args.source_commit,args.remote_return_code,directory)
-  print('CAPTURE=PASS');return 0
+  print('CAPTURE=PASS');return 0 if args.remote_return_code==0 else 2
  except BaseException:
-  print('CAPTURE=FAIL\nERROR_CODE=CAPTURE_VALIDATION_OR_DURABILITY_FAILED\nSTOP_REQUIRED=TRUE');return 1
+  print('CAPTURE=FAIL\nERROR_CODE=CAPTURE_VALIDATION_OR_DURABILITY_FAILED\nSTOP_REQUIRED=TRUE');return 3
 if __name__=='__main__':raise SystemExit(main())
