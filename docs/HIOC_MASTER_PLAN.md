@@ -3201,6 +3201,45 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## PE-4 bounded manual association validation preparation - 2026-10-06
+
+Repository-only preparation PASS/CLOSED. [Preparation procedure](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_PREPARATION.md)
+and [canonical record](../governance/pe4/pe4-ha-association-bounded-manual-validation-preparation.json)
+bind immutable deployment closure/source, the single future adapter invocation, privacy-safe evidence,
+exact pre/post invariants and warning/failure handling. Deployment remains PASS/CLOSED.
+Bounded Manual Production Validation is PREPARED FOR SEPARATE AUTHORIZATION, not executed or PASS.
+Current objective remains **PE-4 Home Assistant Association Adapter Bounded Manual Production Validation**.
+Next operator action: **PI3 source synchronization to the approved preparation commit**; STOP,
+independent sync review, then separate live-execution authorization. Do not combine the actions.
+Independent Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection DEFERRED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. No PI3/PI5/SSH/HA/credential access,
+adapter/platform-status execution, deployment, production mutation, scheduler, MQTT or projection.
+
+
+**Deployment PASS/CLOSED.** The operator reported successful governed deployment at
+`4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2` and a separate PASS read-only static acceptance.
+Both are OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE, provenance OPERATOR_SUPPLIED; Codex did
+not collect them or access PI3. Transaction COMMITTED; five dependencies preserved;
+nine targets verified, all nine newly created; endpoint added. The three earlier failures
+remain historical pre-intent NOT_STARTED attempts, with no partial deployment or rollback.
+
+Deployment-local credential validation PASS used the governed local validator; this is
+not a claim that deployment never read the credential file. No credential content was
+exposed/persisted in evidence, placed in argv/environment or used for HA authentication.
+The separate static acceptance accessed no credential. Codex accessed no real credential.
+Adapter/platform-status remained unexecuted; no adapter HA network/authentication or
+association state publication occurred. Association scheduler absent; existing platform
+cron unchanged; pre-compatibility platform-status and compatibility-state metadata preserved.
+
+Current objective and exact next task: **PE-4 Home Assistant Association Adapter Bounded Manual Production Validation**.
+It remains NOT STARTED and requires separate first-run authorization. Independent Production
+Acceptance and Scheduler Deployment NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; Rollback NOT PERFORMED. Stop before first adapter execution.
+[Focused deployment closure](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_CLOSURE.md)
+consolidates the two evidence sets and boundaries. Earlier checkpoint narratives retain
+historical states and next tasks; this closure supersedes their current-authority wording.
+
+
 ## Deployment Execution governance closure — 2026-10-06
 
 **Deployment PASS/CLOSED.** The operator reported successful governed deployment at
@@ -3488,7 +3527,7 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Adapter Deployment Preparation | PASS/CLOSED, corrected and rebound |
 | PE-4 Home Assistant Association Adapter Deployment Preparation Pre-execution Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Deployment | PASS/CLOSED |
-| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | NOT STARTED |
+| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | PREPARED FOR SEPARATE AUTHORIZATION |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED |
@@ -3750,7 +3789,7 @@ separate static acceptance accessed no credential. Platform-status/cron and comp
 state metadata remain preserved. Codex accessed no PI3/PI5/HA/real credential and performed
 no production mutation or deployment.
 
-Bounded Manual Production Validation and Independent Production Acceptance remain NOT STARTED;
+Bounded Manual Production Validation is PREPARED FOR SEPARATE AUTHORIZATION; Independent Production Acceptance remains NOT STARTED;
 Scheduler Deployment NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE;
 Rollback NOT PERFORMED. First adapter execution requires separate authorization.
 
@@ -3758,11 +3797,13 @@ Rollback NOT PERFORMED. First adapter execution requires separate authorization.
 
 ### PE-4 Home Assistant Association Adapter Bounded Manual Production Validation
 
-Prepare the separately governed first manual validation checkpoint with explicit authorization
-and bounded evidence requirements before executing the deployed adapter. No live adapter
-procedure is supplied or executed by this closure. After that checkpoint, Independent Production
-Acceptance and separately authorized Scheduler Deployment remain future work. Public Projection,
-PE-5 and all other roadmap work retain their separate sequencing and scope.
+Repository preparation is PASS/CLOSED; actual Bounded Manual Production Validation is
+PREPARED FOR SEPARATE AUTHORIZATION. The [review-only procedure](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_PREPARATION.md)
+binds immutable deployed source, exactly one future invocation and sanitized evidence.
+Next operator action: **PI3 source synchronization to the approved preparation commit**.
+Synchronize only, STOP and independently review; then separately authorize the live adapter run.
+Independent Production Acceptance and Scheduler Deployment remain NOT STARTED; Public Projection
+DEFERRED. No adapter execution or production acceptance has occurred in this preparation.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 

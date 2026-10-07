@@ -73,7 +73,8 @@ class DeploymentClosureTests(unittest.TestCase):
   master=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf-8');current=master.split('## Current Objective',1)[1].split('### Future Compatibility Diagnostics UX Checkpoint',1)[0]
   self.assertIn('**'+NEXT+'**',current);self.assertIn('### '+NEXT,current);self.assertNotIn('six existing',current);self.assertNotIn('eight additive',current);self.assertIn('five preserved',current);self.assertIn('nine newly created',current)
   table=master.split('Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0];self.assertIn('| PE-4 Home Assistant Association Adapter Deployment | PASS/CLOSED |',table)
-  for checkpoint in ('Bounded Manual Production Validation','Independent Production Acceptance','Scheduler Deployment'):self.assertIn('| PE-4 Home Assistant Association Adapter '+checkpoint+' | NOT STARTED |',table)
+  self.assertIn('| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | PREPARED FOR SEPARATE AUTHORIZATION |',table)
+  for checkpoint in ('Independent Production Acceptance','Scheduler Deployment'):self.assertIn('| PE-4 Home Assistant Association Adapter '+checkpoint+' | NOT STARTED |',table)
  def test_credential_semantics_local_validation_separate_static_check(self):
   self.assertEqual(R['credential_local_validation'],'PASS');c=R['credential_semantics'];self.assertEqual(c['deployment_file_access'],'GOVERNED_LOCAL_VALIDATOR_ONLY')
   for key in ('content_exposed_in_evidence_or_output','persisted_into_new_deployment_evidence','placed_in_argv','placed_in_environment','used_for_ha_authentication','codex_credential_access','static_acceptance_credential_access'):self.assertFalse(c[key])

@@ -1,5 +1,20 @@
 ## Deployment Execution governance closure — 2026-10-06
 
+## PE-4 bounded manual association validation preparation - 2026-10-06
+
+Repository-only preparation PASS/CLOSED. [Preparation procedure](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_PREPARATION.md)
+and [canonical record](../governance/pe4/pe4-ha-association-bounded-manual-validation-preparation.json)
+bind immutable deployment closure/source, the single future adapter invocation, privacy-safe evidence,
+exact pre/post invariants and warning/failure handling. Deployment remains PASS/CLOSED.
+Bounded Manual Production Validation is PREPARED FOR SEPARATE AUTHORIZATION, not executed or PASS.
+Current objective remains **PE-4 Home Assistant Association Adapter Bounded Manual Production Validation**.
+Next operator action: **PI3 source synchronization to the approved preparation commit**; STOP,
+independent sync review, then separate live-execution authorization. Do not combine the actions.
+Independent Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection DEFERRED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. No PI3/PI5/SSH/HA/credential access,
+adapter/platform-status execution, deployment, production mutation, scheduler, MQTT or projection.
+
+
 **Deployment PASS/CLOSED.** The operator reported successful governed deployment at
 `4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2` and a separate PASS read-only static acceptance.
 Both are OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE, provenance OPERATOR_SUPPLIED; Codex did
