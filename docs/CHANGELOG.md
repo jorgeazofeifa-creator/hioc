@@ -1,5 +1,20 @@
 # HIOC Changelog
 
+## PE-4 association adapter implementation — 2026-10-06
+
+Repository-only Adapter Implementation PASS/CLOSED. [Implementation contract](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION.md)
+binds the module, thin entrypoint and closed governance record to frozen 0C/0C.1,
+state schema 1.1, and current credential closure. Exact-final-LF credential parsing
+supersedes historical optional-LF preparation wording; historical records remain unchanged.
+Synthetic adapter and required regression validation passed. Private transactional
+publication/recovery and a full six-capability ha_core observation are implemented;
+generic integration ingestion is PROHIBITED and Public Projection remains DEFERRED.
+No real credential, production hosts, HA/network validation, deployment, scheduler,
+MQTT association publication, production state mutation or rollback occurred.
+Deployment and Scheduler Deployment NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE;
+Rollback NOT PERFORMED. Next: **PE-4 Home Assistant Association Adapter Deployment Preparation**.
+Older entries below retain their historical status and evidence.
+
 ## PE-4 runtime credential provisioning governance closure — 2026-10-06
 
 Operator Credential Installation PASS/CLOSED; Independent Credential Validation

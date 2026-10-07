@@ -345,7 +345,7 @@ class LifecycleClarificationTests(unittest.TestCase):
         current=master.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
         self.assertIn("| PE-4.0C.1 Association Lifecycle Clarification | PASS/CLOSED |",current)
         self.assertIn("| PE-4 Home Assistant Association Adapter Implementation Preparation | PASS/CLOSED |",current)
-        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Implementation"))
+        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Deployment Preparation"))
         self.assertIn("Compatibility Diagnostics UX",master)
 
 

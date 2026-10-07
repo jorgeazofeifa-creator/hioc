@@ -692,20 +692,24 @@ class GovernanceTests(unittest.TestCase):
         self.assertIn('INSTALL_DIR="${HIOC_INSTALL_DIR:-/home/jazofv1/hioc}"',(ROOT/"release/upgrade.sh").read_text())
         self.assertIn('"$INSTALL_DIR/" "$BACKUP_DIR/current/"',(ROOT/"release/upgrade.sh").read_text())
         for path in ("pi4/lib/hioc/home_assistant_association.py","pi4/bin/hioc-home-assistant-association.py"):
-            self.assertFalse((ROOT/path).exists())
+            self.assertEqual(subprocess.check_output(["git","ls-tree","-r","--name-only",BASE,"--",path],cwd=ROOT),b"")
+            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-implementation.json").read_bytes())
+            binding=next(v for v in implementation["sources"].values() if v["path"]==path)
+            self.assertEqual(hashlib.sha256((ROOT/path).read_bytes()).hexdigest(),binding["sha256"])
 
     def test_lifecycle_links_and_unrelated_roadmap_preserved(self):
         text=(ROOT/"docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
         current=text.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
-        for row in ("| PE-4 Home Assistant Runtime Credential Provisioning Preparation | PASS/CLOSED |","| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |","| Operator Credential Installation | PASS/CLOSED |","| Independent Credential Validation | PASS/CLOSED |","| Credential Provisioning Governance Closure | PASS/CLOSED |","| PE-4 Home Assistant Association Adapter Implementation | NOT STARTED |","| PE-4 | NOT COMPLETE |","| Phase 7A | ACTIVE |","| Rollback | NOT PERFORMED |"):
+        for row in ("| PE-4 Home Assistant Runtime Credential Provisioning Preparation | PASS/CLOSED |","| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |","| Operator Credential Installation | PASS/CLOSED |","| Independent Credential Validation | PASS/CLOSED |","| Credential Provisioning Governance Closure | PASS/CLOSED |","| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED |","| PE-4 | NOT COMPLETE |","| Phase 7A | ACTIVE |","| Rollback | NOT PERFORMED |"):
             self.assertIn(row,current)
-        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Implementation"))
+        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Deployment Preparation"))
         before=subprocess.check_output(["git","show",BASE+":docs/HIOC_MASTER_PLAN.md"],cwd=ROOT).decode("utf-8")
         for start,end in (("## Future Enhancements","# Repository Rules"),("### Future Compatibility Diagnostics UX Checkpoint","# Historical Operator Preparation Chronology"),("# Historical Operator Preparation Chronology",None)):
             previous=before.split(start,1)[1]; now=text.split(start,1)[1]
             if end: previous=previous.split(end,1)[0]; now=now.split(end,1)[0]
             if start == "## Future Enhancements":
                 previous = previous.replace("Runtime Credential Provisioning NOT STARTED; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.", "Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.", 1)
+            if start=="## Future Enhancements": previous=previous.replace("adapter implementation NOT STARTED; PE-4 NOT COMPLETE.","adapter implementation PASS/CLOSED (repository/synthetic only); deployment and scheduler NOT STARTED; PE-4 NOT COMPLETE.",1)
             self.assertEqual(previous,now)
         import re
         doc=ROOT/"docs/PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md"

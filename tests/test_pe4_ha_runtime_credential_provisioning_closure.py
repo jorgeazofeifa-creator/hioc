@@ -115,9 +115,9 @@ class CredentialClosureTests(unittest.TestCase):
         current=text.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
         for name in ("PE-4 Home Assistant Runtime Credential Provisioning Preparation","PE-4 Home Assistant Runtime Credential Provisioning","Operator Credential Installation","Independent Credential Validation","Credential Provisioning Governance Closure"):
             self.assertIn("| "+name+" | PASS/CLOSED |",current)
-        self.assertIn("| PE-4 Home Assistant Association Adapter Implementation | NOT STARTED |",current)
-        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### "+NEXT))
-        self.assertIn("**"+NEXT+"**",current.split("## Current Objective",1)[1])
+        self.assertIn("| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED |",current)
+        self.assertTrue(current.split("## Next Planned Task",1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Deployment Preparation"))
+        self.assertIn("**PE-4 Home Assistant Association Adapter Deployment Preparation**",current.split("## Current Objective",1)[1])
 
     def test_other_roadmap_and_history_unchanged(self):
         before=git("show",BASE+":docs/HIOC_MASTER_PLAN.md").decode("utf-8")
@@ -127,13 +127,18 @@ class CredentialClosureTests(unittest.TestCase):
             if end:a=a.split(end,1)[0];b=b.split(end,1)[0]
             if start=="## Future Enhancements":
                 a=a.replace("Runtime Credential Provisioning PREPARED / NOT COMPLETE; Operator Installation and Independent Validation NOT STARTED; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.","Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation NOT STARTED; PE-4 NOT COMPLETE.",1)
+            if start=="## Future Enhancements": a=a.replace("adapter implementation NOT STARTED; PE-4 NOT COMPLETE.","adapter implementation PASS/CLOSED (repository/synthetic only); deployment and scheduler NOT STARTED; PE-4 NOT COMPLETE.",1)
             self.assertEqual(a,b,start)
 
     def test_protected_sources_no_adapter_and_document_links(self):
         for path in git("ls-tree","-r","--name-only",BASE).decode().splitlines():
             if path.startswith(("pi4/","release/","homeassistant/","governance/pe4/")) or path=="docs/DATA_MODEL.md":
                 self.assertEqual(git("show",BASE+":"+path),(ROOT/path).read_bytes().replace(b"\r\n",b"\n"),path)
-        for path in ("pi4/lib/hioc/home_assistant_association.py","pi4/bin/hioc-home-assistant-association.py"):self.assertFalse((ROOT/path).exists())
+        for path in ("pi4/lib/hioc/home_assistant_association.py","pi4/bin/hioc-home-assistant-association.py"):
+            self.assertEqual(git("ls-tree","-r","--name-only",BASE,"--",path),b"")
+            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-implementation.json").read_bytes())
+            binding=next(v for v in implementation["sources"].values() if v["path"]==path)
+            self.assertEqual(hashlib.sha256((ROOT/path).read_bytes()).hexdigest(),binding["sha256"])
         doc=ROOT/"docs/PE4_HOME_ASSISTANT_RUNTIME_CREDENTIAL_PROVISIONING.md"
         for target in re.findall(r"\]\(([^)]+)\)",doc.read_text(encoding="utf-8")):
             if "://" not in target and not target.startswith("#"):self.assertTrue((doc.parent/target.split("#")[0]).resolve().exists(),target)

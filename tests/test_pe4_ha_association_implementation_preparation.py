@@ -63,7 +63,11 @@ class ImplementationPreparationTests(unittest.TestCase):
         self.assertEqual(RECORD["module_path"], "pi4/lib/hioc/home_assistant_association.py")
         self.assertEqual(RECORD["entrypoint_path"], "pi4/bin/hioc-home-assistant-association.py")
         for key in ("module_path", "entrypoint_path"):
-            self.assertFalse((ROOT / RECORD[key]).exists())
+            # Absence belongs to the frozen preparation baseline, not the current tree.
+            self.assertEqual(git("ls-tree","-r","--name-only",BASE,"--",RECORD[key]),b"")
+            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-implementation.json").read_bytes())
+            binding=next(v for v in implementation["sources"].values() if v["path"]==RECORD[key])
+            self.assertEqual(hashlib.sha256((ROOT/RECORD[key]).read_bytes()).hexdigest(),binding["sha256"])
         runtime = RECORD["runtime"]
         self.assertEqual(runtime["active"], "/home/jazofv1/hioc/runtime/pe4/active")
         self.assertEqual((runtime["python_version"], runtime["websockets_version"]), ("3.11.2", "16.1.1"))
@@ -183,9 +187,9 @@ class ImplementationPreparationTests(unittest.TestCase):
     def test_current_lifecycle_and_preserved_roadmap(self):
         text = (ROOT / "docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
         current = text.split("# Implementation Status", 1)[1].split("# Historical Operator Preparation Chronology", 1)[0]
-        for row in ("| PE-4.0B.2b | PASS/CLOSED |", "| PE-4.0C | PASS/CLOSED |", "| PE-4.0C.1 Association Lifecycle Clarification | PASS/CLOSED |", "| PE-4 Home Assistant Association Adapter Implementation Preparation | PASS/CLOSED |", "| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |", "| PE-4 Home Assistant Association Adapter Implementation | NOT STARTED |", "| PE-4 | NOT COMPLETE |", "| Phase 7A | ACTIVE |", "| Rollback | NOT PERFORMED |"):
+        for row in ("| PE-4.0B.2b | PASS/CLOSED |", "| PE-4.0C | PASS/CLOSED |", "| PE-4.0C.1 Association Lifecycle Clarification | PASS/CLOSED |", "| PE-4 Home Assistant Association Adapter Implementation Preparation | PASS/CLOSED |", "| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |", "| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED |", "| PE-4 | NOT COMPLETE |", "| Phase 7A | ACTIVE |", "| Rollback | NOT PERFORMED |"):
             self.assertIn(row, current)
-        self.assertTrue(current.split("## Next Planned Task", 1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Implementation"))
+        self.assertTrue(current.split("## Next Planned Task", 1)[1].strip().startswith("### PE-4 Home Assistant Association Adapter Deployment Preparation"))
         self.assertIn("Compatibility Diagnostics UX", text)
         for key, value in {"runtime_adapter":"NOT_IMPLEMENTED", "deployment":"NOT_STARTED", "production_execution":"NOT_STARTED", "rollback":"NOT_PERFORMED"}.items():
             self.assertEqual(RECORD[key], value)
