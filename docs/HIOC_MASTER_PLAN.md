@@ -3201,6 +3201,25 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## Independent Production Acceptance final governance closure — 2026-10-07
+
+**Independent Production Acceptance PASS/CLOSED; Attempt 2 PASS.** This repository-only
+closure records OPERATOR_SUPPLIED_WINDOWS_AND_PRODUCTION_EXECUTION_EVIDENCE and separately
+performed OPERATOR_SUPPLIED_WINDOWS_EVIDENCE_REVIEW, not Codex-observed production execution.
+PI3 source synchronization through the capture correction to operator-path commit PASS;
+Attempt 2 run 20261007T220653-46cef5aace9e, 560-byte validation and 194-byte manifest,
+manifest binding and all eight acceptance gates PASS. No retained evidence accessed or recreated.
+Attempt 1 remains FAIL / DURABLE CAPTURE, inspection PASS / operator supplied, evidence
+NOT PUBLISHED, stdout UNAVAILABLE. Older original-artifact revalidation UNAVAILABLE and
+limitation RECORDED remain permanent; disappearance cause UNKNOWN.
+Preparation, Capture Correction and Operator Path Integration PASS/CLOSED; native durability PASS.
+Second Adapter Execution NOT AUTHORIZED; Scheduler Deployment NOT STARTED; Public Projection
+DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+Next objective: **PE-4 Home Assistant Association Adapter Scheduler Deployment**, NOT STARTED.
+Immediate operator handoff is closure source synchronization ONLY; STOP and independent review.
+Earlier acceptance notices below are historical and do not override this closure.
+[Acceptance closure](PE4_HOME_ASSISTANT_ASSOCIATION_INDEPENDENT_PRODUCTION_ACCEPTANCE_CLOSURE.md).
+
 ## Independent Production Acceptance operator-path integration — 2026-10-07
 
 Operator Path Integration **PASS/CLOSED**; native Windows synthetic durability **PASS**.
@@ -3660,8 +3679,8 @@ completion. Historical chronology elsewhere does not override it.
 | Independent Production Acceptance Capture Correction | PASS/CLOSED |
 | Independent Production Acceptance Operator Path Integration | PASS/CLOSED |
 | Native Windows capture durability prerequisite | PASS |
-| Independent Production Acceptance Attempt 2 | NOT STARTED / READY FOR SEPARATE AUTHORIZATION |
-| PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT CLOSED |
+| Independent Production Acceptance Attempt 2 | PASS |
+| PE-4 Home Assistant Association Adapter Independent Production Acceptance | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED |
 | PE-4 | NOT COMPLETE |
@@ -3905,6 +3924,16 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+**PE-4 Home Assistant Association Adapter Scheduler Deployment** — **NOT STARTED**.
+Independent Production Acceptance PASS/CLOSED; Attempt 2 PASS based on operator-supplied
+execution and durable review. Attempt 1 FAIL / DURABLE CAPTURE and original evidence limitations
+remain unchanged. Second Adapter Execution NOT AUTHORIZED; Public Projection DEFERRED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
+Immediate operator action: PI3 source synchronization to the acceptance closure commit only;
+STOP and independent review. No scheduler implementation or execution is authorized here.
+
+### Historical acceptance objective and handoff chronology
+
 Operator Path Integration PASS/CLOSED; native Windows durability PASS. Attempt 2 NOT STARTED /
 READY FOR SEPARATE AUTHORIZATION and NOT AUTHORIZED. Immediate action: PI3 source synchronization
 to the operator-path integration commit ONLY; STOP and independent review. Acceptance NOT CLOSED.
@@ -3948,6 +3977,17 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+
+### PE-4 Home Assistant Association Adapter Scheduler Deployment
+
+NOT STARTED. Independent Production Acceptance PASS/CLOSED is the completed prerequisite.
+Next handoff: PI3 source synchronization to the acceptance closure commit only; STOP and
+independent review. Scheduler checkpoint work and execution require separate authorization.
+Do not rerun acceptance, adapter or reconciler or begin Public Projection.
+Second Adapter Execution NOT AUTHORIZED; Public Projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; rollback NOT PERFORMED.
+
+### Historical acceptance next-task chronology
 
 ### PE-4 Home Assistant Association Adapter Independent Production Acceptance
 

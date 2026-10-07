@@ -98,7 +98,7 @@ class CaptureTests(unittest.TestCase):
  def test_no_remote_or_inspection_engine(self):
   source=(ROOT/R['workstation_helper']['path']).read_text(encoding='utf8');self.assertNotIn("['ssh'",source.lower());self.assertNotIn('socket',source);self.assertNotIn('/home/jazofv1/hioc',source);self.assertNotIn('manual-reconcile',source)
  def test_master_attempt_and_no_closure(self):
-  text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');self.assertIn('FAIL / DURABLE CAPTURE',text);self.assertIn('Independent Production Acceptance | NOT CLOSED |',text)
+  text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');self.assertIn('FAIL / DURABLE CAPTURE',text);self.assertIn('Independent Production Acceptance | PASS/CLOSED |',text)
 for gate in M.GATES:
  def check(self,gate=gate):
   v=synthetic();v[gate]='INVALID';self.reject(M.canonical(v))
