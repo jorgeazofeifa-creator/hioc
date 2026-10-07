@@ -3201,6 +3201,26 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
+The first live adapter run completed once (PASS/rc0); historical wrapper FAIL/rc1 and manual
+review remain unchanged. Scope correction PASS/CLOSED was followed by operator-supplied PI3
+source synchronization PASS to d767ad4 and one separately authorized reconciler attempt:
+FAIL at HISTORICAL_EVIDENCE before durable checks. A narrow diagnostic reported
+FileNotFoundError; a separate presence check proved the exact original /tmp directory absent
+and zero matching manual-evidence directories. No disappearance cause is inferred.
+No historical artifacts were recreated. The frozen committed operator report remains available;
+original file metadata, bytes, canonical JSON and cross-file equality are unavailable for
+revalidation. The evidence-authority correction is PASS/CLOSED; durable reconciliation is
+PREPARED FOR SEPARATE AUTHORIZATION and eventual closure must retain the evidence limitation.
+Next operator action: **PI3 source synchronization to the evidence-authority correction commit**,
+STOP, independent review, then separate authorization for read-only durable reconciliation.
+Independent acceptance and scheduler NOT STARTED; projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; rollback NOT PERFORMED; second adapter execution NOT AUTHORIZED.
+
+
+The earlier checkpoint notices below retain their historical scope and are superseded for current sequencing by this authority.
+
+
 ## PE-4 bounded manual validation production-scope correction - 2026-10-07
 
 Repository-only correction PASS/CLOSED. [Correction procedure](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_CORRECTION.md)
@@ -3210,10 +3230,10 @@ The adapter executed once and published valid private state. Historical PRODUCTI
 retains its original meaning; unrelated runtime churn makes that global invariant unsuitable.
 Explicit protected surfaces replace it for corrected checks. No adapter defect or original differing
 file is established. A second adapter execution is NOT AUTHORIZED.
-Current objective: **PE-4 Home Assistant Association Adapter Post-Run Reconciliation**.
+Current objective: **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
 Bounded Manual Production Validation ATTEMPTED / REVIEW REQUIRED; correction PASS/CLOSED;
 Post-Run Reconciliation PREPARED FOR SEPARATE AUTHORIZATION. Next operator action:
-**PI3 source synchronization to the correction commit**, STOP, independent sync review, then
+**PI3 source synchronization to the evidence-authority correction commit**, STOP, independent sync review, then
 separately authorize READ-ONLY reconciliation of existing evidence/state without adapter/credential/HA.
 Deployment and preparation PASS/CLOSED; Independent Production Acceptance and Scheduler Deployment
 NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
@@ -3510,6 +3530,8 @@ Next: **PE-4 Home Assistant Association Adapter Deployment Execution**. Stop aft
 repository correction; the regenerated deployment block remains FOR REVIEW ONLY.
 
 
+Permanent production-validation evidence durability rule: Closure-critical evidence must not rely solely on ephemeral /tmp storage. During the same governed checkpoint, before depending on later file-level revalidation, retain a sanitized copy in a durable governed evidence directory, persist canonical sanitized repository governance, or record required evidence-file SHA-256 identities and metadata in durable governance before loss. Preserve privacy: never persist raw private HA, inventory or credential data for durability. Hashes and metadata cannot recover lost bytes; record retention and revalidation limits. This rule covers future HIOC production validation checkpoints, without expanding into backup or disaster recovery work.
+
 ## Authoritative Current PE-4 Lifecycle
 
 This section reflects the current project state and is updated at checkpoint
@@ -3550,7 +3572,12 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Adapter Bounded Manual Validation Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | ATTEMPTED / REVIEW REQUIRED |
 | PE-4 Home Assistant Association Adapter Bounded Validation Scope Correction | PASS/CLOSED |
-| PE-4 Home Assistant Association Adapter Post-Run Reconciliation | PREPARED FOR SEPARATE AUTHORIZATION |
+| First Live Adapter Invocation | COMPLETED ONCE / ADAPTER PASS |
+| Historical Wrapper | FAIL / MANUAL REVIEW REQUIRED |
+| Post-Run Reconciliation Attempt 1 | FAIL / HISTORICAL_EVIDENCE |
+| Reconciliation Evidence Authority Correction | PASS/CLOSED |
+| PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation | PREPARED FOR SEPARATE AUTHORIZATION |
+| Second Adapter Execution | NOT AUTHORIZED |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED |
@@ -3795,34 +3822,35 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-**PE-4 Home Assistant Association Adapter Post-Run Reconciliation**.
-Deployment PASS/CLOSED at deployed source `4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2` retains
-five preserved dependencies and nine newly created deployment targets and COMMITTED authority.
-Repository preparation PASS/CLOSED; operator-supplied source sync PASS followed by exactly one
-live adapter invocation. Adapter PASS/rc0, COMPATIBLE/2026.9.4 and valid private publication with
-counts 25/170/26/8/history0. Config/inventory/platform/cron/privacy checks passed.
-Historical wrapper OVERALL_VALIDATION=FAIL/rc1 remains exact because its overbroad global snapshot
-field was FALSE. Directory timestamps and later file churn do not identify the original differing file.
-The [scope correction](PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_CORRECTION.md)
-replaces whole-tree equality with explicit protected production surfaces; no adapter defect is
-established and no second execution is authorized. Codex has performed no production access or run.
+Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
+The first live adapter run completed once (PASS/rc0); historical wrapper FAIL/rc1 and manual
+review remain unchanged. Scope correction PASS/CLOSED was followed by operator-supplied PI3
+source synchronization PASS to d767ad4 and one separately authorized reconciler attempt:
+FAIL at HISTORICAL_EVIDENCE before durable checks. A narrow diagnostic reported
+FileNotFoundError; a separate presence check proved the exact original /tmp directory absent
+and zero matching manual-evidence directories. No disappearance cause is inferred.
+No historical artifacts were recreated. The frozen committed operator report remains available;
+original file metadata, bytes, canonical JSON and cross-file equality are unavailable for
+revalidation. The evidence-authority correction is PASS/CLOSED; durable reconciliation is
+PREPARED FOR SEPARATE AUTHORIZATION and eventual closure must retain the evidence limitation.
+Next operator action: **PI3 source synchronization to the evidence-authority correction commit**,
+STOP, independent review, then separate authorization for read-only durable reconciliation.
+Independent acceptance and scheduler NOT STARTED; projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; rollback NOT PERFORMED; second adapter execution NOT AUTHORIZED.
 
-Bounded Manual Production Validation ATTEMPTED / REVIEW REQUIRED; scope correction PASS/CLOSED;
-Post-Run Reconciliation PREPARED FOR SEPARATE AUTHORIZATION / NOT_PERFORMED. Independent Production
-Acceptance and Scheduler Deployment NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE;
-Phase 7A ACTIVE; rollback NOT PERFORMED.
+Deployment retains five preserved dependencies and nine newly created deployment targets,
+exact deployed source 4912f20d8b2ff78dcdaf8b3e0f52e57d5de5e3a2 and COMMITTED authority.
+Historical config/inventory preservation TRUE remains operator evidence; no execution-time
+comparison is recreated. See [evidence-authority correction](PE4_HOME_ASSISTANT_ASSOCIATION_RECONCILIATION_EVIDENCE_AUTHORITY_CORRECTION.md).
 
 ## Next Planned Task
 
-### PE-4 Home Assistant Association Adapter Post-Run Reconciliation
+### PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation
 
-Next operator action: **PI3 source synchronization to the correction commit**. Synchronize only,
-STOP and independently review. Then separately authorize READ-ONLY reconciliation of existing
-`/tmp/hioc-pe4-ha-association-manual-3ciclqi7` evidence and durable state. No adapter rerun,
-credential acquisition, HA access, production mutation or evidence rewrite. A reconciliation PASS
-requires independent review before a separate repository Bounded Manual Production Validation
-closure. Independent Production Acceptance, Scheduler Deployment and Public Projection retain
-separate later sequencing.
+Next operator action: **PI3 source synchronization to the evidence-authority correction commit**.
+Source synchronization only, STOP, independent review. Second future action requires separate
+read-only reconciliation authorization. Then STOP and independently review before any later
+repository closure retaining the unavailable original-artifact limitation.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 

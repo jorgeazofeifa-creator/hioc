@@ -123,7 +123,7 @@ class PreparationTests(unittest.TestCase):
   self.assertIn('--approved-preparation-commit',block);self.assertIn('return_code=$?',block)
  def test_current_master_lifecycle_and_next_action(self):
   text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');current=text.split('## Current Objective',1)[1].split('### Future Compatibility',1)[0]
-  self.assertIn('Post-Run Reconciliation',current);self.assertIn('PI3 source synchronization to the correction commit',current)
+  self.assertIn('Post-Run Reconciliation',current);self.assertIn('PI3 source synchronization to the evidence-authority correction commit',current)
   table=text.split('## Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
   self.assertIn('| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | ATTEMPTED / REVIEW REQUIRED |',table)
   for name in ('Independent Production Acceptance','Scheduler Deployment'):self.assertIn('| PE-4 Home Assistant Association Adapter '+name+' | NOT STARTED |',table)

@@ -68,7 +68,7 @@ class CorrectionTests(unittest.TestCase):
    x=R[key];raw=subprocess.check_output(['git','show',M.BASE+':'+x['path']],cwd=ROOT);self.assertEqual(raw,(ROOT/x['path']).read_bytes().replace(b'\r\n',b'\n'));self.assertEqual(M.sha(raw),x['sha256'])
  def test_corrected_wrapper_and_reconciler_identity(self):
   for key in ('corrected_wrapper','reconciliation_tool'):
-   x=R[key];b=(ROOT/x['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(M.sha(b),x['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest(),x['git_blob'])
+   x=R[key];b=subprocess.check_output(['git','show','d767ad429ae0573ffb1411ccb787795063ef647c:'+x['path']],cwd=ROOT) if key=='reconciliation_tool' else (ROOT/x['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(M.sha(b),x['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest(),x['git_blob'])
  def test_immutable_deployed_source_identity(self):
   for key in ('module','entrypoint','compatibility','deployment_helper'):
    x=R['sources'][key];raw=subprocess.check_output(['git','show',M.DEPLOYED+':'+x['path']],cwd=ROOT);self.assertEqual(raw,(ROOT/x['path']).read_bytes().replace(b'\r\n',b'\n'));self.assertEqual(M.sha(raw),x['sha256'])
@@ -116,8 +116,8 @@ class CorrectionTests(unittest.TestCase):
  def test_corrected_wrapper_real_authority_blocks_second_run(self):
   source=(ROOT/'tools/hioc-pe4-ha-association-manual-validate.py').read_text(encoding='utf8');gate=source.index("require(record['second_adapter_execution_authorized'] is True)");invoke=source.index('rc,raw=invoke_once(');self.assertLess(gate,invoke);self.assertFalse(R['second_adapter_execution_authorized'])
  def test_current_lifecycle_reconciliation_objective(self):
-  text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');current=text.split('## Current Objective',1)[1].split('### Future Compatibility',1)[0];self.assertIn('**PE-4 Home Assistant Association Adapter Post-Run Reconciliation**',current);self.assertIn('PI3 source synchronization to the correction commit',current)
-  for name,state in [('Bounded Manual Production Validation','ATTEMPTED / REVIEW REQUIRED'),('Bounded Validation Scope Correction','PASS/CLOSED'),('Post-Run Reconciliation','PREPARED FOR SEPARATE AUTHORIZATION')]:self.assertIn('| PE-4 Home Assistant Association Adapter '+name+' | '+state+' |',text)
+  text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');current=text.split('## Current Objective',1)[1].split('### Future Compatibility',1)[0];self.assertIn('**PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**',current);self.assertIn('PI3 source synchronization to the evidence-authority correction commit',current)
+  for name,state in [('Bounded Manual Production Validation','ATTEMPTED / REVIEW REQUIRED'),('Bounded Validation Scope Correction','PASS/CLOSED'),('Durable Post-Run Reconciliation','PREPARED FOR SEPARATE AUTHORIZATION')]:self.assertIn('| PE-4 Home Assistant Association Adapter '+name+' | '+state+' |',text)
  def test_source_sync_and_reconciliation_separate(self):
   self.assertEqual(R['operator_sequence'][:3],['SOURCE_SYNC_ONLY_THEN_STOP','INDEPENDENT_SOURCE_SYNC_REVIEW','SEPARATELY_AUTHORIZE_READ_ONLY_RECONCILIATION']);self.assertEqual(R['next_operator_action'],'PI3 SOURCE SYNCHRONIZATION TO CORRECTION COMMIT')
  def test_codex_negative_evidence_all_false(self):self.assertTrue(all(v is False for v in R['negative_evidence_by_codex'].values()))

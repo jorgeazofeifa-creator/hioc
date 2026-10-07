@@ -3850,3 +3850,25 @@ separately authorize READ-ONLY reconciliation of existing evidence/state without
 Deployment and preparation PASS/CLOSED; Independent Production Acceptance and Scheduler Deployment
 NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED.
 Codex performed no production access/execution/mutation, deployment, scheduler, MQTT or projection.
+
+## 2026-10-07 — PE-4 reconciliation evidence authority
+
+Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
+The first live adapter run completed once (PASS/rc0); historical wrapper FAIL/rc1 and manual
+review remain unchanged. Scope correction PASS/CLOSED was followed by operator-supplied PI3
+source synchronization PASS to d767ad4 and one separately authorized reconciler attempt:
+FAIL at HISTORICAL_EVIDENCE before durable checks. A narrow diagnostic reported
+FileNotFoundError; a separate presence check proved the exact original /tmp directory absent
+and zero matching manual-evidence directories. No disappearance cause is inferred.
+No historical artifacts were recreated. The frozen committed operator report remains available;
+original file metadata, bytes, canonical JSON and cross-file equality are unavailable for
+revalidation. The evidence-authority correction is PASS/CLOSED; durable reconciliation is
+PREPARED FOR SEPARATE AUTHORIZATION and eventual closure must retain the evidence limitation.
+Next operator action: **PI3 source synchronization to the evidence-authority correction commit**,
+STOP, independent review, then separate authorization for read-only durable reconciliation.
+Independent acceptance and scheduler NOT STARTED; projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; rollback NOT PERFORMED; second adapter execution NOT AUTHORIZED.
+
+Closure-critical evidence must not rely solely on ephemeral /tmp storage. During the same governed checkpoint, before depending on later file-level revalidation, retain a sanitized copy in a durable governed evidence directory, persist canonical sanitized repository governance, or record required evidence-file SHA-256 identities and metadata in durable governance before loss. Preserve privacy: never persist raw private HA, inventory or credential data for durability. Hashes and metadata cannot recover lost bytes; record retention and revalidation limits. This rule covers future HIOC production validation checkpoints, without expanding into backup or disaster recovery work.
+
+Details: [evidence-authority correction](docs/PE4_HOME_ASSISTANT_ASSOCIATION_RECONCILIATION_EVIDENCE_AUTHORITY_CORRECTION.md).

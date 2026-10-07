@@ -1,10 +1,12 @@
 """Read-only reconciliation tests use synthetic evidence and pure state validators only."""
-import ast,contextlib,copy,io,json,os,stat,sys,tempfile,unittest
+import ast,contextlib,copy,io,json,os,stat,sys,tempfile,unittest,subprocess,types
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 from test_pe4_ha_association_bounded_manual_validation_correction import ROOT,R,M,D,A,C,module
-N=module('tools/hioc-pe4-ha-association-manual-reconcile.py','synthetic_reconciler')
+HISTORICAL_SOURCE=subprocess.check_output(['git','show','d767ad429ae0573ffb1411ccb787795063ef647c:tools/hioc-pe4-ha-association-manual-reconcile.py'],cwd=ROOT)
+N=types.ModuleType('frozen_historical_reconciler');exec(compile(HISTORICAL_SOURCE,'frozen historical reconciler','exec'),N.__dict__)
+# Historical synthetic fixtures only; no historical files are recreated on disk.
 P=json.loads((ROOT/M.RECORD).read_bytes());H=R['historical_evidence']['report']
 def evidence(h=None):
  h=H if h is None else h
@@ -65,7 +67,7 @@ class ReconciliationTests(unittest.TestCase):
    with patch.object(N.os,'open',side_effect=AssertionError('must reject before opening')):
     with self.assertRaises(N.Stop):N.evidence_input(path,1000)
  def test_fd_reads_no_symlink_creation_or_write_flags(self):
-  tree=ast.parse((ROOT/'tools/hioc-pe4-ha-association-manual-reconcile.py').read_bytes())
+  tree=ast.parse(HISTORICAL_SOURCE)
   calls=[n for n in ast.walk(tree) if isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute) and n.func.attr=='open']
   self.assertEqual(len(calls),3)
   for call in calls:
@@ -100,7 +102,7 @@ class ReconciliationTests(unittest.TestCase):
   with patch.object(M,'protected_snapshot',side_effect=[{'safe':1},{'safe':2}]),patch.object(N,'private_state',return_value=True),patch.object(N,'compatibility_state',return_value=True):
    with self.assertRaises(N.Stop):N.reconcile_checks(M,D,PrivateFS(),{},H,A,C)
  def test_no_adapter_credential_network_or_production_writer_calls(self):
-  tree=ast.parse((ROOT/'tools/hioc-pe4-ha-association-manual-reconcile.py').read_bytes());calls=[ast.unparse(n.func) for n in ast.walk(tree) if isinstance(n,ast.Call)]
+  tree=ast.parse(HISTORICAL_SOURCE);calls=[ast.unparse(n.func) for n in ast.walk(tree) if isinstance(n,ast.Call)]
   for token in ('invoke_once','run_cycle','credential','read_credential','network','connect','socket.socket','StateStore','write_json','update_status','recovery','deploy','unlink','mkdir','os.replace','write_evidence','Popen'):
    self.assertFalse(any(name==token or name.endswith('.'+token) for name in calls),token)
  def test_sanitized_report_rejects_private_values(self):
@@ -109,7 +111,7 @@ class ReconciliationTests(unittest.TestCase):
    bad=dict(report);bad[key]='private household identifier'
    with self.assertRaises(N.Stop):N.report_text(bad)
  def test_reconciler_stdout_only_and_no_repository_closure(self):
-  text=(ROOT/'tools/hioc-pe4-ha-association-manual-reconcile.py').read_text(encoding='utf8');self.assertNotIn('write_bytes',text);self.assertNotIn('write_text',text);self.assertNotIn('tempfile',text);self.assertFalse(R['reconciliation_rules']['repository_closure_automatic'])
+  text=HISTORICAL_SOURCE.decode('utf8');self.assertNotIn('write_bytes',text);self.assertNotIn('write_text',text);self.assertNotIn('tempfile',text);self.assertFalse(R['reconciliation_rules']['repository_closure_automatic'])
  def test_review_only_block_no_sync_execution_or_destructive_shell(self):
   doc=(ROOT/'docs/PE4_HOME_ASSISTANT_ASSOCIATION_BOUNDED_MANUAL_VALIDATION_CORRECTION.md').read_text(encoding='utf8');block=doc.split('```sh',1)[1].split('```',1)[0]
   self.assertIn('--evidence-directory '+N.EVIDENCE,block)

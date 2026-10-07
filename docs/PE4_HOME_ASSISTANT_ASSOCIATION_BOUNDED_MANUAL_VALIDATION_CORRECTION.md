@@ -1,5 +1,24 @@
 # PE-4 Bounded Manual Validation Production-Scope Correction
 
+Successor authority: [PE4_HOME_ASSISTANT_ASSOCIATION_RECONCILIATION_EVIDENCE_AUTHORITY_CORRECTION.md](PE4_HOME_ASSISTANT_ASSOCIATION_RECONCILIATION_EVIDENCE_AUTHORITY_CORRECTION.md). The original review block below is historical and superseded: its missing /tmp argument is not a successor prerequisite. Historical facts and predecessor record remain frozen.
+
+Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation**.
+The first live adapter run completed once (PASS/rc0); historical wrapper FAIL/rc1 and manual
+review remain unchanged. Scope correction PASS/CLOSED was followed by operator-supplied PI3
+source synchronization PASS to d767ad4 and one separately authorized reconciler attempt:
+FAIL at HISTORICAL_EVIDENCE before durable checks. A narrow diagnostic reported
+FileNotFoundError; a separate presence check proved the exact original /tmp directory absent
+and zero matching manual-evidence directories. No disappearance cause is inferred.
+No historical artifacts were recreated. The frozen committed operator report remains available;
+original file metadata, bytes, canonical JSON and cross-file equality are unavailable for
+revalidation. The evidence-authority correction is PASS/CLOSED; durable reconciliation is
+PREPARED FOR SEPARATE AUTHORIZATION and eventual closure must retain the evidence limitation.
+Next operator action: **PI3 source synchronization to the evidence-authority correction commit**,
+STOP, independent review, then separate authorization for read-only durable reconciliation.
+Independent acceptance and scheduler NOT STARTED; projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; rollback NOT PERFORMED; second adapter execution NOT AUTHORIZED.
+
+
 FOR REVIEW ONLY - DO NOT RUN WITHOUT SEPARATE AUTHORIZATION
 
 This repository-only correction follows the first and only authorized live adapter invocation.
