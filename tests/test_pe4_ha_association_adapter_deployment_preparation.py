@@ -22,7 +22,7 @@ COMMIT = "a" * 40
 
 @lru_cache(maxsize=None)
 def source_bytes(path):
-    if path=='tools/hioc-pe4-ha-association-deploy.py':return (ROOT/path).read_bytes()
+    if path in ('tools/hioc-pe4-ha-association-deploy.py','pi4/lib/hioc/home_assistant_association.py'):return (ROOT/path).read_bytes()
     return subprocess.check_output(['git','show',D.BASELINE+':'+path],cwd=ROOT)
 
 
@@ -82,8 +82,8 @@ class DeploymentPreparationTests(unittest.TestCase):
         with self.assertRaises(D.Failure) as e:call()
         self.assertEqual(e.exception.code,code)
     def test_module_exact_identity(self):
-        self.assertEqual(R["deployment_files"][0]["git_blob"],"0c049b7ee19b6b20c3fef53717455ba341d4a149")
-        self.assertEqual(R["deployment_files"][0]["sha256"],"cf04d05f6215b9654539df69797de49a831044795ba8f7f5b3432d9d35a086b9")
+        self.assertEqual(R["deployment_files"][0]["git_blob"],"e71e4c45e21e9f1a25298471b48387cb19f53e1f")
+        self.assertEqual(R["deployment_files"][0]["sha256"],"9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1")
     def test_entrypoint_exact_identity(self):
         self.assertEqual(R["deployment_files"][1]["git_blob"],"2864361fac7cd48e947dac1e4e40aeeeb525adef")
         self.assertEqual(R["deployment_files"][1]["sha256"],"005fae482a4e2c42b48bfb991abf14ddf1d9de60f81169a2ed1573a767958b8c")
@@ -444,15 +444,15 @@ class DeploymentEvidenceCorrectionTests(unittest.TestCase):
         path=ROOT/'governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.json'
         correction=json.loads(path.read_bytes())
         self.assertEqual(path.read_bytes(),D.canonical(correction))
-        self.assertEqual(correction['historical_preparation_commit'],D.BASELINE)
+        self.assertEqual(correction['historical_preparation_commit'],'0040bdc79e66c10db4f180f952d04f97b1070065')
         self.assertEqual(correction['production_deployment_mapping'],D.TRANSACTIONS)
         self.assertEqual(correction['evidence_fields'],R['evidence']['fields'])
         self.assertEqual(correction['required_existing_dependency_policy'],D.REQUIRED_POLICY)
         for key in ('corrected_helper','corrected_preparation_record','corrected_preparation_schema'):
-            item=correction[key];raw=(ROOT/item['path']).read_bytes()
+            item=correction[key];raw=subprocess.check_output(['git','show','2ef66a2d575c923c6939a4cd4d5bb2c8aab2f816:'+item['path']],cwd=ROOT)
             self.assertEqual(D.sha(raw),item['sha256'])
         for key in ('historical_preparation_record','historical_preparation_schema'):
-            item=correction[key];raw=subprocess.check_output(['git','show',D.BASELINE+':'+item['path']],cwd=ROOT)
+            item=correction[key];raw=subprocess.check_output(['git','show','0040bdc79e66c10db4f180f952d04f97b1070065:'+item['path']],cwd=ROOT)
             self.assertEqual(D.sha(raw),item['sha256'])
         schema=json.loads(path.with_suffix('.schema.json').read_bytes())
         def validate(value,node):
@@ -480,3 +480,21 @@ class DeploymentEvidenceCorrectionTests(unittest.TestCase):
 
 
 if __name__ == '__main__':unittest.main()
+
+class RuntimeCustomizationDeploymentTests(unittest.TestCase):
+    def test_reviewed_components_accepted(self):
+        from tests.pe4_runtime_customization_fixtures import observation
+        site=D.ENVIRONMENT/'lib/python3.11/site-packages'
+        with patch.object(D,'SOURCE',ROOT):D.validate_customization(observation(site),site)
+    def test_every_mismatch_rejected_before_intent(self):
+        from tests.pe4_runtime_customization_fixtures import failures
+        site=D.ENVIRONMENT/'lib/python3.11/site-packages'
+        fs=SyntheticFS();m=manifest()
+        for name,bad in failures(site):
+            with self.subTest(name=name),patch.object(D,'SOURCE',ROOT):
+                with self.assertRaises(D.Failure) as caught:D.validate_customization(bad,site)
+                self.assertEqual(caught.exception.code,'RUNTIME_DRIFT')
+                with patch.object(D,'local_prerequisites',return_value=(1000,1000)),patch.object(D,'source_binding',return_value=m),patch.object(D,'NativeFS',return_value=fs),patch.object(D,'prerequisites',side_effect=caught.exception),patch('builtins.print') as output:
+                    self.assertEqual(D.main(['--expected-commit',COMMIT]),1)
+                lines='\n'.join(str(call.args[0]) for call in output.call_args_list)
+                self.assertIn('DEPLOYMENT_TRANSACTION=NOT_STARTED',lines);self.assertIn('PRODUCTION_DEPLOYMENT=NOT_STARTED',lines);self.assertEqual(fs.mutations,[])

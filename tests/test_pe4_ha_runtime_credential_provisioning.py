@@ -693,7 +693,7 @@ class GovernanceTests(unittest.TestCase):
         self.assertIn('"$INSTALL_DIR/" "$BACKUP_DIR/current/"',(ROOT/"release/upgrade.sh").read_text())
         for path in ("pi4/lib/hioc/home_assistant_association.py","pi4/bin/hioc-home-assistant-association.py"):
             self.assertEqual(subprocess.check_output(["git","ls-tree","-r","--name-only",BASE,"--",path],cwd=ROOT),b"")
-            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-predeployment-correction.json").read_bytes())
+            implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-runtime-validation-correction.json").read_bytes())
             binding=next(v for v in implementation["sources"].values() if v["path"]==path)
             self.assertEqual(hashlib.sha256((ROOT/path).read_bytes()).hexdigest(),binding["sha256"])
 

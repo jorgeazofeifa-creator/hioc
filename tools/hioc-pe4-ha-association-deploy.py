@@ -17,7 +17,7 @@ import sys
 
 SOURCE = Path("/home/jazofv1/hioc-release-source")
 HOME = Path("/home/jazofv1/hioc")
-BASELINE = "0040bdc79e66c10db4f180f952d04f97b1070065"
+BASELINE = "2ef66a2d575c923c6939a4cd4d5bb2c8aab2f816"
 RECORD = "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json"
 ENDPOINT = "ws://192.168.100.251:8123/api/websocket"
 CONFIG = "config/hioc.conf"
@@ -413,7 +413,7 @@ def source_binding(expected):
     def git(*args): return command(["/usr/bin/git", "-C", str(SOURCE), *args], "SOURCE_BINDING").decode().strip()
     require(git("rev-parse", "--show-toplevel") == str(SOURCE) and git("branch", "--show-current") == "main", "SOURCE_BINDING")
     require(git("rev-parse", "HEAD") == git("rev-parse", "origin/main") == expected and
-            git("rev-parse", "HEAD^") == BASELINE and git("log", "-1", "--format=%s") == "PE-4: harden association deployment evidence", "SOURCE_BINDING")
+            git("rev-parse", "HEAD^") == BASELINE and git("log", "-1", "--format=%s") == "PE-4: align runtime validation with accepted environment", "SOURCE_BINDING")
     require(git("rev-list", "--left-right", "--count", "HEAD...origin/main") == "0\t0" and
             git("status", "--porcelain=v1", "--untracked-files=all") == "", "SOURCE_BINDING")
     for op in ("MERGE_HEAD", "REBASE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "BISECT_LOG", "rebase-apply", "rebase-merge", "sequencer"):
@@ -443,6 +443,36 @@ def local_prerequisites():
     require(not any(k.startswith(("HIOC_", "MQTT_")) or k.lower() in {"pi4_tools_home", "http_proxy", "https_proxy", "all_proxy", "no_proxy"} for k in os.environ), "INVALID")
     return user.pw_uid, group.gr_gid
 
+RUNTIME_POLICY_MODULE_SHA = "9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1"
+RUNTIME_POLICY_FUNCTIONS = {"validate_runtime_customization", "runtime_directory",
+    "runtime_file_observation", "runtime_customization_observation"}
+
+def runtime_validation_source():
+    """Extract only reviewed pure policy/observation definitions; no adapter import/run."""
+    import ast
+    raw = (SOURCE / "pi4/lib/hioc/home_assistant_association.py").read_bytes()
+    require(len(raw) <= LIMIT and sha(raw) == RUNTIME_POLICY_MODULE_SHA, "RUNTIME_DRIFT")
+    tree = ast.parse(raw)
+    selected = []
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name in RUNTIME_POLICY_FUNCTIONS:
+            selected.append(node)
+        elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name) and node.targets[0].id == "CUSTOMIZATION_POLICY":
+            ast.literal_eval(node.value); selected.append(node)
+    require(len(selected) == len(RUNTIME_POLICY_FUNCTIONS) + 1, "RUNTIME_DRIFT")
+    return ast.unparse(ast.Module(body=selected, type_ignores=[]))
+
+def runtime_policy_namespace():
+    import contextlib
+    namespace = {"os": os, "stat": stat, "sys": sys, "Path": Path,
+                 "hashlib": hashlib, "contextlib": contextlib}
+    exec(compile(runtime_validation_source(), "reviewed runtime policy", "exec"), namespace)
+    return namespace
+
+def validate_customization(observation, site):
+    try: runtime_policy_namespace()["validate_runtime_customization"](observation, site)
+    except BaseException: raise Failure("RUNTIME_DRIFT") from None
+
 def prerequisites():
     # Read-only crontab inspection, never install/remove a job.
     result = subprocess.run(["/usr/bin/crontab", "-l"], env=ENV, stdin=subprocess.DEVNULL, capture_output=True, timeout=5)
@@ -451,8 +481,17 @@ def prerequisites():
     no_scheduler(result.stdout)
     site = ENVIRONMENT / "lib/python3.11/site-packages"
     require((HOME / "runtime/pe4/active").is_symlink() and (HOME / "runtime/pe4/active").resolve() == ENVIRONMENT and
-            not list(site.glob("*.pth")) and not (site / "sitecustomize.py").exists() and not (site / "usercustomize.py").exists(), "RUNTIME_DRIFT")
-    probe = """import sys,platform,sysconfig,json,importlib.util,importlib.metadata
+            (ENVIRONMENT / "bin/python").exists(), "RUNTIME_DRIFT")
+    # Validate files before starting the accepted -I -B interpreter. The -S bootstrap
+    # has no loaded site module; the child independently proves the actual module.
+    try:
+        namespace = runtime_policy_namespace()
+        observed = namespace["runtime_customization_observation"](site)
+        observed["site_loaded"] = True
+        observed["site_module"] = namespace["CUSTOMIZATION_POLICY"]["site_module"]
+        namespace["validate_runtime_customization"](observed, site)
+    except BaseException: raise Failure("RUNTIME_DRIFT") from None
+    probe = "import os,stat,hashlib,contextlib,sys\nfrom pathlib import Path\n" + runtime_validation_source() + "\n" + """import sys,platform,sysconfig,json,importlib.util,importlib.metadata
 from pathlib import Path
 site=Path(sys.prefix)/'lib/python3.11/site-packages'
 spec=importlib.util.find_spec('websockets')
@@ -462,7 +501,8 @@ paths={Path('/usr/lib/python311.zip'),Path('/usr/lib/python3.11'),Path('/usr/lib
 if valid:
  import websockets
  valid=websockets.__version__=='16.1.1' and Path(websockets.__file__).resolve()==site/'websockets/__init__.py'
-valid=valid and all(Path(p).resolve() in paths for p in sys.path) and 'sitecustomize' not in sys.modules and 'usercustomize' not in sys.modules
+validate_runtime_customization(runtime_customization_observation(site),site)
+valid=valid and all(Path(p).resolve() in paths for p in sys.path) and 'usercustomize' not in sys.modules
 print(json.dumps(dict(implementation=sys.implementation.name,python='.'.join(map(str,sys.version_info[:3])),architecture=platform.machine(),soabi=sysconfig.get_config_var('SOABI'),websockets=d.get('websockets'),prefix=str(Path(sys.prefix).resolve()),executable=str(Path(sys.executable).absolute()),isolated=bool(sys.flags.isolated),bytecode_disabled=bool(sys.flags.dont_write_bytecode),origins_valid=valid,distributions_valid=set(d)<= {'websockets','pip','setuptools'})))
 """
     runtime_identity(json.loads(command([str(INTERPRETER), "-I", "-B", "-c", probe], "RUNTIME_DRIFT")))

@@ -21,6 +21,7 @@ from hioc import home_assistant_association as a
 from hioc.core import compatibility as c
 from tests.test_pe4_0c1_association_lifecycle import reference_cycle
 from tests.test_pe4_ha_runtime_credential_provisioning import FixtureFS,GID
+from tests.pe4_runtime_customization_fixtures import observation, failures
 SCHEMA=json.loads((ROOT/a.SCHEMA_PATH).read_bytes())
 REGISTRY=c.load_registry(ROOT/"governance/compatibility-contracts.json")
 A,B="dev_0123456789abcdef","dev_1111111111111111"
@@ -476,7 +477,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
   correction=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-predeployment-correction.json").read_bytes())
   correction_schema=json.loads((ROOT/"governance/pe4/pe4-ha-association-adapter-predeployment-correction.schema.json").read_bytes())
   a.check_schema_contract(correction_schema);a.validate_schema(correction,correction_schema)
-  for binding in correction["sources"].values():self.assertEqual(a.digest((ROOT/binding["path"]).read_bytes()),binding["sha256"])
+  for binding in correction["sources"].values():self.assertEqual(a.digest(subprocess.check_output(["git","show","5e9d1ff3d74bb22c6cc0c4f726517c1d0b86d7f2:"+binding["path"]],cwd=ROOT)),binding["sha256"])
   for path,binding in record["authorities"].items():
    if path!="docs/HIOC_MASTER_PLAN.md":self.assertEqual(a.digest((ROOT/path).read_bytes()),binding["sha256"])
   bad=copy.deepcopy(record);bad["production_execution"]=True
@@ -513,13 +514,13 @@ class PreflightTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as root:
    home=Path(root).resolve();env=home/"runtime/pe4/environments/cpython311-websockets16.1.1-lock-v1";site=env/"lib/python3.11/site-packages";site.mkdir(parents=True);interpreter=home/"runtime/pe4/active/bin/python"
    module=SimpleNamespace(__version__="16.1.1",__file__=str(site/"websockets/__init__.py"));distribution=SimpleNamespace(metadata={"Name":"websockets"},version="16.1.1")
-   for change in ({},{"version":(3,11,3)},{"machine":"x86_64"},{"soabi":"wrong"},{"isolated":0},{"bytecode":0},{"pth":True},{"websockets":"wrong"}):
+   for change in ({},{"version":(3,11,3)},{"machine":"x86_64"},{"soabi":"wrong"},{"isolated":0},{"bytecode":0},{"pth":True},{"websockets":"wrong"},{"prefix":"wrong"},{"executable":"wrong"},{"path":"wrong"},{"distribution":"extra"},{"origin":"wrong"}):
     pth=site/"unreviewed.pth"
     if change.get("pth"):pth.write_text("SYNTHETIC_UNREVIEWED")
     elif pth.exists():pth.unlink()
     module.__version__=change.get("websockets","16.1.1")
     flags=SimpleNamespace(isolated=change.get("isolated",1),dont_write_bytecode=change.get("bytecode",1))
-    with patch.object(a,"HOME",home),patch.object(a,"ENVIRONMENT",env),patch.object(a,"INTERPRETER",interpreter),patch.object(a.sys,"prefix",str(env)),patch.object(a.sys,"executable",str(interpreter)),patch.object(a.sys,"version_info",change.get("version",(3,11,2))),patch.object(a.sys,"flags",flags),patch.object(a.sys,"path",[str(site),str(home/"pi4/lib")]),patch.object(platform,"machine",return_value=change.get("machine","aarch64")),patch.object(sysconfig,"get_config_var",return_value=change.get("soabi","cpython-311-aarch64-linux-gnu")),patch.object(importlib.util,"find_spec",return_value=SimpleNamespace(origin=str(site/"websockets/__init__.py"))),patch.object(importlib.metadata,"distributions",return_value=[distribution]),patch.dict(sys.modules,{"websockets":module}),patch.object(a,"identities",return_value=123):
+    with patch.object(a,"HOME",home),patch.object(a,"ENVIRONMENT",env),patch.object(a,"INTERPRETER",interpreter),patch.object(a.sys,"prefix",change.get("prefix",str(env))),patch.object(a.sys,"executable",change.get("executable",str(interpreter))),patch.object(a.sys,"version_info",change.get("version",(3,11,2))),patch.object(a.sys,"flags",flags),patch.object(a.sys,"path",[change.get("path",str(site)),str(home/"pi4/lib")]),patch.object(platform,"machine",return_value=change.get("machine","aarch64")),patch.object(sysconfig,"get_config_var",return_value=change.get("soabi","cpython-311-aarch64-linux-gnu")),patch.object(importlib.util,"find_spec",return_value=SimpleNamespace(origin=change.get("origin",str(site/"websockets/__init__.py")))),patch.object(importlib.metadata,"distributions",return_value=[distribution]+([SimpleNamespace(metadata={"Name":"extra"},version="1")] if change.get("distribution") else [])),patch.dict(sys.modules,{"websockets":module}),patch.object(a,"identities",return_value=123),patch.object(a,"runtime_customization_observation",return_value=dict(observation(site),pth_names=["unreviewed.pth"]) if change.get("pth") else observation(site)):
      if change:
       with self.assertRaises(a.Failure):a.Runtime().runtime()
      else:a.Runtime().runtime()
@@ -669,3 +670,22 @@ class CorrectionBoundaryTests(unittest.TestCase):
     return info
    with patch.object(fs,"lstat",side_effect=drift):result=a.run_cycle(rt)
    self.assertIn("STATE_PUBLICATION_FAILED",result);self.assertIn("LAST_KNOWN_GOOD_PRESERVED=TRUE",result);self.assertNotIn("CREDENTIAL_ACQUISITION_FAILED",result);self.assertEqual((fs.root/"home_assistant.json").read_bytes(),old)
+
+class RuntimeCustomizationTests(unittest.TestCase):
+ def test_reviewed_components_accepted(self):
+  site=a.ENVIRONMENT/'lib/python3.11/site-packages';a.validate_runtime_customization(observation(site),site)
+ def test_all_customization_mismatches_rejected(self):
+  site=a.ENVIRONMENT/'lib/python3.11/site-packages'
+  for name,bad in failures(site):
+   with self.subTest(name=name),self.assertRaises(ValueError):a.validate_runtime_customization(bad,site)
+ def test_runtime_failure_precedes_secret_network_publication(self):
+  with tempfile.TemporaryDirectory() as root:
+   fs=TemporaryFS(root);rt=SyntheticRuntime(fs)
+   def invalid_runtime():
+    import platform,sysconfig
+    flags=SimpleNamespace(isolated=1,dont_write_bytecode=1)
+    with patch.object(a.sys,'version_info',(3,11,2)),patch.object(a.sys,'flags',flags),patch.object(a.sys,'prefix',str(a.ENVIRONMENT)),patch.object(a.sys,'executable',str(a.INTERPRETER)),patch.object(Path,'resolve',return_value=a.ENVIRONMENT),patch.object(Path,'absolute',return_value=a.INTERPRETER),patch.object(platform,'machine',return_value='aarch64'),patch.object(sysconfig,'get_config_var',return_value='cpython-311-aarch64-linux-gnu'),patch.object(a,'runtime_customization_observation',return_value=dict(observation(a.ENVIRONMENT/'lib/python3.11/site-packages'),user_loaded=True)):
+     a.Runtime().runtime()
+   with patch.object(rt,'runtime',side_effect=invalid_runtime):result=a.run_cycle(rt)
+   self.assertIn('ERROR_CODE=RUNTIME_VALIDATION_FAILED',result);self.assertIn('FAILURE_STAGE=RUNTIME_VALIDATION',result)
+   self.assertNotIn('CREDENTIAL_ACQUISITION',rt.calls);self.assertNotIn('HA_CONNECTION',rt.calls);self.assertFalse((fs.root/'home_assistant.json').exists())

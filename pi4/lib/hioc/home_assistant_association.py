@@ -1063,6 +1063,153 @@ async def network(token, observation, connector=None, socket_factory=socket.sock
         if sock is not None: sock.close()
 
 
+CUSTOMIZATION_POLICY = {
+    "pth_name": "distutils-precedence.pth",
+    "pth_bytes": b"import os; var = 'SETUPTOOLS_USE_DISTUTILS'; enabled = os.environ.get(var, 'local') == 'local'; enabled and __import__('_distutils_hack').add_shim(); \n",
+    "pth_sha256": "2638ce9e2500e572a5e0de7faed6661eb569d1b696fcba07b0dd223da5f5d224",
+    "pth_record_hash": "JjjOniUA5XKl4N5_rtZmHrVp0baW_LoHsN0iPaX10iQ",
+    "site_module": "/usr/lib/python3.11/sitecustomize.py",
+    "site_target": "/etc/python3.11/sitecustomize.py",
+    "site_bytes": b"# install the apport exception handler if available\ntry:\n    import apport_python_hook\nexcept ImportError:\n    pass\nelse:\n    apport_python_hook.install()\n",
+    "site_sha256": "43d81125d92376b1a69d53a71126a041cc9a18d8080e92dea0a2ae23be138b1e",
+}
+
+
+def validate_runtime_customization(observation, site_path):
+    """Pure exact trust policy, also used by the source-bound deployment probe."""
+    policy = CUSTOMIZATION_POLICY
+    def check(condition):
+        if not condition: raise ValueError("UNREVIEWED_RUNTIME_CUSTOMIZATION")
+    check(type(observation) is dict)
+    check(observation["pth_names"] == [policy["pth_name"]])
+    pth = observation["pth"]
+    check(pth["path"] == str(site_path / policy["pth_name"]) and pth["type"] == "REGULAR" and
+          pth["owner"] == pth["group"] == "jazofv1" and pth["mode"] == 0o640 and
+          pth["links"] == 1 and pth["size"] == 151 and
+          pth["sha256"] == policy["pth_sha256"] and pth["bytes"] == policy["pth_bytes"])
+    check(observation["setuptools_version"] == "66.1.1")
+    check(observation["pth_records"] == [{"path": policy["pth_name"], "size": 151,
+          "hash_mode": "sha256", "hash_value": policy["pth_record_hash"],
+          "located_path": str(site_path / policy["pth_name"])}])
+    check(observation["site_loaded"] is True and observation["site_module"] == policy["site_module"])
+    link = observation["site_link"]
+    check(link["path"] == policy["site_module"] and link["type"] == "SYMLINK" and
+          link["owner"] == link["group"] == "root" and link["target"] == policy["site_target"] and
+          link["resolved"] == policy["site_target"])
+    target = observation["site_target"]
+    check(target["path"] == policy["site_target"] and target["type"] == "REGULAR" and
+          target["owner"] == target["group"] == "root" and target["mode"] == 0o644 and
+          target["links"] == 1 and target["size"] == 155 and
+          target["sha256"] == policy["site_sha256"] and target["bytes"] == policy["site_bytes"])
+    check(observation["user_loaded"] is False and observation["user_files"] == [])
+
+
+@contextlib.contextmanager
+def runtime_directory(path):
+    """Pin each real directory; the one reviewed sitecustomize link is handled separately."""
+    import pwd
+    operator_uid = pwd.getpwnam("jazofv1").pw_uid
+    fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    chain = []
+    try:
+        for part in Path(path).parts[1:]:
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=fd)
+            chain.append((fd, part, child)); fd = child
+            info = os.fstat(fd)
+            if info.st_uid not in (0, operator_uid) or stat.S_IMODE(info.st_mode) & 0o7022:
+                raise ValueError("UNSAFE_RUNTIME_DIRECTORY")
+        yield fd
+        for parent, name, child in chain:
+            held = os.fstat(child); named = os.stat(name, dir_fd=parent, follow_symlinks=False)
+            if (held.st_dev, held.st_ino) != (named.st_dev, named.st_ino):
+                raise ValueError("RUNTIME_DIRECTORY_BINDING")
+    finally:
+        for parent, _, _ in reversed(chain): os.close(parent)
+        os.close(fd)
+
+
+def runtime_file_observation(path):
+    """Bounded no-follow FD read and metadata/name recheck; no mutation or credential access."""
+    import pwd, grp
+    path = Path(path)
+    with runtime_directory(path.parent) as parent:
+        fd = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC, dir_fd=parent)
+        try:
+            before = os.fstat(fd)
+            if not stat.S_ISREG(before.st_mode) or before.st_size > 512: raise ValueError("RUNTIME_FILE_TYPE")
+            raw = bytearray()
+            while len(raw) <= 512:
+                part = os.read(fd, 513 - len(raw))
+                if not part: break
+                raw.extend(part)
+            after = os.fstat(fd); named = os.stat(path.name, dir_fd=parent, follow_symlinks=False)
+            fields = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+            if any(getattr(before,k) != getattr(after,k) for k in fields) or len(raw) != before.st_size or len(raw) > 512 or (named.st_dev,named.st_ino) != (after.st_dev,after.st_ino):
+                raise ValueError("RUNTIME_FILE_CHANGED")
+            raw = bytes(raw)
+            return {"path": str(path), "type": "REGULAR", "owner": pwd.getpwuid(before.st_uid).pw_name,
+                    "group": grp.getgrgid(before.st_gid).gr_name, "mode": stat.S_IMODE(before.st_mode),
+                    "links": before.st_nlink, "size": before.st_size, "bytes": raw,
+                    "sha256": hashlib.sha256(raw).hexdigest()}
+        finally: os.close(fd)
+
+
+def runtime_customization_observation(site_path):
+    import pwd, grp
+    import importlib.metadata
+    policy = CUSTOMIZATION_POLICY
+    site_path = Path(site_path)
+    with runtime_directory(site_path) as parent:
+        names = os.listdir(parent)
+        if len(names) > 4096: raise ValueError("RUNTIME_DIRECTORY_BOUND")
+        pths = sorted(n for n in names if n.endswith(".pth"))
+    # Precheck the namespace before reading its reviewed member.
+    if pths != [policy["pth_name"]]: raise ValueError("UNREVIEWED_PTH_NAMESPACE")
+    distributions = list(importlib.metadata.distributions(path=[str(site_path)]))
+    setuptools = [d for d in distributions if d.metadata["Name"].lower().replace("_", "-") == "setuptools"]
+    if len(setuptools) != 1: raise ValueError("SETUPTOOLS_METADATA")
+    distribution = setuptools[0]
+    records = []
+    for entry in distribution.files or []:
+        if str(entry) == policy["pth_name"]:
+            records.append({"path": str(entry), "size": entry.size,
+                "hash_mode": getattr(entry.hash, "mode", None), "hash_value": getattr(entry.hash, "value", None),
+                "located_path": str(Path(distribution.locate_file(entry)).absolute())})
+    module_path = Path(policy["site_module"])
+    with runtime_directory(module_path.parent) as parent:
+        before = os.stat(module_path.name, dir_fd=parent, follow_symlinks=False)
+        if not stat.S_ISLNK(before.st_mode): raise ValueError("UNREVIEWED_SITE_LINK")
+        target = os.readlink(module_path.name, dir_fd=parent)
+        after = os.stat(module_path.name, dir_fd=parent, follow_symlinks=False)
+        if any(getattr(before,k) != getattr(after,k) for k in ("st_dev","st_ino","st_mode","st_uid","st_gid","st_mtime_ns","st_ctime_ns")) or os.readlink(module_path.name, dir_fd=parent) != target:
+            raise ValueError("SITE_LINK_CHANGED")
+        link = {"path": str(module_path), "type": "SYMLINK", "owner": pwd.getpwuid(before.st_uid).pw_name,
+                "group": grp.getgrgid(before.st_gid).gr_name, "target": target, "resolved": str(module_path.resolve())}
+    if target != policy["site_target"]: raise ValueError("UNREVIEWED_SITE_DESTINATION")
+    user_files = []
+    for parent_path in (*sys.path, str(site_path)):
+        parent = Path(parent_path)
+        if not parent.is_dir(): continue
+        # No usercustomize module, source, bytecode or package is authorized.
+        for name in ("usercustomize.py", "usercustomize.pyc", "usercustomize"):
+            candidate = parent / name
+            if candidate.exists() or candidate.is_symlink(): user_files.append(str(candidate))
+    pth_observation = runtime_file_observation(site_path / policy["pth_name"])
+    target_observation = runtime_file_observation(policy["site_target"])
+    with runtime_directory(site_path) as parent:
+        if sorted(n for n in os.listdir(parent) if n.endswith(".pth")) != pths: raise ValueError("PTH_NAMESPACE_CHANGED")
+    with runtime_directory(module_path.parent) as parent:
+        final = os.stat(module_path.name, dir_fd=parent, follow_symlinks=False)
+        if any(getattr(before,k) != getattr(final,k) for k in ("st_dev","st_ino","st_mode","st_uid","st_gid","st_mtime_ns","st_ctime_ns")) or os.readlink(module_path.name, dir_fd=parent) != target:
+            raise ValueError("SITE_LINK_CHANGED")
+    return {"pth_names": pths, "pth": pth_observation,
+            "setuptools_version": distribution.version, "pth_records": records,
+            "site_loaded": "sitecustomize" in sys.modules,
+            "site_module": getattr(sys.modules.get("sitecustomize"), "__file__", None),
+            "site_link": link, "site_target": target_observation,
+            "user_loaded": "usercustomize" in sys.modules, "user_files": sorted(set(user_files))}
+
+
 class Runtime:
     """Production adapter dependencies; no command-line overrides."""
     def __init__(self):
@@ -1099,7 +1246,8 @@ class Runtime:
                 sys.flags.isolated and sys.flags.dont_write_bytecode and Path(sys.prefix).resolve() == ENVIRONMENT and
                 Path(sys.executable).absolute() == INTERPRETER, "RUNTIME_VALIDATION")
         site = ENVIRONMENT / "lib/python3.11/site-packages"
-        require(not list(site.glob("*.pth")) and "sitecustomize" not in sys.modules and "usercustomize" not in sys.modules, "RUNTIME_VALIDATION")
+        try: validate_runtime_customization(runtime_customization_observation(site), site)
+        except BaseException: raise Failure("RUNTIME_VALIDATION") from None
         spec = importlib.util.find_spec("websockets")
         require(spec is not None and spec.origin is not None and Path(spec.origin).resolve() == site / "websockets/__init__.py", "RUNTIME_VALIDATION")
         for item in sys.path:

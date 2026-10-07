@@ -1,3 +1,78 @@
+## Accepted runtime validation correction — 2026-10-06
+
+Runtime Validation Correction PASS/CLOSED. **OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE**:
+the first Deployment Execution block was attempted once at
+`2ef66a2d575c923c6939a4cd4d5bb2c8aab2f816` and failed safely with RUNTIME_DRIFT.
+Deployment transaction and production deployment both remained NOT_STARTED. No production
+adapter files, endpoint configuration, association state directory, credential/network
+access, scheduler or rollback resulted. Codex did not collect the live evidence or access
+PI3. The operator evidence established reviewed startup customization in the unchanged
+accepted runtime. Blanket rejection implemented the frozen “no unreviewed customization”
+policy too strictly; the correction permits only the exact reviewed identities below.
+
+The [runtime correction record](../governance/pe4/pe4-ha-association-runtime-validation-correction.json)
+and [closed schema](../governance/pe4/pe4-ha-association-runtime-validation-correction.schema.json)
+bind current source identities and operator provenance. All prior commits and closed
+historical records remain immutable. The accepted environment, active symlink, CPython
+3.11.2/aarch64/SOABI, websockets 16.1.1 and its origin, sys.path bounds, package bounds and
+launch **-I -B** remain unchanged. No runtime mutation occurred.
+
+Exactly one site-packages .pth is required: distutils-precedence.pth, regular/no symlink,
+jazofv1:jazofv1, 0640, one link, 151 bytes, SHA-256
+`2638ce9e2500e572a5e0de7faed6661eb569d1b696fcba07b0dd223da5f5d224`.
+Exact content includes the trailing space before LF. Setuptools 66.1.1 must record the
+same basename, location, size and sha256 distribution hash
+`JjjOniUA5XKl4N5_rtZmHrVp0baW_LoHsN0iPaX10iQ`. No other .pth is allowed.
+
+sitecustomize must be loaded from `/usr/lib/python3.11/sitecustomize.py`, an exact root:root
+symlink to `/etc/python3.11/sitecustomize.py`. The target must be regular root:root,
+0644, one link, 155 bytes, exact reviewed content and SHA-256
+`43d81125d92376b1a69d53a71126a041cc9a18d8080e92dea0a2ae23be138b1e`.
+Debian package/version and successful dpkg verification are operator provenance only;
+exact filesystem/module identities are the trust anchors. usercustomize remains prohibited,
+loaded or present. Neither customization file is deleted or rewritten.
+
+The adapter and deployment helper use the same literal policy and pure validator. The
+helper checks the adapter source SHA-256 and extracts only the literal policy plus four
+validation/observation definitions through AST; it does not import the adapter, execute
+Runtime/run_cycle/main or invoke network operations. This avoids an extra runtime module
+or deployment target. Native bounded no-follow reads pin directory and file bindings,
+recheck metadata and symlink destination, and feed the pure validator. Deployment verifies
+filesystem properties in its stdlib bootstrap before the accepted -I -B child probe,
+which independently verifies the actually loaded module. The bootstrap's existing -S is
+not an adapter launch change. Any mismatch fails adapter RUNTIME_VALIDATION_FAILED at
+RUNTIME_VALIDATION before credential/network/publication; deployment RUNTIME_DRIFT before
+intent or production mutation, with NOT_STARTED transaction/deployment evidence.
+
+The correction record is governance-only: Runtime.contracts() still consumes exactly six
+existing governance files. Eight additive A/C targets and six preserved B dependencies
+remain unchanged in number. B policy remains
+REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED.
+
+Validation: adapter 73; deployment preparation 74; correction 8; other regressions 275.
+Total 430 run, 429 passed, one existing release skip because rsync is unavailable on Windows.
+Important runtime logic uses deterministic fixtures and injected Linux metadata, with no
+Windows skip. Syntax, import safety, canonical closed schemas, links, source identities,
+privacy/prohibited-operation review and diff checks are repository-only.
+
+Adapter Implementation PASS/CLOSED, corrected before deployment; Runtime Validation
+Correction PASS/CLOSED; Deployment Preparation PASS/CLOSED, corrected before execution
+and rebound to current source. Deployment, Bounded Manual Production Validation,
+Independent Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection
+DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; Rollback NOT PERFORMED.
+Next: **PE-4 Home Assistant Association Adapter Deployment Execution**. Stop after
+repository correction; the regenerated deployment block remains FOR REVIEW ONLY.
+
+### Current corrected executable identities
+
+| Source | Git blob | SHA-256 |
+| --- | --- | --- |
+| `tools/hioc-pe4-ha-association-deploy.py` | `7b2a058d97798f071c7f08d0b017b9409753f178` | `de9acf1504452bd6280cf410aa6aa1be4ae2b9f8f6fb77befa2d30ec07fc8bc8` |
+| `pi4/bin/hioc-home-assistant-association.py` | `2864361fac7cd48e947dac1e4e40aeeeb525adef` | `005fae482a4e2c42b48bfb991abf14ddf1d9de60f81169a2ed1573a767958b8c` |
+| `pi4/lib/hioc/home_assistant_association.py` | `e71e4c45e21e9f1a25298471b48387cb19f53e1f` | `9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1` |
+
+Historical adapter identity at 5e9d1ff3: blob `0c049b7ee19b6b20c3fef53717455ba341d4a149`, SHA-256 `cf04d05f6215b9654539df69797de49a831044795ba8f7f5b3432d9d35a086b9`. Superseded for current execution; retained as historical evidence.
+
 ## Current deployment preparation pointer
 
 Deployment Preparation PASS/CLOSED; the current next checkpoint is
@@ -5,11 +80,11 @@ Deployment Preparation PASS/CLOSED; the current next checkpoint is
 [Deployment preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_DEPLOYMENT_PREPARATION.md)
 owns the FOR REVIEW ONLY operator block. Deployment remains NOT STARTED. The earlier
 checkpoint closure narratives below preserve their historical sequencing and validation;
-corrected executable identities and immutable records remain unchanged.
+historical records remain unchanged; the runtime correction below supersedes executable identities.
 
 # PE-4 Home Assistant Association Adapter Implementation
 
-## Current pre-deployment correction — 2026-10-06
+## Historical pre-deployment correction — 2026-10-06
 
 Adapter Implementation PASS/CLOSED, corrected before deployment. Original implementation
 commit `0bdb9340157daba4a6948251922d762cc4fc97ff` passed repository tests but received
@@ -18,7 +93,7 @@ validation and shared filesystem helpers capable of misclassifying state failure
 No deployment or production adapter execution/authentication occurred before correction.
 The [current correction record](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json)
 and [closed schema](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.schema.json)
-bind the CURRENT executable identities. The original implementation record/schema
+bind the historical 5e9d1ff3 executable identities. The original implementation record/schema
 and original commit remain unchanged historical evidence; their source bindings are
 historical, not current executable identities.
 
@@ -46,7 +121,7 @@ therefore require reviewed exact two-string pairs, bounded/nonempty strings, and
 share the 128-name transport counter. They are never MAC-indexed, matched or persisted.
 Connection MAC decision semantics and all other frozen identity/lifecycle rules are unchanged.
 
-Current focused validation: 70 tests passed, including 10 new correction tests with
+Historical focused validation: 70 tests passed, including 10 new correction tests with
 separate envelope cases, real production ACL/name helpers, native lock validation,
 recovery/publication stage assertions, exact LKG/absence and namespace boundaries.
 Regressions: 275 run, 274 passed, one existing rsync-unavailable release skip.

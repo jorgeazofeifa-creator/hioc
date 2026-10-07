@@ -1,7 +1,82 @@
+## Accepted runtime validation correction — 2026-10-06
+
+Runtime Validation Correction PASS/CLOSED. **OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE**:
+the first Deployment Execution block was attempted once at
+`2ef66a2d575c923c6939a4cd4d5bb2c8aab2f816` and failed safely with RUNTIME_DRIFT.
+Deployment transaction and production deployment both remained NOT_STARTED. No production
+adapter files, endpoint configuration, association state directory, credential/network
+access, scheduler or rollback resulted. Codex did not collect the live evidence or access
+PI3. The operator evidence established reviewed startup customization in the unchanged
+accepted runtime. Blanket rejection implemented the frozen “no unreviewed customization”
+policy too strictly; the correction permits only the exact reviewed identities below.
+
+The [runtime correction record](../governance/pe4/pe4-ha-association-runtime-validation-correction.json)
+and [closed schema](../governance/pe4/pe4-ha-association-runtime-validation-correction.schema.json)
+bind current source identities and operator provenance. All prior commits and closed
+historical records remain immutable. The accepted environment, active symlink, CPython
+3.11.2/aarch64/SOABI, websockets 16.1.1 and its origin, sys.path bounds, package bounds and
+launch **-I -B** remain unchanged. No runtime mutation occurred.
+
+Exactly one site-packages .pth is required: distutils-precedence.pth, regular/no symlink,
+jazofv1:jazofv1, 0640, one link, 151 bytes, SHA-256
+`2638ce9e2500e572a5e0de7faed6661eb569d1b696fcba07b0dd223da5f5d224`.
+Exact content includes the trailing space before LF. Setuptools 66.1.1 must record the
+same basename, location, size and sha256 distribution hash
+`JjjOniUA5XKl4N5_rtZmHrVp0baW_LoHsN0iPaX10iQ`. No other .pth is allowed.
+
+sitecustomize must be loaded from `/usr/lib/python3.11/sitecustomize.py`, an exact root:root
+symlink to `/etc/python3.11/sitecustomize.py`. The target must be regular root:root,
+0644, one link, 155 bytes, exact reviewed content and SHA-256
+`43d81125d92376b1a69d53a71126a041cc9a18d8080e92dea0a2ae23be138b1e`.
+Debian package/version and successful dpkg verification are operator provenance only;
+exact filesystem/module identities are the trust anchors. usercustomize remains prohibited,
+loaded or present. Neither customization file is deleted or rewritten.
+
+The adapter and deployment helper use the same literal policy and pure validator. The
+helper checks the adapter source SHA-256 and extracts only the literal policy plus four
+validation/observation definitions through AST; it does not import the adapter, execute
+Runtime/run_cycle/main or invoke network operations. This avoids an extra runtime module
+or deployment target. Native bounded no-follow reads pin directory and file bindings,
+recheck metadata and symlink destination, and feed the pure validator. Deployment verifies
+filesystem properties in its stdlib bootstrap before the accepted -I -B child probe,
+which independently verifies the actually loaded module. The bootstrap's existing -S is
+not an adapter launch change. Any mismatch fails adapter RUNTIME_VALIDATION_FAILED at
+RUNTIME_VALIDATION before credential/network/publication; deployment RUNTIME_DRIFT before
+intent or production mutation, with NOT_STARTED transaction/deployment evidence.
+
+The correction record is governance-only: Runtime.contracts() still consumes exactly six
+existing governance files. Eight additive A/C targets and six preserved B dependencies
+remain unchanged in number. B policy remains
+REQUIRED_EXISTING_EXACT_PRESERVE_ABSENT_OR_DIFFERENT_FAIL_CLOSED.
+
+Validation: adapter 73; deployment preparation 74; correction 8; other regressions 275.
+Total 430 run, 429 passed, one existing release skip because rsync is unavailable on Windows.
+Important runtime logic uses deterministic fixtures and injected Linux metadata, with no
+Windows skip. Syntax, import safety, canonical closed schemas, links, source identities,
+privacy/prohibited-operation review and diff checks are repository-only.
+
+Adapter Implementation PASS/CLOSED, corrected before deployment; Runtime Validation
+Correction PASS/CLOSED; Deployment Preparation PASS/CLOSED, corrected before execution
+and rebound to current source. Deployment, Bounded Manual Production Validation,
+Independent Production Acceptance and Scheduler Deployment NOT STARTED; Public Projection
+DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; Rollback NOT PERFORMED.
+Next: **PE-4 Home Assistant Association Adapter Deployment Execution**. Stop after
+repository correction; the regenerated deployment block remains FOR REVIEW ONLY.
+
+### Current corrected executable identities
+
+| Source | Git blob | SHA-256 |
+| --- | --- | --- |
+| `tools/hioc-pe4-ha-association-deploy.py` | `7b2a058d97798f071c7f08d0b017b9409753f178` | `de9acf1504452bd6280cf410aa6aa1be4ae2b9f8f6fb77befa2d30ec07fc8bc8` |
+| `pi4/bin/hioc-home-assistant-association.py` | `2864361fac7cd48e947dac1e4e40aeeeb525adef` | `005fae482a4e2c42b48bfb991abf14ddf1d9de60f81169a2ed1573a767958b8c` |
+| `pi4/lib/hioc/home_assistant_association.py` | `e71e4c45e21e9f1a25298471b48387cb19f53e1f` | `9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1` |
+
+Historical adapter identity at 5e9d1ff3: blob `0c049b7ee19b6b20c3fef53717455ba341d4a149`, SHA-256 `cf04d05f6215b9654539df69797de49a831044795ba8f7f5b3432d9d35a086b9`. Superseded for current execution; retained as historical evidence.
+
 # PE-4 Home Assistant Association Adapter Deployment Preparation
 
 
-## Current pre-execution governance and evidence correction — 2026-10-06
+## Historical pre-execution governance and evidence correction — 2026-10-06
 
 Deployment Preparation PASS/CLOSED, corrected before execution. Historical preparation
 commit `0040bdc79e66c10db4f180f952d04f97b1070065` passed repository tests but independent
@@ -9,7 +84,7 @@ review found an incorrect additive policy on category B and ambiguous/control-fl
 transaction evidence. No deployment, helper/adapter execution or HA authentication occurred.
 The [dedicated correction record](../governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.json)
 and [closed schema](../governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.schema.json)
-bind the corrected helper and current preparation record/schema. The historical commit
+bind the historical 2ef66a2 helper and preparation record/schema. The historical commit
 and its records remain immutable Git evidence; current policy/source identities below are
 corrected. The complete current proposed block remains FOR REVIEW ONLY.
 
@@ -61,7 +136,7 @@ and [closed schema](../governance/pe4/pe4-ha-association-adapter-deployment-prep
 freeze the manifest and policy. [Implementation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION.md),
 [preparation](PE4_HOME_ASSISTANT_ASSOCIATION_ADAPTER_IMPLEMENTATION_PREPARATION.md),
 [0C](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md), [0C.1](PE4_HOME_ASSISTANT_ASSOCIATION_LIFECYCLE_CLARIFICATION.md),
-[current correction](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json)
+[historical predeployment correction](../governance/pe4/pe4-ha-association-adapter-predeployment-correction.json)
 and [credential closure](../governance/pe4/pe4-ha-runtime-credential-provisioning-closure.json)
 remain authority. Current closure overrides historical optional-LF wording.
 
@@ -117,7 +192,7 @@ No unexplained preexisting adapter is replaced.
 
 | Relative path | Mode | Git blob | SHA-256 |
 | --- | --- | --- | --- |
-| `pi4/lib/hioc/home_assistant_association.py` | `0644` | `0c049b7ee19b6b20c3fef53717455ba341d4a149` | `cf04d05f6215b9654539df69797de49a831044795ba8f7f5b3432d9d35a086b9` |
+| `pi4/lib/hioc/home_assistant_association.py` | `0644` | `e71e4c45e21e9f1a25298471b48387cb19f53e1f` | `9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1` |
 | `pi4/bin/hioc-home-assistant-association.py` | `0755` | `2864361fac7cd48e947dac1e4e40aeeeb525adef` | `005fae482a4e2c42b48bfb991abf14ddf1d9de60f81169a2ed1573a767958b8c` |
 
 ### C: complete runtime governance manifest
@@ -188,7 +263,7 @@ Read-only runtime verification uses `/home/jazofv1/hioc/runtime/pe4/active/bin/p
 active resolving exactly to environments/cpython311-websockets16.1.1-lock-v1.
 Require CPython 3.11.2, aarch64, SOABI cpython-311-aarch64-linux-gnu, websockets 16.1.1,
 isolated/no-bytecode flags, exact sys.prefix, executable and reviewed sys.path/import origins.
-No .pth/site/user customization; only websockets/pip/setuptools distributions allowed.
+Only the exact reviewed .pth and system sitecustomize identities above are permitted; usercustomize is prohibited. Only websockets/pip/setuptools distributions are allowed.
 Validate installed version and package origin without calling connect. Runtime drift stops.
 No runtime write, pip install, package update or D/E/F/G rerun. System Python -I -B -S
 is only the stdlib bootstrap; the accepted runtime supplies its own separate read-only probe.
@@ -320,14 +395,14 @@ shell set flags, exit, exec or logout.
 /usr/bin/python3 -I -B -S - <<'PY'
 import hashlib, os, subprocess, sys
 from pathlib import Path
-EXPECTED = "REPLACE_WITH_INDEPENDENTLY_REVIEWED_PREPARATION_COMMIT"
+EXPECTED = "REPLACE_WITH_INDEPENDENTLY_REVIEWED_RUNTIME_CORRECTION_COMMIT"
 ROOT = Path("/home/jazofv1/hioc-release-source")
 FILES = {
-    "governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.json": "bcf5338a7d8735a8ff16ada200985d6cc48e5a65c7f860ab083f3b5aed05f5cb",
-    "governance/pe4/pe4-ha-association-adapter-deployment-preparation-correction.schema.json": "06b703a89cd021b2c9df82ba9aeb2022a37a984b9e101f4f322ac54deec6c382",
-    "tools/hioc-pe4-ha-association-deploy.py": "2510f8996e80f2b779a9764bc5c685808f3f0d6ec64adc3fabbcebaf0d0e588c",
-    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json": "744c67b9f638ed0d66c1bc9c4d9e6f81c7fea47a9ca11d4fc4ff4b6490d984d0",
-    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.schema.json": "31a5e50caadb78e79059e94547d854346458eabde92e2024f9ca497bf9cba544",
+    "tools/hioc-pe4-ha-association-deploy.py": "de9acf1504452bd6280cf410aa6aa1be4ae2b9f8f6fb77befa2d30ec07fc8bc8",
+    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.json": "ee850341f9ce535046756ecb3eb7e9b0e2765717af0096c0282edd78e17ccee1",
+    "governance/pe4/pe4-ha-association-adapter-deployment-preparation.schema.json": "cc8af9771e6609f88a5b78e15decb281519e4ada2a26a84e2828016fd6749091",
+    "governance/pe4/pe4-ha-association-runtime-validation-correction.json": "8c1aff21da7b5a4cd022f4cf7de15d6563c41b4ce31917b9cf56e17199fa5775",
+    "governance/pe4/pe4-ha-association-runtime-validation-correction.schema.json": "286492798c218bb3f341f17dada44ec11bb3a531b05d391cc1df2caa9271f569",
 }
 ENV = {"PATH": "/usr/sbin:/usr/bin:/bin", "HOME": "/home/jazofv1", "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"}
 rc = 1
