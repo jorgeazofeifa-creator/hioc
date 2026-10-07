@@ -3201,6 +3201,22 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## Independent Production Acceptance preparation — 2026-10-07
+
+Independent Production Acceptance Preparation: **PASS/CLOSED**.
+Acceptance execution: **NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION**.
+Current objective remains PE-4 Home Assistant Association Adapter Independent Production Acceptance.
+Immediate next operator action: **PI3 source synchronization to the acceptance preparation commit only**,
+then STOP and independent source synchronization review, then separate authorization for read-only
+acceptance execution. The closure-commit synchronization below is completed operator-supplied history.
+The governed existing read-only function sequence inspects current durable state without HA network,
+credential access, adapter rerun or production mutation. No new acceptance tool is required.
+[Preparation contract](PE4_HOME_ASSISTANT_ASSOCIATION_INDEPENDENT_PRODUCTION_ACCEPTANCE_PREPARATION.md).
+Scheduler Deployment NOT STARTED; Public Projection DEFERRED; PE-4 NOT COMPLETE; Phase 7A ACTIVE;
+rollback NOT PERFORMED; second adapter execution NOT AUTHORIZED. Historical wrapper failure and
+unavailable original-artifact limitation remain unchanged. Existing roadmap items are preserved.
+
+
 Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Independent Production Acceptance**.
 Durable Post-Run Reconciliation and Bounded Manual Production Validation are PASS/CLOSED
 through explicit repository governance closure. OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE:
@@ -3602,6 +3618,7 @@ completion. Historical chronology elsewhere does not override it.
 | Reconciliation Evidence Authority Correction | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Durable Post-Run Reconciliation | PASS/CLOSED |
 | Second Adapter Execution | NOT AUTHORIZED |
+| PE-4 Home Assistant Association Adapter Independent Production Acceptance Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED |
@@ -3846,6 +3863,12 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+Preparation PASS/CLOSED; execution NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION.
+Immediate operator action: PI3 source synchronization to the acceptance preparation commit only;
+STOP, independent review, then separate read-only acceptance execution authorization.
+The earlier closure-sync instruction retained below is completed historical sequencing.
+
+
 Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Independent Production Acceptance**.
 Durable Post-Run Reconciliation and Bounded Manual Production Validation are PASS/CLOSED
 through explicit repository governance closure. OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE:
@@ -3875,9 +3898,11 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ### PE-4 Home Assistant Association Adapter Independent Production Acceptance
 
 Next project checkpoint: separately governed Independent Production Acceptance, NOT STARTED.
-Immediate operator action: **PI3 source synchronization to the durable reconciliation closure commit**,
-source synchronization only, STOP and independent review. This closure authorizes no acceptance
-execution, adapter rerun, scheduler deployment, production mutation or Public Projection.
+Immediate operator action: **PI3 source synchronization to the acceptance preparation commit only**,
+then STOP and independent review; acceptance execution requires separate authorization.
+Completed historical handoff: PI3 source synchronization to the durable reconciliation closure commit.
+This preparation authorizes no acceptance execution, adapter rerun, scheduler deployment,
+production mutation or Public Projection.
 
 ### Future Compatibility Diagnostics UX Checkpoint
 
