@@ -3201,6 +3201,30 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## Association Scheduler Deployment final governance closure — 2026-10-07
+
+**Scheduler Deployment PASS/CLOSED; Recurring Scheduler Operation ACTIVE / AUTHORIZED.**
+Preparation and Independent Production Acceptance remain PASS/CLOSED. Operator-supplied source
+sync, independent pre-install review, one separately authorized installation (VERIFIED_INSTALLED)
+and post-install review PASS. Canonical 5,35 crontab job and protected platform line unchanged.
+First natural 20:35 local invocation OBSERVED through valid private-state publication at
+2026-10-08T02:35:03.814281Z (2026-10-07 20:35:03.814281 -06:00); schema PASS, mode 0600,
+one link, clean transaction namespace, HA version 2026.9.4, sanitized counts 25/170/26/8/0.
+Exact scheduled result text and return code NOT OBSERVED BY DESIGN: both cron streams are
+discarded by frozen privacy policy. Publication PASS does not reconstruct process result.
+Installer/review FALSE activity flags apply only to those actions, not the scheduled cycle.
+Manual Second Adapter Execution NOT AUTHORIZED / NOT PERFORMED; scheduled recurring execution
+AUTHORIZED. Historical Second Adapter Execution restriction refers to manual execution.
+Codex did not access/observe production or run installer/adapter/acceptance/reconciler.
+Attempt 1 failed capture and unavailable original evidence limitations remain immutable.
+Public Projection DEFERRED; PE-4 NOT COMPLETE because its separately deferred public projection
+checkpoint remains; Phase 7A ACTIVE; PE-5 NOT STARTED; rollback NOT PERFORMED.
+Next: **PI3 source synchronization to the scheduler deployment closure commit ONLY**; STOP
+and independent review. No roadmap transition authorized. Already-active cron may naturally
+run during sync; this is not execution by sync. Do not disable it for governance synchronization.
+[Scheduler deployment closure](PE4_HOME_ASSISTANT_ASSOCIATION_SCHEDULER_DEPLOYMENT_CLOSURE.md).
+Earlier notices remain historical.
+
 ## Association Scheduler Deployment preparation — 2026-10-07
 
 **Scheduler Deployment Preparation PASS/CLOSED. Scheduler Deployment NOT STARTED /
@@ -3702,7 +3726,11 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Public Projection | DEFERRED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment Preparation | PASS/CLOSED |
-| PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |
+| PE-4 Home Assistant Association Adapter Scheduler Deployment | PASS/CLOSED |
+| Recurring Scheduler Operation | ACTIVE / AUTHORIZED |
+| First Natural Scheduled Invocation | OBSERVED |
+| First Natural Scheduled State Publication | PASS |
+| Manual Second Adapter Execution | NOT AUTHORIZED / NOT PERFORMED |
 | PE-4 | NOT COMPLETE |
 | Phase 7A | ACTIVE |
 | Rollback | NOT PERFORMED |
@@ -3944,6 +3972,16 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+**PE-4 Home Assistant Association Adapter Scheduler Deployment** — **PASS/CLOSED**.
+Preparation and Independent Production Acceptance PASS/CLOSED; recurring scheduler ACTIVE /
+AUTHORIZED. First natural invocation OBSERVED, private-state publication PASS; exact scheduled
+result/return code NOT OBSERVED BY DESIGN. Manual Second Adapter Execution NOT AUTHORIZED /
+NOT PERFORMED. Immediate next: PI3 source synchronization to the scheduler deployment closure
+commit ONLY; STOP and independent review. Public Projection DEFERRED; PE-4 NOT COMPLETE;
+Phase 7A ACTIVE; PE-5 NOT STARTED; rollback NOT PERFORMED. No roadmap transition authorized.
+
+### Historical scheduler preparation objective
+
 **PE-4 Home Assistant Association Adapter Scheduler Deployment** — **NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION**.
 Scheduler Deployment Preparation PASS/CLOSED; Independent Production Acceptance PASS/CLOSED.
 Immediate next action: PI3 source synchronization to the scheduler preparation commit ONLY;
@@ -4008,6 +4046,18 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+
+### PE-4 Home Assistant Association Adapter Scheduler Deployment
+
+PASS/CLOSED. PI3 source synchronization to the scheduler deployment closure commit ONLY;
+STOP and independent review. Recurring scheduler ACTIVE / AUTHORIZED; do not rerun installer,
+manually execute adapter, disable scheduler for governance sync, begin Public Projection or
+advance PE-5. Natural cron cycles may continue independently of synchronization.
+Manual Second Adapter Execution NOT AUTHORIZED / NOT PERFORMED; Public Projection DEFERRED;
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; rollback NOT PERFORMED. Further roadmap transition requires
+separate authorization. Original evidence gaps and historical Attempt 1 failure remain recorded.
+
+### Historical scheduler preparation next task
 
 ### PE-4 Home Assistant Association Adapter Scheduler Deployment
 

@@ -191,7 +191,7 @@ class SchedulerPreparationTests(unittest.TestCase):
   text=(ROOT/'docs/PE4_HOME_ASSISTANT_ASSOCIATION_SCHEDULER_DEPLOYMENT_PREPARATION.md').read_text(encoding='utf8');self.assertIn('Generic installer is not reused',text);self.assertIn('no compare-and-swap',text);self.assertIn('may already',text);self.assertIn('No automatic rollback',text)
  def test_master_preparation_closed_execution_unauthorized(self):
   text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');table=text.split('Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
-  self.assertIn('| PE-4 Home Assistant Association Adapter Scheduler Deployment Preparation | PASS/CLOSED |',table);self.assertIn('| PE-4 Home Assistant Association Adapter Scheduler Deployment | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |',table);self.assertIn('PI3 source synchronization to the scheduler preparation commit ONLY',text.split('## Current Objective',1)[1])
+  self.assertIn('| PE-4 Home Assistant Association Adapter Scheduler Deployment Preparation | PASS/CLOSED |',table);self.assertIn('| PE-4 Home Assistant Association Adapter Scheduler Deployment | PASS/CLOSED |',table);self.assertIn('PI3 source synchronization to the scheduler preparation commit ONLY',text.split('## Current Objective',1)[1])
  def test_schema_closed_rejects_unauthorized_activity(self):
   bad=copy.deepcopy(R);bad['scheduler_installation_authorized']=True
   with self.assertRaises(ValueError):validate(bad,S)

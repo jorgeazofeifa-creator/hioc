@@ -126,7 +126,7 @@ class PreparationTests(unittest.TestCase):
   self.assertIn('Post-Run Reconciliation',current);self.assertIn('PI3 source synchronization to the durable reconciliation closure commit',current)
   table=text.split('## Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
   self.assertIn('| PE-4 Home Assistant Association Adapter Bounded Manual Production Validation | PASS/CLOSED |',table)
-  for name,state in (('Independent Production Acceptance','PASS/CLOSED'),('Scheduler Deployment','NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION')):self.assertIn('| PE-4 Home Assistant Association Adapter '+name+' | '+state+' |',table)
+  for name,state in (('Independent Production Acceptance','PASS/CLOSED'),('Scheduler Deployment','PASS/CLOSED')):self.assertIn('| PE-4 Home Assistant Association Adapter '+name+' | '+state+' |',table)
  def test_valid_parser_retains_exact_sanitized_result(self):
   f=fields();self.assertEqual(M.parse_result(raw(f),C),f)
  def test_parser_rejects_raw_extra_duplicate_reordered_output(self):
