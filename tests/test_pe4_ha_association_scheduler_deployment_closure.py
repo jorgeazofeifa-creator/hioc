@@ -70,7 +70,7 @@ class SchedulerClosureTests(unittest.TestCase):
  def test_master_current_closure_lifecycle_and_handoff(self):
   text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');table=text.split('Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
   for name,state in [('PE-4 Home Assistant Association Adapter Scheduler Deployment','PASS/CLOSED'),('Recurring Scheduler Operation','ACTIVE / AUTHORIZED'),('First Natural Scheduled Invocation','OBSERVED'),('First Natural Scheduled State Publication','PASS'),('Manual Second Adapter Execution','NOT AUTHORIZED / NOT PERFORMED'),('PE-4','NOT COMPLETE')]:self.assertIn('| '+name+' | '+state+' |',table)
-  for marker in ['## Current Objective','## Next Planned Task']:self.assertIn('PI3 source synchronization to the scheduler deployment closure',text.split(marker,1)[1])
+  for marker in ['## Current Objective','## Next Planned Task']:self.assertIn('PI3 source synchronization to the public projection preparation',text.split(marker,1)[1])
  def test_roadmap_projection_and_pe5_remain_deferred(self):
   self.assertIn('DEFERRED to **PE-4 Home Assistant Association Public Projection**',self.blobs['docs/HIOC_MASTER_PLAN.md'].decode());self.assertIn('NOT_COMPLETE',R['lifecycle']['pe4']);self.assertIn('PUBLIC_PROJECTION_CHECKPOINT_REMAINS',R['roadmap_basis']);self.assertEqual(R['lifecycle']['pe5'],'NOT_STARTED')
  def test_document_explicit_observation_limit_and_sync_scope(self):
