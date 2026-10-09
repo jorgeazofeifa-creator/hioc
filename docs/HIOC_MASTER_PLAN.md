@@ -1,5 +1,17 @@
 # HIOC Master Plan
 
+## Permanent operational governance: NO ASSUMPTIONS
+
+NO ASSUMPTIONS. NO EXCEPTIONS. Any unverified material fact is UNKNOWN.
+Repository state cannot prove production state. Allowed evidence classes are DIRECT_OBSERVATION, CRYPTOGRAPHICALLY_BOUND_OBSERVATION,
+IMMUTABLE_REPOSITORY_FACT (repository claims only), and OPERATOR_SUPPLIED (retain its label). Expected values are not observed values.
+Production facts require direct production evidence; OPERATOR_SUPPLIED observations retain that label.
+Unknown prerequisites block dependent mutation. Evidence conflicts override plans.
+Assumptions discovered in governance are defects and require correction and regression protection.
+No automatic adoption of changed production values; no repository-derived production baseline without observation.
+Absence of evidence cannot establish absence. UNKNOWN -> VERIFY -> ESTABLISH EVIDENCE -> DECIDE -> ACT.
+The closed semantic law is protected by the deployment baseline correction family and its No Assumptions tests.
+
 ## Compatibility roadmap governance synchronization - 2026-10-06
 
 The accepted Compatibility Resilience implementation and dependency audit at
@@ -3727,8 +3739,10 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Public Projection Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Association Public Projection Source Implementation | IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS |
 | PE-4 Home Assistant Association Public Projection PI3 POSIX Source Validation | PASS/CLOSED |
-| PE-4 Home Assistant Association Public Projection Deployment Preparation | PASS/CLOSED |
-| PE-4 Home Assistant Association Public Projection Pre-Deployment PI3 Baseline Validation | NOT STARTED / REQUIRED BEFORE DEPLOYMENT |
+| PE-4 Home Assistant Association Public Projection Deployment Preparation | PASS/CLOSED WITH BASELINE CORRECTION |
+| PE-4 Home Assistant Association Public Projection Deployment Baseline Correction | PASS/CLOSED |
+| PE-4 Home Assistant Association Public Projection Corrected Baseline Validation | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |
+| PE-4 Home Assistant Association Public Projection Baseline Validation Attempt 1 | FAIL / BASELINE_MISMATCH / SAFE |
 | PE-4 Home Assistant Association Public Projection Deployment | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |
 | PE-4 Home Assistant Association Public Projection Production Execution | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment Preparation | PASS/CLOSED |
@@ -3978,6 +3992,28 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+**PE-4 Home Assistant Association Public Projection Deployment Baseline Correction**
+
+PASS/CLOSED. Deployment Preparation PASS/CLOSED WITH BASELINE CORRECTION.
+Attempt 1 remains FAIL / BASELINE_MISMATCH / SAFE, OPERATOR_SUPPLIED.
+Root cause: UNVERIFIED REPOSITORY-DERIVED PRODUCTION BASELINE ASSUMPTION.
+The supplied historically governed mixed runtime is preserved with an exact Public Projection backport
+onto the observed PE1 production generation. Broader Compatibility Resilience deployment is NOT AUTHORIZED.
+The correction family binds the explicit payload and preserves all canonical and private implementation identities.
+
+Corrected baseline validation NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION; REQUIRED BEFORE DEPLOYMENT.
+Deployment NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION; Production Execution NOT STARTED.
+Public Projection Preparation PASS/CLOSED; source IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS;
+PI3 POSIX Source Validation PASS/CLOSED. PE-4 NOT COMPLETE; Phase 7A ACTIVE; PE-5 NOT STARTED; rollback NOT PERFORMED.
+
+Immediate next: PI3 source synchronization to the Baseline Correction commit ONLY;
+STOP and independent source review; separately authorize corrected baseline observation;
+STOP and independently review exact output before explicit receipt acceptance and SHA binding.
+Only a later separate deployment authorization may permit production mutation.
+See [correction authority](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_BASELINE_CORRECTION.md).
+
+### Historical public projection deployment preparation objective
+
 **PE-4 Home Assistant Association Public Projection Deployment Preparation** -
 **PASS/CLOSED**. Public Projection Preparation PASS/CLOSED; Source Implementation
 IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS; PI3 POSIX Source Validation
@@ -4129,6 +4165,17 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+
+### PE-4 Home Assistant Association Public Projection Corrected Pre-Deployment PI3 Baseline Validation
+
+NOT STARTED / REQUIRED BEFORE DEPLOYMENT. PREPARED FOR SEPARATE AUTHORIZATION.
+Synchronize PI3 release-source to the Baseline Correction commit ONLY; STOP and independent source review.
+No baseline validator, deployment, production inventory/platform execution, MQTT, HA, credential or cron operation
+is authorized by this checkpoint. Capture future exact baseline stdout, STOP, independently review and explicitly
+accept before creating a 0600 receipt and independently binding its SHA-256. Never auto-adopt changed values.
+Deployment NOT STARTED; Production Execution NOT STARTED; PE-4 NOT COMPLETE; Phase 7A ACTIVE; PE-5 NOT STARTED.
+
+### Historical original pre-deployment baseline validation next task
 
 ### PE-4 Home Assistant Association Public Projection Pre-Deployment PI3 Baseline Validation
 

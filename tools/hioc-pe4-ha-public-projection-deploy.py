@@ -10,10 +10,10 @@ import re
 
 SOURCE = "/home/jazofv1/hioc-release-source"
 TARGET = "/home/jazofv1/hioc"
-PARENT = "6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e"
+PARENT = "17e76d4ae33b99fb171da2e2ef7f918257b3349d"
 IMPLEMENTATION = "c762745b428b28518cf4415f7399ff2cacb70c66"
-SUBJECT = "PE-4: prepare public projection deployment"
-RECORD = "governance/pe4/pe4-ha-association-public-projection-deployment-preparation.json"
+SUBJECT = "PE-4: correct public projection deployment baseline"
+RECORD = "governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json"
 SCHEMA = RECORD.replace(".json", ".schema.json")
 TOOL = "tools/hioc-pe4-ha-public-projection-deploy.py"
 TX = "backups/pe4-ha-public-projection-deployment-v1"
@@ -24,18 +24,29 @@ INVENTORY = "*/30 * * * * flock -n /tmp/hioc-inventory-engine.lock /home/jazofv1
 ASSOCIATION = "5,35 * * * * /home/jazofv1/hioc/runtime/pe4/active/bin/python -I -B /home/jazofv1/hioc/pi4/bin/hioc-home-assistant-association.py >/dev/null 2>&1"
 PLATFORM = "17 3 * * * flock -n /tmp/hioc-platform-status.lock /home/jazofv1/hioc/pi4/bin/hioc-platform-status.py"
 MARKER = "# HIOC_PE4_HA_ASSOCIATION"
+PAYLOAD = "tools/payloads/pe4-public-projection-pe1/hioc-inventory-engine.py"
+PE1 = "29737ee97899bf06be09df661725c8186a7c339f"
 SET = (
  ("governance/pe4/pe4-home-assistant-public-projection.schema.json", "50369a904e83ace1c9d5c760ddc9c3e90a70c059725b4f238eaae4f0347185b3"),
  ("pi4/lib/hioc/home_assistant_public_projection.py", "2a1ec243048182327d40918f69a064e1be65233d75bb0dfcf3dd3b1d9ba7fe37"),
- ("pi4/bin/hioc-inventory-engine.py", "e956d635637cc30c4335321345480b6fb53c6264e6411b73f2aa7b8a2ef4a60d"),
+ ("pi4/bin/hioc-inventory-engine.py", "5c12a368d8db7b045348cf201331c5e24390fbfe715fe399a4afef79fa594ca0"),
 )
 PRIVATE = {
  "pi4/lib/hioc/home_assistant_association.py": "9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1",
  "governance/pe4/pe4-home-assistant-association-state-v1.1.schema.json": "5cd060ffd0a7a2e0a2b3e61da50ec8e5a418f4251df7305f713c10701b0e6a5d",
  "pi4/bin/hioc-home-assistant-association.py": "005fae482a4e2c42b48bfb991abf14ddf1d9de60f81169a2ed1573a767958b8c",
 }
-# This is a reviewed Git candidate, never a claim about the current production host.
-OLD_ENGINE = "06fa6d326ec75df92f0902da4360065b7767ee2a9848d7877c00c145d9d00f42"
+# Operator-supplied observation; every production gate must re-observe it.
+OLD_ENGINE = "c89a294c114f87e43da1ecc8c60ba0c56801c47e3470105a8b6e8a7a8b99ab69"
+PRESERVED = {
+ "pi4/bin/hioc-platform-status.py": ("b65464e722bf9a4da0004ecf3bb05e4105f345a87c62405ce92d97c6298b2af8",0o755),
+ "pi4/lib/hioc/inventory.py": ("df1dc4e2de7d8d77b54acdcb3f340281ead6cc03d74a73ad59b2864b03564503",0o600),
+ "pi4/lib/hioc/mqtt.py": ("d55a174bec05cf009038bbd15ac911dd18039bddc56da1c9847b67bc81c65ff5",0o644),
+ "pi4/lib/hioc/core/compatibility.py": ("713c292c09282f3be524bc8a2090de43cf0fb78a81b3c71eed143b7a0d68e952",0o644),
+}
+CANONICAL = (*SET[:2],("pi4/bin/hioc-inventory-engine.py","e956d635637cc30c4335321345480b6fb53c6264e6411b73f2aa7b8a2ef4a60d"),*PRIVATE.items())
+CLASSIFICATION = "EXPECTED_HISTORICAL_MIXED_RUNTIME"
+NO_ASSUMPTIONS_LAW = {'NO_ASSUMPTIONS': True, 'UNVERIFIED_FACT_IS_UNKNOWN': True, 'SOURCE_STATE_DOES_NOT_PROVE_PRODUCTION_STATE': True, 'EXPECTED_VALUE_IS_NOT_OBSERVED_VALUE': True, 'PRODUCTION_BASELINE_REQUIRES_PRODUCTION_OBSERVATION': True, 'UNKNOWN_BLOCKS_DEPENDENT_MUTATION': True, 'EVIDENCE_OVERRIDES_PLAN': True, 'ASSUMPTION_DISCOVERY_IS_GOVERNANCE_DEFECT': True, 'NO_AUTO_ADOPTION_OF_NEW_PRODUCTION_VALUE': True, 'NO_REPOSITORY_DERIVED_PRODUCTION_BASELINE_WITHOUT_OBSERVATION': True, 'NO_ABSENCE_OF_EVIDENCE_AS_PROOF': True}
 LIMIT = 16 * 1024 * 1024
 CRON_LIMIT = 65536
 STAGES = frozenset(("NONE", "SOURCE_GATE", "TARGET_GATE", "BASELINE_GATE", "CRONTAB_BASELINE", "INVENTORY_QUIESCE", "INVENTORY_DRAIN", "STAGING", "SCHEMA_INSTALL", "HELPER_INSTALL", "ENGINE_INSTALL", "INSTALLED_SET_VERIFY", "CRONTAB_RESTORE", "FINAL_VERIFY"))
@@ -49,6 +60,14 @@ class Failure(Exception):
 
 def require(value, code="UNSAFE_OBJECT"):
     if not value: raise Failure(code)
+
+def evidence_gate(fact,production=False):
+    """Repository facts cannot authorize a production baseline. UNKNOWN fails."""
+    require(type(fact) is dict and type(fact.get("sha256")) is str and re.fullmatch("[0-9a-f]{64}",fact["sha256"]),"SOURCE_BINDING")
+    allowed={"DIRECT_OBSERVATION","CRYPTOGRAPHICALLY_BOUND_OBSERVATION","OPERATOR_SUPPLIED"}
+    if not production:allowed.add("IMMUTABLE_REPOSITORY_FACT")
+    require(fact.get("provenance") in allowed,"SOURCE_BINDING")
+    return fact["sha256"]
 
 def sha(raw): return hashlib.sha256(raw).hexdigest()
 def canonical(value): return (json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode()
@@ -300,6 +319,34 @@ def file_identity(info):
             "device":info.st_dev,"inode":info.st_ino,"links":info.st_nlink}
 
 
+BASELINE_FIELDS = frozenset(("version","correction_commit","production_root","runtime_classification",
+    "preserved_runtime","public_schema_present","public_helper_present","public_projection_present",
+    "engine_sha256","engine","private","runtime","inventory_lock","crontab_sha256"))
+
+def baseline_contract(value,commit,uid,gid):
+    """Closed typed receipt; unknown structure never reaches production reads."""
+    require(type(value) is dict and set(value)==BASELINE_FIELDS,"BASELINE_MISMATCH")
+    require(value["version"]=="2.0" and value["correction_commit"]==commit and
+            value["production_root"]==TARGET and value["runtime_classification"]==CLASSIFICATION and
+            value["engine_sha256"]==OLD_ENGINE and value["crontab_sha256"]==CRON_SHA,"BASELINE_MISMATCH")
+    require(all(value[k] is False for k in ("public_schema_present","public_helper_present","public_projection_present")),"BASELINE_MISMATCH")
+    def identity(info,mode=None):
+        require(type(info) is dict and set(info)=={"uid","gid","mode","device","inode","links"},"BASELINE_MISMATCH")
+        require(all(type(x) is int for x in info.values()) and info["uid"]==uid and info["gid"]==gid and
+                info["device"]>=0 and info["inode"]>0 and info["links"]==1 and info["mode"]>=0 and not info["mode"]&0o7022,"BASELINE_MISMATCH")
+        if mode is not None:require(info["mode"]==mode,"BASELINE_MISMATCH")
+    identity(value["engine"],0o711);identity(value["inventory_lock"])
+    require(type(value["private"]) is dict and set(value["private"])==set(PRIVATE) and type(value["runtime"]) is dict,"BASELINE_MISMATCH")
+    for path,item in value["private"].items():
+        require(type(item) is dict and set(item)=={"sha256","identity"} and item["sha256"]==PRIVATE[path],"BASELINE_MISMATCH")
+        identity(item["identity"],0o755 if path.endswith("/hioc-home-assistant-association.py") else 0o644)
+    preserved=value["preserved_runtime"]
+    require(type(preserved) is dict and set(preserved)==set(PRESERVED),"BASELINE_MISMATCH")
+    for path,(digest,mode) in PRESERVED.items():
+        item=preserved[path]
+        require(type(item) is dict and set(item)=={"sha256","identity"} and item["sha256"]==digest,"BASELINE_MISMATCH")
+        identity(item["identity"],mode)
+
 class NativeOps:
     expected_cron_sha = CRON_SHA
     def __init__(self, commit):
@@ -309,7 +356,7 @@ class NativeOps:
         self.commit = commit
         require(socket.gethostname() == "nutandpihole", "SOURCE_BINDING")
         user = pwd.getpwnam("jazofv1"); group = grp.getgrnam("jazofv1")
-        require(os.getuid() == os.geteuid() == user.pw_uid and os.getgid() == os.getegid() == group.gr_gid and user.pw_uid > 0, "SOURCE_BINDING")
+        require(os.getuid() == os.geteuid() == user.pw_uid and os.getgid() == os.getegid() == group.gr_gid and user.pw_uid == group.gr_gid == 1000, "SOURCE_BINDING")
         require(pwd.getpwuid(user.pw_uid).pw_name == "jazofv1" and grp.getgrgid(group.gr_gid).gr_name == "jazofv1", "SOURCE_BINDING")
         require(Path(SOURCE).resolve() == Path(SOURCE) and Path(__file__).resolve() == Path(SOURCE)/TOOL, "SOURCE_BINDING")
         require(sys.flags.isolated and sys.flags.no_site and sys.dont_write_bytecode, "SOURCE_BINDING")
@@ -341,16 +388,24 @@ class NativeOps:
                  "active_operation":any(os.path.lexists(gitdir/name) for name in operations),
                  "subject":self.git("show","-s","--format=%s",commit),
                  "parent":self.git("show","-s","--format=%P",commit),
-                 "implementation":self.git("rev-parse",PARENT+"^"),"tool":str(Path(__file__).resolve())}
+                 "implementation":self.git("rev-parse",IMPLEMENTATION),"tool":str(Path(__file__).resolve())}
         source_authority(value,commit)
-        for path, digest in (*SET,*PRIVATE.items()):
-            raw = self.source_bytes(path); require(sha(raw) == digest, "SOURCE_BINDING")
-            require(self.git("show",IMPLEMENTATION+":"+path,raw=True) == raw, "SOURCE_BINDING")
+        for path, digest in SET:
+            require(sha(self.source_bytes(path)) == digest, "SOURCE_BINDING")
+        for path, digest in CANONICAL:
+            raw = self.git("show",commit+":"+path,raw=True)
+            require(self.source_fs.read(path) == raw and sha(raw)==digest and self.git("show",IMPLEMENTATION+":"+path,raw=True)==raw,"SOURCE_BINDING")
         record_raw = self.source_bytes(RECORD); schema_raw = self.source_bytes(SCHEMA)
         self.record = strict_json(record_raw); schema = strict_json(schema_raw)
-        expected_schema = {"$schema":"https://json-schema.org/draft/2020-12/schema", "title":"PE-4 public projection deployment preparation", **closed_schema(self.record)}
+        expected_schema = {"$schema":"https://json-schema.org/draft/2020-12/schema", "title":"PE-4 public projection deployment baseline correction", **closed_schema(self.record)}
         require(canonical(schema)==canonical(expected_schema),"SOURCE_BINDING"); check_closed(self.record,schema)
         require(self.record["status"] == "PASS/CLOSED" and self.record["starting_head"] == PARENT and self.record["implementation_commit"] == IMPLEMENTATION, "SOURCE_BINDING")
+        require(canonical(self.record["law"]) == canonical(NO_ASSUMPTIONS_LAW),"SOURCE_BINDING")
+        evidence_gate(self.record["baseline_engine_candidate"],production=True)
+        require(self.record["baseline_engine_candidate"]["sha256"]==OLD_ENGINE and self.record["backport"]["sha256"]==SET[2][1],"SOURCE_BINDING")
+        for path,(digest,mode) in PRESERVED.items():
+            fact=self.record["preserved_runtime"][path]; evidence_gate(fact,production=True)
+            require(fact["sha256"]==digest and fact["mode"]==format(mode,"04o"),"SOURCE_BINDING")
         for binding in self.record["artifacts"]:
             raw = self.source_bytes(binding["path"])
             require(sha(raw) == binding["sha256"] and self.git("rev-parse",commit+":"+binding["path"]) == binding["git_blob"], "SOURCE_BINDING")
@@ -358,8 +413,9 @@ class NativeOps:
             require(sha(self.git("show",binding["commit"]+":"+binding["path"],raw=True)) == binding["sha256"], "SOURCE_BINDING")
 
     def source_bytes(self,path):
-        raw = self.git("show",self.commit+":"+path,raw=True)
-        require(self.source_fs.read(path) == raw, "SOURCE_BINDING")
+        source_path = PAYLOAD if path == SET[2][0] else path
+        raw = self.git("show",self.commit+":"+source_path,raw=True)
+        require(self.source_fs.read(source_path) == raw, "SOURCE_BINDING")
         return raw
 
     def target(self):
@@ -385,7 +441,20 @@ class NativeOps:
             raw = self.fs.read(path); require(raw is not None and sha(raw) == digest, "BASELINE_MISMATCH")
             mode = 0o755 if path.endswith("/hioc-home-assistant-association.py") else 0o644
             require(self.fs.read(path,mode) == raw, "BASELINE_MISMATCH")
-            result[path] = file_identity(self.fs.info(path))
+            result[path] = {"sha256":sha(raw),"identity":file_identity(self.fs.info(path))}
+        return result
+
+    def preserved_runtime(self):
+        """Observe every preserved runtime file; presence is never sufficient."""
+        import stat
+        result = {}
+        for path,(digest,mode) in PRESERVED.items():
+            raw = self.fs.read(path,mode)
+            require(raw is not None and sha(raw)==digest,"BASELINE_MISMATCH")
+            info = self.fs.info(path)
+            require(info is not None and stat.S_ISREG(info.st_mode) and info.st_nlink==1 and
+                    info.st_uid==self.uid and info.st_gid==self.gid and stat.S_IMODE(info.st_mode)==mode,"BASELINE_MISMATCH")
+            result[path] = {"sha256":sha(raw),"identity":file_identity(info)}
         return result
 
     def runtime(self):
@@ -461,17 +530,20 @@ class NativeOps:
         engine = SET[2][0]; old = self.fs.read(engine)
         require(old is not None and sha(old) == OLD_ENGINE, "BASELINE_MISMATCH")
         info = self.fs.info(engine)
-        require(info.st_uid == self.uid and info.st_gid == self.gid and stat.S_IMODE(info.st_mode) & 0o100 and not stat.S_IMODE(info.st_mode) & 0o7022, "UNSAFE_OBJECT")
+        require(info.st_uid == self.uid and info.st_gid == self.gid and stat.S_ISREG(info.st_mode) and info.st_nlink==1 and stat.S_IMODE(info.st_mode)==0o711, "UNSAFE_OBJECT")
         inventory = self.fs.read("state/inventory/inventory.json")
         require(inventory is not None, "BASELINE_MISMATCH")
         value = strict_json(inventory)
         require(type(value) is dict and type(value.get("devices")) is list and all(type(d) is dict and "home_assistant" not in d for d in value["devices"]) and "home_assistant" not in value, "BASELINE_MISMATCH")
-        return {"version":"1.0", "preparation_commit":self.commit, "production_root":TARGET,
+        return {"version":"2.0", "correction_commit":self.commit, "production_root":TARGET,
+                "runtime_classification":CLASSIFICATION,"preserved_runtime":self.preserved_runtime(),
+                "public_schema_present":False,"public_helper_present":False,"public_projection_present":False,
                 "engine_sha256":sha(old), "engine":file_identity(info), "private":self.private(),
                 "runtime":self.runtime(), "inventory_lock":self.lock_identity(), "crontab_sha256":CRON_SHA}
 
     def baseline(self,value):
-        require(type(value) is dict and self.observe_baseline() == value, "BASELINE_MISMATCH")
+        baseline_contract(value,self.commit,self.uid,self.gid)
+        require(canonical(self.observe_baseline()) == canonical(value), "BASELINE_MISMATCH")
         self.saved_baseline = value
         return self.fs.read(SET[2][0])
 
@@ -479,22 +551,25 @@ class NativeOps:
         # Transaction namespace is now ours, so do not call target()/observe_baseline().
         require(self.lock_fd is not None, "BUSY")
         self.verify_baseline(value,old)
-        require(self.lock_identity() == value["inventory_lock"], "BASELINE_MISMATCH")
+        require(file_identity(self.fs.info(SET[2][0]))==value["engine"],"BASELINE_MISMATCH")
+        require(canonical(self.lock_identity()) == canonical(value["inventory_lock"]), "BASELINE_MISMATCH")
         for path,_ in SET[:2]: require(self.fs.info(path) is None, "BASELINE_MISMATCH")
         inventory = strict_json(self.fs.read("state/inventory/inventory.json"))
         require(type(inventory.get("devices")) is list and all(type(d) is dict and "home_assistant" not in d for d in inventory["devices"]) and "home_assistant" not in inventory, "BASELINE_MISMATCH")
 
     def verify_baseline(self,value,old):
         require(self.fs.read(SET[2][0],value["engine"]["mode"]) == old and sha(old) == OLD_ENGINE, "BASELINE_MISMATCH")
+        require(canonical(self.preserved_runtime()) == canonical(value["preserved_runtime"]),"BASELINE_MISMATCH")
         for path,_ in SET[:2]: require(self.fs.info(path) is None, "BASELINE_MISMATCH")
-        require(self.private() == value["private"] and self.runtime() == value["runtime"], "BASELINE_MISMATCH")
+        require(canonical(self.private()) == canonical(value["private"]) and canonical(self.runtime()) == canonical(value["runtime"]), "BASELINE_MISMATCH")
 
     def installed_review(self,baseline):
-        require(baseline["preparation_commit"] == self.commit,"BASELINE_MISMATCH")
+        baseline_contract(baseline,self.commit,self.uid,self.gid)
+        require(baseline["correction_commit"] == self.commit,"BASELINE_MISMATCH")
         for path,digest in SET:
             raw = self.fs.read(path,self.mode(path,baseline))
             require(raw is not None and sha(raw)==digest,"INSTALLED_MISMATCH")
-        require(self.private()==baseline["private"] and self.runtime()==baseline["runtime"] and self.lock_identity()==baseline["inventory_lock"],"BASELINE_MISMATCH")
+        require(canonical(self.preserved_runtime()) == canonical(baseline["preserved_runtime"]) and canonical(self.private()) == canonical(baseline["private"]) and canonical(self.runtime()) == canonical(baseline["runtime"]) and canonical(self.lock_identity()) == canonical(baseline["inventory_lock"]),"BASELINE_MISMATCH")
         cron_candidate(self.cron_read())
         self.target()
         for path,digest in SET:
@@ -583,7 +658,7 @@ class NativeOps:
         for path,digest in SET:
             raw = self.fs.read(path,self.mode(path,baseline)); require(raw is not None and sha(raw) == digest,"INSTALLED_MISMATCH")
             if self.provenance: require(file_identity(self.fs.info(path)) == self.provenance[path],"INSTALLED_MISMATCH")
-        require(self.private() == baseline["private"] and self.runtime() == baseline["runtime"] and self.lock_identity() == baseline["inventory_lock"],"BASELINE_MISMATCH")
+        require(canonical(self.preserved_runtime()) == canonical(baseline["preserved_runtime"]) and canonical(self.private()) == canonical(baseline["private"]) and canonical(self.runtime()) == canonical(baseline["runtime"]) and canonical(self.lock_identity()) == canonical(baseline["inventory_lock"]),"BASELINE_MISMATCH")
 
     def unlink_known(self,path,identity):
         import os

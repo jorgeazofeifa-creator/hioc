@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+HIOC_HOME = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(HIOC_HOME / "pi4" / "lib"))
+
+from hioc.config import load_config
+from hioc.core.events import EventBus
+from hioc.core.schemas import INVENTORY_SCHEMA, INVENTORY_SUMMARY_SCHEMA
+from hioc.core.state import StateStore
+from hioc.enrichment import (
+    build_enrichment_status,
+    build_hostname_envelope,
+    collect_hostname_candidates,
+    load_previous_enrichment,
+    validate_enrichment_status,
+    validate_hostname_envelope,
+)
+from hioc.inventory import discover_inventory
+from hioc.mqtt import MqttClient
+from hioc.runtime import load_json, save_json, setup_logger, now_iso
+
+
+def _strip_home_assistant(inventory):
+    # Keep stripping independent of the optional helper's import availability.
+    result = dict(inventory)
+    result["devices"] = [{k: v for k, v in device.items() if k != "home_assistant"}
+                         for device in inventory.get("devices", [])]
+    return result
+
+def _optional_home_assistant(inventory, log):
+    base = _strip_home_assistant(inventory)
+    try:
+        from hioc.home_assistant_public_projection import project_inventory, ProjectionError
+        return project_inventory(base)
+    except Exception as error:
+        code = error.code if "ProjectionError" in locals() and type(error) is ProjectionError else "OMITTED_INTERNAL"
+        if code not in {"OMITTED_UNAVAILABLE", "OMITTED_BUSY", "OMITTED_UNSAFE",
+                        "OMITTED_INVALID", "OMITTED_INCOHERENT", "OMITTED_INTERNAL"}:
+            code = "OMITTED_INTERNAL"
+        log.warning("Home Assistant public projection %s", code)
+        return _strip_home_assistant(base)
+
+def main() -> int:
+    config = load_config()
+    home = Path(config.get("HIOC_HOME", str(HIOC_HOME)))
+    state_dir = home / "state" / "inventory"
+    log = setup_logger(home / "logs", "hioc-inventory-engine")
+    inventory_file = state_dir / "inventory.json"
+    devices_file = state_dir / "devices.json"
+    services_file = state_dir / "services.json"
+    topology_file = state_dir / "topology.json"
+    dependencies_file = state_dir / "dependencies.json"
+    summary_file = state_dir / "summary.json"
+    status_file = state_dir / "status.json"
+    enrichment_file = state_dir / "enrichment.json"
+    event_store = StateStore(home / "state" / "events")
+    event_bus = EventBus(event_store, "inventory", int(config.get("HIOC_EVENT_RETENTION", "500")))
+    previous = _strip_home_assistant(load_json(inventory_file, {"devices": []}))
+    previous_enrichment, prior_enrichment_invalid = load_previous_enrichment(enrichment_file)
+    try:
+        inventory = discover_inventory(config, previous, include_hostname_evidence=True)
+        store = StateStore(state_dir)
+        capabilities = inventory.pop("_capabilities", [])
+        hostname_evidence = inventory.pop("_hostname_evidence", None)
+        inventory = _optional_home_assistant(inventory, log)
+        store.write_json("inventory.json", inventory, INVENTORY_SCHEMA)
+        store.write_json("devices.json", inventory["devices"])
+        store.write_json("services.json", inventory["services"])
+        store.write_json("capabilities.json", capabilities)
+        store.write_json("topology.json", inventory["topology"])
+        store.write_json("dependencies.json", inventory["dependencies"])
+        store.write_json("summary.json", inventory["summary"], INVENTORY_SUMMARY_SCHEMA)
+        status = {"status": "online", "updated": now_iso(), "device_count": inventory["summary"]["device_count"], "schema_version": inventory["schema_version"]}
+        save_json(status_file, status)
+        enrichment_replaced = False
+        try:
+            state_dir.chmod(0o750)
+            if not isinstance(hostname_evidence, dict):
+                enrichment_status = build_enrichment_status(
+                    "unavailable", inventory["updated"], error_code="evidence_unavailable"
+                )
+                store.write_json("enrichment_status.json", enrichment_status, mode=0o600)
+                log.warning("hostname enrichment status=unavailable code=evidence_unavailable")
+            else:
+                candidates = collect_hostname_candidates(hostname_evidence, inventory["updated"])
+                enrichment = build_hostname_envelope(
+                    inventory["devices"], candidates, previous_enrichment, inventory["updated"]
+                )
+                validate_hostname_envelope(enrichment)
+                enrichment_status = build_enrichment_status(
+                    "degraded" if prior_enrichment_invalid else "online",
+                    inventory["updated"],
+                    enrichment,
+                    "prior_artifact_invalid" if prior_enrichment_invalid else None,
+                )
+                validate_enrichment_status(enrichment_status)
+                store.write_json("enrichment.json", enrichment, mode=0o600)
+                enrichment_replaced = True
+                store.write_json("enrichment_status.json", enrichment_status, mode=0o600)
+                log.info(
+                    "hostname enrichment status=%s records=%s candidates=%s conflicts=%s",
+                    enrichment_status["status"],
+                    enrichment["record_count"],
+                    enrichment["candidate_count"],
+                    enrichment["conflict_count"],
+                )
+        except Exception:
+            if enrichment_replaced:
+                try:
+                    if previous_enrichment is not None:
+                        store.write_json("enrichment.json", previous_enrichment, mode=0o600)
+                    else:
+                        enrichment_file.unlink(missing_ok=True)
+                except Exception:
+                    pass
+            enrichment_status = build_enrichment_status(
+                "error", inventory["updated"], error_code="generation_failed"
+            )
+            try:
+                store.write_json("enrichment_status.json", enrichment_status, mode=0o600)
+            except Exception:
+                pass
+            log.error("hostname enrichment status=error code=generation_failed")
+        previous_ids = {device.get("id") for device in previous.get("devices", [])}
+        current_ids = {device.get("id") for device in inventory["devices"]}
+        for device in inventory["devices"]:
+            if device.get("id") not in previous_ids:
+                event_bus.publish("DeviceDiscovered", inventory["updated"], {"device_id": device["id"], "display_name": device.get("display_name", ""), "ip": device.get("ip", ""), "mac": device.get("mac", "")})
+        if current_ids != previous_ids or inventory["summary"] != previous.get("summary"):
+            event_bus.publish("InventoryChanged", inventory["updated"], {"device_count": inventory["summary"]["device_count"], "service_count": inventory["summary"]["service_count"], "capability_count": len(capabilities)})
+        if inventory["topology"] != previous.get("topology"):
+            event_bus.publish("TopologyChanged", inventory["updated"], {"topology_edges": inventory["summary"]["topology_edges"]})
+        base = config.get("HIOC_BASE_TOPIC", "home/infrastructure/hioc")
+        payloads = {
+            f"{base}/inventory": inventory,
+            f"{base}/inventory/devices": inventory["devices"],
+            f"{base}/inventory/services": inventory["services"],
+            f"{base}/inventory/topology": inventory["topology"],
+            f"{base}/inventory/dependencies": inventory["dependencies"],
+            f"{base}/inventory/summary": inventory["summary"],
+            f"{base}/inventory/status": status,
+        }
+        try:
+            with MqttClient(config) as mqtt:
+                for topic, payload in payloads.items():
+                    mqtt.publish(topic, payload)
+        except Exception as exc:
+            log.error("inventory discovered but MQTT publish failed: %s", exc)
+            status["status"] = "degraded"
+            status["publish_errors"] = [str(exc)]
+            save_json(status_file, status)
+            return 0
+        log.info("inventory updated devices=%s services=%s", inventory["summary"]["device_count"], inventory["summary"]["service_count"])
+        return 0
+    except Exception as exc:
+        log.exception("inventory engine failed")
+        save_json(status_file, {"status": "error", "updated": now_iso(), "error": str(exc)})
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

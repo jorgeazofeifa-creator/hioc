@@ -20,8 +20,10 @@ class Fixture:
         self.expected_cron_sha = D.sha(CRON); self.cron = CRON; self.reads = 0; self.installs = 0
         self.held = False; self.marker = False; self.stages = {}; self.created = set()
         self.old = b"synthetic old engine"; self.baseline_value = {"crontab_sha256":D.sha(CRON)}
-        self.bytes = {p:(ROOT/p).read_bytes().replace(b"\r\n",b"\n") for p,_ in D.SET}
+        self.bytes = {p:(ROOT/(D.PAYLOAD if p==D.SET[2][0] else p)).read_bytes().replace(b"\r\n",b"\n") for p,_ in D.SET}
         self.protected = {p:(ROOT/p).read_bytes() for p in D.PRIVATE}
+        import subprocess
+        self.protected.update({p:subprocess.check_output(["git","show",("8187114c7233be82b188f0fc03b93a022787e7bb" if p.endswith("compatibility.py") else D.PE1)+":"+p],cwd=ROOT) for p in D.PRESERVED})
         for path,raw in {D.SET[2][0]:self.old,**self.protected,"unrelated":b"preserve"}.items(): self.write(path,raw)
     def hit(self,key):
         self.events.append(key)
@@ -234,18 +236,23 @@ class BaselineNativeGateTests(unittest.TestCase):
     def fixture(self):
         import stat,subprocess
         from types import SimpleNamespace
-        old=subprocess.check_output(["git","show",D.IMPLEMENTATION+"^:"+D.SET[2][0]],cwd=ROOT)
+        old=subprocess.check_output(["git","show",D.PE1+":"+D.SET[2][0]],cwd=ROOT)
         files={D.SET[2][0]:old,"state/inventory/inventory.json":b'{"devices":[]}'}
-        info=SimpleNamespace(st_uid=1000,st_gid=1000,st_mode=stat.S_IFREG|0o755,st_dev=1,st_ino=2,st_nlink=1)
+        for path in D.PRESERVED:files[path]=subprocess.check_output(["git","show",("8187114c7233be82b188f0fc03b93a022787e7bb" if path.endswith("compatibility.py") else D.PE1)+":"+path],cwd=ROOT)
+        info=SimpleNamespace(st_uid=1000,st_gid=1000,st_mode=stat.S_IFREG|0o711,st_dev=1,st_ino=2,st_nlink=1)
         class FS:
             def read(self,path,*_):return files.get(path)
-            def info(self,path):return info if path in files else None
+            def info(self,path):
+                if path not in files:return None
+                if path in D.PRIVATE:return SimpleNamespace(st_uid=1000,st_gid=1000,st_mode=stat.S_IFREG|(0o755 if path.endswith("/hioc-home-assistant-association.py") else 0o644),st_dev=1,st_ino=90+list(D.PRIVATE).index(path),st_nlink=1)
+                if path in D.PRESERVED:return SimpleNamespace(st_uid=1000,st_gid=1000,st_mode=stat.S_IFREG|D.PRESERVED[path][1],st_dev=1,st_ino=3+list(D.PRESERVED).index(path),st_nlink=1)
+                return info
         ops=D.NativeOps.__new__(D.NativeOps);ops.uid=ops.gid=1000;ops.commit=COMMIT;ops.fs=FS()
-        ops.target=lambda:None;ops.private=lambda:{"accepted":True};ops.runtime=lambda:{"accepted":True};ops.lock_identity=lambda:{"accepted":True}
+        ops.target=lambda:None;ops.private=lambda:{path:{"sha256":D.PRIVATE[path],"identity":{"uid":1000,"gid":1000,"mode":0o755 if path.endswith("/hioc-home-assistant-association.py") else 0o644,"device":1,"inode":90+index,"links":1}} for index,path in enumerate(D.PRIVATE)};ops.runtime=lambda:{"accepted":True};ops.lock_identity=lambda:{"uid":1000,"gid":1000,"mode":0o600,"device":1,"inode":77,"links":1}
         return ops,files,info
-    def test_reviewed_baseline_candidate_passes_and_is_not_a_production_claim(self):
+    def test_operator_supplied_pe1_baseline_passes_only_with_live_exact_reobservation(self):
         ops,files,_=self.fixture();receipt=ops.observe_baseline()
-        self.assertEqual(receipt["engine_sha256"],D.OLD_ENGINE);self.assertEqual(receipt["engine"]["mode"],0o755)
+        self.assertEqual(receipt["engine_sha256"],D.OLD_ENGINE);self.assertEqual(receipt["engine"]["mode"],0o711)
         self.assertEqual(ops.baseline(receipt),files[D.SET[2][0]])
     def test_wrong_or_missing_engine_bytes_fail_closed(self):
         for value in (None,b"unknown",b""):
@@ -263,7 +270,7 @@ class BaselineNativeGateTests(unittest.TestCase):
             with self.subTest(raw=raw),self.assertRaises(D.Failure):ops.observe_baseline()
     def test_engine_ownership_executable_and_mode_policy(self):
         import stat
-        for key,value in (("st_uid",2000),("st_gid",2000),("st_mode",stat.S_IFREG|0o644),("st_mode",stat.S_IFREG|0o777),("st_mode",stat.S_IFREG|0o4755)):
+        for key,value in (("st_mode",stat.S_IFREG|0o755),("st_uid",2000),("st_gid",2000),("st_mode",stat.S_IFREG|0o644),("st_mode",stat.S_IFREG|0o777),("st_mode",stat.S_IFREG|0o4755)):
             ops,_,info=self.fixture();setattr(info,key,value)
             with self.subTest(key=key,value=value),self.assertRaises(D.Failure):ops.observe_baseline()
     def test_receipt_drift_every_field_is_rejected(self):
@@ -276,3 +283,65 @@ class BaselineNativeGateTests(unittest.TestCase):
     def test_strict_json_rejects_duplicate_keys_constants_and_unbounded_receipt(self):
         for raw in (b'{"a":1,"a":2}',b'{"a":NaN}',b'{invalid',b'x'*(D.LIMIT+1)):
             with self.subTest(length=len(raw)),self.assertRaises(D.Failure):D.strict_json(raw)
+
+class CorrectedMixedBaselineTests(BaselineNativeGateTests):
+    def test_all_preserved_dependencies_wrong_or_absent_fail(self):
+        for path in D.PRESERVED:
+            for value in (None,b"changed"):
+                ops,files,_=self.fixture();files[path]=value
+                with self.subTest(path=path,value=value),self.assertRaises(D.Failure):ops.observe_baseline()
+    def test_both_unobserved_compatibility_and_canonical_engines_rejected(self):
+        for ref in ("8187114c7233be82b188f0fc03b93a022787e7bb",D.IMPLEMENTATION):
+            ops,files,_=self.fixture();files[D.SET[2][0]]=__import__('subprocess').check_output(['git','show',ref+':'+D.SET[2][0]],cwd=ROOT)
+            with self.subTest(ref=ref),self.assertRaises(D.Failure):ops.observe_baseline()
+    def test_receipt_binds_each_support_hash_identity_and_presence(self):
+        ops,files,_=self.fixture();receipt=ops.observe_baseline()
+        self.assertEqual(receipt['version'],'2.0');self.assertEqual(receipt['correction_commit'],COMMIT)
+        self.assertEqual(set(receipt['preserved_runtime']),set(D.PRESERVED))
+        for path,(digest,mode) in D.PRESERVED.items():
+            self.assertEqual(receipt['preserved_runtime'][path]['sha256'],digest)
+            self.assertEqual(receipt['preserved_runtime'][path]['identity']['mode'],mode)
+            original=files[path];files[path]=b'changed after receipt'
+            with self.assertRaises(D.Failure):ops.baseline(receipt)
+            files[path]=original
+        self.assertFalse(receipt['public_schema_present']);self.assertFalse(receipt['public_helper_present']);self.assertFalse(receipt['public_projection_present'])
+    def test_canonical_engine_never_selected_by_source_bytes(self):
+        ops=D.NativeOps.__new__(D.NativeOps);ops.commit=COMMIT
+        raw=(ROOT/D.PAYLOAD).read_bytes()
+        ops.git=__import__('unittest.mock',fromlist=['Mock']).Mock(return_value=raw)
+        ops.source_fs=__import__('types').SimpleNamespace(read=lambda path:raw if path==D.PAYLOAD else b'wrong')
+        self.assertEqual(ops.source_bytes(D.SET[2][0]),raw)
+        self.assertEqual(ops.git.call_args.args,('show',COMMIT+':'+D.PAYLOAD))
+    def test_unknown_receipt_no_refresh_or_auto_adoption(self):
+        ops,_,_=self.fixture()
+        for value in ({},{'UNKNOWN':True},None):
+            with self.subTest(value=value),self.assertRaises(D.Failure):ops.baseline(value)
+
+    def test_closed_receipt_rejects_extra_missing_old_versions_and_json_type_drift(self):
+        import copy
+        ops,_,_=self.fixture();receipt=ops.observe_baseline()
+        candidates=[dict(receipt,unreviewed=True),{k:v for k,v in receipt.items() if k!='public_schema_present'},dict(receipt,version='1.0'),dict(receipt,public_schema_present=0)]
+        changed=copy.deepcopy(receipt);changed['engine']['device']=True;candidates.append(changed)
+        changed=copy.deepcopy(receipt);changed['preserved_runtime'][next(iter(D.PRESERVED))]['identity']['device']=True;candidates.append(changed)
+        for value in candidates:
+            with self.subTest(value=value),self.assertRaises(D.Failure):ops.baseline(value)
+    def test_installed_review_unknown_receipt_rejected_before_filesystem_read(self):
+        ops,_,_=self.fixture();receipt=ops.observe_baseline()
+        with patch.object(ops.fs,'read',side_effect=AssertionError('production read')):
+            with self.assertRaises(D.Failure):ops.installed_review(dict(receipt,unreviewed=True))
+            with self.assertRaises(D.Failure):ops.installed_review(dict(receipt,public_projection_present=0))
+
+    def test_private_receipt_hashes_are_observed_and_each_mismatch_rejected(self):
+        import copy
+        ops,files,_=self.fixture()
+        for path in D.PRIVATE:files[path]=(ROOT/path).read_bytes().replace(b'\r\n',b'\n')
+        del ops.private  # Use real observer against the injected synthetic FS.
+        receipt=ops.observe_baseline()
+        for path,digest in D.PRIVATE.items():
+            self.assertEqual(receipt['private'][path]['sha256'],D.sha(files[path]));self.assertEqual(receipt['private'][path]['sha256'],digest)
+            self.assertEqual(set(receipt['private'][path]),{'sha256','identity'})
+            changed=copy.deepcopy(receipt);changed['private'][path]['sha256']='0'*64
+            with self.subTest(path=path),self.assertRaises(D.Failure):ops.baseline(changed)
+            original=files[path];files[path]=b'changed private authority'
+            with self.subTest(path=path),self.assertRaises(D.Failure):ops.private()
+            files[path]=original
