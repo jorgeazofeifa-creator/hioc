@@ -133,7 +133,13 @@ class CredentialClosureTests(unittest.TestCase):
     def test_protected_sources_no_adapter_and_document_links(self):
         for path in git("ls-tree","-r","--name-only",BASE).decode().splitlines():
             if path.startswith(("pi4/","release/","homeassistant/","governance/pe4/")) or path=="docs/DATA_MODEL.md":
-                self.assertEqual(git("show",BASE+":"+path),(ROOT/path).read_bytes().replace(b"\r\n",b"\n"),path)
+                before=git("show",BASE+":"+path);current=(ROOT/path).read_bytes().replace(b"\r\n",b"\n")
+                if path in {"docs/DATA_MODEL.md","pi4/bin/hioc-inventory-engine.py"}:
+                    implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-public-projection-implementation.json").read_bytes())
+                    self.assertEqual(before,git("show",implementation['starting_commit']+":"+path),path)
+                    bound=next(i for i in implementation['implementation_artifacts'] if i['path']==path)
+                    self.assertEqual(hashlib.sha256(current).hexdigest(),bound['sha256'],path)
+                else:self.assertEqual(before,current,path)
         for path in ("pi4/lib/hioc/home_assistant_association.py","pi4/bin/hioc-home-assistant-association.py"):
             self.assertEqual(git("ls-tree","-r","--name-only",BASE,"--",path),b"")
             implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-runtime-validation-correction.json").read_bytes())

@@ -44,7 +44,14 @@ class PreparationTests(unittest.TestCase):
  def test_master_prepared_not_executed(self):
   text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');self.assertIn('Independent Production Acceptance Preparation | PASS/CLOSED',text);self.assertIn('Acceptance execution: **NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION**',text)
  def test_source_implementation_unchanged(self):
-  for p in subprocess.check_output(['git','ls-tree','-r','--name-only',BASE,'pi4','pi4-tools','tools','governance'],cwd=ROOT,text=True).splitlines():self.assertEqual(subprocess.check_output(['git','show',BASE+':'+p],cwd=ROOT),(ROOT/p).read_bytes().replace(b'\r\n',b'\n'))
+  for p in subprocess.check_output(['git','ls-tree','-r','--name-only',BASE,'pi4','pi4-tools','tools','governance'],cwd=ROOT,text=True).splitlines():
+   before=subprocess.check_output(['git','show',BASE+':'+p],cwd=ROOT);current=(ROOT/p).read_bytes().replace(b'\r\n',b'\n')
+   if p=='pi4/bin/hioc-inventory-engine.py':
+    implementation=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-implementation.json').read_bytes())
+    self.assertEqual(before,subprocess.check_output(['git','show',implementation['starting_commit']+':'+p],cwd=ROOT))
+    bound=next(i for i in implementation['implementation_artifacts'] if i['path']==p)
+    self.assertEqual(hashlib.sha256(current).hexdigest(),bound['sha256'])
+   else:self.assertEqual(before,current)
  def test_document_boundary(self):
   text=(ROOT/'docs/PE4_HOME_ASSISTANT_ASSOCIATION_INDEPENDENT_PRODUCTION_ACCEPTANCE_PREPARATION.md').read_text(encoding='utf8')
   for phrase in ['No HA network','UNAVAILABLE','RECORDED','UNKNOWN','No new tool','manifest LAST','STOP','historical snapshot']:self.assertIn(phrase,text)

@@ -3725,7 +3725,10 @@ completion. Historical chronology elsewhere does not override it.
 | Independent Production Acceptance Attempt 2 | PASS |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | PASS/CLOSED |
 | PE-4 Home Assistant Association Public Projection Preparation | PASS/CLOSED |
-| PE-4 Home Assistant Association Adapter Public Projection | NOT STARTED / PREPARED FOR SEPARATE IMPLEMENTATION |
+| PE-4 Home Assistant Association Public Projection Source Implementation | IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS |
+| PE-4 Home Assistant Association Public Projection PI3 POSIX Source Validation | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |
+| PE-4 Home Assistant Association Public Projection Deployment | NOT STARTED |
+| PE-4 Home Assistant Association Public Projection Production Execution | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | PASS/CLOSED |
 | Recurring Scheduler Operation | ACTIVE / AUTHORIZED |
@@ -3973,6 +3976,23 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+**PE-4 Home Assistant Association Public Projection Source Implementation** —
+**IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS**. Preparation PASS/CLOSED.
+PI3 POSIX Source Validation **NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION**;
+Public Projection Deployment and Production Execution **NOT STARTED**.
+The optional source helper and inventory integration exist only in the repository;
+Windows fixture tests do not prove actual POSIX production readiness. See
+[the source implementation contract](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_IMPLEMENTATION.md).
+Immediate next: PI3 source synchronization to the source implementation commit ONLY;
+STOP and independent source review. Read-only PI3 POSIX source validation requires
+separate later authorization and must precede any deployment checkpoint.
+Scheduler Deployment PASS/CLOSED; recurring association scheduler ACTIVE / AUTHORIZED;
+inventory scheduler ACTIVE. Manual Second Adapter Execution NOT AUTHORIZED / NOT PERFORMED.
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; PE-5 NOT STARTED; rollback NOT PERFORMED.
+No PI3, HA, credential, broker, production or scheduler access/mutation occurred.
+
+### Historical public projection preparation objective
+
 **PE-4 Home Assistant Association Public Projection Preparation** — **PASS/CLOSED**.
 Public Projection **NOT STARTED / PREPARED FOR SEPARATE IMPLEMENTATION**.
 The inventory engine remains the sole public writer. The prepared optional
@@ -4063,6 +4083,23 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+
+### PE-4 Home Assistant Association Public Projection POSIX Source Validation
+
+NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION. Immediate action is PI3 source
+synchronization to the source implementation commit ONLY; STOP and independent
+source review. Synchronization does not authorize the committed read-only validator.
+Its execution requires a separate future operator authorization. Do not deploy,
+run inventory/adapter/public projection production paths, mutate cron, read HA
+credentials, contact HA/broker, perform rollback or begin PE-5 here.
+Source Implementation IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS;
+Preparation PASS/CLOSED; Deployment NOT STARTED; Production Execution NOT STARTED.
+Scheduler Deployment PASS/CLOSED; recurring scheduler ACTIVE / AUTHORIZED;
+inventory scheduler ACTIVE; Manual Second Adapter Execution NOT AUTHORIZED / NOT PERFORMED.
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; PE-5 NOT STARTED; rollback NOT PERFORMED.
+Independent natural inventory/association cron cycles remain unrelated to source sync.
+
+### Historical public projection preparation next task
 
 ### PE-4 Home Assistant Association Public Projection
 

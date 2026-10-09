@@ -57,7 +57,12 @@ class ImplementationPreparationTests(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(raw).hexdigest(), binding["sha256"])
                 self.assertEqual(git("rev-parse", BASE + ":" + path).decode().strip(), binding["git_blob"])
         for path in ("pi4/lib/hioc/inventory.py", "pi4/bin/hioc-inventory-engine.py", "pi4/lib/hioc/core/state.py", "pi4/lib/hioc/core/compatibility.py", "tools/hioc-pe4-ha-auth-capability.py", "tools/hioc-pe4-ha-registry-discovery.py"):
-            self.assertEqual(git("hash-object", "--path=" + path, path).decode().strip(), bindings[path]["git_blob"])
+            expected = bindings[path]["git_blob"]
+            if path == "pi4/bin/hioc-inventory-engine.py":
+                # Frozen predecessor remains checked above; current consumer is now governed.
+                implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-public-projection-implementation.json").read_bytes())
+                expected=next(i['git_blob'] for i in implementation['implementation_artifacts'] if i['path']==path)
+            self.assertEqual(git("hash-object", "--path=" + path, path).decode().strip(), expected)
 
     def test_production_paths_runtime_and_no_tools_import(self):
         self.assertEqual(RECORD["module_path"], "pi4/lib/hioc/home_assistant_association.py")

@@ -23,6 +23,28 @@ from hioc.mqtt import MqttClient
 from hioc.runtime import load_json, save_json, setup_logger, now_iso
 
 
+def _strip_home_assistant(inventory):
+    # Keep stripping independent of the optional helper's import availability.
+    result = dict(inventory)
+    result["devices"] = [{k: v for k, v in device.items() if k != "home_assistant"}
+                         for device in inventory.get("devices", [])]
+    return result
+
+
+def _optional_home_assistant(inventory, log):
+    base = _strip_home_assistant(inventory)
+    try:
+        from hioc.home_assistant_public_projection import project_inventory, ProjectionError
+        return project_inventory(base)
+    except Exception as error:
+        code = error.code if "ProjectionError" in locals() and type(error) is ProjectionError else "OMITTED_INTERNAL"
+        if code not in {"OMITTED_UNAVAILABLE", "OMITTED_BUSY", "OMITTED_UNSAFE",
+                        "OMITTED_INVALID", "OMITTED_INCOHERENT", "OMITTED_INTERNAL"}:
+            code = "OMITTED_INTERNAL"
+        log.warning("Home Assistant public projection %s", code)
+        return _strip_home_assistant(base)
+
+
 def main() -> int:
     config = load_config()
     home = Path(config.get("HIOC_HOME", str(HIOC_HOME)))
@@ -38,7 +60,7 @@ def main() -> int:
     enrichment_file = state_dir / "enrichment.json"
     event_store = StateStore(home / "state" / "events")
     event_bus = EventBus(event_store, "inventory", int(config.get("HIOC_EVENT_RETENTION", "500")))
-    previous = load_json(inventory_file, {"devices": []})
+    previous = _strip_home_assistant(load_json(inventory_file, {"devices": []}))
     previous_enrichment, prior_enrichment_invalid = load_previous_enrichment(enrichment_file)
     try:
         inventory = discover_inventory(config, previous, include_hostname_evidence=True)
@@ -46,6 +68,7 @@ def main() -> int:
         compatibility_observations = inventory.pop("_compatibility", {})
         capabilities = inventory.pop("_capabilities", [])
         hostname_evidence = inventory.pop("_hostname_evidence", None)
+        inventory = _optional_home_assistant(inventory, log)
         store.write_json("inventory.json", inventory, INVENTORY_SCHEMA)
         store.write_json("devices.json", inventory["devices"])
         store.write_json("services.json", inventory["services"])

@@ -140,7 +140,14 @@ class PreparationGovernanceTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(raw).hexdigest(),item['sha256'])
             self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
             if not item['historical_only']:
-                self.assertEqual((ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n'),raw)
+                current=(ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n')
+                if item['path'] in {'pi4/bin/hioc-inventory-engine.py','docs/DATA_MODEL.md','docs/MQTT.md'}:
+                    # Preparation remains bound to BASE. Governed source implementation
+                    # now owns the changed consumer and its truthful documentation identities.
+                    implementation=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-implementation.json').read_bytes())
+                    bound=next(i for i in implementation['implementation_artifacts'] if i['path']==item['path'])
+                    self.assertEqual(hashlib.sha256(current).hexdigest(),bound['sha256'])
+                else:self.assertEqual(current,raw)
 
     def test_exact_frozen_allowlist_matches_0c(self):
         old=json.loads(self.blobs['governance/pe4/pe4-0c-association-contract.json'])
@@ -221,11 +228,11 @@ class PreparationGovernanceTests(unittest.TestCase):
         text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8')
         table=text.split('## Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
         self.assertIn('| PE-4 Home Assistant Association Public Projection Preparation | PASS/CLOSED |',table)
-        self.assertIn('| PE-4 Home Assistant Association Adapter Public Projection | NOT STARTED / PREPARED FOR SEPARATE IMPLEMENTATION |',table)
+        self.assertIn('| PE-4 Home Assistant Association Public Projection Source Implementation | IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS |',table)
         self.assertIn('| PE-4 | NOT COMPLETE |',table)
         for marker in ['## Current Objective','## Next Planned Task']:
             section=text.split(marker,1)[1].split('### Historical',1)[0]
-            self.assertIn('public projection preparation commit ONLY',section)
+            self.assertIn('source implementation commit ONLY',section)
             self.assertIn('STOP and independent',section)
         self.assertEqual(R['unresolved_questions'],[])
 

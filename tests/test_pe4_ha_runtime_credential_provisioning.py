@@ -685,7 +685,12 @@ class GovernanceTests(unittest.TestCase):
         for path in protected:
             before=subprocess.check_output(["git","show",BASE+":"+path],cwd=ROOT)
             after=(ROOT/path).read_text(encoding="utf-8").encode()
-            self.assertEqual(before,after,path)
+            if path in {"docs/DATA_MODEL.md","pi4/bin/hioc-inventory-engine.py"}:
+                implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-public-projection-implementation.json").read_bytes())
+                self.assertEqual(before,subprocess.check_output(["git","show",implementation['starting_commit']+":"+path],cwd=ROOT),path)
+                bound=next(i for i in implementation['implementation_artifacts'] if i['path']==path)
+                self.assertEqual(hashlib.sha256(after).hexdigest(),bound['sha256'],path)
+            else:self.assertEqual(before,after,path)
             if path.endswith(".sh"):
                 self.assertNotIn(b"/etc/hioc",after)
                 self.assertNotIn(b"home_assistant.token",after)
