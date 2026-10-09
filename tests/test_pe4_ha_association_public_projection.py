@@ -387,6 +387,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
             self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
             current=(ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n')
             changed={i['path']:i for i in closure['closure_artifacts']}
+            prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-preparation.json').read_bytes());changed.update({i['path']:i for i in prep['artifacts']})
             if item['path'] in changed:
                 self.assertEqual(hashlib.sha256(current).hexdigest(),changed[item['path']]['sha256'])
             else:self.assertEqual(current,raw)

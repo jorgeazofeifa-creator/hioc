@@ -232,7 +232,7 @@ class PreparationGovernanceTests(unittest.TestCase):
         self.assertIn('| PE-4 | NOT COMPLETE |',table)
         for marker in ['## Current Objective','## Next Planned Task']:
             section=text.split(marker,1)[1].split('### Historical',1)[0]
-            self.assertIn('POSIX validation closure commit ONLY',section)
+            self.assertIn('Deployment Preparation commit ONLY',section)
             self.assertIn('STOP and independent',section)
         self.assertEqual(R['unresolved_questions'],[])
 

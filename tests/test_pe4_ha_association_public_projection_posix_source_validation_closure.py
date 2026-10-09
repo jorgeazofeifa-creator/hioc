@@ -58,10 +58,11 @@ class PosixSourceValidationClosureTests(unittest.TestCase):
  def test_all_current_closure_artifact_bindings(self):
   self.assertEqual(len(R['closure_artifacts']),6)
   for i in R['closure_artifacts']:
-   raw=(ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
+   raw=git('show','6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e:'+i['path']);self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
+   prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-preparation.json').read_bytes());current={a['path']:a for a in prep['artifacts']};now=(ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(hashlib.sha256(now).hexdigest(),current.get(i['path'],i)['sha256'])
  def test_no_runtime_deployment_scheduler_or_private_authority_changes(self):
-  self.assertEqual(git('diff','--name-only',BASE,'--','pi4','pi4-tools','tools','release','homeassistant','requirements-pe4.lock'),b'')
-  paths=git('diff','--name-only',BASE).decode().splitlines();allowed={i['path'] for i in R['closure_artifacts']}|{str(P.relative_to(ROOT)).replace('\\','/'),str(P.with_suffix('.schema.json').relative_to(ROOT)).replace('\\','/')};self.assertTrue(set(paths)<=allowed)
+  self.assertEqual(git('diff','--name-only',BASE,'6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e','--','pi4','pi4-tools','tools','release','homeassistant','requirements-pe4.lock'),b'')
+  paths=git('diff','--name-only',BASE,'6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e').decode().splitlines();allowed={i['path'] for i in R['closure_artifacts']}|{str(P.relative_to(ROOT)).replace('\\','/'),str(P.with_suffix('.schema.json').relative_to(ROOT)).replace('\\','/')};self.assertTrue(set(paths)<=allowed)
  def test_privacy_no_raw_state_identifiers_or_credentials(self):
   forbidden={'device_id','hioc_device_id','ha_device_id','entity_id','registry_id','config_entry_id','area_name','mac','ip_address','token','credential_data','raw_inventory','raw_state','raw_crontab','raw_stdout','raw_stderr','integration_domains'}
   def walk(v):
@@ -78,10 +79,10 @@ class PosixSourceValidationClosureTests(unittest.TestCase):
  def test_master_current_table_objective_next_and_sync_only(self):
   text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');table=text.split('## Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
   self.assertIn('| PE-4 Home Assistant Association Public Projection PI3 POSIX Source Validation | PASS/CLOSED |',table)
-  current=text.split('## Current Objective',1)[1].split('### Historical',1)[0];self.assertTrue(current.lstrip().startswith('**PE-4 Home Assistant Association Public Projection PI3 POSIX Source Validation**'));self.assertIn('OPERATOR_SUPPLIED',current)
-  next_task=text.split('## Next Planned Task',1)[1].split('### Historical',1)[0];self.assertTrue(next_task.lstrip().startswith('### PE-4 Home Assistant Association Public Projection Deployment Preparation'));self.assertIn('NOT STARTED / REQUIRES SEPARATE AUTHORIZATION',next_task)
+  current=text.split('## Current Objective',1)[1].split('### Historical',1)[0];self.assertTrue(current.lstrip().startswith('**PE-4 Home Assistant Association Public Projection Deployment Preparation**'));self.assertIn('OPERATOR_SUPPLIED',current)
+  next_task=text.split('## Next Planned Task',1)[1].split('### Historical',1)[0];self.assertTrue(next_task.lstrip().startswith('### PE-4 Home Assistant Association Public Projection Pre-Deployment PI3 Baseline Validation'));self.assertIn('NOT STARTED / REQUIRED BEFORE DEPLOYMENT',next_task)
   for section in [current,next_task]:
-   for phrase in ['POSIX validation closure commit ONLY','STOP and independent source review','PE-4 NOT COMPLETE']:self.assertIn(phrase,section)
+   for phrase in ['Deployment Preparation commit ONLY','STOP and independent source review','PE-4 NOT COMPLETE']:self.assertIn(phrase,section)
  def test_document_explains_proof_limits_and_operator_evidence(self):
   text=(ROOT/'docs/PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_POSIX_SOURCE_VALIDATION_CLOSURE.md').read_text(encoding='utf8')
   for phrase in ['OPERATOR_SUPPLIED','Codex did not observe','in memory only','at validation time','does not prove','Deployment NOT STARTED','Production Execution NOT STARTED','PE-4 NOT COMPLETE','STOP']:self.assertIn(phrase,text)

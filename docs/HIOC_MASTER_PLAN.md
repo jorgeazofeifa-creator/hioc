@@ -3727,7 +3727,9 @@ completion. Historical chronology elsewhere does not override it.
 | PE-4 Home Assistant Association Public Projection Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Association Public Projection Source Implementation | IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS |
 | PE-4 Home Assistant Association Public Projection PI3 POSIX Source Validation | PASS/CLOSED |
-| PE-4 Home Assistant Association Public Projection Deployment | NOT STARTED |
+| PE-4 Home Assistant Association Public Projection Deployment Preparation | PASS/CLOSED |
+| PE-4 Home Assistant Association Public Projection Pre-Deployment PI3 Baseline Validation | NOT STARTED / REQUIRED BEFORE DEPLOYMENT |
+| PE-4 Home Assistant Association Public Projection Deployment | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |
 | PE-4 Home Assistant Association Public Projection Production Execution | NOT STARTED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | PASS/CLOSED |
@@ -3976,6 +3978,29 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+**PE-4 Home Assistant Association Public Projection Deployment Preparation** -
+**PASS/CLOSED**. Public Projection Preparation PASS/CLOSED; Source Implementation
+IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS; PI3 POSIX Source Validation
+PASS/CLOSED based on OPERATOR_SUPPLIED evidence. Codex did not observe or repeat
+that production validation. Deployment NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION;
+Production Execution NOT STARTED. The repository contains the dedicated one-shot
+inventory-only maintenance tool, read-only baseline/installed reviewer, closed
+contract and synthetic transaction/security tests. Runtime and private producer
+bytes remain unchanged. See [deployment preparation](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_PREPARATION.md).
+
+Immediate operator action: PI3 source synchronization to the Deployment Preparation commit ONLY;
+STOP and independent source review. PRE-DEPLOYMENT PI3 BASELINE VALIDATION
+NOT STARTED / REQUIRED BEFORE DEPLOYMENT must then receive separate authorization
+and independent evidence review. Actual deployment requires separate explicit
+--deploy-authorized authorization; source synchronization and baseline review do
+not authorize it. No forced inventory run, adapter execution, HA, credential,
+MQTT, cron, production mutation or rollback was performed by Codex.
+Scheduler Deployment PASS/CLOSED; recurring association scheduler ACTIVE / AUTHORIZED;
+inventory scheduler ACTIVE. Manual Second Adapter Execution NOT AUTHORIZED / NOT PERFORMED.
+PE-4 NOT COMPLETE; Phase 7A ACTIVE; PE-5 NOT STARTED; rollback NOT PERFORMED.
+
+### Historical public projection POSIX source validation objective
+
 **PE-4 Home Assistant Association Public Projection PI3 POSIX Source Validation** -
 **PASS/CLOSED**, based on OPERATOR_SUPPLIED actual PI3 validation on nutandpihole.
 Codex did not observe or repeat that execution. Source Implementation remains
@@ -4104,6 +4129,28 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+
+### PE-4 Home Assistant Association Public Projection Pre-Deployment PI3 Baseline Validation
+
+NOT STARTED / REQUIRED BEFORE DEPLOYMENT. First perform PI3 source synchronization
+to the Deployment Preparation commit ONLY; STOP and independent source review.
+Then the separately authorized read-only baseline gate must verify production
+engine candidate bytes and observed owner/mode, absence of helper/schema/public
+namespace, unchanged private/runtime/lock identities and the exact original cron.
+Repository evidence does not prove the current deployed engine or its mode.
+Review and freeze the exact sanitized baseline receipt and SHA-256 independently.
+Any mismatch requires manual governance review; no automatic adoption or deployment.
+
+Public Projection Deployment Preparation PASS/CLOSED; Deployment NOT STARTED /
+PREPARED FOR SEPARATE AUTHORIZATION; Production Execution NOT STARTED.
+Deployment and first natural inventory cycle acceptance remain separate later gates.
+Association scheduler ACTIVE / AUTHORIZED; inventory scheduler ACTIVE; Manual Second
+Adapter Execution NOT AUTHORIZED / NOT PERFORMED. PE-4 NOT COMPLETE; Phase 7A ACTIVE;
+PE-5 NOT STARTED; rollback NOT PERFORMED. Natural inventory/association cycles may
+continue independently. Source sync does not quiesce cron, acquire production
+locks, execute inventory/adapter/projection, publish MQTT, contact HA or read credentials.
+
+### Historical public projection deployment preparation next task
 
 ### PE-4 Home Assistant Association Public Projection Deployment Preparation
 
