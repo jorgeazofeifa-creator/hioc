@@ -380,9 +380,16 @@ class ImplementationGovernanceTests(unittest.TestCase):
         import hashlib,subprocess
         record=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-implementation.json').read_bytes())
         for item in record['implementation_artifacts']:
-            raw=(ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n')
+            # Immutable implementation bindings remain checked against their exact commit.
+            closure=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-posix-source-validation-closure.json').read_bytes())
+            raw=subprocess.check_output(['git','show',closure['closure_predecessor']+':'+item['path']],cwd=ROOT)
             self.assertEqual(hashlib.sha256(raw).hexdigest(),item['sha256'])
             self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
+            current=(ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n')
+            changed={i['path']:i for i in closure['closure_artifacts']}
+            if item['path'] in changed:
+                self.assertEqual(hashlib.sha256(current).hexdigest(),changed[item['path']]['sha256'])
+            else:self.assertEqual(current,raw)
         for item in record['sources']:
             raw=subprocess.check_output(['git','show',record['starting_commit']+':'+item['path']],cwd=ROOT)
             self.assertEqual(hashlib.sha256(raw).hexdigest(),item['sha256'])
@@ -405,7 +412,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
         for key in ['pi3_posix_source_validation','production_deployment','production_public_projection']:self.assertEqual(record[key],'NOT_STARTED')
         self.assertEqual(record['public_fields'],P['required']);self.assertFalse(any(record['codex_activity'].values()))
         text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8')
-        for phrase in ['WINDOWS SYNTHETIC VALIDATION PASS','PI3 POSIX Source Validation','NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION','source implementation commit ONLY','PE-4 NOT COMPLETE']:self.assertIn(phrase,text)
+        for phrase in ['WINDOWS SYNTHETIC VALIDATION PASS','PI3 POSIX Source Validation','POSIX validation closure commit ONLY','PE-4 NOT COMPLETE']:self.assertIn(phrase,text)
 
 
 if __name__=='__main__':unittest.main()
