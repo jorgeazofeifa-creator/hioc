@@ -703,7 +703,7 @@ class GovernanceTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256((ROOT/path).read_bytes()).hexdigest(),binding["sha256"])
 
     def test_lifecycle_links_and_unrelated_roadmap_preserved(self):
-        text=(ROOT/"docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
+        text=subprocess.check_output(['git','show','c762745b428b28518cf4415f7399ff2cacb70c66:docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode('utf8')
         current=text.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
         for row in ("| PE-4 Home Assistant Runtime Credential Provisioning Preparation | PASS/CLOSED |","| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |","| Operator Credential Installation | PASS/CLOSED |","| Independent Credential Validation | PASS/CLOSED |","| Credential Provisioning Governance Closure | PASS/CLOSED |","| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED, corrected before deployment |","| PE-4 | NOT COMPLETE |","| Phase 7A | ACTIVE |","| Rollback | NOT PERFORMED |"):
             self.assertIn(row,current)

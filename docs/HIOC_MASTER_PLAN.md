@@ -3213,6 +3213,31 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## Historical/current lifecycle test-binding correction
+
+Correction: PASS/CLOSED.
+Public Projection production evidence: OPERATOR_SUPPLIED / CLOSURE DRAFT NOT YET ACCEPTED.
+Public Projection closure: NOT CLOSED.
+PE-4: NOT COMPLETE.
+Phase 7A: ACTIVE.
+PE-5: NOT STARTED.
+
+The prior closure attempt stopped on regression. The source-binding diagnosis
+identified historical checkpoint tests reading evolving current lifecycle
+documentation while their current bytes were frozen to historical source.
+The successor test-binding correction preserves original historical commits,
+blobs, hashes and flags and binds exactly four current lifecycle test identities.
+Historical lifecycle assertions read evidence-selected immutable snapshots.
+Current lifecycle authority remains owned by accepted successor governance.
+The closure draft is durably preserved for later separately authorized resumption.
+Production evidence was not rerun; no roadmap transition occurred.
+
+Authority: [test-binding correction](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_TEST_BINDING_CORRECTION.md).
+Next action: separately authorize resumption and validation of the preserved
+Public Projection closure draft against this corrected baseline.
+
+
+
 ## Association Scheduler Deployment final governance closure — 2026-10-07
 
 **Scheduler Deployment PASS/CLOSED; Recurring Scheduler Operation ACTIVE / AUTHORIZED.**

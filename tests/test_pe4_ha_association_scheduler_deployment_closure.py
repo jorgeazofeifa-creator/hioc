@@ -68,7 +68,7 @@ class SchedulerClosureTests(unittest.TestCase):
    current[path[-1]]=value
    with self.assertRaises(ValueError):validate(bad,S)
  def test_master_current_closure_lifecycle_and_handoff(self):
-  text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');table=text.split('Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
+  text=subprocess.check_output(['git','show','eda070d4b06ccd7f562a74e1cb6b42cb5c630d67:docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode('utf8');table=text.split('Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
   for name,state in [('PE-4 Home Assistant Association Adapter Scheduler Deployment','PASS/CLOSED'),('Recurring Scheduler Operation','ACTIVE / AUTHORIZED'),('First Natural Scheduled Invocation','OBSERVED'),('First Natural Scheduled State Publication','PASS'),('Manual Second Adapter Execution','NOT AUTHORIZED / NOT PERFORMED'),('PE-4','NOT COMPLETE')]:self.assertIn('| '+name+' | '+state+' |',table)
   for marker in ['## Current Objective','## Next Planned Task']:self.assertIn('PI3 source synchronization to the public projection preparation',text.split(marker,1)[1])
  def test_roadmap_projection_and_pe5_remain_deferred(self):

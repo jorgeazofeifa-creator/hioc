@@ -36,7 +36,7 @@ class DeploymentPreparationTests(unittest.TestCase):
     def test_all_current_artifact_bindings(self):
         self.assertEqual(len(R["artifacts"]),len({a["path"] for a in R["artifacts"]}))
         for item in R["artifacts"]:
-            raw=normalized(item["path"]);self.assertEqual(D.sha(raw),item["sha256"]);self.assertEqual(blob(raw),item["git_blob"])
+            raw=git('show','c7db29f795909d7926e36c02f1166034bcebb8b0:'+item['path']);self.assertEqual(D.sha(raw),item["sha256"]);self.assertEqual(blob(raw),item["git_blob"])
     def test_historical_authority_stays_exact(self):
         for item in R["historical_authority"]:
             raw=git("show",item["commit"]+":"+item["path"])
@@ -63,7 +63,7 @@ class DeploymentPreparationTests(unittest.TestCase):
             self.assertFalse(R[key])
         self.assertEqual(R["posix_validation_provenance"],"OPERATOR_SUPPLIED");self.assertFalse(R["codex_observed_posix_validation"])
     def test_master_current_stage_and_separate_handoffs(self):
-        text=(ROOT/"docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf8")
+        text=subprocess.check_output(['git','show','c7db29f795909d7926e36c02f1166034bcebb8b0:docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode('utf8')
         current=text.split("## Current Objective",1)[1].split("### Historical",1)[0]
         self.assertTrue(current.lstrip().startswith("**PE-4 Home Assistant Association Public Projection Deployment Baseline Correction**"))
         for phrase in ("PASS/CLOSED","NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION","Production Execution NOT STARTED","Baseline Correction commit ONLY","STOP and independent source review","REQUIRED BEFORE DEPLOYMENT","PE-4 NOT COMPLETE"):
@@ -73,7 +73,7 @@ class DeploymentPreparationTests(unittest.TestCase):
         for phrase in ("OPERATOR_SUPPLIED","not a claim that production currently matches","EXCLUSIVE NONBLOCKING","UNKNOWN_AFTER_ATTEMPT","NO REPLACE","NOT AUTHORIZED YET","SEPARATE FUTURE ACCEPTANCE GATE","Local files or metadata alone cannot prove MQTT","one-shot","same filesystem"):
             self.assertIn(phrase.replace("NO REPLACE","NOREPLACE"),text)
     def test_all_changes_have_current_bindings_and_no_historical_rewrites(self):
-        paths=set(git("diff","--name-only",D.PARENT).decode().splitlines())
+        paths=set(git("diff","--name-only",D.PARENT,"c7db29f795909d7926e36c02f1166034bcebb8b0").decode().splitlines())
         allowed={item["path"] for item in R["artifacts"]}|{D.RECORD,D.SCHEMA}
         self.assertTrue(paths<=allowed)
         for path in paths:

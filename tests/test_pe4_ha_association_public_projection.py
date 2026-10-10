@@ -1,3 +1,4 @@
+from test_pe4_ha_association_public_projection_test_binding_correction import current_artifact_bindings, verify_source_binding
 """Actual implementation tests; all Windows inputs synthetic, no production I/O."""
 import ast
 import copy
@@ -387,7 +388,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
             self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
             current=(ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n')
             changed={i['path']:i for i in closure['closure_artifacts']}
-            prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json').read_bytes());changed.update({i['path']:i for i in prep['artifacts']})
+            prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json').read_bytes());changed.update({i['path']:i for i in prep['artifacts']});changed.update(current_artifact_bindings())
             if item['path'] in changed:
                 self.assertEqual(hashlib.sha256(current).hexdigest(),changed[item['path']]['sha256'])
             else:self.assertEqual(current,raw)
@@ -395,7 +396,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
             raw=subprocess.check_output(['git','show',record['starting_commit']+':'+item['path']],cwd=ROOT)
             self.assertEqual(hashlib.sha256(raw).hexdigest(),item['sha256'])
             self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
-            if not item['historical_only']:self.assertEqual((ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n'),raw)
+            verify_source_binding(item,raw,'governance/pe4/pe4-ha-association-public-projection-implementation.json',record['starting_commit'])
     def test_private_producer_preparation_and_scheduler_unchanged(self):
         import hashlib
         pairs=[(h.MODULE_PATH,h.MODULE_SHA),(h.PRIVATE_SCHEMA_PATH,h.PRIVATE_SCHEMA_SHA),

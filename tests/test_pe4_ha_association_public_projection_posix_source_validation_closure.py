@@ -1,3 +1,4 @@
+from test_pe4_ha_association_public_projection_test_binding_correction import current_artifact_bindings, verify_source_binding
 """Repository-only sanitized operator-evidence closure; no runtime execution."""
 import copy,hashlib,json,re,subprocess,unittest
 from pathlib import Path
@@ -52,14 +53,14 @@ class PosixSourceValidationClosureTests(unittest.TestCase):
   self.assertTrue(required<={i['path'] for i in R['sources']})
   for i in R['sources']:
    raw=self.blobs[i['path']];self.assertEqual(i['commit'],BASE);self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
-   if not i['historical_only']:self.assertEqual((ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n'),raw)
+   verify_source_binding(i,raw,'governance/pe4/pe4-ha-association-public-projection-posix-source-validation-closure.json',BASE)
   expected={'pi4/lib/hioc/home_assistant_association.py':'9a9be5812f3481146de7546875320eb6adec65ca5a2b3230ff5fec378892c7c1','governance/pe4/pe4-home-assistant-association-state-v1.1.schema.json':'5cd060ffd0a7a2e0a2b3e61da50ec8e5a418f4251df7305f713c10701b0e6a5d'}
   for path,sha in expected.items():self.assertEqual(hashlib.sha256(self.blobs[path]).hexdigest(),sha)
  def test_all_current_closure_artifact_bindings(self):
   self.assertEqual(len(R['closure_artifacts']),6)
   for i in R['closure_artifacts']:
    raw=git('show','6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e:'+i['path']);self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
-   prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json').read_bytes());current={a['path']:a for a in prep['artifacts']};now=(ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(hashlib.sha256(now).hexdigest(),current.get(i['path'],i)['sha256'])
+   prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json').read_bytes());current={a['path']:a for a in prep['artifacts']};current.update(current_artifact_bindings());now=(ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(hashlib.sha256(now).hexdigest(),current.get(i['path'],i)['sha256'])
  def test_no_runtime_deployment_scheduler_or_private_authority_changes(self):
   self.assertEqual(git('diff','--name-only',BASE,'6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e','--','pi4','pi4-tools','tools','release','homeassistant','requirements-pe4.lock'),b'')
   paths=git('diff','--name-only',BASE,'6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e').decode().splitlines();allowed={i['path'] for i in R['closure_artifacts']}|{str(P.relative_to(ROOT)).replace('\\','/'),str(P.with_suffix('.schema.json').relative_to(ROOT)).replace('\\','/')};self.assertTrue(set(paths)<=allowed)
@@ -77,7 +78,7 @@ class PosixSourceValidationClosureTests(unittest.TestCase):
   expected=dict(preparation='PASS_CLOSED',source_implementation='IMPLEMENTED',windows_synthetic_validation='PASS',pi3_posix_source_validation='PASS_CLOSED',public_projection_deployment='NOT_STARTED',public_projection_production_execution='NOT_STARTED',scheduler_deployment='PASS_CLOSED',recurring_association_scheduler='ACTIVE_AUTHORIZED',inventory_scheduler='ACTIVE',manual_second_adapter_execution='NOT_AUTHORIZED_NOT_PERFORMED',pe4='NOT_COMPLETE',phase7a='ACTIVE',pe5='NOT_STARTED',rollback='NOT_PERFORMED')
   self.assertEqual(R['lifecycle'],expected);self.assertEqual(R['next_checkpoint'],'PUBLIC_PROJECTION_DEPLOYMENT_PREPARATION');self.assertTrue(R['next_checkpoint_requires_separate_authorization']);self.assertFalse(R['deployment_authorized_by_closure'])
  def test_master_current_table_objective_next_and_sync_only(self):
-  text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');table=text.split('## Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
+  text=subprocess.check_output(['git','show','c7db29f795909d7926e36c02f1166034bcebb8b0:docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode('utf8');table=text.split('## Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
   self.assertIn('| PE-4 Home Assistant Association Public Projection PI3 POSIX Source Validation | PASS/CLOSED |',table)
   current=text.split('## Current Objective',1)[1].split('### Historical',1)[0];self.assertTrue(current.lstrip().startswith('**PE-4 Home Assistant Association Public Projection Deployment Baseline Correction**'));self.assertIn('OPERATOR_SUPPLIED',current)
   next_task=text.split('## Next Planned Task',1)[1].split('### Historical',1)[0];self.assertTrue(next_task.lstrip().startswith('### PE-4 Home Assistant Association Public Projection Corrected Pre-Deployment PI3 Baseline Validation'));self.assertIn('NOT STARTED / REQUIRED BEFORE DEPLOYMENT',next_task)

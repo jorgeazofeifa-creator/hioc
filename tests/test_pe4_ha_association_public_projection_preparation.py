@@ -225,7 +225,7 @@ class PreparationGovernanceTests(unittest.TestCase):
         self.assertIn('NOT_AUTHORIZED',deploy['generic_install_upgrade_rollback'])
 
     def test_current_master_lifecycle_and_separate_handoff(self):
-        text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8')
+        text=subprocess.check_output(['git','show','c7db29f795909d7926e36c02f1166034bcebb8b0:docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode('utf8')
         table=text.split('## Authoritative Current PE-4 Lifecycle',1)[1].split('### Completed',1)[0]
         self.assertIn('| PE-4 Home Assistant Association Public Projection Preparation | PASS/CLOSED |',table)
         self.assertIn('| PE-4 Home Assistant Association Public Projection Source Implementation | IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS |',table)

@@ -55,11 +55,11 @@ class CorrectionTests(unittest.TestCase):
         for k in ('compatibility_runtime_deployment_authorized','platform_status_upgrade_authorized','inventory_module_upgrade_authorized','mqtt_module_upgrade_authorized'):self.assertFalse(R[k])
         self.assertTrue(all(v is False for v in R['codex_activity'].values()))
     def test_all_changed_files_have_closed_current_artifact_binding(self):
-        paths=set(subprocess.check_output(['git','diff','--name-only',D.PARENT],cwd=ROOT).decode().splitlines())
-        paths.update(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],cwd=ROOT).decode().splitlines())
+        paths=set(subprocess.check_output(['git','diff','--name-only',D.PARENT,'c7db29f795909d7926e36c02f1166034bcebb8b0'],cwd=ROOT).decode().splitlines())
+        self.assertEqual(R['commit_subject'],subprocess.check_output(['git','show','-s','--format=%s','c7db29f795909d7926e36c02f1166034bcebb8b0'],cwd=ROOT).decode().strip())
         bindings={i['path']:i for i in R['artifacts']}
         self.assertTrue(paths<=set(bindings)|{D.RECORD,D.SCHEMA})
         for path,item in bindings.items():
-            raw=(ROOT/path).read_bytes().replace(b'\r\n',b'\n')
+            raw=subprocess.check_output(['git','show','c7db29f795909d7926e36c02f1166034bcebb8b0:'+path],cwd=ROOT)
             self.assertEqual(D.sha(raw),item['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
 if __name__=='__main__':unittest.main()

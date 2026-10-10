@@ -111,7 +111,7 @@ class CredentialClosureTests(unittest.TestCase):
         self.assertEqual(RECORD["parent_checkpoint_status"],"PASS_CLOSED")
         self.assertEqual((life["adapter_implementation"],life["pe4"],life["phase7a"],life["rollback"]),("NOT_STARTED","NOT_COMPLETE","ACTIVE","NOT_PERFORMED"))
         self.assertEqual(RECORD["next_checkpoint"],NEXT)
-        text=(ROOT/"docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
+        text=subprocess.check_output(['git','show','c762745b428b28518cf4415f7399ff2cacb70c66:docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode('utf8')
         current=text.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
         for name in ("PE-4 Home Assistant Runtime Credential Provisioning Preparation","PE-4 Home Assistant Runtime Credential Provisioning","Operator Credential Installation","Independent Credential Validation","Credential Provisioning Governance Closure"):
             self.assertIn("| "+name+" | PASS/CLOSED |",current)
@@ -121,7 +121,7 @@ class CredentialClosureTests(unittest.TestCase):
 
     def test_other_roadmap_and_history_unchanged(self):
         before=git("show",BASE+":docs/HIOC_MASTER_PLAN.md").decode("utf-8")
-        after=(ROOT/"docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
+        after=subprocess.check_output(['git','show','c762745b428b28518cf4415f7399ff2cacb70c66:docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode('utf8')
         for start,end in (("### Future Compatibility Diagnostics UX Checkpoint","# Historical Operator Preparation Chronology"),("# Historical Operator Preparation Chronology",None),("## Future Enhancements","# Repository Rules")):
             a=before.split(start,1)[1];b=after.split(start,1)[1]
             if end:a=a.split(end,1)[0];b=b.split(end,1)[0]

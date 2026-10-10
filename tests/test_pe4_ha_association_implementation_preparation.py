@@ -190,7 +190,7 @@ class ImplementationPreparationTests(unittest.TestCase):
         self.assertIn("LAST_KNOWN_GOOD_PRESERVED", RECORD["result_contract"]["fields"])
 
     def test_current_lifecycle_and_preserved_roadmap(self):
-        text = (ROOT / "docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
+        text = subprocess.check_output(['git','show','c762745b428b28518cf4415f7399ff2cacb70c66:docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode('utf8')
         current = text.split("# Implementation Status", 1)[1].split("# Historical Operator Preparation Chronology", 1)[0]
         for row in ("| PE-4.0B.2b | PASS/CLOSED |", "| PE-4.0C | PASS/CLOSED |", "| PE-4.0C.1 Association Lifecycle Clarification | PASS/CLOSED |", "| PE-4 Home Assistant Association Adapter Implementation Preparation | PASS/CLOSED |", "| PE-4 Home Assistant Runtime Credential Provisioning | PASS/CLOSED |", "| PE-4 Home Assistant Association Adapter Implementation | PASS/CLOSED, corrected before deployment |", "| PE-4 | NOT COMPLETE |", "| Phase 7A | ACTIVE |", "| Rollback | NOT PERFORMED |"):
             self.assertIn(row, current)
