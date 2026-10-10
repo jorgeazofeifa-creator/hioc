@@ -1,4 +1,4 @@
-from test_pe4_ha_association_public_projection_test_binding_correction import current_artifact_bindings, verify_source_binding
+from test_pe4_ha_association_public_projection_test_binding_correction import closure_artifact_bindings, verify_source_binding
 """Repository-only sanitized operator-evidence closure; no runtime execution."""
 import copy,hashlib,json,re,subprocess,unittest
 from pathlib import Path
@@ -60,7 +60,7 @@ class PosixSourceValidationClosureTests(unittest.TestCase):
   self.assertEqual(len(R['closure_artifacts']),6)
   for i in R['closure_artifacts']:
    raw=git('show','6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e:'+i['path']);self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
-   prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json').read_bytes());current={a['path']:a for a in prep['artifacts']};current.update(current_artifact_bindings());now=(ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(hashlib.sha256(now).hexdigest(),current.get(i['path'],i)['sha256'])
+   prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json').read_bytes());current={a['path']:a for a in prep['artifacts']};current.update(closure_artifact_bindings());now=(ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n');self.assertEqual(hashlib.sha256(now).hexdigest(),current.get(i['path'],i)['sha256'])
  def test_no_runtime_deployment_scheduler_or_private_authority_changes(self):
   self.assertEqual(git('diff','--name-only',BASE,'6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e','--','pi4','pi4-tools','tools','release','homeassistant','requirements-pe4.lock'),b'')
   paths=git('diff','--name-only',BASE,'6bfb689fc9e49de5d7ae17267f2b389e13f0bc1e').decode().splitlines();allowed={i['path'] for i in R['closure_artifacts']}|{str(P.relative_to(ROOT)).replace('\\','/'),str(P.with_suffix('.schema.json').relative_to(ROOT)).replace('\\','/')};self.assertTrue(set(paths)<=allowed)

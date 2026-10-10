@@ -40,6 +40,124 @@ def identity(raw, item, prefix=''):
   raise ValueError('cryptographic identity mismatch')
 def authority(path):
  return (IMPL_RECORD, EDA, EDA) if path == EXCEPTIONS[0] else (POSIX_RECORD, IMPLEMENTATION, IMPLEMENTATION)
+
+CORRECTION_COMMIT = '30010c54d3f3078a9b07dada36dfe8dd4db2f6e5'
+CLOSURE_RECORD = 'governance/pe4/pe4-ha-association-public-projection-deployment-closure.json'
+CLOSURE_SCHEMA = CLOSURE_RECORD.replace('.json','.schema.json')
+CLOSURE_DOCUMENT = 'docs/PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md'
+CLOSURE_TEST = 'tests/test_pe4_ha_association_public_projection_deployment_closure.py'
+CORRECTION_HELPER = 'tests/test_pe4_ha_association_public_projection_test_binding_correction.py'
+CLOSURE_PATHS = tuple(sorted((
+ MASTER, CLOSURE_DOCUMENT, CLOSURE_RECORD, CLOSURE_SCHEMA, CLOSURE_TEST,
+ 'tests/test_pe4_ha_association_public_projection.py',
+ 'tests/test_pe4_ha_association_public_projection_posix_source_validation_closure.py',
+ CORRECTION_HELPER,
+)))
+CORRECTION_ARTIFACTS = (
+ 'docs/PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_TEST_BINDING_CORRECTION.md',
+ RECORD, RECORD.replace('.json','.schema.json'), CORRECTION_HELPER,
+)
+CLOSURE_HEADING = '## Public Projection production closure and PE-4 completion — 2026-10-09'
+
+def correction_artifact_sources():
+ return [dict(path=path,commit=CORRECTION_COMMIT,
+              sha256=sha(git('show',CORRECTION_COMMIT+':'+path)),
+              git_blob=blob(git('show',CORRECTION_COMMIT+':'+path)))
+         for path in CORRECTION_ARTIFACTS]
+
+def correction_prerequisite(record):
+ return dict(artifact_sources=correction_artifact_sources(),
+             binding_exception_paths=record['binding_exception_paths'],
+             current_lifecycle_test_bindings=record['current_lifecycle_test_bindings'],
+             immutable_historical_authorities=record['immutable_historical_authorities'],
+             byte_authority={'canonical_json_authority':'GIT_STAGE_0_BYTES',
+                             'worktree_observation':'CRLF_TO_LF_EQUIVALENCE_ONLY'})
+
+def closure_master_section(text):
+ if text.count(CLOSURE_HEADING)!=1:
+  raise ValueError('exact current closure heading missing or duplicated')
+ section=text.split(CLOSURE_HEADING,1)[1].split('\n## ',1)[0]
+ for phrase in ('PUBLIC_PROJECTION=PASS/CLOSED','PE4=PASS/CLOSED','OPERATOR_SUPPLIED',
+                'Phase 7A ACTIVE','PE-5 NOT_STARTED',
+                '014a901a56ebc613b2235ad434ae124024ae6e01e8e1960ce98e7df6709e9944'):
+  if phrase not in section:
+   raise ValueError('current closure section evidence missing')
+ return section
+
+def validate_closure_successor(record=None,schema=None,correction=None):
+ raw=current_index(CLOSURE_RECORD);schema_raw=current_index(CLOSURE_SCHEMA)
+ actual=json.loads(raw);actual_schema=json.loads(schema_raw)
+ if raw!=canonical(actual) or schema_raw!=canonical(actual_schema):
+  raise ValueError('noncanonical closure stage-0 authority')
+ record=actual if record is None else record
+ schema=actual_schema if schema is None else schema
+ validate(record,schema)
+ accepted=json.loads(git('show',CORRECTION_COMMIT+':'+RECORD))
+ correction=accepted if correction is None else correction
+ if correction!=accepted:
+  raise ValueError('original correction authority changed')
+ for path in (RECORD,RECORD.replace('.json','.schema.json')):
+  if current_index(path)!=git('show',CORRECTION_COMMIT+':'+path):
+   raise ValueError('immutable correction record or schema changed')
+ if (record['predecessor_commit'],record['predecessor_parent'],record['predecessor_subject']) != (
+    CORRECTION_COMMIT,PREDECESSOR,'PE-4: correct historical lifecycle test bindings'):
+  raise ValueError('closure immediate predecessor mismatch')
+ if record['binding_correction_commit']!=CORRECTION_COMMIT or record['binding_correction_status']!='PASS_CLOSED':
+  raise ValueError('closure binding correction authority mismatch')
+ if record['binding_correction_prerequisite']!=correction_prerequisite(accepted):
+  raise ValueError('exact correction prerequisite mismatch')
+ if accepted['binding_exception_paths']!=list(EXCEPTIONS):
+  raise ValueError('exact four-path boundary')
+ for item in accepted['current_lifecycle_test_bindings']:
+  identity(current_index(item['path']),item,'current_')
+ sources=record['sources']
+ if len(sources)!=101 or sources[-4:]!=correction_artifact_sources():
+  raise ValueError('missing historical or correction source bindings')
+ for item in sources:
+  expected_commit=CORRECTION_COMMIT if item in sources[-4:] else PREDECESSOR
+  if item['commit']!=expected_commit:
+   raise ValueError('historical source authority refreshed')
+  identity(git('show',item['commit']+':'+item['path']),item)
+ for item in record['protected_sources']:
+  old=git('show',PREDECESSOR+':'+item['path']);identity(old,item)
+  if normalized(item['path'])!=old:
+   raise ValueError('protected source changed')
+ expected_paths=sorted(set(CLOSURE_PATHS)-{CLOSURE_RECORD,CLOSURE_SCHEMA})
+ if [item['path'] for item in record['artifacts']]!=expected_paths:
+  raise ValueError('exact closure artifact boundary')
+ changed=set(git('diff','--name-only',CORRECTION_COMMIT).decode().splitlines())
+ changed.update(git('ls-files','--others','--exclude-standard').decode().splitlines())
+ if changed!=set(CLOSURE_PATHS):
+  raise ValueError('unexplained closure changed path')
+ for item in record['artifacts']:
+  identity(current_index(item['path']),item)
+ checkpoint=[i for i in record['pe4_completion_audit']['prerequisites']
+             if i['checkpoint']=='Historical vs Current Lifecycle Test-Binding Correction']
+ if checkpoint!=[dict(authority=RECORD,authority_commit=CORRECTION_COMMIT,
+                      checkpoint='Historical vs Current Lifecycle Test-Binding Correction',
+                      classification='MANDATORY_PREREQUISITE',current_status='PASS/CLOSED',
+                      evidence='IMMUTABLE_REPOSITORY_FACT',prior_status='PASS/CLOSED')]:
+  raise ValueError('missing accepted correction completion prerequisite')
+ pe4=[i for i in record['pe4_completion_audit']['prerequisites'] if i['checkpoint']=='PE-4']
+ if len(pe4)!=1 or pe4[0]['evidence']!='DERIVED_CURRENT_CLOSURE_EVALUATION' or pe4[0]['prior_status']!='NOT COMPLETE':
+  raise ValueError('candidate completion misclassified as immutable fact')
+ if record['production_evidence_provenance']!='OPERATOR_SUPPLIED' or record['codex_production_observation'] is not False or any(record['codex_activity'].values()):
+  raise ValueError('unsupported production observation')
+ for key in ('source_sync','independent_source_review','corrected_baseline','baseline_receipt',
+             'deployment','installed_review','pre_slot','natural_cycle','mqtt_acceptance'):
+  if record[key]['provenance']!='OPERATOR_SUPPLIED':
+   raise ValueError('wrong production evidence provenance')
+ original_baseline=json.loads(git('show',PREDECESSOR+':governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json'))
+ if record['baseline_attempt_1']!=original_baseline['baseline_attempt_1'] or record['law']!=original_baseline['law'] or record['preserved_runtime']!=original_baseline['preserved_runtime']:
+  raise ValueError('immutable baseline evidence changed')
+ if record['correction_commit']!=PREDECESSOR or record['corrected_baseline']['correction_commit']!=PREDECESSOR or record['source_sync']['result']['SOURCE_COMMIT']!=PREDECESSOR or record['independent_source_review']['commit']!=PREDECESSOR:
+  raise ValueError('historical production authority refreshed')
+ for field in ('SOURCE_COMMIT','DEPLOYMENT_PREPARATION_COMMIT'):
+  if record['deployment']['sanitized_result'][field]!=PREDECESSOR:
+   raise ValueError('historical deployment authority refreshed')
+ closure_master_section(current_index(MASTER).decode('utf8'))
+ return record
+
 def validate_successor(record, schema):
  validate(record, schema)
  if record['binding_exception_paths'] != list(EXCEPTIONS):
@@ -82,8 +200,11 @@ def validate_successor(record, schema):
    if isinstance(node,ast.Call) and isinstance(node.func,ast.Attribute) and node.func.attr in ('read_text','read_bytes'):
     if MASTER in ast.unparse(node.func.value):
      raise ValueError('current Master Plan used as historical authority')
+ closure=validate_closure_successor(correction=record)
+ current={item['path']:item for item in closure['artifacts']}
  for item in record['artifacts']:
-  identity(current_index(item['path']),item)
+  identity(git('show',CORRECTION_COMMIT+':'+item['path']),item)
+  identity(current_index(item['path']),current.get(item['path'],item))
  return record
 def successor():
  record_raw=current_index(RECORD)
@@ -92,8 +213,14 @@ def successor():
  if record_raw!=canonical(record) or schema_raw!=canonical(schema):
   raise ValueError('noncanonical successor')
  return validate_successor(record,schema)
-def current_artifact_bindings():
- return {item['path']:item for item in successor()['artifacts']}
+def closure_artifact_bindings():
+ record=successor();closure=validate_closure_successor(correction=record)
+ bindings={item['path']:item for item in record['artifacts']}
+ bindings.update({item['path']:item for item in closure['artifacts']})
+ return bindings
+# Existing historical consumers retain the same validated authority entry point.
+current_artifact_bindings = closure_artifact_bindings
+
 def verify_source_binding(item, historical_raw, original_record, original_commit, current_raw=None, record=None):
  # Always validate the original commit, blob and digest, including historical-only sources.
  original=json.loads(git('show',PREDECESSOR+':'+original_record))
@@ -149,12 +276,14 @@ class TestBindingCorrectionTests(unittest.TestCase):
   verify_source_binding(item,raw,IMPL_RECORD,EDA,current_raw=b'different')
   with self.assertRaises(ValueError):
    verify_source_binding(item,raw+b'changed',IMPL_RECORD,EDA,current_raw=b'different')
- def test_current_master_plan_is_correction_only(self):
-  text=normalized(MASTER).decode('utf8')
+ def test_correction_snapshot_and_current_closure_have_separate_authority(self):
+  text=git('show',CORRECTION_COMMIT+':'+MASTER).decode('utf8')
   section=text.split('## Historical/current lifecycle test-binding correction',1)[1].split('\n## ',1)[0]
   for phrase in ('Correction: PASS/CLOSED','Public Projection closure: NOT CLOSED','PE-4: NOT COMPLETE','Phase 7A: ACTIVE','PE-5: NOT STARTED','OPERATOR_SUPPLIED / CLOSURE DRAFT NOT YET ACCEPTED'):
    self.assertIn(phrase,section)
-  self.assertNotIn('Public Projection Production Closure** - PASS/CLOSED',text)
+  current=validate_closure_successor()
+  self.assertEqual(current['binding_correction_commit'],CORRECTION_COMMIT)
+  self.assertIn('PUBLIC_PROJECTION=PASS/CLOSED',closure_master_section(current_index(MASTER).decode('utf8')))
  def test_every_nested_schema_object_is_closed(self):
   record=successor();schema=json.loads((ROOT/RECORD).with_suffix('.schema.json').read_bytes())
   def visit(value,node):
@@ -204,4 +333,50 @@ def reject_claim(self):
  with self.assertRaises(ValueError):validate_successor(record,json.loads((ROOT/RECORD).with_suffix('.schema.json').read_bytes()))
 TestBindingCorrectionTests.test_reject_extra_fifth_exception=reject_fifth
 TestBindingCorrectionTests.test_reject_unsupported_lifecycle_claim=reject_claim
+
+# The correction checkpoint remains immutable; a closure continuation has its own authority.
+CLOSURE_NEGATIVES = {
+ 'wrong_immediate_predecessor':(('predecessor_commit',),PREDECESSOR),
+ 'wrong_binding_correction_commit':(('binding_correction_commit',),PREDECESSOR),
+ 'wrong_binding_correction_status':(('binding_correction_status',),'NOT_CLOSED'),
+ 'wrong_correction_artifact_sha':(('binding_correction_prerequisite','artifact_sources',0,'sha256'),'0'*64),
+ 'wrong_correction_artifact_blob':(('binding_correction_prerequisite','artifact_sources',0,'git_blob'),'0'*40),
+ 'stale_current_artifact_identity':(('artifacts',0,'sha256'),'0'*64),
+ 'old_unvalidated_overlay_binding':(('artifacts',0,'git_blob'),'0'*40),
+ 'historical_artifact_refreshed':(('sources',0,'commit'),CORRECTION_COMMIT),
+ 'runtime_binding_exception':(('binding_correction_prerequisite','binding_exception_paths',0),'pi4/bin/hioc-inventory-engine.py'),
+ 'wrong_production_provenance':(('production_evidence_provenance',),'CODEX_OBSERVED'),
+ 'wrong_current_completion_provenance':(('pe4_completion_audit','prerequisites',63,'evidence'),'IMMUTABLE_REPOSITORY_FACT'),
+ 'wrong_byte_authority':(('binding_correction_prerequisite','byte_authority','canonical_json_authority'),'RAW_WINDOWS_WORKTREE'),
+}
+for name,(path,value) in CLOSURE_NEGATIVES.items():
+ def test(self,path=path,value=value):
+  bad=copy.deepcopy(json.loads(current_index(CLOSURE_RECORD)));parent=bad
+  for key in path[:-1]:parent=parent[key]
+  parent[path[-1]]=value
+  with self.assertRaises(ValueError):validate_closure_successor(bad)
+ setattr(TestBindingCorrectionTests,'test_closure_reject_'+name,test)
+
+def reject_missing_closure_prerequisite(self):
+ bad=copy.deepcopy(json.loads(current_index(CLOSURE_RECORD)));del bad['binding_correction_prerequisite']
+ with self.assertRaises(ValueError):validate_closure_successor(bad)
+
+def reject_fifth_closure_exception(self):
+ bad=copy.deepcopy(json.loads(current_index(CLOSURE_RECORD)))
+ bad['binding_correction_prerequisite']['binding_exception_paths'].append('tests/test_extra.py')
+ with self.assertRaises(ValueError):validate_closure_successor(bad)
+
+def reject_historical_section_as_current(self):
+ text=current_index(MASTER).decode('utf8')
+ wrong=text.replace(CLOSURE_HEADING,'## Historical closure evidence')
+ with self.assertRaises(ValueError):closure_master_section(wrong)
+ section=closure_master_section(text)
+ wrong=text.replace(section,'\nUNACCEPTED WITHOUT CURRENT EVIDENCE\n',1)
+ wrong+='\n## Historical closure evidence\n'+section
+ with self.assertRaises(ValueError):closure_master_section(wrong)
+
+TestBindingCorrectionTests.test_closure_reject_missing_prerequisite=reject_missing_closure_prerequisite
+TestBindingCorrectionTests.test_closure_reject_fifth_exception=reject_fifth_closure_exception
+TestBindingCorrectionTests.test_closure_reject_historical_section_as_current=reject_historical_section_as_current
+
 if __name__=='__main__':unittest.main()

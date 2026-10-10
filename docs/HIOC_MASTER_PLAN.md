@@ -3215,6 +3215,11 @@ is a permanent Working Agreement completion requirement.
 
 ## Historical/current lifecycle test-binding correction
 
+Historical accepted checkpoint snapshot at 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5.
+Its open lifecycle statements below describe that committed correction checkpoint.
+The following Public Projection closure candidate remains UNCOMMITTED/UNACCEPTED;
+only later full closure validation and acceptance can establish successor lifecycle.
+
 Correction: PASS/CLOSED.
 Public Projection production evidence: OPERATOR_SUPPLIED / CLOSURE DRAFT NOT YET ACCEPTED.
 Public Projection closure: NOT CLOSED.
@@ -3237,6 +3242,49 @@ Next action: separately authorize resumption and validation of the preserved
 Public Projection closure draft against this corrected baseline.
 
 
+
+## Public Projection production closure and PE-4 completion — 2026-10-09
+
+UNCOMMITTED/UNACCEPTED closure candidate; accepted Public Projection remains NOT_CLOSED
+and PE-4 remains NOT_COMPLETE until separately governed full validation and acceptance.
+Historical vs Current Lifecycle Test-Binding Correction PASS/CLOSED at
+30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 is an exact machine-bound prerequisite.
+Its original correction artifacts and historical authority remain immutable; exactly four
+current test exceptions retain accepted stage-0 identities and normalized checkout proof.
+
+PUBLIC_PROJECTION=PASS/CLOSED; PE4_COMPLETION_AUDIT=PASS; PE4=PASS/CLOSED.
+All production evidence is OPERATOR_SUPPLIED; Codex did not observe or access PI3.
+The candidate repository-wide audit includes the accepted binding correction and
+evaluates all mandatory PE-4 prerequisites. PE-4 closure is a derived candidate result,
+not an immutable repository fact from the historical c7db baseline.
+Scheduler closure identifies Public Projection as the remaining checkpoint.
+Preparation, Source Implementation, PI3 POSIX Source Validation PASS/CLOSED;
+Deployment Preparation PASS/CLOSED WITH BASELINE CORRECTION; Baseline Correction PASS/CLOSED.
+Baseline Attempt 1 remains FAIL / BASELINE_MISMATCH / SAFE.
+Corrected Baseline PASS; Baseline Receipt PASS / INDEPENDENTLY VERIFIED:
+014a901a56ebc613b2235ad434ae124024ae6e01e8e1960ce98e7df6709e9944.
+Deployment PASS/CLOSED, VERIFIED_DEPLOYED; Installed-State Review PASS.
+First Natural Pre-Slot Observation NOT_PROVEN / EXPECTED / NO FAILURE.
+First Natural Inventory Cycle PASS; inventory 2026-10-09T16:30:02-06:00;
+status 2026-10-09T16:30:03-06:00; cron 2026-10-09T22:30:01.240256+00:00.
+Device count 186; First Natural Public Projection PASS, count 25, zero contract failures.
+First Natural MQTT Acceptance PASS; retained topics 7/7; payload equality PASS.
+Observer credential accessed TRUE, value exposed FALSE, observer published FALSE.
+Deployment/review false execution flags are scoped to those invocations.
+Cron journal, state write, timestamps and contract checks establish natural execution.
+Broker retained observations and exact payload equality establish separate MQTT acceptance.
+No scheduler stdout or process result is reconstructed.
+
+Historical wrapper FAIL, PRODUCTION_FILES_UNCHANGED=FALSE, missing /tmp limitation,
+Independent Acceptance Attempt 1 failure and baseline Attempt 1 remain immutable.
+Rollback NOT_PERFORMED; Manual Second Adapter Execution NOT_AUTHORIZED / NOT_PERFORMED;
+Recurring Association Scheduler ACTIVE / AUTHORIZED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
+No runtime implementation or future roadmap work changed.
+Immediate gate: PI3 source synchronization to this closure commit ONLY; STOP and independent review.
+Ordered next task: PE-5 - MQTT and Passive Service Association; separately governed, NOT_STARTED.
+[Closure authority](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md).
+
+## Historical implementation notices before Public Projection closure
 
 ## Association Scheduler Deployment final governance closure — 2026-10-07
 
@@ -3762,21 +3810,31 @@ completion. Historical chronology elsewhere does not override it.
 | Independent Production Acceptance Attempt 2 | PASS |
 | PE-4 Home Assistant Association Adapter Independent Production Acceptance | PASS/CLOSED |
 | PE-4 Home Assistant Association Public Projection Preparation | PASS/CLOSED |
-| PE-4 Home Assistant Association Public Projection Source Implementation | IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS |
+| PE-4 Home Assistant Association Public Projection Source Implementation | PASS/CLOSED |
 | PE-4 Home Assistant Association Public Projection PI3 POSIX Source Validation | PASS/CLOSED |
 | PE-4 Home Assistant Association Public Projection Deployment Preparation | PASS/CLOSED WITH BASELINE CORRECTION |
 | PE-4 Home Assistant Association Public Projection Deployment Baseline Correction | PASS/CLOSED |
-| PE-4 Home Assistant Association Public Projection Corrected Baseline Validation | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |
+| PE-4 Home Assistant Association Public Projection Corrected Baseline Validation | PASS |
 | PE-4 Home Assistant Association Public Projection Baseline Validation Attempt 1 | FAIL / BASELINE_MISMATCH / SAFE |
-| PE-4 Home Assistant Association Public Projection Deployment | NOT STARTED / PREPARED FOR SEPARATE AUTHORIZATION |
-| PE-4 Home Assistant Association Public Projection Production Execution | NOT STARTED |
+| PE-4 Home Assistant Association Public Projection Deployment | PASS/CLOSED |
+| PE-4 Home Assistant Association Public Projection Production Execution | PASS |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment Preparation | PASS/CLOSED |
 | PE-4 Home Assistant Association Adapter Scheduler Deployment | PASS/CLOSED |
 | Recurring Scheduler Operation | ACTIVE / AUTHORIZED |
 | First Natural Scheduled Invocation | OBSERVED |
 | First Natural Scheduled State Publication | PASS |
 | Manual Second Adapter Execution | NOT AUTHORIZED / NOT PERFORMED |
-| PE-4 | NOT COMPLETE |
+| Public Projection Baseline Receipt | PASS / INDEPENDENTLY VERIFIED |
+| Public Projection Installed-State Review | PASS |
+| First Natural Public Projection Pre-Slot Observation | NOT_PROVEN / EXPECTED / NO FAILURE |
+| First Natural Public Projection Inventory Cycle | PASS |
+| First Natural Public Projection Count | 25 |
+| First Natural Public Projection MQTT Acceptance | PASS |
+| Public Projection Retained MQTT Topics | 7/7 |
+| Public Projection Retained Payload Equality | PASS |
+| PE-5 | NOT STARTED |
+| Historical vs Current Lifecycle Test-Binding Correction | PASS/CLOSED |
+| PE-4 | PASS/CLOSED |
 | Phase 7A | ACTIVE |
 | Rollback | NOT PERFORMED |
 
@@ -4017,6 +4075,20 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+**PE-4 Home Assistant Association Public Projection Production Closure and Completion Evaluation**
+
+UNCOMMITTED/UNACCEPTED candidate objective; accepted PE-4 remains NOT_COMPLETE.
+The exact committed binding-correction prerequisite is preserved; full closure regression
+and acceptance remain separately authorized.
+
+Public Projection PASS/CLOSED; PE-4 PASS/CLOSED after repository-wide prerequisite audit.
+Evidence OPERATOR_SUPPLIED. No Codex PI3 access or production action.
+Immediate gate: PI3 source synchronization to this closure commit ONLY; STOP and independent review.
+Phase 7A ACTIVE; PE-5 NOT_STARTED; rollback NOT_PERFORMED.
+No new production validation, deployment, inventory, adapter, MQTT, HA or credential action.
+
+### Historical objective before Public Projection production closure
+
 **PE-4 Home Assistant Association Public Projection Deployment Baseline Correction**
 
 PASS/CLOSED. Deployment Preparation PASS/CLOSED WITH BASELINE CORRECTION.
@@ -4190,6 +4262,42 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+
+### PE-4 Home Assistant Association Public Projection Post-Closure Source Synchronization and Independent Review
+
+NOT STARTED / REQUIRES SEPARATE AUTHORIZATION. This is a proposed post-closure
+handoff, conditional on complete final closure validation PASS, independent final
+review, separately authorized closure commit/push and independent GitHub verification.
+Current candidate: Public Projection closure NOT YET ACCEPTED; PE-4 NOT YET ACCEPTED
+AS COMPLETE. Accepted Public Projection NOT_CLOSED; PE-4 NOT_COMPLETE.
+
+After those gates, synchronize PI3 release-source to the actual accepted final
+closure commit ONLY; STOP and perform independent read-only source review.
+The actual PI3 source baseline is UNKNOWN. If still at c7db29f, first separately
+synchronize the accepted 30010c54 binding correction ONLY; STOP and independently
+review that source before separately synchronizing the final closure commit.
+Neither synchronization nor independent source review has occurred for this future
+closure commit. Documenting this handoff authorizes no source synchronization,
+deployment, validator, inventory, adapter, MQTT, HA, credential, cron or rollback action.
+
+#### Mandatory whole-repository documentation consistency audit
+
+After final closure commit/push/independent GitHub verification and required PE-4
+source synchronization/independent review, perform a separate, separately governed
+WHOLE-REPOSITORY DOCUMENTATION CONSISTENCY AUDIT. REQUIRED_PENDING; begin read-only
+and classify authoritative documentation as CURRENT, HISTORICAL_INTENTIONALLY_PRESERVED
+or STALE_REQUIRES_UPDATE. Resolve its governance obligations before leaving PE-4
+governance for PE-5 or unrelated roadmap implementation. This audit is not performed
+or bundled with this closure correction.
+
+### PE-5 - MQTT and Passive Service Association
+
+NEXT ROADMAP CAPABILITY after PE-4; not the immediate operational/governance action.
+PE-5 NOT_STARTED; separate governance and authorization required after the PE-4
+handoff and mandatory documentation audit are resolved. No PE-5 work is authorized.
+Phase 7A ACTIVE; closing PE-4 does not close the remaining passive-enrichment roadmap.
+
+### Historical next tasks before Public Projection production closure
 
 ### PE-4 Home Assistant Association Public Projection Corrected Pre-Deployment PI3 Baseline Validation
 

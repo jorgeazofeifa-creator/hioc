@@ -1,4 +1,4 @@
-from test_pe4_ha_association_public_projection_test_binding_correction import current_artifact_bindings, verify_source_binding
+from test_pe4_ha_association_public_projection_test_binding_correction import closure_artifact_bindings, verify_source_binding
 """Actual implementation tests; all Windows inputs synthetic, no production I/O."""
 import ast
 import copy
@@ -388,7 +388,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
             self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
             current=(ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n')
             changed={i['path']:i for i in closure['closure_artifacts']}
-            prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json').read_bytes());changed.update({i['path']:i for i in prep['artifacts']});changed.update(current_artifact_bindings())
+            prep=json.loads((ROOT/'governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json').read_bytes());changed.update({i['path']:i for i in prep['artifacts']});changed.update(closure_artifact_bindings())
             if item['path'] in changed:
                 self.assertEqual(hashlib.sha256(current).hexdigest(),changed[item['path']]['sha256'])
             else:self.assertEqual(current,raw)
