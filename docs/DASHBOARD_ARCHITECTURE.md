@@ -12,7 +12,7 @@ This document owns the architectural boundary between HIOC operational truth and
 - how the current storage-managed dashboard relates to repository YAML
 - the safe direction for a future YAML-managed dashboard deployment
 
-It does not own project direction, visual language, page intent, engine behavior, MQTT contracts, entity schemas, or the implementation roadmap. Those remain with the focused documents linked in [Related Documents](#related-documents).
+It does not own project direction, visual language, page intent, engine behavior, MQTT contracts, entity schemas, or the implementation roadmap. Those remain with the focused documents linked in [Related Documents](#12-related-documents).
 
 ## 1. Purpose
 

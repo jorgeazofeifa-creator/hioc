@@ -1,3 +1,4 @@
+from test_pe4_documentation_consistency_correction import successor as documentation_successor, current_binding
 """Repository-only governance of operator-supplied credential evidence."""
 import copy
 import hashlib
@@ -138,7 +139,9 @@ class CredentialClosureTests(unittest.TestCase):
                     implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-public-projection-implementation.json").read_bytes())
                     self.assertEqual(before,git("show",implementation['starting_commit']+":"+path),path)
                     bound=next(i for i in implementation['implementation_artifacts'] if i['path']==path)
-                    self.assertEqual(hashlib.sha256(current).hexdigest(),bound['sha256'],path)
+                    if path in documentation_successor()['documentation_paths']:
+                        current_binding(path)
+                    else: self.assertEqual(hashlib.sha256(current).hexdigest(),bound['sha256'],path)
                 else:self.assertEqual(before,current,path)
         for path in ("pi4/lib/hioc/home_assistant_association.py","pi4/bin/hioc-home-assistant-association.py"):
             self.assertEqual(git("ls-tree","-r","--name-only",BASE,"--",path),b"")

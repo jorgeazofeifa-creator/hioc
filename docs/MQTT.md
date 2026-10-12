@@ -50,13 +50,13 @@ home/infrastructure/hioc/inventory/summary
 home/infrastructure/hioc/inventory/status
 ```
 
-The PE-4 public projection source is **implemented in the repository, not deployed**;
-PI3 POSIX validation and deployment remain separately gated. When separately
-validated and deployed, its five-field optional device object can flow only
-through existing inventory and inventory/devices payloads. No new topic or
-association aggregate is authorized; retained QoS 0, one connection, local files
-before MQTT and current failure isolation remain unchanged. This is a source
-contract, not evidence of live public projection.
+The PE-4 public projection has accepted PI3 POSIX validation, deployment and production
+acceptance: **PASS/CLOSED**, on OPERATOR_SUPPLIED evidence in the
+[final closure](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md).
+Its five-field optional device object flows only through existing inventory and
+inventory/devices payloads. No new topic or association aggregate is authorized;
+retained QoS 0, one connection, local files before MQTT and failure isolation remain
+unchanged. This PE-4 publication does not implement PE-5; no fresh live observation is claimed.
 
 ## Platform Topics
 

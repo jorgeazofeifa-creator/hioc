@@ -1,5 +1,12 @@
 # HIOC Release Process
 
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
+Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
+Current lifecycle: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle).
+
+The following Action G closure status, limitations and next task are historical
+checkpoint evidence; they do not assert the present project next task.
+
 ## Current Action G production governance closure — 2026-10-05
 
 Action G is **PASS/CLOSED** after exactly one production execution using
@@ -51,7 +58,7 @@ records, existing release/static validator, bytecode-free Python compilation
 and schema parsing, full diff review and git diff --check. No generated or
 untracked artifacts; line-ending warnings are not failures.
 
-This current closure supersedes prior pending-G status and retry instructions.
+At that checkpoint, this closure superseded prior pending-G status and retry instructions.
 All earlier checkpoint entries retain their historical meaning and chronology;
 they do not assert current pending status. This documentation-only checkpoint
 does not access PI3/PI5 or execute any production lifecycle operation.

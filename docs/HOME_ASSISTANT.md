@@ -12,10 +12,11 @@ PE-4 Home Assistant Association is governed separately by
 [PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md).
 The current MQTT/YAML integration is consumer-side context, not permission to
 read registries, `.storage`, recorder databases, entity states, or credentials.
-PE-4.0B.1 production preflight is COMPLETE / PASS. It proved HA OS and the
-current HTTP endpoint without credentials or registry/state access. PE-4.0B.2
-authenticated discovery and the association adapter remain not started and
-separately gated; the preflight does not authorize either.
+PE-4.0B.1 credential-free preflight and authenticated 2a/2b proof are PASS/CLOSED.
+The dedicated post-identity association adapter, independent production acceptance
+and sanitized Public Projection are PASS/CLOSED; recurring scheduler ACTIVE/AUTHORIZED.
+See the [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle). Evidence is OPERATOR_SUPPLIED; private HA identifiers remain private.
+This correction grants no API access or execution; PE-5 remains NOT_STARTED.
 
 PE-4.0B.2a is frozen to authenticated `GET /api/` followed by WebSocket
 authentication at `/api/websocket`, with no command or data enumeration. See

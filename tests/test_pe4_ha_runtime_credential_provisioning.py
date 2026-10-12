@@ -1,3 +1,4 @@
+from test_pe4_documentation_consistency_correction import successor as documentation_successor, current_binding
 """Synthetic-only filesystem/security tests. Never open /etc or request credentials."""
 import ast
 import contextlib
@@ -689,7 +690,9 @@ class GovernanceTests(unittest.TestCase):
                 implementation=json.loads((ROOT/"governance/pe4/pe4-ha-association-public-projection-implementation.json").read_bytes())
                 self.assertEqual(before,subprocess.check_output(["git","show",implementation['starting_commit']+":"+path],cwd=ROOT),path)
                 bound=next(i for i in implementation['implementation_artifacts'] if i['path']==path)
-                self.assertEqual(hashlib.sha256(after).hexdigest(),bound['sha256'],path)
+                if path in documentation_successor()['documentation_paths']:
+                    current_binding(path)
+                else: self.assertEqual(hashlib.sha256(after).hexdigest(),bound['sha256'],path)
             else:self.assertEqual(before,after,path)
             if path.endswith(".sh"):
                 self.assertNotIn(b"/etc/hioc",after)

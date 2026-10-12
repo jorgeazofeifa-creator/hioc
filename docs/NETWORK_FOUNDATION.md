@@ -36,7 +36,7 @@ Confirmed assignments:
 
 ## MQTT Data Flow
 
-Repository-supported HIOC publishers include the history engine, Incident Engine v2, inventory engine, platform-status publisher, and read-only runtime validator. The separately deployed PI4 MQTT Health Publisher publishes toolkit health data; its implementation is outside this repository and detailed outputs require production verification. Topic contracts are documented in [MQTT.md](MQTT.md).
+Repository-supported HIOC publishers include the history engine, Incident Engine v2, inventory engine, platform-status publisher. The runtime validator is read-only and is not a publisher. The separately deployed PI4 MQTT Health Publisher publishes toolkit health data; its implementation is outside this repository and detailed outputs require production verification. Topic contracts are documented in [MQTT.md](MQTT.md).
 
 ## Critical Dependencies
 
@@ -47,6 +47,6 @@ Repository-supported HIOC publishers include the history engine, Incident Engine
 | PI5 Home Assistant | PI3 `192.168.100.252` for DNS | Confirmed |
 | Pi-hole | Local Unbound at `127.0.0.1:5335` for the observed recursive-resolution path | Confirmed by production observation; detailed configuration requires verification |
 | HIOC runtime | PI3 availability, cron, deployed files, persistent state, and configured data sources | Confirmed |
-| Home Assistant integrations | PI3-hosted MQTT, NUT, and HIOC-generated data where configured | Repository-derived; exact production integration inventory requires verification |
+| Home Assistant integrations | Configured MQTT broker (placement unestablished), NUT, and HIOC-generated data where configured | Repository-derived; exact production integration inventory requires verification |
 
 These are current operational dependencies, not a completed implementation of the future topology or digital-twin roadmap.

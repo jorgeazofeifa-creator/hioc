@@ -2,7 +2,8 @@
 
 ## Corrected PE-4.0B.2b execution closure - 2026-10-06
 
-**Current PE-4.0B.2b: PASS/CLOSED; PE-4.0C: NOT STARTED.**
+**Historical corrected 2b checkpoint: PE-4.0B.2b: PASS/CLOSED; PE-4.0C: NOT STARTED.**
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
 This repository closure records operator-supplied completed production execution
 and independent read-only review; Codex did not remotely inspect production.
 Canonical authority: [execution closure](../governance/pe4/pe4-0b2b-execution-closure.json).
@@ -42,6 +43,9 @@ privacy scan, compatibility-state schema/HA binding and clean source postcheck.
 Review used no credential or network and did not execute the discovery client.
 Evidence is referenced only: not accessed, copied, recreated, mutated or deleted.
 
+The following outcome and next checkpoint describe the historical 2b closure,
+not the present project next task.
+
 The first exact-version-gate FAIL remains immutable historical evidence; this
 corrected PASS supersedes it as the authoritative current 2b outcome. D/E/F/G and
 2a retain PASS/CLOSED, E handoff ACCEPTED, Compatibility Resilience audit and
@@ -53,8 +57,8 @@ rollback or PE-4.0C occurs during this repository closure.
 
 ## Historical checkpoint chronology
 
-Earlier checkpoint statements below are historical and superseded by the current
-closure above; their historical evidence remains unchanged.
+The preceding 2b closure and earlier checkpoint statements below are historical.
+Current lifecycle and documentation-correction sequencing belong to the [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle).
 
 ## Compatibility resilience correction - 2026-10-06
 

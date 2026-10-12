@@ -1,3 +1,4 @@
+from test_pe4_documentation_consistency_correction import current_binding, verify_document_history, PREDECESSOR as DOCUMENTATION_PREDECESSOR
 """Repository-only closure proof; sanitized operator evidence, no native execution."""
 import ast,copy,hashlib,json,re,subprocess,unittest
 from pathlib import Path
@@ -56,7 +57,8 @@ class PublicProjectionClosureTests(unittest.TestCase):
   self.assertTrue(all(v is False for v in R['upgrade_authorizations'].values()))
  def test_historical_chronology_preserved(self):
   old=subprocess.check_output(['git','show',HISTORICAL_PRODUCTION_SOURCE+':docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode()
-  now=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8')
+  verify_document_history('docs/HIOC_MASTER_PLAN.md')
+  now=subprocess.check_output(['git','show',DOCUMENTATION_PREDECESSOR+':docs/HIOC_MASTER_PLAN.md'],cwd=ROOT).decode()
   for start,end in [('# Historical Checkpoint Chronology','# Implementation Status'),('# Historical Operator Preparation Chronology',None)]:
    a=old.split(start,1)[1];b=now.split(start,1)[1]
    if end:a=a.split(end,1)[0];b=b.split(end,1)[0]
@@ -72,11 +74,15 @@ class PublicProjectionClosureTests(unittest.TestCase):
   walk(R)
  def test_current_artifacts_bound(self):
   expected={i['path'] for i in R['artifacts']}|{str(P.relative_to(ROOT)).replace('\\','/'),str(P.with_suffix('.schema.json').relative_to(ROOT)).replace('\\','/')}
-  changed=set(subprocess.check_output(['git','diff','--name-only',CLOSURE_PREDECESSOR],cwd=ROOT).decode().splitlines())
-  changed.update(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],cwd=ROOT).decode().splitlines())
+  changed=set(subprocess.check_output(['git','diff','--name-only',CLOSURE_PREDECESSOR,DOCUMENTATION_PREDECESSOR],cwd=ROOT).decode().splitlines())
   self.assertEqual(changed,expected)
   for i in R['artifacts']:
-   raw=current_index(i['path'])
+   raw=subprocess.check_output(['git','show',DOCUMENTATION_PREDECESSOR+':'+i['path']],cwd=ROOT)
+   successor_paths={a['path'] for a in json.loads(current_index('governance/pe4/pe4-documentation-consistency-correction.json'))['artifacts']}
+   if i['path'] in successor_paths:
+    current_binding(i['path'])
+   else:
+    self.assertEqual(current_index(i['path']),raw)
    self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
  def test_attempt_one_exact_immutable(self):
   old=json.loads(subprocess.check_output(['git','show',HISTORICAL_PRODUCTION_SOURCE+':governance/pe4/pe4-ha-association-public-projection-deployment-baseline-correction.json'],cwd=ROOT))

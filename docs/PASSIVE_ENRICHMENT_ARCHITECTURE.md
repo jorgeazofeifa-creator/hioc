@@ -1,6 +1,6 @@
 # Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3.0 ARCHITECTURE APPROVED; PE-3.1 EXECUTABLE CONTRACT FROZEN; IMPLEMENTATION NOT STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3 COMPLETE - PRODUCTION VALIDATED; PE-4 PASS/CLOSED; PUBLIC PROJECTION PASS/CLOSED; PHASE 7A ACTIVE; PE-5 NOT_STARTED**
 
 This document is the implementation-ready design for the remaining Phase 7A
 passive-enrichment work. It does not authorize executable changes, production
@@ -140,9 +140,9 @@ by default.
 | Retained prior inventory | Previous generated inventory supplied to `merge_records` | Prior public device record and first/last-seen state | Preserves stable identities and prior records; current evidence can update selected fields | Aggregate `sources`, `first_seen`, `last_seen` | Historical candidates cannot be distinguished from selected values |
 | Derived classification | `classify_device`, `operator_role`, `inventory_class`, health and monitoring helpers | roles, public role, class, display name, status, observation and health fields | Deterministic keyword and state rules after source merge | Result exists, but derivation inputs/rule version are not recorded per field | Derived value may look observed; no explanation/confidence envelope |
 | Local services and sockets | systemd and listening-socket collection | service name/type/status/port/device owner | Stable service construction, then dependency enrichment | `source=systemd` or `ss` | Device descriptive enrichment is not obtained from services |
-| Home Assistant registry metadata | No repository ingestion path found | Planned names, areas, device/entity associations | None | Home Assistant consumes HIOC inventory; it is not a proven enrichment producer | Requires a future read-only, secret-safe adapter and explicit authority contract |
+| Home Assistant registry metadata | Accepted dedicated read-only post-identity association adapter | Private device/entity associations; sanitized public association summary only | Cannot replace identity, canonical IP, liveness, health or operator Asset fields | Private schema 1.1 producer and five-field Public Projection PASS/CLOSED on OPERATOR_SUPPLIED evidence | No generic registry ingestion into central reconciliation; PE-5 NOT_STARTED |
 | MQTT metadata | No central inventory enrichment subscriber found | HIOC inventory and summaries are published retained | None as an input | MQTT is transport/publication today | Legacy/external publishers must not silently become enrichment authority |
-| MAC/OUI vendor lookup | No repository implementation found | None today; `vendor` may arrive from known or integration records | None | Not implemented | Requires pinned local data, license/version governance, and deterministic fallback |
+| MAC/OUI vendor lookup | Original pre-PE3 source audit found no implementation; later PE-3 private manufacturer producer is complete | Private manufacturer sidecars; `vendor` may arrive from known or integration records | No OUI identity/liveness authority | PE-3 acceptance is separately recorded | Pinned data, license/version and deterministic fallback remain governed |
 | Legacy network probe | Separate governed producer publishes bounded PI5/network evidence | Configured PI5 identity/reachability | Does not feed central `inventory.py` merge in repository evidence | External MQTT producer with its own governed configuration | Must not be mistaken for central enrichment or a second identity authority |
 
 `reverse_dns`, subnet scanning, ping, and SNMP helpers exist, but Safe Active
@@ -174,9 +174,9 @@ Implementation anchors and coverage are:
 | Services/relationships | `LocalServiceDriver`, `build_services`, `build_topology`, `build_dependencies`, `enrich_services` | stable device ownership and configured parent hints | topology, dependency, service enrichment, and collector-ownership tests |
 | Serialization/consumers | `pi4/bin/hioc-inventory-engine.py`, `pi4/lib/hioc/core/schemas.py`, Home Assistant packages/dashboards | top-level schema only; public selected values and summaries | inventory, schema/core, dashboard dynamic-truth, inventory-presentation, and watch-device suites |
 
-No repository path proved ingestion from Home Assistant registries, MQTT
-metadata, or an OUI reference. Those are unresolved/planned sources, not
-current capabilities. Repository searches also found no approved enrichment
+The dedicated HA association producer and PE-3 private manufacturer producer are
+accepted; neither is generic central inventory observation ingestion. No central
+MQTT metadata subscriber is proved. Repository searches found no approved enrichment
 path that directly assigns a stable ID from a name or changes canonical IP
 outside central inventory reconciliation.
 
@@ -430,8 +430,9 @@ production validation are complete.
    [PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md](PE4_HOME_ASSISTANT_ACCESS_PRIVACY_CONTRACT.md).
    PE-4.0B.1 credential-free production preflight and the official 2a interface
    research are complete. PE-4.0B.2a execution, 2b registry/schema discovery,
-   and the adapter remain not started.
-   Any later read-only Home Assistant adapter uses a proved supported interface and cannot infer
+   adapter deployment, acceptance and Public Projection are PASS/CLOSED; scheduler
+   ACTIVE/AUTHORIZED on OPERATOR_SUPPLIED evidence. PE-5 NOT_STARTED.
+   The accepted read-only Home Assistant adapter uses a proved supported interface and cannot infer
    availability or replace canonical identity or operator Asset fields.
 6. **PE-5 - Passive service and MQTT association provenance:** describe existing
    relationships without making transport evidence an identity authority.
@@ -444,7 +445,9 @@ production validation are complete.
    automations, scripts, scenes, triggers, dependencies, and functional impact.
 10. **PE-9 - Service & Infrastructure Dependency Intelligence:** technical
     service dependencies, failure propagation, cause, impact, and topology.
-11. **Retention/archival and maintenance workflows:** separately designed and
+11. **PE-10 - Application, Integration & Service Assurance:** planned / not started;
+    follows PE-8 impact and PE-9 dependency models, as defined in the Master Plan.
+12. **Retention/archival and maintenance workflows:** separately designed and
     approved; no lifecycle semantics are implied by this specification.
 
 Implementation packages PE-1 through PE-6 are bounded as follows:
@@ -537,7 +540,7 @@ production validated without changing public inventory contracts. Evidence is
 in [PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md](PE1_HOSTNAME_ENRICHMENT_EVIDENCE.md).
 PE-2.0 and the PE-2.1 implementation design are approved; PE-2.1 is complete and
 production validated. PE-3.0 through PE-3.3 and Actions 1–10 are complete,
-including external dataset validation, production deployment, generation, PI3
-validation, final Evidence Report, and administrative closure. PE-4.0A and
-PE-4.0B.1 are complete; PE-4.0B.2, PE-4.0C, implementation, and deployment
-remain not started and separately gated.
+including external dataset validation, deployment, generation and PI3 validation.
+PE-4 authenticated proof, registry/schema discovery, association contract, adapter
+deployment/acceptance, scheduler and Public Projection are complete: PE-4 PASS/CLOSED.
+Phase 7A ACTIVE; PE-5 NOT_STARTED; documentation consistency correction is the current gate.

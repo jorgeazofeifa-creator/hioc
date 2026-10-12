@@ -1,6 +1,6 @@
 # PE-3 Manufacturer Reference Enrichment Specification
 
-Status: **PE-3.0 ARCHITECTURE APPROVED; PE-3.1 REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
+Status: **PE-3.0 ARCHITECTURE APPROVED; PE-3.1 REPOSITORY IMPLEMENTED; PRODUCTION VALIDATED; PE-3 COMPLETE**
 
 Official-source compatibility preserves evidence without inventing claims:
 organization normalization removes only U+200B/U+200E and collapses TAB as
@@ -256,7 +256,10 @@ altering identity or Asset state.
 - **PE-5:** passive service/MQTT association cannot override manufacturer merely
   because a service name resembles a vendor.
 
-PE-4 through PE-9 definitions remain unchanged and are not started.
+PE-4 association and Public Projection are PASS/CLOSED. PE-5 and later definitions
+remain unchanged and not started/planned. Independent HA manufacturer enrichment
+mentioned above remains a separately approved future field contract, not an existing
+PE-4 field or an OUI identity/availability authority.
 
 ## Production validation plan
 

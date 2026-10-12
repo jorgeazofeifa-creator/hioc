@@ -1,3 +1,4 @@
+from test_pe4_documentation_consistency_correction import successor as documentation_successor, current_binding as documentation_binding, PREDECESSOR as DOCUMENTATION_PREDECESSOR
 """Governed historical/current test identities; repository-only, no production access."""
 import ast
 import copy
@@ -109,7 +110,10 @@ def validate_closure_successor(record=None,schema=None,correction=None):
  if accepted['binding_exception_paths']!=list(EXCEPTIONS):
   raise ValueError('exact four-path boundary')
  for item in accepted['current_lifecycle_test_bindings']:
-  identity(current_index(item['path']),item,'current_')
+  identity(git('show',CORRECTION_COMMIT+':'+item['path']),item,'current_')
+  if item['path'] in documentation_successor()['existing_binding_tests']:
+   documentation_binding(item['path'])
+  else: identity(current_index(item['path']),item,'current_')
  sources=record['sources']
  if len(sources)!=101 or sources[-4:]!=correction_artifact_sources():
   raise ValueError('missing historical or correction source bindings')
@@ -125,12 +129,16 @@ def validate_closure_successor(record=None,schema=None,correction=None):
  expected_paths=sorted(set(CLOSURE_PATHS)-{CLOSURE_RECORD,CLOSURE_SCHEMA})
  if [item['path'] for item in record['artifacts']]!=expected_paths:
   raise ValueError('exact closure artifact boundary')
- changed=set(git('diff','--name-only',CORRECTION_COMMIT).decode().splitlines())
- changed.update(git('ls-files','--others','--exclude-standard').decode().splitlines())
+ # Accepted closure delta remains an immutable historical checkpoint.
+ changed=set(git('diff','--name-only',CORRECTION_COMMIT,DOCUMENTATION_PREDECESSOR).decode().splitlines())
+ documentation_successor()
  if changed!=set(CLOSURE_PATHS):
   raise ValueError('unexplained closure changed path')
  for item in record['artifacts']:
-  identity(current_index(item['path']),item)
+  identity(git('show',DOCUMENTATION_PREDECESSOR+':'+item['path']),item)
+  if item['path'] in documentation_successor()['authorized_paths']:
+   documentation_binding(item['path'])
+  else: identity(current_index(item['path']),item)
  checkpoint=[i for i in record['pe4_completion_audit']['prerequisites']
              if i['checkpoint']=='Historical vs Current Lifecycle Test-Binding Correction']
  if checkpoint!=[dict(authority=RECORD,authority_commit=CORRECTION_COMMIT,
@@ -190,7 +198,10 @@ def validate_successor(record, schema):
    raise ValueError('original source identity mismatch')
   identity(git('show', commit+':'+path),item,'historical_')
   identity(git('show',lifecycle+':'+MASTER),item['historical_master_plan'])
-  raw=current_index(path);identity(raw,item,'current_')
+  raw=git('show',CORRECTION_COMMIT+':'+path);identity(raw,item,'current_')
+  if path in documentation_successor()['existing_binding_tests']:
+   documentation_binding(path)
+  else: identity(current_index(path),item,'current_')
   tree=ast.parse(raw.decode('utf8'))
   literals=[n.value for n in ast.walk(tree) if isinstance(n,ast.Constant) and isinstance(n.value,str)]
   if lifecycle+':'+MASTER not in literals:
@@ -204,7 +215,9 @@ def validate_successor(record, schema):
  current={item['path']:item for item in closure['artifacts']}
  for item in record['artifacts']:
   identity(git('show',CORRECTION_COMMIT+':'+item['path']),item)
-  identity(current_index(item['path']),current.get(item['path'],item))
+  if item['path'] in documentation_successor()['authorized_paths']:
+   documentation_binding(item['path'])
+  else: identity(current_index(item['path']),current.get(item['path'],item))
  return record
 def successor():
  record_raw=current_index(RECORD)
@@ -217,6 +230,7 @@ def closure_artifact_bindings():
  record=successor();closure=validate_closure_successor(correction=record)
  bindings={item['path']:item for item in record['artifacts']}
  bindings.update({item['path']:item for item in closure['artifacts']})
+ bindings.update({item['path']:item for item in documentation_successor()['artifacts']})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings
@@ -238,6 +252,14 @@ def verify_source_binding(item, historical_raw, original_record, original_commit
  if item['historical_only']:
   return
  current=normalized(item['path']) if current_raw is None else current_raw.replace(b'\r\n',b'\n')
+ # The original four-path correction is preserved; later documentary/test
+ # evolution has a distinct exact successor map, never a runtime exception.
+ candidate=documentation_successor()
+ if item['path'] in candidate['documentation_paths']+candidate['existing_binding_tests']:
+  bound=documentation_binding(item['path'])
+  if sha(current)!=bound['sha256'] or blob(current)!=bound['git_blob']:
+   raise ValueError('changed current source differs from documentation successor')
+  return
  if item['path'] not in EXCEPTIONS:
   if current!=historical_raw:
    raise ValueError('unexplained changed nonhistorical source')

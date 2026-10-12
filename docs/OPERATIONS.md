@@ -1,6 +1,11 @@
 ## Deployment Execution governance closure — 2026-10-06
 
-Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Independent Production Acceptance**.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
+Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
+OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
+Current authority: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle) and [accepted closure](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md).
+
+Historical authority at the 2026-10-07 reconciliation checkpoint: **PE-4 Home Assistant Association Adapter Independent Production Acceptance**.
 Durable Post-Run Reconciliation and Bounded Manual Production Validation are PASS/CLOSED
 through explicit repository governance closure. OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE:
 PI3 source synchronization to 96150db5e28b065a587ae09ce0522ef6bd66f3be PASS/rc0, independent
@@ -19,7 +24,7 @@ PE-4 work. Codex performed repository-only governance work and no production acc
 Next operator action: source synchronization to this closure commit only, STOP and independent
 review. Independent Production Acceptance remains the next separately governed project checkpoint.
 
-[Durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
+[Historical durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 Earlier dated checkpoint notices below are historical and superseded for current sequencing.
 
@@ -2096,21 +2101,21 @@ remains available for evidence capture.
 
 ## PE-3.1 manufacturer enrichment boundary
 
-PE-3.1 executable tooling is repository implemented but not deployed. A future operator
-obtains IEEE source files independently, records their SHA-256 values, and runs
+PE-3 tooling, deployment and PI3 validation are complete. The operator acquisition
+contract obtains IEEE source files independently, records their SHA-256 values, and runs
 an offline builder into an immutable local version directory under
 `data/manufacturer/versions/`. HIOC never downloads, bundles, or redistributes
 registry data. `MANUFACTURER_DB_PATH` is empty by default and a configured value
 selects one local normalized database; its manifest is the fixed adjacent
 `manufacturer-db.manifest.json`.
 
-The future manually invoked `hioc-generate-manufacturer.py` reads completed
+The manually invoked `hioc-generate-manufacturer.py` reads completed
 inventory and writes only private manufacturer sidecars. It has no schedule or
 inventory hook. Install, upgrade, and rollback preserve local databases,
-configuration, and sidecars. Production commands are deliberately deferred.
+configuration, and sidecars. Further production commands require separate authorization.
 The binding operational, failure, locking, and rollback behavior is
 [PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
-The future standalone manufacturer validator is strictly read-only and acquires
+The standalone manufacturer validator is strictly read-only and acquires
 no lock. Published database versions require no reader lock because the builder
 atomically publishes a complete immutable directory. Runtime sidecar validation
 observes independently loaded files and reports inconsistencies without repair.
@@ -2408,10 +2413,14 @@ reference `/tmp/hioc-pe2-production-validation-CtZ4WHUN`.
 | HIOC Inventory Engine | `*/30 * * * *` | Every 30 minutes | `/tmp/hioc-inventory-engine.lock` |
 | HIOC Platform Status | `17 3 * * *` | Daily at 03:17 | `/tmp/hioc-platform-status.lock` |
 | HIOC Incident Engine v2 | `*/1 * * * *` | Every minute | `/tmp/hioc-incident-engine.lock` |
+| PE-4 HA Association Adapter | `5,35 * * * *` | Minutes 5 and 35 | Dedicated internal nonblocking flock; no external overlap lock |
 
 All expected runtimes are **Not yet formally baselined**. A future baseline should use timestamped production measurements across normal and degraded conditions and must not be guessed from cron frequency.
 
-The confirmed crontab lines do not redirect stdout or stderr. Repository-managed Inventory and Platform Status jobs log internally to their documented files; Incident Engine v2 emits publication failures to stderr; History Engine may expose uncaught output through cron. Whether host cron mails, journals, or discards otherwise uncaptured output requires production verification. External toolkit logging also requires production verification.
+The ten earlier crontab lines do not redirect stdout or stderr. The accepted
+PE-4 association line discards both (`>/dev/null 2>&1`), uses the active isolated
+interpreter with `-I -B` and remains ACTIVE/AUTHORIZED on OPERATOR_SUPPLIED
+scheduler evidence; no cron mutation occurs in this correction. Repository-managed Inventory and Platform Status jobs log internally to their documented files; Incident Engine v2 emits publication failures to stderr; History Engine may expose uncaught output through cron. Whether host cron mails, journals, or discards otherwise uncaptured output requires production verification. External toolkit logging also requires production verification.
 
 ## External Pi4 Toolkit Jobs
 

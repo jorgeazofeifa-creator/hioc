@@ -1,6 +1,6 @@
 # PE-4 Public Projection production deployment closure
 
-Uncommitted, unaccepted repository-only closure candidate at predecessor 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5.
+Accepted PE-4 closure at 017686549acb27dbf7a8ad3577d0f84cf9f3f066; immediate predecessor 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5. This later documentary correction does not rewrite the accepted production record.
 NO ASSUMPTIONS. UNKNOWN -> VERIFY -> ESTABLISH EVIDENCE -> DECIDE -> ACT.
 All production observations below are OPERATOR_SUPPLIED. Codex did not access or observe PI3.
 
@@ -83,7 +83,7 @@ The ordered passive-enrichment roadmap names PE-5 - MQTT and Passive Service Ass
 No PE-5 work is started or authorized here.
 
 ### PASS / FAIL
-Candidate PASS; UNCOMMITTED/UNACCEPTED pending complete closure regression and acceptance. Repository closure only. Source sync ONLY is the next operator gate; STOP and independent review.
+Accepted PASS/CLOSED: Public Projection and PE-4. Repository closure only. Completed post-closure source synchronization/review is OPERATOR_SUPPLIED; the current gate is documentation consistency correction, still an uncommitted candidate.
 
 ## Repository-wide PE-4 prerequisite audit
 
@@ -180,12 +180,10 @@ NOT_STARTED lifecycle snapshots without changing historical records.
 
 ## Source-only handoff and independent review
 
-Historical observed PI3 source synchronization used c7db29f; current host state is UNKNOWN.
-Before any future source-only handoff, verify the actual source state and exact
-host/user/main/origin/clean/0/0/no Git operation. If the host remains at c7db29f,
-first synchronize only the accepted 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 binding correction and STOP
-for independent read-only source review. The later closure handoff must start from that
-verified correction baseline; this closure candidate direct parent is 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5.
+OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
+The original handoff instructions below describe the bounded source-only checkpoint.
+This correction neither repeats nor authorizes a host action; the accepted closure
+direct parent remains 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5.
 Verify exact parent/subject/eight-path changed set and actual record/schema/document/test
 identities before any fast-forward. Preserve original correction identities at the correction
 commit and verify the six current closure artifact bindings separately.

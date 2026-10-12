@@ -17,7 +17,8 @@ evidence: `/tmp/hioc-pe4-ha-discovery-22be880b`; report SHA256
 result SHA256 `1e11b6e512db860a8f9b2b6af1723c6aabafd75968d7fd643c891144a7a72195`.
 No remote evidence was read or changed. The new correction record binds current
 source; the original preparation record and earlier exact-version evidence remain
-historical. This notice supersedes older current-status statements below.
+historical. The status below describes that fixed 2026-10-06 correction checkpoint.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED. See [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle).
 
 D/E/F/G PASS/CLOSED; E handoff ACCEPTED; 2a PASS/CLOSED; first 2b ATTEMPTED /
 NOT COMPLETE; corrected 2b NOT STARTED; 0C NOT STARTED; PE-4 NOT COMPLETE;
@@ -41,8 +42,8 @@ The validated production-intended identity is dataset `local-ieee-ra`, version
 `2026-08-11-r1`, with 53,581 selectable records and 2 conflict keys. Deployment
 uses only its normalized database and adjacent manifest; raw source CSVs are not
 production dependencies. The exact supported version directory includes both
-identity components as `local-ieee-ra--2026-08-11-r1`. PE-3.3 is design-frozen
-but neither deployed nor production validated.
+identity components as `local-ieee-ra--2026-08-11-r1`. PE-3.3 and production Actions 1-10 are complete, including
+deployment and PI3 validation; evidence remains operator-supplied.
 
 ## Python runtime boundary
 
@@ -107,7 +108,8 @@ The source repository additionally contains `pi4`, `homeassistant`, `release`, `
 | Producer | Flow | Result |
 | --- | --- | --- |
 | External network probe | Network observations -> legacy MQTT | Inputs for history and incidents |
-| Inventory engine | Host, route, neighbor, DHCP, integration, known infrastructure -> reconciliation | Inventory JSON, events, retained MQTT |
+| Inventory engine | Host, route, neighbor, DHCP, integration, known infrastructure -> reconciliation; sanitized PE-4 post-identity projection | Inventory JSON, events, retained MQTT |
+| Dedicated HA association adapter | Read-only proved interface -> post-identity association | Private schema 1.1 association state; no central identity, liveness or Asset overwrite |
 | History engine | MQTT/local metrics -> CSV/statistics/forecast | History state and retained MQTT |
 | Incident Engine v2 | Telemetry + inventory + events -> correlation/lifecycle | Incident/timeline state and retained MQTT |
 | Platform status | `VERSION.yaml` + runtime status -> platform JSON | Local and retained platform state |
@@ -115,7 +117,7 @@ The source repository additionally contains `pi4`, `homeassistant`, `release`, `
 
 ## Scheduled Jobs
 
-The canonical production crontab has ten jobs: Daily Maintenance, Resource Monitor, UPS Monitor, DNS Watchdog, PI4 MQTT Health Publisher, HIOC Network Probe, History Engine, Inventory Engine, Platform Status, and Incident Engine v2. All are short-lived `flock -n` jobs. See the exact table and per-job contracts in [OPERATIONS.md](OPERATIONS.md#canonical-schedule).
+The canonical production crontab has eleven jobs (accepted scheduler evidence, OPERATOR_SUPPLIED): Daily Maintenance, Resource Monitor, UPS Monitor, DNS Watchdog, PI4 MQTT Health Publisher, HIOC Network Probe, History Engine, Inventory Engine, Platform Status, Incident Engine v2, and the PE-4 HA Association Adapter. The ten earlier jobs use external `flock -n`; the adapter at `5,35 * * * *` uses its dedicated internal nonblocking flock and discards stdout/stderr. See the exact table and per-job contracts in [OPERATIONS.md](OPERATIONS.md#canonical-schedule).
 
 ## Persistent Supporting Services
 
@@ -144,6 +146,7 @@ HIOC engines are scheduled jobs, not persistent HIOC systemd services or Docker 
 | `state/statistics.json` | History Engine statistics | Structured statistics document; 5-minute producer interval | MQTT/Home Assistant predictive views |
 | `state/inventory/*.json` | Inventory Engine canonical inventory and projections | Inventory schema plus projection documents; 30-minute producer interval | MQTT, Home Assistant, incident correlation, validator |
 | `state/inventory/enrichment.json` | PE-1 private hostname evidence envelope | Closed schema `1.0`; generated with inventory; production validated | Local validation only; not published to MQTT or consumer contracts |
+| `state/inventory/associations/home_assistant.json` | Dedicated HA association adapter | Private schema 1.1; accepted 5,35 scheduler | Sanitized five-field Public Projection after identity reconciliation; private IDs/names never published |
 | `state/inventory/enrichment_status.json` | PE-1 local generation status | Closed schema `1.0`; production status `online` | Local operational validation only |
 | `state/incidents/*.json` | Incident Engine lifecycle, history, summary, timeline | Current incident contracts in DATA_MODEL/MQTT; 1-minute producer interval | MQTT, Home Assistant, operator review |
 | `state/platform/version.json` | Platform Status version | Version manifest projection; daily producer interval | MQTT and validator |
@@ -190,7 +193,7 @@ See [NETWORK_FOUNDATION.md](NETWORK_FOUNDATION.md) for network dependencies. Cur
 
 ### Known and verified
 
-PI3/PI5/gateway addresses, current DHCP pool, ten cron entries, non-Git runtime model, listed logs/status files, July 29 deployment PASS, HIOC short-lived execution model, Unbound local listener, and port `8091` as Z-Wave JS UI rather than HIOC.
+PI3/PI5/gateway addresses, current DHCP pool, eleven cron entries including the accepted PE-4 association scheduler (OPERATOR_SUPPLIED), non-Git runtime model, listed logs/status files, July 29 deployment PASS, HIOC short-lived execution model, Unbound local listener, and port `8091` as Z-Wave JS UI rather than HIOC.
 
 ### Repository-derived
 
@@ -216,15 +219,12 @@ design and implementation design approved. PE-2.1 now provides deployed private
 `assets.json`, `assets_status.json`, and the local Asset CLI/validator and is
 production validated. Asset presentation/publication remains future work.
 
-PE-3.0 architecture is approved and the PE-3.1 executable contract is frozen in
-[PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md](PE3_MANUFACTURER_EXECUTABLE_CONTRACT.md).
-The repository-implemented runtime uses a locally transformed, checksum-verified database and a
-manually invoked separate generator for private manufacturer sidecars. Local
-acquisition/transformation is approved; registry content cannot enter Git or
-releases. PE-3.2 externally validated the production-intended dataset and
-manifest; neither is committed or deployed. No production manufacturer sidecar,
-schedule, public projection, or consumer exists. PE-3.3 is design approved;
-Production Actions 1 and 2 completed and Action 3 staging evidence is preserved.
-Action 4 is stopped at bounded staged-file permission normalization pending the
-approved repository-controlled resume. No dataset installation, sidecar
-generation, deployment, or PI3 production validation has occurred.
+PE-3.0 architecture, PE-3.1 implementation, PE-3.2 external dataset validation
+and PE-3.3 production Actions 1-10 are complete. A locally transformed, checksum-
+verified normalized database and adjacent manifest are selected through
+`MANUFACTURER_DB_PATH`; raw registry data is not committed or redistributed.
+The separately invoked generator produces private manufacturer sidecars; deployment,
+generation and PI3 validation PASSed under operator-supplied evidence. It adds no
+schedule, public projection or consumer contract. The earlier stopped Action 4
+is historical; its later governed completion is recorded in the
+[production runbook](PE3_MANUFACTURER_PRODUCTION_RUNBOOK.md).

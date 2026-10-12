@@ -1,5 +1,12 @@
 # HIOC Deployment
 
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
+Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
+Current lifecycle: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle).
+
+The following Action G closure status, limitations and next task are historical
+checkpoint evidence; they do not assert the present project next task.
+
 ## Current Action G production governance closure — 2026-10-05
 
 Action G is **PASS/CLOSED** after exactly one production execution using
@@ -51,7 +58,7 @@ records, existing release/static validator, bytecode-free Python compilation
 and schema parsing, full diff review and git diff --check. No generated or
 untracked artifacts; line-ending warnings are not failures.
 
-This current closure supersedes prior pending-G status and retry instructions.
+At that checkpoint, this closure superseded prior pending-G status and retry instructions.
 All earlier checkpoint entries retain their historical meaning and chronology;
 they do not assert current pending status. This documentation-only checkpoint
 does not access PI3/PI5 or execute any production lifecycle operation.
@@ -1080,7 +1087,11 @@ that evaluation or separate Action E execution authorization.
 
 Next checkpoint: `ACTION_E_REPREPARATION_READY_FOR_SEPARATE_AUTHORIZATION`.
 
-## Current D-to-E source synchronization prerequisite
+The following D-to-E prerequisite is historical; the post-closure release-source
+handoff is COMPLETED/PASS (OPERATOR_SUPPLIED), recorded in the
+[Master Plan](HIOC_MASTER_PLAN.md#next-planned-task).
+
+## Historical D-to-E source synchronization prerequisite
 
 Action E now requires both explicit commit arguments: `--governance-commit`
 selects the current consumer source commit, while `--action-d-governance-commit`

@@ -1,3 +1,4 @@
+from test_pe4_documentation_consistency_correction import successor as documentation_successor, current_binding
 """Repository-only declarative preparation specification, NOT a runtime implementation.
 All devices/state/read conditions below are synthetic in-memory fixtures. Existing
 pure adapter validators are reused; no adapter/filesystem/network entrypoint runs.
@@ -141,6 +142,9 @@ class PreparationGovernanceTests(unittest.TestCase):
             self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob'])
             if not item['historical_only']:
                 current=(ROOT/item['path']).read_bytes().replace(b'\r\n',b'\n')
+                if item['path'] in documentation_successor()['documentation_paths']+documentation_successor()['existing_binding_tests']:
+                    current_binding(item['path'])
+                    continue
                 if item['path'] in {'pi4/bin/hioc-inventory-engine.py','docs/DATA_MODEL.md','docs/MQTT.md'}:
                     # Preparation remains bound to BASE. Governed source implementation
                     # now owns the changed consumer and its truthful documentation identities.

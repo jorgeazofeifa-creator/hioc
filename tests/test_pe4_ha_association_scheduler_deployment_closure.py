@@ -1,3 +1,4 @@
+from test_pe4_documentation_consistency_correction import successor as documentation_successor, current_binding
 """Sanitized repository-only closure tests; no production access or installer execution."""
 import copy,hashlib,json,subprocess,unittest
 from datetime import datetime,timedelta,timezone
@@ -29,7 +30,9 @@ class SchedulerClosureTests(unittest.TestCase):
   self.assertEqual(len(R['sources']),69)
   for i in R['sources']:
    raw=self.blobs[i['path']];self.assertEqual(i['commit'],BASE);self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
-   if not i['historical_only']:self.assertEqual((ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n'),raw)
+   if not i['historical_only']:
+    if i['path'] in documentation_successor()['documentation_paths']: current_binding(i['path'])
+    else: self.assertEqual((ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n'),raw)
  def test_preparation_frozen_model_and_canonical_cron_exact(self):
   prep=json.loads(self.blobs['governance/pe4/pe4-ha-association-scheduler-deployment-preparation.json']);self.assertEqual(prep['status'],'PASS_CLOSED');self.assertEqual(R['frozen_scheduler'],prep['frozen_scheduler']);self.assertEqual(R['canonical_cron'],prep['canonical_cron']);self.assertEqual(R['prerequisites']['scheduler_preparation'],'PASS_CLOSED')
  def test_installer_sha_matches_frozen_preparation(self):

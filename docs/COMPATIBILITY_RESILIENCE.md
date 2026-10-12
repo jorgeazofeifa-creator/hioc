@@ -1,6 +1,6 @@
 # HIOC Compatibility Resilience and Dependency Drift Audit
 
-## Corrected PE-4.0B.2b production proof and closure - 2026-10-06
+## Historical corrected PE-4.0B.2b production proof and closure - 2026-10-06
 
 Operator-supplied completed execution and independent read-only review establish
 PE-4.0B.2b PASS/CLOSED. See the [canonical closure](../governance/pe4/pe4-0b2b-execution-closure.json)
@@ -14,8 +14,9 @@ No production access or execution occurs during this repository closure.
 
 ## Historical checkpoint chronology
 
-Earlier checkpoint statements below are historical and superseded by the current
-closure above; their historical evidence remains unchanged.
+The closure above and earlier statements below retain their dated checkpoint
+meaning. PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED. Present lifecycle and sequencing belong to the
+[Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle).
 
 ## Authority, boundary and defect
 

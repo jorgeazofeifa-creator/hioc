@@ -2460,7 +2460,7 @@ Repository and Deployment Hygiene, Release Boundary Hardening, Phase 7A.9, Ident
 
 #### Passive Enrichment Architecture and Specification
 
-Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3 COMPLETE; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-10 COMPLETE; ACTION 10 COMPLETE - NOOP_ALREADY_ABSENT; PRODUCTION DEPLOYMENT COMPLETE; PI3 VALIDATION COMPLETE; PE-4 IN PROGRESS - ACTION E PASS/CLOSED; ACTIONS F/G NOT STARTED**
+Status: **PHASE 7A IN PROGRESS; PE-0 COMPLETE - DESIGN APPROVED; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2 COMPLETE - PRODUCTION VALIDATED; PE-3 COMPLETE; PE-3.0 COMPLETE; PE-3.1 IMPLEMENTED - REPOSITORY VALIDATED; PE-3.2 COMPLETE - EXTERNAL DATASET VALIDATED; PE-3.3 COMPLETE - DESIGN APPROVED / REPOSITORY SYNCHRONIZED; PYTHON INSTALL MANAGER PRESENT; WINDOWS PYTHON PREREQUISITE COMPLETE - PRODUCTION OPERATOR VALIDATED; WINDOWS CPYTHON 3.13.X SUPPORTED - VALIDATED PATCH 3.13.15; CPYTHON 3.14.7 PRESENT - NOT HIOC-SUPPORTED; PE-3 ACTIONS 1-10 COMPLETE; ACTION 10 COMPLETE - NOOP_ALREADY_ABSENT; PRODUCTION DEPLOYMENT COMPLETE; PI3 VALIDATION COMPLETE; PE-4 PASS/CLOSED; PUBLIC PROJECTION PASS/CLOSED; ACTIONS D/E/F/G PASS/CLOSED**
 
 The implementation-ready design is maintained in
 [PASSIVE_ENRICHMENT_ARCHITECTURE.md](PASSIVE_ENRICHMENT_ARCHITECTURE.md). It
@@ -2580,7 +2580,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 3. **PE-3 - Manufacturer Reference Enrichment** — complete. Actions 1–10,
    production deployment, generation, PI3 validation, final Evidence Report,
    administrative Action 10 closure, and final governance closure are complete.
-4. **PE-4 - Home Assistant Association** — in progress; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation PASS/CLOSED (repository/synthetic only); deployment and scheduler NOT STARTED; PE-4 NOT COMPLETE.
+4. **PE-4 - Home Assistant Association** — PASS/CLOSED; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation, deployment, independent production acceptance and Public Projection PASS/CLOSED; scheduler ACTIVE/AUTHORIZED; PE-4 PASS/CLOSED. Production evidence remains OPERATOR_SUPPLIED.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
 6. **PE-6 - Classification & Metadata Quality** — not started.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
@@ -3245,8 +3245,8 @@ Public Projection closure draft against this corrected baseline.
 
 ## Public Projection production closure and PE-4 completion — 2026-10-09
 
-UNCOMMITTED/UNACCEPTED closure candidate; accepted Public Projection remains NOT_CLOSED
-and PE-4 remains NOT_COMPLETE until separately governed full validation and acceptance.
+Accepted Public Projection production closure at 017686549acb27dbf7a8ad3577d0f84cf9f3f066;
+PUBLIC_PROJECTION=PASS/CLOSED and PE4=PASS/CLOSED.
 Historical vs Current Lifecycle Test-Binding Correction PASS/CLOSED at
 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 is an exact machine-bound prerequisite.
 Its original correction artifacts and historical authority remain immutable; exactly four
@@ -3254,8 +3254,8 @@ current test exceptions retain accepted stage-0 identities and normalized checko
 
 PUBLIC_PROJECTION=PASS/CLOSED; PE4_COMPLETION_AUDIT=PASS; PE4=PASS/CLOSED.
 All production evidence is OPERATOR_SUPPLIED; Codex did not observe or access PI3.
-The candidate repository-wide audit includes the accepted binding correction and
-evaluates all mandatory PE-4 prerequisites. PE-4 closure is a derived candidate result,
+The accepted PE-4 completion audit includes the binding correction and evaluates
+all mandatory PE-4 prerequisites. PE-4 closure was derived at its accepted checkpoint,
 not an immutable repository fact from the historical c7db baseline.
 Scheduler closure identifies Public Projection as the remaining checkpoint.
 Preparation, Source Implementation, PI3 POSIX Source Validation PASS/CLOSED;
@@ -3280,7 +3280,8 @@ Independent Acceptance Attempt 1 failure and baseline Attempt 1 remain immutable
 Rollback NOT_PERFORMED; Manual Second Adapter Execution NOT_AUTHORIZED / NOT_PERFORMED;
 Recurring Association Scheduler ACTIVE / AUTHORIZED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
 No runtime implementation or future roadmap work changed.
-Immediate gate: PI3 source synchronization to this closure commit ONLY; STOP and independent review.
+OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
+Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
 Ordered next task: PE-5 - MQTT and Passive Service Association; separately governed, NOT_STARTED.
 [Closure authority](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md).
 
@@ -4075,15 +4076,16 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
-**PE-4 Home Assistant Association Public Projection Production Closure and Completion Evaluation**
+**PE-4 Documentation Consistency Correction**
 
-UNCOMMITTED/UNACCEPTED candidate objective; accepted PE-4 remains NOT_COMPLETE.
-The exact committed binding-correction prerequisite is preserved; full closure regression
-and acceptance remain separately authorized.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
+Audit PASS_CORRECTIONS_REQUIRED: 74 documents, 49 findings, 17 existing document paths.
+The successor correction is an uncommitted candidate; PE-4 closure remains accepted.
 
 Public Projection PASS/CLOSED; PE-4 PASS/CLOSED after repository-wide prerequisite audit.
 Evidence OPERATOR_SUPPLIED. No Codex PI3 access or production action.
-Immediate gate: PI3 source synchronization to this closure commit ONLY; STOP and independent review.
+OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
+Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
 Phase 7A ACTIVE; PE-5 NOT_STARTED; rollback NOT_PERFORMED.
 No new production validation, deployment, inventory, adapter, MQTT, HA or credential action.
 
@@ -4263,32 +4265,28 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 
 ## Next Planned Task
 
-### PE-4 Home Assistant Association Public Projection Post-Closure Source Synchronization and Independent Review
+### PE-4 Documentation Consistency Correction Validation and Independent Review
 
-NOT STARTED / REQUIRES SEPARATE AUTHORIZATION. This is a proposed post-closure
-handoff, conditional on complete final closure validation PASS, independent final
-review, separately authorized closure commit/push and independent GitHub verification.
-Current candidate: Public Projection closure NOT YET ACCEPTED; PE-4 NOT YET ACCEPTED
-AS COMPLETE. Accepted Public Projection NOT_CLOSED; PE-4 NOT_COMPLETE.
+Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
+The next numbered roadmap capability remains PE-5, NOT_STARTED and separately authorized.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
+Candidate correction acceptance remains pending validation, independent review and separately authorized commit/push.
 
 After those gates, synchronize PI3 release-source to the actual accepted final
 closure commit ONLY; STOP and perform independent read-only source review.
-The actual PI3 source baseline is UNKNOWN. If still at c7db29f, first separately
-synchronize the accepted 30010c54 binding correction ONLY; STOP and independently
-review that source before separately synchronizing the final closure commit.
-Neither synchronization nor independent source review has occurred for this future
-closure commit. Documenting this handoff authorizes no source synchronization,
+OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
+Documenting the completed handoff authorizes no new source synchronization,
 deployment, validator, inventory, adapter, MQTT, HA, credential, cron or rollback action.
 
 #### Mandatory whole-repository documentation consistency audit
 
-After final closure commit/push/independent GitHub verification and required PE-4
-source synchronization/independent review, perform a separate, separately governed
-WHOLE-REPOSITORY DOCUMENTATION CONSISTENCY AUDIT. REQUIRED_PENDING; begin read-only
-and classify authoritative documentation as CURRENT, HISTORICAL_INTENTIONALLY_PRESERVED
-or STALE_REQUIRES_UPDATE. Resolve its governance obligations before leaving PE-4
-governance for PE-5 or unrelated roadmap implementation. This audit is not performed
-or bundled with this closure correction.
+Read-only audit COMPLETED: PASS_CORRECTIONS_REQUIRED; all 74 documents reviewed,
+49 findings on 17 existing documentation paths. The current governed correction
+updates those paths and eight binding tests with the separately authorized successor
+[correction package](PE4_DOCUMENTATION_CONSISTENCY_CORRECTION.md). Historical
+checkpoint evidence is preserved. Correction validation and independent review,
+then separately authorized commit/push and closure remain required before PE-5.
+This uncommitted candidate authorizes no roadmap implementation.
 
 ### PE-5 - MQTT and Passive Service Association
 

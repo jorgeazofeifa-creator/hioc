@@ -1,3 +1,4 @@
+from test_pe4_documentation_consistency_correction import successor as documentation_successor, current_binding
 """Synthetic scheduler fixtures only. Never read or install a real crontab."""
 import copy,hashlib,importlib.util,json,subprocess,sys,types,unittest
 from pathlib import Path
@@ -7,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 P=ROOT/'governance/pe4/pe4-ha-association-scheduler-deployment-preparation.json'
 R=json.loads(P.read_bytes());S=json.loads(P.with_suffix('.schema.json').read_bytes())
 spec=importlib.util.spec_from_file_location('prepared_scheduler_test',ROOT/'tools/hioc-pe4-ha-association-scheduler-deploy.py');M=importlib.util.module_from_spec(spec);spec.loader.exec_module(M)
-COMMIT='a'*40
+COMMIT='8579bb9707a1b8fd9b525b66a5156f5e96bc2429'
 PRIOR=b'# unrelated comment  \nMAILTO=""\n\n'+M.PLATFORM+b'\n0,30 * * * * /synthetic/inventory\n'
 class Ops:
  def __init__(self,raw=PRIOR):self.raw=raw;self.installs=[];self.reads=0;self.rc=0;self.after=None;self.fail_install=False;self.fail_read_after=False;self.drift_at=None
@@ -24,6 +25,9 @@ class SchedulerPreparationTests(unittest.TestCase):
  @classmethod
  def setUpClass(cls):
   cls.blobs={i['path']:subprocess.check_output(['git','show',M.BASE+':'+i['path']],cwd=ROOT) for i in R['sources']}
+  # Model the original execution checkout, independently of current documentation.
+  execution_paths={i['path'] for i in R['sources']}|{M.RECORD,M.ACCEPTANCE,R['deployment_tool']['path']}
+  cls.execution_blobs={p:subprocess.check_output(['git','show',COMMIT+':'+p],cwd=ROOT) for p in execution_paths}
  def deploy(self,ops=None,guard=None):return M.deploy(COMMIT,ops or Ops(),guard or (lambda c:'stable'))
  def test_exact_cadence_runtime_flags_entrypoint_marker(self):
   self.assertEqual(M.MARKER,b'# HIOC_PE4_HA_ASSOCIATION');self.assertEqual(M.LINE,b'5,35 * * * * /home/jazofv1/hioc/runtime/pe4/active/bin/python -I -B /home/jazofv1/hioc/pi4/bin/hioc-home-assistant-association.py >/dev/null 2>&1');self.assertEqual(M.BLOCK,M.MARKER+b'\n'+M.LINE+b'\n')
@@ -142,11 +146,21 @@ class SchedulerPreparationTests(unittest.TestCase):
    elif a[0]=='rev-parse':
     path=a[1].split(':',1)[1];out=next(i['git_blob'] for i in R['sources'] if i['path']==path).encode()
    elif a[0]=='show':
-    commit,path=a[1].split(':',1);out=self.blobs[path] if commit==M.BASE else (ROOT/path).read_bytes().replace(b'\r\n',b'\n')
+    commit,path=a[1].split(':',1)
+    if commit==M.BASE:out=self.blobs[path]
+    elif commit==COMMIT:out=self.execution_blobs[path]
+    else:raise AssertionError(a)
    else:raise AssertionError(a)
    return types.SimpleNamespace(returncode=0,stdout=out)
   return run
- def gate(self,override=None):return M.source_gate(COMMIT,root=ROOT,run=self.fake_git(override))
+ def gate(self,override=None):
+  read_bytes=Path.read_bytes
+  execution_files={ROOT/p:raw for p,raw in self.execution_blobs.items()}
+  def historical_read(path):
+   if path in execution_files:return execution_files[path]
+   return read_bytes(path)
+  with patch.object(Path,'read_bytes',historical_read):
+   return M.source_gate(COMMIT,root=ROOT,run=self.fake_git(override))
  def test_actual_source_gate_exact_contract(self):self.assertEqual(self.gate()['starting_commit'],M.BASE)
  def test_source_commit_drift(self):
   with self.assertRaises(Exception):self.gate({('rev-parse','HEAD'):b'b'*40})
@@ -179,7 +193,9 @@ class SchedulerPreparationTests(unittest.TestCase):
  def test_all_bound_source_identities(self):
   for i in R['sources']:
    raw=self.blobs[i['path']];self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
-   if not i['historical_only']:self.assertEqual((ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n'),raw)
+   if not i['historical_only']:
+    if i['path'] in documentation_successor()['documentation_paths']: current_binding(i['path'])
+    else: self.assertEqual((ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n'),raw)
   self.assertEqual(hashlib.sha256((ROOT/R['deployment_tool']['path']).read_bytes().replace(b'\r\n',b'\n')).hexdigest(),R['deployment_tool']['sha256'])
  def test_no_auth_no_systemd_boot_manual_execution(self):
   self.assertFalse(R['scheduler_installation_authorized']);self.assertTrue(all(x is False for x in R['negative_evidence_by_codex'].values()));self.assertFalse(R['execution_policy']['forced_boot_run']);self.assertFalse(R['execution_policy']['immediate_run']);self.assertFalse(R['execution_policy']['manual_second_adapter_authorized']);self.assertEqual(R['frozen_scheduler']['service_timer'],'NONE_CRON_REPOSITORY_CONVENTION')

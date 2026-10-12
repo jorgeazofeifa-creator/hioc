@@ -19,15 +19,15 @@ The detailed status and sequencing authority is
 
 1. PE-1 - Hostname Enrichment — complete, production validated.
 2. PE-2 - Asset Foundation — complete, production validated.
-3. PE-3 - Manufacturer Reference Enrichment — PE-3.0 through PE-3.3 complete at
-   their stated design/repository/external-validation gates; production
-   deployment and PI3 validation remain pending.
-4. PE-4 - Home Assistant Association — not started.
+3. PE-3 - Manufacturer Reference Enrichment — PE-3.0 through PE-3.3 and
+   production Actions 1-10 complete; deployment and PI3 validation complete.
+4. PE-4 - Home Assistant Association — PASS/CLOSED; Public Projection PASS/CLOSED.
 5. PE-5 - MQTT and Passive Service Association — not started.
 6. PE-6 - Classification & Metadata Quality — not started.
 7. PE-7 - Expected Availability & Permanent IoT Monitoring — planned.
 8. PE-8 - Automation Correlation & Impact Analysis — planned.
 9. PE-9 - Service & Infrastructure Dependency Intelligence — planned.
+10. PE-10 - Application, Integration & Service Assurance - planned / not started.
 
 Retention/archival, DHCP service health/capacity, notification semantics,
 incident-history validator hardening, infrastructure disaster recovery, and

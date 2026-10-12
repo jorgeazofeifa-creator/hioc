@@ -10,7 +10,7 @@ It should not contain roadmap or implementation-phase information. For roadmap a
 
 Home Assistant association occurs after HIOC identity reconciliation in a
 [dedicated association layer](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md),
-with future private state `state/inventory/associations/home_assistant.json`.
+with accepted private schema 1.1 state `state/inventory/associations/home_assistant.json`.
 It does not create devices, participate in weak-IP promotion, supersede normalized
 MAC identity, or become a liveness source. Generic integration inventory ingestion
 must not receive HA registry records. HIOC stable device ID references the
@@ -29,12 +29,13 @@ HIOC devices or acquire identity/liveness authority. Failed cycles preserve the
 entire prior state; successful cycles may retire unconfirmed pairs into bounded
 private history without changing canonical inventory.
 
-The association producer retains the governed private schema 1.1 and private
-transaction/locking authority. The public projection's
+The association producer retains governed private schema 1.1 and private
+transaction/locking authority. The public projection
+[production closure](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md)
+is **PASS/CLOSED**, including PI3 POSIX validation, deployment and production acceptance.
+Evidence is OPERATOR_SUPPLIED; no fresh production observation occurs here. The
 [source implementation](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_IMPLEMENTATION.md)
-is **IMPLEMENTED / WINDOWS SYNTHETIC VALIDATION PASS; NOT DEPLOYED**.
-Actual PI3 POSIX source validation is pending separate authorization. No public
-projection currently exists in production by this checkpoint's authority.
+remains the historical source checkpoint, not current deployment-status authority.
 The inventory engine remains the sole public writer; the optional closed
 `home_assistant` device object contains associated=true, association_basis=strong_mac,
 entity_count, config-entry integration_domains and has_area_candidate only.

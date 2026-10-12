@@ -1,6 +1,6 @@
 # PE-3.1 Manufacturer Enrichment Implementation Design
 
-Status: **COMPLETE — EXECUTABLE CONTRACT FROZEN; REPOSITORY IMPLEMENTED; PRODUCTION PENDING**
+Status: **COMPLETE — EXECUTABLE CONTRACT FROZEN; REPOSITORY IMPLEMENTED; PRODUCTION VALIDATED; PE-3 COMPLETE**
 
 ## Purpose
 
@@ -116,7 +116,7 @@ contract. Future production validation uses synthetic lookup proof plus sanitize
 structural and aggregate verification for the locally generated real database;
 no registry rows or manufacturer names enter repository evidence.
 
-PE-3.1 executable implementation is repository validated. The next gate is a
-separately authorized push, followed later by governed local dataset,
-deployment, and production-validation checkpoints. PE-3 production deployment
-and PE-4 are not started.
+The original design gates (push, local dataset, deployment and PI3 validation)
+subsequently completed under PE-3 production Actions 1-10. PE-3 COMPLETE; PE-4
+and Public Projection PASS/CLOSED. Current documentation-correction sequencing
+belongs to the [Master Plan](HIOC_MASTER_PLAN.md#next-planned-task); PE-5 NOT_STARTED.

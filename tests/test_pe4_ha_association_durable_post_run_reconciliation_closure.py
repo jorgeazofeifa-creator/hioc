@@ -1,3 +1,4 @@
+from test_pe4_documentation_consistency_correction import verify_document_history, PREDECESSOR as DOCUMENTATION_PREDECESSOR
 """Repository-only closure tests; supplied PI3 evidence is never collected or executed here."""
 import copy,hashlib,importlib.util,json,subprocess,unittest
 from pathlib import Path
@@ -95,7 +96,7 @@ class DurableReconciliationClosureTests(unittest.TestCase):
   for row in ('| Historical Wrapper | FAIL / MANUAL REVIEW REQUIRED |','| Post-Run Reconciliation Attempt 1 | FAIL / HISTORICAL_EVIDENCE |','| Second Adapter Execution | NOT AUTHORIZED |'):self.assertIn(row,table)
   self.assertIn('Active Discovery remains postponed',current);self.assertIn('Phase 7A Passive Living Inventory ACTIVE',current)
  def test_original_master_chronology_immutable(self):
-  old=git('show',BASE+':docs/HIOC_MASTER_PLAN.md').decode();now=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');self.assertEqual(old.split('# Historical Checkpoint Chronology',1)[1].split('# Implementation Status',1)[0],now.split('# Historical Checkpoint Chronology',1)[1].split('# Implementation Status',1)[0])
+  verify_document_history('docs/HIOC_MASTER_PLAN.md');old=git('show',BASE+':docs/HIOC_MASTER_PLAN.md').decode();now=git('show',DOCUMENTATION_PREDECESSOR+':docs/HIOC_MASTER_PLAN.md').decode();self.assertEqual(old.split('# Historical Checkpoint Chronology',1)[1].split('# Implementation Status',1)[0],now.split('# Historical Checkpoint Chronology',1)[1].split('# Implementation Status',1)[0])
  def test_focused_document_provenance_limits_and_next_checkpoint(self):
   text=(ROOT/'docs/PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md').read_text(encoding='utf8')
   for value in ('OPERATOR_SUPPLIED_PRODUCTION_EVIDENCE','PRODUCTION_FILES_UNCHANGED=FALSE','PROTECTED_PRODUCTION_SURFACES_UNCHANGED=TRUE','UNAVAILABLE','RECORDED','Disappearance cause UNKNOWN','original bytes','FULL_ORIGINAL_ARTIFACT_REVALIDATION','ZERO_EVIDENCE_GAPS',NEXT):self.assertIn(value,text)
