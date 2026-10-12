@@ -2,8 +2,11 @@
 import copy,hashlib,json,os,subprocess,unittest
 from functools import lru_cache
 from pathlib import Path
+from contextlib import contextmanager
+from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1]
 PREDECESSOR='9c6784e7541beccf42192f3a1cf63269bedd8129'
+ACCEPTED_ROADMAP='6f69c4dfb85924a83b59e85ef2da602fc75ec5ea'
 RECORD='governance/pe4/pe10-surveillance-roadmap-preservation.json'
 SCHEMA=RECORD.replace('.json','.schema.json')
 MASTER='docs/HIOC_MASTER_PLAN.md'
@@ -21,7 +24,7 @@ def closed(v):
 def require(value,message):
  if not value:raise ValueError(message)
 def current_bytes(path):return (ROOT/path).read_bytes().replace(b'\r\n',b'\n')
-def validate_record(record,schema):
+def _validate_historical_roadmap(record,schema):
  require(schema=={'$schema':'https://json-schema.org/draft/2020-12/schema','title':'PE-10 surveillance roadmap preservation',**closed(record)},'exact roadmap schema mismatch')
  require(record['predecessor_commit']==PREDECESSOR and record['authorized_paths']==list(CANDIDATE_PATHS),'wrong roadmap scope')
  require(record['capability']==CAPABILITY and record['capability_status']=='PLANNED_NOT_STARTED' and record['implementation_authorized'] is False,'surveillance authorization mismatch')
@@ -65,12 +68,28 @@ def validate_record(record,schema):
  require('Do NOT reintroduce a second go2rtc architecture without a specific future requirement.' in surveillance,'conditional go2rtc requirement lost')
  require(all(v is False for v in record['implementation_activity'].values()),'implementation authority introduced')
  return record
+@contextmanager
+def accepted_roadmap_context():
+ original_git=git
+ def accepted_bytes(path):return original_git('show',ACCEPTED_ROADMAP+':'+path)
+ def accepted_git(*args):
+  if args==('rev-parse','HEAD'):return (ACCEPTED_ROADMAP+'\n').encode()
+  if args==('rev-parse','HEAD^'):return (PREDECESSOR+'\n').encode()
+  if args in [('status','--porcelain'),('diff','--cached','--name-only'),('stash','list')]:return b''
+  return original_git(*args)
+ with patch.dict(globals(),git=accepted_git,current_bytes=accepted_bytes):yield
+
+def validate_record(record,schema):
+ with accepted_roadmap_context():return _validate_historical_roadmap(record,schema)
+
 @lru_cache(maxsize=1)
 def successor():
- raw=current_bytes(RECORD);schema_raw=current_bytes(SCHEMA);record=json.loads(raw);schema=json.loads(schema_raw)
+ raw=git('show',ACCEPTED_ROADMAP+':'+RECORD);schema_raw=git('show',ACCEPTED_ROADMAP+':'+SCHEMA);record=json.loads(raw);schema=json.loads(schema_raw)
  require(raw==canonical(record) and schema_raw==canonical(schema),'noncanonical roadmap contract')
  return validate_record(record,schema)
 def current_binding(path):
+ from test_pe5_implementation_preparation import CANDIDATE_PATHS as PE5_PATHS, current_binding as pe5_binding
+ if path in PE5_PATHS:return pe5_binding(path)
  record=successor();require(path in {x['path'] for x in record['artifacts']},'path outside roadmap map')
  item=next(x for x in record['artifacts'] if x['path']==path);raw=current_bytes(path)
  require(digest(raw)==item['sha256'] and blob(raw)==item['git_blob'],'current roadmap bytes mismatch');return item

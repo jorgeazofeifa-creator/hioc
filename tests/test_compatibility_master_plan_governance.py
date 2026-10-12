@@ -25,7 +25,8 @@ class CompatibilityMasterPlanGovernanceTests(unittest.TestCase):
         for obsolete in ("2a is not prepared", "repeat separate successor preparation", "no PE-3 dataset is deployed"):
             self.assertNotIn(obsolete, text)
         next_task = text.split("## Next Planned Task", 1)[1]
-        self.assertTrue(next_task.strip().startswith("### Post-Closure Next Task — UNKNOWN / NOT YET AUTHORIZED"))
+        from test_pe5_implementation_preparation import assert_current_sequence
+        assert_current_sequence(text)
     def test_development_and_operations_acceptance(self):
         self.assertIn("External Dependency Compatibility Review", section("# Working Agreement", "# Implementation Status"))
         self.assertIn("Operational Dependency Compatibility Acceptance", section("## Operations Acceptance Standard", "# Working Agreement"))

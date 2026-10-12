@@ -543,4 +543,6 @@ production validated. PE-3.0 through PE-3.3 and Actions 1–10 are complete,
 including external dataset validation, deployment, generation and PI3 validation.
 PE-4 authenticated proof, registry/schema discovery, association contract, adapter
 deployment/acceptance, scheduler and Public Projection are complete: PE-4 PASS/CLOSED.
-Phase 7A ACTIVE; PE-5 NOT_STARTED; documentation consistency correction is the current gate.
+Historical gate snapshot at 6f69c4dfb85924a83b59e85ef2da602fc75ec5ea: Phase 7A ACTIVE; PE-5 NOT_STARTED; documentation consistency correction is the current gate.
+
+Current sequencing is superseded by the user executive decision in the [Master Plan](HIOC_MASTER_PLAN.md#current-objective): PE-5 Implementation Preparation is PREPARED_FOR_REVIEW; PE-5 runtime implementation remains NOT_STARTED and NOT_AUTHORIZED. PE-4 and Documentation Consistency Correction remain PASS/CLOSED; Phase 7A remains ACTIVE. [Preparation](PE5_IMPLEMENTATION_PREPARATION.md) defines the first separately authorized pure resolver checkpoint. This update changes no enrichment or identity contract.

@@ -97,7 +97,8 @@ class CorrectedDiscoveryClosureTests(unittest.TestCase):
         current = master.split("# Implementation Status", 1)[1].split("# Historical Operator Preparation Chronology", 1)[0]
         self.assertIn("| PE-4.0B.2b | PASS/CLOSED |", current)
         self.assertIn("| PE-4.0C | PASS/CLOSED |", current)
-        self.assertTrue(current.split("## Next Planned Task", 1)[1].strip().startswith("### Post-Closure Next Task — UNKNOWN / NOT YET AUTHORIZED"))
+        from test_pe5_implementation_preparation import assert_current_sequence
+        assert_current_sequence(current)
         self.assertIn("Compatibility Diagnostics UX", master)
         self.assertIn("does not prove compatibility with every future HA release", " ".join(current.split()))
         self.assertIn("operator-supplied", current)

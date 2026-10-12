@@ -2582,6 +2582,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
    administrative Action 10 closure, and final governance closure are complete.
 4. **PE-4 - Home Assistant Association** — PASS/CLOSED; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation, deployment, independent production acceptance and Public Projection PASS/CLOSED; scheduler ACTIVE/AUTHORIZED; PE-4 PASS/CLOSED. Production evidence remains OPERATOR_SUPPLIED.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
+   Implementation remains NOT_STARTED. Selected next roadmap checkpoint by executive decision; Implementation Preparation is current and PREPARED_FOR_REVIEW. Runtime/production implementation requires separate authorization.
 6. **PE-6 - Classification & Metadata Quality** — not started.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
    models Asset-layer expected-online intent for wall switches, smart switches,
@@ -3081,6 +3082,8 @@ obsolete historical addressing, never a current endpoint. Historical measurement
 are not permanent capacity assumptions. Examples are illustrative, not observations.
 Future requirements, constraints, qualifications and acceptance criteria remain
 operative when the corresponding checkpoint is separately authorized.
+
+**Historical surveillance-planning applicability snapshot at 6f69c4dfb85924a83b59e85ef2da602fc75ec5ea:** the following preparation/publication and UNKNOWN sequencing sentences preserve their accepted historical state. The current PE-5 executive decision in Current Objective / Next Planned Task supersedes sequencing only; the complete original surveillance source and future implementation safeguards remain unchanged.
 
 The original review and completion directions are preserved as governance gates.
 They do not grant implementation, production, staging, commit or push authorization
@@ -7121,6 +7124,29 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+**PE-5 - MQTT and Passive Service Association: Implementation Preparation**
+
+The user selected PE-5 as the next authorized HIOC roadmap checkpoint and authorized
+Implementation Preparation ONLY. Executive sequencing decision, preserved exactly:
+
+> if everything related to P4-4 and everything before it is completed successfully and documented, then start with PE-5.
+
+Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED;
+Documentation Consistency Correction PASS/CLOSED. Completed preceding work stays closed.
+PE-5 runtime implementation NOT_STARTED. PE-5 preparation is PREPARED_FOR_REVIEW;
+PE-5 runtime/production implementation NOT AUTHORIZED. No new production evidence.
+Current governed checkpoint and next task: PE-5 Implementation Preparation candidate
+review, then separate authorization of the bounded first implementation checkpoint.
+[Preparation findings and first checkpoint](PE5_IMPLEMENTATION_PREPARATION.md).
+First implementation checkpoint: PE-5.1 - Private Local Service Association Contract and Pure Resolver.
+That checkpoint is NOT_STARTED and NOT_IMPLEMENTED; it needs separate authorization.
+Surveillance remains PLANNED_NOT_STARTED future PE-10 work; Active Discovery remains
+postponed. No other roadmap item is reordered and no completed checkpoint is reopened.
+
+### Historical post-closure objective snapshot at 6f69c4dfb85924a83b59e85ef2da602fc75ec5ea
+
+The following closure and UNKNOWN statements were current at that accepted commit; they are historical after the executive PE-5 decision.
+
 
 **PE-4 Documentation Consistency Correction Closure**
 
@@ -7326,6 +7352,23 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-5 Implementation Preparation — current governed checkpoint
+
+The explicit user executive sequencing decision resolves the former UNKNOWN next-task
+state. PE-5 is selected; only preparation is authorized. The immediate governed work
+is preparation-candidate review and separate authorization of PE-5.1 - Private Local Service Association Contract and Pure Resolver.
+PE-5 runtime implementation NOT_STARTED; runtime/production implementation NOT AUTHORIZED.
+Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Documentation Consistency Correction PASS/CLOSED.
+The read-only sequencing review and completed prerequisites are repository evidence;
+no current production state is inferred from them. No PI3/PI5/HA/broker access,
+source synchronization, deployment, MQTT mutation, credentials, scheduling or rollback
+is authorized. The ordered PE-6 through PE-10 and other future checkpoints stay intact.
+See [PE-5 Implementation Preparation](PE5_IMPLEMENTATION_PREPARATION.md).
+
+### Historical post-closure next-task snapshot at 6f69c4dfb85924a83b59e85ef2da602fc75ec5ea
+
+The following UNKNOWN statements preserve the prior valid sequencing state, not the current next task.
+
 
 ### Post-Closure Next Task — UNKNOWN / NOT YET AUTHORIZED
 
@@ -7367,6 +7410,9 @@ then separately authorized commit/push and closure remain required before PE-5.
 This uncommitted candidate authorizes no roadmap implementation.
 
 ### PE-5 - MQTT and Passive Service Association
+
+**Current selection:** PE-5 Implementation Preparation is the current authorized checkpoint, PREPARED_FOR_REVIEW; runtime implementation remains NOT_STARTED / NOT AUTHORIZED. See the current section above and the preparation document. The following NEXT ROADMAP CAPABILITY / no-authorization paragraph is preserved as the historical pre-executive-decision definition; it no longer controls current sequencing.
+
 
 NEXT ROADMAP CAPABILITY after PE-4; not the immediate operational/governance action.
 PE-5 NOT_STARTED; separate governance and authorization required after the PE-4
@@ -7960,6 +8006,21 @@ Do not begin Active Discovery until Phase 7A has been completed.
 ---
 
 # Decision Log
+
+## PE-5 executive sequencing decision — preparation only
+
+> if everything related to P4-4 and everything before it is completed successfully and documented, then start with PE-5.
+
+The user explicitly selects PE-5 - MQTT and Passive Service Association as the next
+roadmap checkpoint, beginning with Implementation Preparation. This supersedes only
+the former current UNKNOWN sequencing state; its historical snapshots are preserved.
+The authorization permits repository preparation, not arbitrary implementation or
+production work. PE-4 and all completed prerequisites remain closed. The first
+implementation checkpoint is PE-5.1 - Private Local Service Association Contract and Pure Resolver,
+requiring separate authorization. Source/private relationships do not acquire identity,
+canonical-IP, liveness, health, Asset, incident or expected-availability authority.
+
+
 
 ## 2026-07
 

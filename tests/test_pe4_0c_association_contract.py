@@ -276,7 +276,8 @@ class AssociationContractTests(unittest.TestCase):
         master = (ROOT / "docs/HIOC_MASTER_PLAN.md").read_text(encoding="utf-8")
         current = master.split("# Implementation Status", 1)[1].split("# Historical Operator Preparation Chronology", 1)[0]
         self.assertIn("| PE-4.0C | PASS/CLOSED |", current)
-        self.assertTrue(current.split("## Next Planned Task", 1)[1].strip().startswith("### Post-Closure Next Task — UNKNOWN / NOT YET AUTHORIZED"))
+        from test_pe5_implementation_preparation import assert_current_sequence
+        assert_current_sequence(current)
         self.assertIn("Compatibility Diagnostics UX", master)
         self.assertEqual(CONTRACT["runtime_adapter"], "NOT_IMPLEMENTED")
         self.assertEqual(CONTRACT["next_checkpoint_state"], "NOT_STARTED")

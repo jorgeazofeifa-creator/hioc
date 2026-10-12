@@ -1,0 +1,305 @@
+# PE-5 - MQTT and Passive Service Association: Implementation Preparation
+
+Status: **PREPARED_FOR_REVIEW**. Runtime implementation **NOT_STARTED / NOT AUTHORIZED**.
+Authoritative sequencing: [Master Plan](HIOC_MASTER_PLAN.md#current-objective).
+Baseline: `6f69c4dfb85924a83b59e85ef2da602fc75ec5ea`, main and origin/main synchronized.
+
+## Executive authority and lifecycle
+
+> if everything related to P4-4 and everything before it is completed successfully and documented, then start with PE-5.
+
+The user separately specified that this decision selects PE-5 - MQTT and Passive
+Service Association and authorizes Implementation Preparation only. The literal
+P4-4 wording above is preserved. It is not an alternative technical definition.
+Phase 7A remains ACTIVE; PE-4 and Public Projection remain PASS/CLOSED;
+Repository and Deployment Hygiene and Documentation Consistency Correction remain
+complete. No completed checkpoint is reopened. PE-5 runtime implementation remains
+NOT_STARTED. Earlier UNKNOWN / NOT YET AUTHORIZED decisions remain historical.
+Surveillance remains PLANNED_NOT_STARTED future PE-10 work; Phase 7B Safe Active
+Discovery remains postponed. Existing PE-6 through PE-10 ordering is preserved.
+
+This is a Windows repository candidate. No staging, commit, push, PI3, PI5,
+Home Assistant, broker, credentials, production access or production mutation is
+authorized. The proposed first implementation checkpoint requires separate review
+and authorization. The candidate is not a deployment checkpoint.
+
+## Requirements established from repository authority
+
+The committed baseline Master Plan's Phase 7A source architecture, Passive
+Enrichment Architecture reference, ordered PE-1 through PE-10 roadmap, and PE-5
+next-capability definition are the starting authority. Its closure sections
+establish completed preceding work and prior NOT_STARTED/UNKNOWN state. Current
+insertions record the executive decision without deleting those snapshots.
+
+[Passive Enrichment Architecture](PASSIVE_ENRICHMENT_ARCHITECTURE.md), its
+implementation sequence and PE-5 row, specifies service_associations and MQTT
+association evidence using **existing service ownership and declared configured
+mappings**. Presence is neither a device observation nor health evidence. It
+requires edge stability, missing-endpoint, duplicate/conflict and no-liveness
+checks; a bounded relationship diff; and **no publish/subscribe behavior change**.
+Provenance foundations precede this work. Automation dependency inference is later
+work. Unstable IDs, cycles, topic leakage or protected-field changes are STOP or
+rollback conditions. This does not mandate an MQTT subscriber.
+
+The three-layer design makes observations, descriptive enrichment and user-owned
+Assets separate authorities. Associations run after canonical identity
+reconciliation. Optional metadata does not own identity, canonical IP, observation
+recency, health, incidents or Asset edits. Missing metadata is not an outage.
+
+## Existing architecture and direct evidence
+
+Paths below are repository source evidence, not observed production state. The
+preparation record binds their baseline Git objects. No collector was executed.
+
+| Evidence | Established behavior and limitation |
+|---|---|
+| Master Plan: Phase 7A, Passive Enrichment Architecture, ordered PE checkpoints, Current Objective / Next Planned Task | Passive enrichment resumes after completed prerequisite work. PE-5 selected only by the new executive decision; preparation is current. |
+| PASSIVE_ENRICHMENT_ARCHITECTURE.md: Source inventory, Canonical data model, Provenance/confidence, Implementation sequence, Public/private boundaries | Existing local service ownership and configured mappings support descriptive relationships. Central inventory MQTT enrichment subscriber was not found. Scanning and active interrogation are outside passive inputs. |
+| pi4/lib/hioc/inventory.py: normalize_mac, stable_device_id | Existing normalizer and stable-ID implementation must be reused. stable_device_id can fall back to IP/hostname/name: a dev_ ID alone does not prove MAC-backed identity. |
+| inventory.py: systemd_services, listening_services, LocalServiceDriver, build_services | Local systemctl unit metadata and ss socket metadata feed existing services. Sources are systemd and ss, not remote interrogation. |
+| inventory.py: discover_inventory | Canonical devices are reconciled first; services attach to the reconciled local owner. Missing local owner gives no services, with no arbitrary fallback. |
+| inventory.py: build_dependencies, enrich_services | Existing first-service-per-type dependencies and display labels are heuristics, not independent association authority. |
+| pi4/lib/hioc/core/drivers.py | Driver registry validates/copies records. Service source stays systemd/ss; driver source defaults on device records do not change service provenance. |
+| pi4/lib/hioc/core/schemas.py | Inventory schema 1.0 checks top-level structures. Device/service objects are not a closed PE-5 association contract. |
+| pi4/lib/hioc/assets.py | Private schema 1.0 stable-ID keyed friendly name/location/purpose/notes. No existing service-association field or identity migration authority. |
+| pi4/bin/hioc-inventory-engine.py | Finalized inventory written locally before public MQTT publication. Hostname sidecar and optional PE-4 projection are separately isolated. No MQTT metadata ingestion stage. |
+| pi4/lib/hioc/core/correlation.py; pi4/bin/hioc-incident-engine-v2.py | Incident/correlation consumers already use device health, service owner IDs and dependency graph. New associations must not silently become their inputs. |
+| homeassistant/packages/hioc_living_inventory.yaml; homeassistant/dashboards/living_inventory.yaml; homeassistant/dashboards/hioc_dashboard_v2.yaml | Existing services topic, service counts and inventory displays are consumers whose payloads must remain compatible. |
+
+### Existing inventory and identity contracts
+
+Finalized inventory schema 1.0 has updated, devices, services, topology,
+dependencies and summary. Existing service objects contain stable id, name, type,
+device_id, status, source and optional port. build_services recognizes mosquitto,
+pihole-FTL, dnsmasq, nut-server/nut-monitor, ssh and cron; local ports 1883, 53 and
+67 supply MQTT/DNS/DHCP socket services. Existing IDs are reused, including
+svc_mqtt_listener and svc_network_53/67; PE-5 must not invent replacement IDs.
+
+Service status is local unit/socket metadata, not remote availability or physical
+device health. Collection command failure currently becomes an empty service
+collection. Therefore an empty collection proves neither successful collection
+nor absence, health, outage or expected availability. Inventory updated is a
+cycle timestamp; it cannot be fabricated into a per-service observed_at.
+
+DHCP snapshots, neighbors, gateway and local-interface records contribute through
+the existing inventory merger. Their provenance/retention/canonical-IP rules stay
+owned by that merger. PE-5 cannot change those rules, resurrect historical devices,
+refresh first_seen/last_seen, or claim every existing ID is strong identity.
+
+## MQTT architecture and security boundary
+
+[MQTT contract](MQTT.md) documents default base home/infrastructure/hioc; actual
+production base/broker/configuration is UNKNOWN. pi4/lib/hioc/core/config.py loads
+toolkit configuration, then HIOC configuration, then matching process environment
+overrides. Only source was inspected; real configuration/environment secrets were
+not read. Broker is configured, not assumed localhost or PI3.
+
+pi4/lib/hioc/mqtt.py is the Core MQTT 3.1.1 **publish-only** client: QoS 0,
+retain=True by default, configured host, port default 1883, optional username and
+password, bounded socket timeout. No TLS contract is established by this client.
+This is a repository limitation, not permission to expose credentials or invent a
+new credential/TLS architecture. Credential reads/connections are forbidden here.
+
+| Publisher / consumer | Existing public contract |
+|---|---|
+| hioc-inventory-engine.py | Seven retained topics: inventory, inventory/devices, inventory/services, inventory/topology, inventory/dependencies, inventory/summary, inventory/status; one client connection, local writes first. Optional platform/compatibility publication also exists. |
+| Incident engine v2 | Retained active/history/summary and timeline/status payloads via ordered publication; validated local JSON precedes publication; final online status is not published after failure. |
+| History engine | Existing bounded legacy telemetry subscription and history/forecast/statistics/status publication. This is not a central inventory enrichment subscriber. |
+| hioc-validate-mqtt.py | Bounded read-only contract validation subscriptions. This is not service-discovery ingestion. |
+| pi4-tools/scripts/hioc-network-probe.sh | Separate governed PI5 telemetry publisher; not automatically a canonical inventory association input. |
+| Home Assistant consumers | Existing service/device/count topics; PE-4 optional five-field object only in inventory and inventory/devices, with no new topic. |
+
+MQTT transport evidence is not identity, freshness, liveness or health authority.
+Current subscribers in telemetry/validation are real; the absence finding applies
+specifically to central inventory enrichment. MQTT Discovery is a planned passive
+source, not proof of an implemented central subscriber. HA Discovery publication
+must not be confused with Discovery ingestion. No new topic, payload, retained
+behavior, publisher ownership, subscriber, broker connection or credential path
+is proposed for the first checkpoint. Later configured mapping evidence requires
+its own source authority, freshness, conflict, privacy and deployment review.
+
+## Passive source eligibility and unknown facts
+
+| Source | Observation / identity / IP | Freshness, provenance, strength, retention, credentials, production |
+|---|---|---|
+| systemd local unit list | Existing stable service ID, local owner device_id, type/status; no independent MAC or remote IP evidence | Snapshot cycle time only; source=systemd. Strong ownership association only after verifying existing MAC-backed canonical owner. No separate service-history contract found. Local command, no new credential required by source code. Actual production-active state UNKNOWN. |
+| ss local socket list | Existing socket-derived ID, local owner, port/type/status; no independent remote device evidence | Snapshot cycle time only; source=ss. Same ownership-only basis. No separate service-history contract. Local command; no new source credential. Actual production-active state UNKNOWN. |
+| Declared configured MQTT mappings | Required by PE-5 architectural row; exact deployed mapping store, identifiers and producer UNKNOWN | Candidate later source only; authority, timestamp/expiry, conflict policy, credentials and retention must be established before use. No ingestion implementation authorized. |
+| Trusted integration JSON / known infrastructure | Existing passive descriptive/device sources referenced by source map | Not proof of service-association authority. Any later service evidence needs a source contract and explicit authority. Current production config UNKNOWN. |
+| DHCP / neighbor / HA association | Existing device evidence / HA-specific metadata, not independently approved service evidence | Consume finalized identity only. DHCP/neighbor authority remains in merger; HA private registry association remains PE-4. No new credentials or registry queries. |
+
+No port scan, ping, reverse DNS request, SNMP/HTTP interrogation, banner grab,
+remote TCP health check, authenticated service discovery or fingerprint request is
+approved as PE-5 passive collection. Existing active helpers do not imply approval.
+
+## Ownership and invariants
+
+| Surface | Owner and PE-5 restriction |
+|---|---|
+| Canonical inventory / MAC / IP | Existing inventory reconciliation; no new devices, merge, ID generation policy, IP promotion, DHCP/neighbor overwrite or timestamp refresh. Reuse normalize_mac/stable_device_id. |
+| Local service observations | Existing LocalServiceDriver; consume finalized records only. Similar names/types/ports/broker topics never join unrelated devices. |
+| MQTT | Existing publishers and public consumers; transport/presence is descriptive evidence only. No publish/subscribe behavior change. |
+| PE-4 / HA metadata | Dedicated private producer and read-only public projection; no registry ownership, schema change, scheduler/credential change or liveness promotion. |
+| Assets | User-owned private metadata; no friendly-name/location/purpose/notes overwrite or automatic alias/identity migration. |
+| Liveness / health / expected availability | Existing observation/incident policies; no inferred good/bad/expected state from service presence or missing optional metadata. |
+| Incidents / correlation / dependency intelligence | Existing engine/graph; no new incident taxonomy, association-fed dependency authority or health side effect. Automation dependency inference remains later. |
+| History / retention / restart | Existing retention and private/public stores; no current/history mixing, stale resurrection or historical timestamps promoted as current. First resolver has no persistence. |
+| Dashboard / public projection | Existing payload contracts unchanged. No raw private association identifiers in public inventory or topics. |
+
+Private associations are sensitive even when IDs are pseudonymous. Raw MAC/IP,
+names, HA IDs, service labels, locations, notes, registry values, authenticated
+URLs and credentials remain private. Git/tests use synthetic values only. Logs
+and Evidence Reports use bounded source codes/counts and hashes, not raw data.
+No credentials are needed by the proposed pure resolver.
+
+## Relationship to completed PE-4
+
+[Data Model](DATA_MODEL.md) and [HA Association Contract](PE4_HOME_ASSISTANT_ASSOCIATION_CONTRACT.md)
+establish post-identity metadata, strong versus weak basis, closed private state,
+validated counts/timestamps/membership, private/public separation, atomic publish,
+last-known-good protection and negative tests. home_assistant_association.py and
+home_assistant_public_projection.py demonstrate isolated producer and read-only
+consumer, scheduler/credential separation and safe omission of optional metadata.
+core/state.py provides a tmp-write/replace pattern, not a complete PE-5 safety gate.
+
+Reuse these principles and Evidence Report practice. Do not copy HA registry MAC
+uniqueness semantics, WebSocket/API credential flow, entity IDs, Linux filesystem
+pins, schema 1.1 or five-field public projection into local-service ownership.
+The pure resolver does not need a scheduler, atomic writer, lock, retained state
+or last-known-good file. Any later persistence/publication needs those separately
+reviewed protections; their absence now is not a waiver for later integration.
+
+## First implementation checkpoint for separate authorization
+
+**PE-5.1 - Private Local Service Association Contract and Pure Resolver**
+
+This is a proposed design within the established PE-5 architecture, not a claim
+that these new fields or artifacts already exist. Minimum future implementation:
+
+- pi4/lib/hioc/service_association.py: pure resolver and semantic validation.
+- governance/pe5/pe5-local-service-association-envelope.schema.json: closed private output.
+- tests/test_pe5_local_service_association.py: synthetic positive/negative/invariant cases.
+
+No collector, state writer, inventory-engine hook, broker integration, scheduler,
+public projection or runtime deployment is included. Inputs are a caller-supplied
+finalized inventory schema 1.0 snapshot, explicit timezone-aware evaluation time,
+and independently approved nonnegative integer max_snapshot_age_seconds (bool
+rejected). No guessed default expiry. Production policy value remains UNKNOWN.
+Reject invalid/future/stale snapshots safely; never emit them as current truth.
+
+Resolve source=systemd/ss only against a unique existing MAC-backed owner. Use
+existing normalize_mac/stable_device_id semantics and confirm the owner ID agrees
+with its canonical MAC. Existing IDs, unique owner membership and MAC uniqueness
+must all agree. Reject weak/IP-only owner, missing endpoint, duplicate owner ID,
+MAC collision, ambiguous/conflicting service ID ownership/source/type or unsafe
+identifier. No name/IP/port/topic/vendor/type heuristic can override this gate.
+Identical consumed service tuples deduplicate deterministically; conflicting
+same-ID tuples reject rather than selecting first/last. No dependency edge is
+created. Typed service-to-device ownership cannot introduce a dependency cycle or
+self-link. Existing heuristic dependency graph is not an input authority.
+
+Proposed private in-memory envelope: schema_version, inventory_updated,
+evaluated_at, max_snapshot_age_seconds, association_count, service_associations,
+rejection_count, rejections. Closed edge fields: association_id, service_id,
+stable_device_id, service_type, source_type, association_basis, confidence and
+collection_provenance. Deterministic association_id derives from existing service
+ID/owner/source, excludes timestamps. association_basis=existing_service_ownership;
+confidence=high means verified reference ownership, not physical health or a new
+identity. service_type is the current build_services allowlist. Provenance records
+the inventory snapshot reference, not invented per-service observed_at.
+
+Rejections contain bounded safe enum reason and a validated safe service ID or
+null; raw unsafe input is never echoed. No raw MAC/IP/name/status/topic/HA/Asset
+private fields or credentials enter the output. Required semantic validation
+includes timestamp bounds, ID lengths/grammar, array counts, endpoint membership,
+unique edges and source/type allowlists. Exact bounds and enum schema are to be
+specified in the separately authorized first implementation, not silently derived
+from the open inventory schema. No mutation of input or environment; no import-time
+I/O, clock read, network, subprocess or persistence. Repeat same input yields
+identical bytes including deterministic ordering.
+
+### Acceptance and negative validation
+
+Acceptance requires tests proving valid local ownership; existing IDs preserved;
+no new devices; duplicate determinism; conflicts/missing endpoints rejected;
+non-MAC and ambiguous owners rejected; canonical-IP/DHCP/neighbor/identity/
+first_seen/last_seen/liveness/health/expected-availability/Asset fields unchanged;
+no incident/correlation/history/public MQTT effects; closed schema and semantic
+checks; safe counts/rejections; explicit provenance without invented timestamps;
+stale/future/malformed times and policy rejection; source allowlist rejection;
+unsafe identifier/data leakage rejection; deterministic reorder/re-run results;
+input and process state unchanged; no filesystem/network/subprocess at import or
+resolve. Empty services must not imply health or successful collection.
+
+Atomic state update and persisted restart/LKG behavior are **not applicable** to
+this no-writer checkpoint. Re-run determinism is applicable. Later persistence
+requires separate atomicity/LKG/locking/retention acceptance, not an implicit waiver.
+Compatibility requires unchanged existing inventory/public payloads, PE-4 state,
+MQTT topics, dashboards and incident/history contracts, verified by relevant tests
+and existing complete Windows regression. Do not weaken existing source gates.
+
+### Production validation path and STOP boundary
+
+Production validation is future work requiring separate authorization, supported
+source publication/native validation and an operator Evidence Report. The operator
+would privately capture an identified finalized inventory snapshot, establish its
+source identity, capture/evaluation timestamps and approved maximum age policy,
+then run the pure resolver offline against a bound copy. Compare endpoint
+membership/counts, deterministic re-run hash and protected input bytes. Confirm
+unchanged production inventory, PE-4 producer/projection, MQTT topics, incidents,
+Assets, scheduler and dashboard surfaces. Record sanitized counts, input/output
+hashes, invariant checks and limitations. No raw snapshot or secrets enter Git.
+Missing source/policy or native evidence means UNKNOWN/STOP, not assumed PASS.
+Any violation stops and preserves original runtime state. This is not permission
+to copy code onto PI3/PI5 or bypass existing deployment governance.
+
+After separately authorized repository implementation and validation, STOP for
+review. Deployment/caller integration requires a separate checkpoint. After any
+separately authorized production evidence, STOP again; no automatic MQTT mapping,
+persistence, scheduler, publication, enrichment hookup or roadmap continuation.
+
+## Deferred work and unresolved production facts
+
+Deferred: configured MQTT mapping ingestion, Discovery subscriber, remote service
+association, dependency intelligence, public association projection, new topics,
+persistence/history/retention, inventory producer integration, schedulers,
+credential/TLS changes, production deployment, PE-6 onward, surveillance and Safe
+Active Discovery. Prior obsolete .152 context and DHCP service-health follow-up
+remain separately governed; no resurrection or implementation here.
+
+UNKNOWN: actual broker/base/auth/TLS, production collectors/cadence/service list,
+configured mapping location/authority/retention, integration source activation,
+current device MAC availability, approved snapshot age, native operator evidence
+and deployment compatibility. Repository facts do not prove these runtime facts.
+Warnings: open inventory object validation; weak stable-ID fallbacks; collection
+failure/empty ambiguity; heuristic dependency edges; no publish-client TLS contract.
+These are preserved boundaries, not repaired or silently extended by preparation.
+
+## Candidate artifacts, bindings and Evidence Report
+
+Minimum current scope is thirteen paths: Master, architecture current-gate sentence,
+this preparation document, new exact preparation record/schema/test, three
+existing successor-binding helpers and four current-sequencing test assertions.
+The first focused run stopped at a test requiring UNKNOWN as current; read-only
+diagnosis found the same assertion in three other current consumers. Only those
+assertions now follow the executive decision; their other laws remain unchanged.
+The second focused run stopped at a current-identity read delegated through the
+older documentation-closure helper. Its current entry points now route the exact
+PE-5 path set to this successor; its historical validator body is unchanged. The three helpers preserve accepted PE-10 and
+PE-4 historical contracts using Git-object authority, then overlay this current
+successor identity map. Historical records/schemas/executables remain unchanged.
+The preparation test preserves the historical PE-10 validation body, complete
+Master content and original 73-section surveillance source, validates lifecycle,
+closed record/schema, exact current/source identities and runtime authorization
+barriers. No new governance hierarchy or runtime artifact is introduced.
+
+Evidence Report for this candidate: intended behavior is sequencing clarity and
+an independently reviewable bounded first implementation plan. Static checks bind
+all source facts, thirteen-path scope, unchanged historical/runtime artifacts,
+unchanged surveillance source, executive wording and no runtime authority. Test
+results are supplied by the associated validation report; this document does not
+claim a test PASS before execution. Warnings and UNKNOWNs are listed above.
+Preparation PASS requires focused governance/consumer tests, required complete
+repository Windows regression and git diff --check, with no file mutation by
+tests, staging/commit/push/production access. Failed validation requires diagnosis
+before any further change. Candidate remains PREPARED_FOR_REVIEW until reviewed.
