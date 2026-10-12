@@ -233,6 +233,8 @@ def closure_artifact_bindings():
  bindings={item['path']:item for item in record['artifacts']}
  bindings.update({item['path']:item for item in closure['artifacts']})
  bindings.update({item['path']:item for item in documentation_current_artifacts()})
+ from test_pe10_surveillance_roadmap_preservation import successor as roadmap_successor
+ bindings.update({item['path']:item for item in roadmap_successor()['artifacts']})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings

@@ -2590,20 +2590,24 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
    detects failure to reconnect; and produces actionable incidents,
    notifications, affected automation/function identification, and recovery
    guidance.
+   Future surveillance operating policy reuses PE-7 expected availability and permanent-IoT monitoring; battery, event-driven, maintenance and intentionally-offline cameras must not inherit an always-on assumption.
 8. **PE-8 - Automation Correlation & Impact Analysis** — planned. It maps Home
    Assistant automations, scripts, scenes, triggers, entities, and Assets to
    functional impact.
+   Future surveillance protection and footage-loss impact reuse PE-8 functional relationships; a failed recording path must identify the functions/assets affected.
 9. **PE-9 - Service & Infrastructure Dependency Intelligence** — planned. It
    models MQTT, DNS, DHCP, Pi-hole, Home Assistant, NUT, cameras, switches, and
    other services to explain technical cause, failure propagation, service
    impact, and infrastructure topology. PE-8 owns functional impact; PE-9 owns
    technical dependency and cause.
+   Future surveillance reuses PE-9 for shared camera, WAN/cloud, HA, MQTT, recorder and storage dependencies; it must not create a parallel graph or one incident per downstream camera.
 10. **PE-10 - Application, Integration & Service Assurance** — planned / not
     started. After PE-8 maps operator-visible impact and PE-9 establishes the
     technical dependency model, PE-10 will determine whether an application-
     level function is actually usable, isolate the failing layer, and design
     evidence-based controlled recovery. It is future architecture work and is
     separate from the current PE-3 execution sequence.
+   Surveillance is a future PE-10 specialization with the six bounded checkpoints below. It adds no numbered HIOC phase, calendar date, implementation authorization or change to current sequencing.
 
 Separate governed future checkpoints also preserve:
 
@@ -2633,6 +2637,7 @@ Separate governed future checkpoints also preserve:
   HIOC database/state and manufacturer dataset/config persistence; no `/tmp`
   dependency or manual intervention; correct incident/state semantics; logs
   free of corruption indicators; and a final Evidence Report PASS.
+- Surveillance assurance within PE-10: one future capability, with bounded inventory/policy, layered health, recording/protection, Ring local-capture POC, Ring Protect decision and optional remediation checkpoints. Shared incident, notification, dashboard and history work is reused.
 
 These items remain intentionally out of scope until the current roadmap reaches them.
 
@@ -2700,6 +2705,7 @@ Living Digital Twin, retention/archival, backup/DR/hardware migration, and the
 separate abrupt-power-loss/cold-boot checkpoint. PE-7 asks whether an asset
 should be online and is online. PE-10 asks whether the capabilities and services
 provided by the asset and its dependency chain are usable.
+Surveillance applies this capability-assurance principle to usable footage, not merely camera reachability. It consumes PE-7 availability, PE-8 impact and PE-9 dependency intelligence; the mandatory roadmap order remains unchanged.
 
 #### Home Assistant integration health and state freshness
 
@@ -2790,6 +2796,3042 @@ recommend multicast/discovery investigation rather than device reboot; and an
 isolated Office Speaker failure where network, DNS, Internet, mDNS, and other
 Cast devices are healthy but that endpoint does not respond, leading HIOC to
 recommend restarting only that speaker.
+#### Surveillance Reliability, Recording Integrity, and Camera Infrastructure Monitoring
+
+Status: **PLANNED / NOT STARTED — IMPLEMENTATION NOT AUTHORIZED**.
+Architectural home: PE-10 Application, Integration & Service Assurance, integrated
+with PE-7 expected availability, PE-8 functional impact and PE-9 dependency intelligence.
+This roadmap preservation is distinct from future implementation. It does not
+interrupt Phase 7A, select the current next task, start PE-5, or assign a calendar
+position immediately after Phase 7A. Active Discovery remains postponed.
+
+**Operational goal:** surveillance infrastructure should eventually reveal silent
+protection failures without routine manual opening of Frigate, Home Assistant,
+Ring, Wyze or other applications. HIOC must answer: "If something happens at this
+camera right now, am I reasonably confident that usable footage will exist afterward?"
+That question is distinct from "Is the camera online?" An online or reachable
+camera is not proof of surveillance protection.
+
+The capability is vendor-agnostic: local/cloud, continuous/event-driven,
+battery/wired cameras; Wyze Secure RTSP/RTSPS; Frigate and embedded go2rtc;
+Home Assistant integrations; official Ring and Ring-MQTT/Mosquitto paths;
+local/cloud recording, storage and future camera technologies. Frigate is one
+path, not the architecture. Reuse the existing Asset, observation, expected
+availability, health, capability, correlation, incident/lifecycle/severity,
+notification, history/aggregation/retention, dependency/failure-propagation,
+Dashboard v2 and recovery-governance architecture. No parallel surveillance engine.
+
+**One capability; six bounded future checkpoints** (not six new HIOC phases).
+Each checkpoint requires its own approved scope, repository validation, applicable
+supported deployment/production evidence and Evidence Report. No work below is
+authorized by preserving this roadmap.
+
+##### Surveillance checkpoint 1 — Camera inventory, identity and operating policy
+
+Establish authoritative non-secret camera inventory through existing Asset and
+stable technical identity architecture. Future metadata may include Asset ID,
+friendly name/location, vendor/model, MAC, hostname, network/Wi-Fi/Ethernet,
+expected/reserved versus observed IP, power and battery/wired policy, vendor app,
+HA entity/integration relationships, RTSP/RTSPS capability, Frigate/Ring-MQTT IDs,
+expected video/audio, motion/future AI capability, recording expectation and
+destination, retention, local/cloud/subscription dependencies, expected
+availability, criticality and maintenance history. These are FUTURE extensions:
+accepted PE-2.1 currently supplies friendly_name, physical_location, purpose and
+private notes only. Credentials, passwords, tokens and authenticated URLs never
+belong in Asset metadata.
+
+Policies distinguish always-on, continuous-recording, event-driven, monitor-only,
+battery, wired, cloud-dependent/local-stream, temporarily disabled, maintenance
+and intentionally-offline assets. Unsupported capability is N/A; missing evidence
+is UNKNOWN, not healthy, degraded or offline without supporting policy/evidence.
+
+Camera address/DHCP hardening is a **separately authorized sub-checkpoint where
+required**, not an automatic independent phase. Evaluate camera MAC -> Pi-hole
+DHCP reservation -> expected IP -> correlation with HIOC Asset identity; do not
+default to device-side static addressing. Asset/stable technical identity is not
+derived from an IP alone. Correlate MAC, lease/reservation, neighbor observations,
+HA relationships, Frigate source configuration and the Asset record through the
+existing DHCP acquisition and central canonical reconciliation. Unexpected IP must
+not silently replace expected identity/address state; reservations cannot override
+identity or fabricate liveness. Completed Canonical Address Selection Hardening
+remains complete; deferred local-address/historical-identity decisions stay separate.
+No reservation, address migration or Pi-hole change is authorized here.
+
+##### Surveillance checkpoint 2 — Layered surveillance-path health
+
+Vendor-specific evidence feeds shared HIOC health and dependency reasoning.
+Preserve independent physical camera, power, LAN/Wi-Fi, DHCP/addressing, local
+camera service, vendor cloud, HA integration/entity freshness, MQTT, Mosquitto,
+Ring-MQTT, go2rtc, Frigate, ffmpeg, video frames, audio, recording, storage, motion,
+future detection and notification/incident-path observations. Do not collapse all
+failures into CAMERA_OFFLINE. Ping/ICMP, DHCP, ARP/neighbor presence or an open port
+is only evidence for its own layer, never proof of protection.
+
+Wyze/vendor-app availability can coexist with HA/local surveillance failure.
+Distinguish physical/power/network/IP, vendor cloud/app, HA integration/entity,
+Secure RTSP/RTSPS, go2rtc, Frigate and recording paths; explain the failed path
+rather than declaring the physical camera offline. No Wyze troubleshooting now.
+
+Frigate monitoring may evaluate installed-version capabilities in HA app/process/
+container state, API/stats, camera roles, ffmpeg roles, embedded go2rtc, recording,
+resource state, watchdog/restarts, HA integration and relevant MQTT evidence.
+Separate application unavailable, application running with failed camera/recording/
+motion pipeline, go2rtc source failure and ffmpeg consumer failure. These are
+conceptual failure distinctions, not a second incident taxonomy. Preserve producer
+and consumer existence/connection, bytes/packets progressing, video/expected-audio
+codecs and reconnect behavior. A configured stream with stalled media is not
+healthy. Evaluate camera_fps, process_fps, skipped_fps, detection_fps and ffmpeg
+role-state equivalents with normal grace/debounce. Object detection is not needed
+to prove basic recording. Do NOT reintroduce a second go2rtc architecture without a specific future requirement.
+
+Ring has two existing paths: official HA Ring integration, and Ring-MQTT through
+Mosquitto with its internal on-demand stream bridge. They offer partially
+independent evidence but share WAN/Ring-cloud dependencies, so agreement is not
+independent proof. Correlate official Live View/last-recording entities and motion/
+ding events with Ring-MQTT motion/ding, snapshots, stream controls, battery, Wi-Fi,
+device information, telemetry and service/resource/version capability evidence.
+Do not rename production entities. Prefer authoritative existing signals to
+duplicate sensors. Ring-MQTT and Mosquitto are infrastructure dependencies; one
+shared outage should explain affected observations rather than create duplicate
+camera incidents. Ring-MQTT on-demand RTSP remains cloud-dependent, not native
+local-camera RTSP. Do not plan permanent 24/7 Ring streams into Frigate; event/
+on-demand policy remains default, with separate battery and wired policies.
+Ring Protect is a recording CAPABILITY DEPENDENCY, not physical camera health:
+absent paid recording may leave device, Live View, events and local capture healthy.
+
+##### Surveillance checkpoint 3 — Recording integrity and protection assurance
+
+Recording integrity is PRIMARY. Ping, DHCP presence, open port, working vendor
+app, HA entity, running Frigate, configured go2rtc, existing ffmpeg or MQTT
+connectivity is individually insufficient. Independently establish actual output
+using applicable newest-segment/finalized-recording timestamps, file creation and
+progression, recording API/metrics, current segment progression, media-directory
+activity and age of latest valid recording. If expected continuous output stops
+beyond an evidence-validated threshold, shared incident architecture must represent
+that failure. Exact thresholds/cadences and APIs remain future decisions.
+
+At lower cadence, inspect recently completed media: exists, nonzero size, valid
+container, video and expected audio tracks, successful video/audio probe or decode,
+sane duration/timestamps and no corruption. ffprobe or another trusted local
+validator may be evaluated later; no tool/cadence is selected now. Video/audio are
+separate dimensions: video healthy with expected audio missing normally means
+degradation, unless Asset policy makes audio critical. Motion processing can fail
+while recording remains healthy. Future detector/accelerator availability,
+inference/FPS, queue/backlog, latency, acceleration/fallback, crashes and degradation
+are separate from basic recording assurance.
+
+Storage health includes expected mount/device, writable state, free capacity and
+percentage used, write failures, directory accessibility, recording/abnormal growth,
+projected retention, filesystem errors, read-only state and retention pressure.
+Storage disappearance or read-only state should be CRITICAL because cameras can remain online while footage is no longer preserved.
+Use current measurements; historical capacity is not a permanent assumption.
+
+**Protection Status** is derived capability state, not another core health engine.
+Derive reasonable footage expectations from operating policy, evidence freshness,
+recording paths/integrity and dependencies. Conceptual outcomes include fully
+protected; recording degraded; local path failed; cloud-only or local-only recording;
+Live View only; monitoring only; device offline; surveillance unavailable; UNKNOWN.
+Do not imply equal protection across local continuous, cloud/event and monitor-only
+cameras. Missing evidence never produces an all-clear.
+
+##### Surveillance checkpoint 4 — Ring event-driven local-recording POC
+
+A separate FUTURE PRODUCTION EXPERIMENT, requiring explicit authorization, asks
+whether local capture can reduce dependence on Ring Protect without materially
+reducing protection. Pipeline to evaluate: motion/ding -> HA and/or Ring-MQTT
+event -> event-triggered capture -> Ring-MQTT on-demand stream -> FFmpeg or an
+equivalent trusted recorder -> HA external media storage -> media validation ->
+HIOC observations/history/protection. Terminate the session after the recording
+window; do not leave live streams permanently active.
+
+The beginning of an event cannot be captured locally before event delivery,
+reaction, live-session establishment and usable media. Measure T0 physical event
+where observable, T1 HA event receipt, T2 RTSP initiation, T3 first usable frame and
+T4 recording start; record event-to-frame/event-to-recording deltas and missing
+beginning-of-event coverage. Do not infer replacement viability from one success.
+
+The future POC matrix covers motion, ding where applicable and manual capture;
+video/audio, startup latency, integrity/duration and clean termination; repeated,
+back-to-back and concurrent-camera events; Ring-MQTT/Mosquitto/HA restarts;
+Internet loss and safely observable Ring cloud/API disruption; storage loss/
+pressure; battery/thermal impact; motion/ding impact; activation failure, recovery,
+corruption and missed-event rate. No capture or fault injection occurs now.
+
+##### Surveillance checkpoint 5 — Ring Protect replacement decision
+
+Separate from the POC and based on extended production evidence. Measure motion/
+ding capture percentages, median/worst startup latency, valid-video/audio rates,
+corruption, lost event beginnings, cloud/bridge/HA/MQTT/storage failures, battery
+impact, recovery and protection availability. Permitted eventual conclusions are:
+reliably replaces Ring Protect; partially replaces it; works with materially worse
+coverage; insufficient reliability for security use; or Ring Protect remains
+necessary. No conclusion or subscription cancellation is authorized now.
+
+##### Surveillance checkpoint 6 — Optional controlled remediation
+
+Initial behavior is OBSERVE -> CLASSIFY -> ALERT -> RECORD HISTORY. No automatic
+camera/network reboot, HA/Frigate/Ring-MQTT restart, power cycle, DHCP mutation or
+storage remount is implicit. Optional later remediation uses shared PE-10 policy,
+bounded retries/cooldowns, evidence, recovery verification and separate authorization.
+
+##### Surveillance cross-cutting acceptance and safeguards
+
+Incidents, notifications, unified dashboard and reliability history are acceptance
+requirements across checkpoints, not replacement systems. Reuse detected,
+confirmed, active, recovering and resolved lifecycle, stable root-cause keys,
+affected dependencies, recovery confirmation and grace/debounce to avoid storms.
+Represent physical/network loss, address mismatch, stream/authentication/stall,
+missing video/audio, integration/Frigate/go2rtc/ffmpeg failure, stale/corrupt media,
+motion/detection failure, storage loss/read-only/capacity, reconnect/restart
+instability, Ring cloud/Live View/events/snapshot and local-capture failures through
+existing/generalized incident semantics. Severity reflects actual protection
+impact: snapshot/audio or one integration-path loss is not automatically complete
+outage while alternate protection remains.
+
+Use existing HA phone notification delivery and planned notification-semantics
+work: camera/location, severity/failure, start/duration, recording/Live View/video/
+audio impact, supported cause, recommendation and upstream dependency. Recovery
+reports what recovered, duration, automatic/manual recovery, recording resumption,
+measured or qualified estimated footage gap and remaining degradation. Use the
+same Dashboard v2 with a unified Surveillance / Cameras area: concise overall
+health and Protection Status, expected availability, network/address/stream/
+recording/media/audio/storage state, freshness, incidents and last outage/check;
+vendor telemetry belongs in drill-down. N/A is not failure; UNKNOWN is not healthy.
+
+History/aggregation should retain camera/Live View/recording/protection availability,
+footage gaps, reconnects/ffmpeg restarts/stream instability, Ring-MQTT/integration/
+storage outages, audio/media failures, capture success/latency, battery impact,
+unexpected IP changes, MTBF/MTTR, storage use and projected retention. Reuse
+aggregation/downsampling and asset-aware retention; do not retain unnecessary
+high-frequency raw telemetry indefinitely. Actual recording retention and HIOC
+telemetry retention have distinct policy/evidence but share governance.
+
+Use PE-9 graphs for local camera -> LAN/addressing -> stream -> embedded go2rtc ->
+ffmpeg -> recording -> storage; Ring -> WAN/cloud -> official HA integration;
+Ring -> WAN/cloud -> Ring-MQTT -> Mosquitto -> HA MQTT evidence; and Ring-MQTT ->
+on-demand stream -> recorder -> storage -> media validation. Preserve affected
+cameras while correlating common upstream failures. Reuse infrastructure topology,
+automatic relationships, failure propagation, trends and predictive recommendations.
+Integrate storage/recovery obligations with planned backup/DR/hardware migration
+and separate cold-boot proof; none of those checkpoints is silently completed here.
+
+**DENY BY DEFAULT:** retain only explicitly approved non-secret attributes. Never
+persist/expose RTSP/RTSPS passwords or authenticated stream URLs, Ring account
+email/authentication/refresh tokens, HA/API/proxy tokens, entity_picture query
+tokens, video_url values, recording URLs or MQTT passwords. Never dump raw camera
+entity attributes into logs, Git, this Master Plan, incidents, Evidence Reports or
+dashboards. Secret provisioning, permissions and compatibility must follow existing
+HIOC privacy, trust and deployment governance.
+
+**Historical/operator-supplied context only:** PI5 HA is the project HA/surveillance
+host; the project-authoritative address reference is 192.168.100.251, not newly
+observed production evidence. 192.168.100.152 is obsolete historical addressing,
+never a current address. This action does not verify PI5 state. Earlier context:
+Frigate as an HA app with embedded go2rtc; redundant standalone go2rtc stopped/
+manual boot; camara_parque using Wyze Secure RTSP/RTSPS; historical camera
+192.168.100.133, TCP 322, H.264 and PCMA/pcm_alaw; historical roughly 14-day
+recording target, storage measurements and 72-hour reliability baseline; motion
+tuning postponed and object detection disabled during reliability work. These are
+not permanent capacity, traffic, configuration, retention or present-health claims.
+The complete requirements below preserve the historical/operator-supplied details; they do not establish newly observed production facts.
+
+Future local/Frigate validation uses reversible/synthetic failures where practical:
+power/network loss; reachable camera with RTSPS unavailable; authentication/stall;
+Frigate stopped; go2rtc producer/consumer and ffmpeg loss; stopped recording;
+unavailable recording directory; storage thresholds/read-only simulation; corrupt
+media; missing video/audio; motion/future detector failure; unexpected IP; recovery,
+notification delivery, incident resolution, dashboard transitions and history.
+Ring retains its separate POC matrix. Completion requires evidence of actual
+recording/integrity/protection, useful alerts/recovery and footage gaps, secret
+protection, duplicate/storm suppression, scalability to additional cameras,
+reservation validation where appropriate, multi-path discrepancy diagnosis and
+measured Ring limitations. Sensors alone do not establish success.
+
+Monitoring has conceptual FAST freshness/progression, MEDIUM storage/address/
+service/entity/reconnect, and DEEP periodic media/codec/capture/trend layers.
+Exact cadences, thresholds, interface versions, schemas and tools require future
+approval and capability-first compatibility review, not historical version pinning.
+No MQTT, HA sensors/automations/cards, Frigate/go2rtc/Ring-MQTT/Mosquitto/Pi-hole/
+DHCP/camera changes, recording scripts, watchdogs, notifications, reservations,
+restarts, tuning/detection/acceleration, troubleshooting, migration or storage fault
+injection is implemented or authorized by this documentation checkpoint.
+##### Original surveillance requirements — complete preservation and applicability
+
+The following is the complete original user-provided 73-section specification,
+retained verbatim as the detailed requirements for this ONE future capability.
+The six checkpoints above organize its execution; the numbered source sections
+below are requirement references, not additional phases or duplicate roadmap entries.
+No requirement is replaced by an umbrella statement. The complete source governs
+where a preceding overview is less detailed. Suggested A–K phases remain suggestions;
+the six-checkpoint organization preserves their subjects without creating eleven phases.
+
+Checkpoint applicability: 1 consumes sections 21, 23–28 and 50; 2 consumes sections
+5–6, 8–14, 19, 29–37, 44–48, 52–53; 3 consumes sections 7, 15–18, 20, 22 and 51;
+4 consumes sections 38–42; 5 consumes section 43; 6 consumes section 59.
+Sections 1–4, 54–58, 60–73 govern the shared architecture, safeguards, acceptance,
+sequence and completion of those checkpoints. Shared incidents, notifications,
+dashboard and history are reused; no separate surveillance engine is introduced.
+
+All supplied statements about existing/current/observed/validated production
+architecture, versions, entities, settings, addresses, measurements, baselines
+and failures describe HISTORICAL / OPERATOR_SUPPLIED context at the time of the
+original request. They are not newly observed facts or proof of present health.
+The current HA address reference remains 192.168.100.251; 192.168.100.152 remains
+obsolete historical addressing, never a current endpoint. Historical measurements
+are not permanent capacity assumptions. Examples are illustrative, not observations.
+Future requirements, constraints, qualifications and acceptance criteria remain
+operative when the corresponding checkpoint is separately authorized.
+
+The original review and completion directions are preserved as governance gates.
+They do not grant implementation, production, staging, commit or push authorization
+for this unstaged documentation candidate. Commit/push require separate authorization;
+publication itself does not authorize implementation. PE-4 and its documentation
+correction remain PASS/CLOSED, Phase 7A remains ACTIVE, PE-5 remains NOT_STARTED
+and unauthorized, and the current next task remains UNKNOWN / NOT YET AUTHORIZED.
+
+User-established testing clarification: Normally, HIOC does not intentionally create failures. For future surveillance reliability testing, controlled and reversible failures are allowed when they can be performed safely, because otherwise we may never be able to prove that HIOC detects important camera and recording failures.
+This scoped future exception coexists with the normal Decision Log policy;
+it authorizes no fault injection, production access or implementation now.
+
+The preserved source follows; its section 66 is subject to that explicit safety
+qualification. No original text has been condensed, rewritten or removed.
+
+<!-- ORIGINAL_SURVEILLANCE_SPECIFICATION_BEGIN -->
+```text
+I want to add a comprehensive future Surveillance Reliability, Recording Integrity, and Camera Infrastructure Monitoring capability to the HIOC Master Plan.
+
+This is a ROADMAP / ARCHITECTURE / DOCUMENTATION task only.
+
+DO NOT begin implementing this capability now unless the current authoritative HIOC Master Plan explicitly shows that surveillance work is the approved active checkpoint.
+
+The purpose of this request is to ensure that this capability is preserved in docs/HIOC_MASTER_PLAN.md and scheduled at the architecturally appropriate point in the HIOC roadmap without interrupting, reordering, bundling with, or destabilizing the work HIOC is currently doing.
+
+======================================================================
+1. GOVERNANCE AND SOURCE OF TRUTH
+======================================================================
+
+Treat:
+
+docs/HIOC_MASTER_PLAN.md
+
+as the authoritative source of truth.
+
+Before making any change:
+
+1. Read the current Master Plan completely enough to understand:
+   - current active phase/checkpoint
+   - Implementation Status
+   - current corrective work
+   - planned future phases
+   - health/state architecture
+   - incident lifecycle
+   - notification architecture
+   - asset-centric roadmap
+   - canonical IP/address work
+   - DHCP work
+   - Home Assistant integration plans
+   - dependency graph plans
+   - historical metrics plans
+   - dashboard plans
+   - expected-availability work
+   - retention/archive plans
+   - backup/disaster-recovery plans
+   - repository/deployment governance
+   - any already-planned camera, media, IoT, or surveillance work
+
+2. Do not assume old chat history represents current project status if the Master Plan says otherwise.
+
+3. Preserve every existing roadmap item and checkpoint.
+
+4. Do not reorder current work merely because this surveillance capability is important.
+
+5. Do not bundle this surveillance work into an unrelated active checkpoint.
+
+6. If existing planned HIOC capabilities already cover part of this requirement, integrate this work with them instead of creating parallel architecture.
+
+7. If the surveillance capability needs to be split into multiple future checkpoints, do so only where architectural dependencies justify it.
+
+8. Avoid creating a surveillance-specific duplicate implementation of:
+   - health semantics
+   - state semantics
+   - incident lifecycle
+   - severity
+   - notifications
+   - asset identity
+   - expected availability
+   - historical storage
+   - dependency modeling
+   - dashboard framework
+
+9. Surveillance should become another domain using HIOC's core architecture, not an isolated side system.
+
+======================================================================
+2. DOCUMENTATION AND GIT GOVERNANCE
+======================================================================
+
+This planning checkpoint must follow the normal HIOC governance model.
+
+At completion:
+
+1. Validate the documentation change.
+2. Update the relevant Implementation Status / roadmap / architecture / decisions sections of docs/HIOC_MASTER_PLAN.md.
+3. Commit documentation changes.
+4. Push them to main.
+5. Verify a clean working tree.
+6. Produce the standard concise HIOC Evidence Report.
+
+Code and documentation governance rules already established for HIOC remain in force.
+
+Do not leave:
+- unexplained modified files
+- untracked planning artifacts
+- divergent documentation
+- duplicate roadmap entries
+- temporary files
+- incomplete commits
+
+If repository state or current governance prevents a safe Master Plan change, STOP and report the conflict instead of working around it.
+
+Codex has no authenticated PI3 access.
+
+Do not instruct Codex to:
+- SSH to PI3
+- inspect PI3 directly
+- modify PI3
+- synchronize PI3
+- deploy to PI3
+
+If future implementation requires PI3 changes, Codex must work on the Windows repository only and provide exact operator-run PI3 commands for the user.
+
+======================================================================
+3. CAPABILITY NAME
+======================================================================
+
+Use a broad capability name such as:
+
+Surveillance Reliability, Recording Integrity, and Camera Infrastructure Monitoring
+
+Do NOT name the architecture only around Frigate.
+
+Frigate is one surveillance path.
+
+Ring, Home Assistant camera integrations, vendor cloud integrations, local RTSP/RTSPS cameras, MQTT, storage, and future camera technologies are other paths.
+
+The HIOC model must be camera/vendor agnostic.
+
+======================================================================
+4. BUSINESS / OPERATIONAL GOAL
+======================================================================
+
+The operational problem is simple:
+
+I do not intend to manually open Frigate, Home Assistant, the Ring app, or the Wyze app every day to verify that every security camera is still working and footage is still being recorded.
+
+It would be unacceptable to discover after an incident that:
+
+- a camera stopped streaming several days earlier
+- Frigate stopped receiving frames
+- recordings silently stopped
+- storage became unavailable
+- audio disappeared
+- Home Assistant lost the camera
+- an integration failed
+- the camera changed IP
+- Ring-MQTT stopped working
+- a camera was visible in the vendor app but not through the local surveillance path
+- files were being created but were corrupt
+- the system claimed to be healthy while no usable footage was being preserved
+
+The surveillance system must eventually monitor itself.
+
+HIOC should be able to answer:
+
+"If something happens at this camera right now, am I reasonably confident that usable footage will exist afterward?"
+
+That question is more important than simply:
+
+"Is the camera online?"
+
+======================================================================
+5. CURRENT HOME ASSISTANT / SURVEILLANCE HOST
+======================================================================
+
+Home Assistant runs on:
+
+PI5 HA
+
+Current LAN IP:
+
+192.168.100.251
+
+Do not use the obsolete historical PI5 address 192.168.100.152.
+
+The current surveillance architecture includes:
+
+- Home Assistant
+- Frigate
+- embedded Frigate go2rtc
+- Ring-MQTT with Video Streaming
+- Mosquitto
+- official Home Assistant Ring integration
+- Wyze cameras
+- Ring cameras
+- external HDD used for Frigate media
+- Pi-hole DHCP running elsewhere in the infrastructure
+
+======================================================================
+6. CURRENT FRIGATE ARCHITECTURE
+======================================================================
+
+Frigate currently runs as a Home Assistant app.
+
+Known Frigate version when this requirement was created:
+
+0.18.0
+
+Frigate uses its own embedded go2rtc instance.
+
+A previously installed standalone go2rtc app has intentionally been stopped and configured for manual boot because it became redundant.
+
+Do NOT reintroduce a second go2rtc architecture without a specific future requirement.
+
+Current desired path:
+
+Camera
+   ->
+Frigate embedded go2rtc
+   ->
+Frigate ffmpeg
+   ->
+recording / motion processing
+
+The first camera being tested through this architecture is:
+
+camara_parque
+
+Current source technology:
+
+Wyze Secure RTSP / RTSPS
+
+Current camera address at the time of testing:
+
+192.168.100.133
+
+Secure RTSP service:
+
+TCP 322
+
+Current stream capabilities observed:
+
+- H.264 video
+- 1920x1080 source
+- approximately 20 fps source
+- PCMA / pcm_alaw audio
+
+Frigate currently records the original stream.
+
+Motion-analysis path currently uses approximately:
+
+1280x720
+5 fps
+
+AI object detection is currently intentionally disabled while stream and recording reliability are validated.
+
+======================================================================
+7. CURRENT FRIGATE RETENTION / STORAGE BASELINE
+======================================================================
+
+Continuous Frigate recording retention is currently configured for approximately:
+
+14 days
+
+Motion-related retention is also configured for approximately:
+
+14 days
+
+The Frigate recording filesystem is located on the Home Assistant external HDD.
+
+At the time of initial measurement:
+
+- filesystem had roughly 418 GiB free
+- one camera consumed approximately 3.65 GiB/day
+- estimated 14-day usage for that camera was approximately 51 GiB
+
+These are historical measurements only.
+
+Do NOT hard-code them as permanent capacity assumptions.
+
+Future HIOC storage logic should use actual current measurements.
+
+======================================================================
+8. CURRENT 72-HOUR FRIGATE RELIABILITY TEST
+======================================================================
+
+A manual reliability baseline is currently being conducted for camara_parque.
+
+The intent is to leave the camera configuration stable for at least 72 hours and later verify:
+
+- stream continuity
+- go2rtc connectivity
+- Frigate health
+- recording continuity
+- storage growth
+- ffmpeg errors
+- RTSPS errors
+- reconnects
+- recording gaps
+
+Motion tuning is intentionally postponed until after the baseline.
+
+Do NOT alter this current camera configuration merely to add the future HIOC roadmap item.
+
+This current test should be referenced as useful historical evidence, but the Master Plan planning task must not interfere with it.
+
+======================================================================
+9. SURVEILLANCE HEALTH MUST BE MULTI-LAYERED
+======================================================================
+
+A camera must NOT have a single Boolean "online/offline" health state.
+
+Model independent layers such as:
+
+PHYSICAL CAMERA
+    ->
+POWER
+    ->
+NETWORK / LAN / WI-FI
+    ->
+DHCP / EXPECTED ADDRESS
+    ->
+LOCAL CAMERA SERVICE
+    ->
+VENDOR CLOUD, IF APPLICABLE
+    ->
+HOME ASSISTANT INTEGRATION
+    ->
+MQTT / BROKER, IF APPLICABLE
+    ->
+GO2RTC / STREAM BRIDGE
+    ->
+FRIGATE PIPELINE, IF APPLICABLE
+    ->
+RECORDING
+    ->
+MEDIA INTEGRITY
+    ->
+MOTION PROCESSING
+    ->
+OBJECT DETECTION, IF APPLICABLE
+    ->
+STORAGE
+    ->
+NOTIFICATION / INCIDENT PIPELINE
+
+Each layer may fail independently.
+
+HIOC should eventually identify the failed layer rather than labeling everything CAMERA_OFFLINE.
+
+======================================================================
+10. CAMERA NETWORK REACHABILITY
+======================================================================
+
+HIOC should monitor whether a physical camera is reachable where network-level observation is meaningful.
+
+However:
+
+PING / ICMP MUST NEVER BE TREATED AS PROOF THAT A CAMERA IS OPERATIONAL.
+
+A camera may:
+
+- respond to ping
+- retain a DHCP lease
+- appear in the ARP/neighbor table
+
+while:
+
+- RTSP/RTSPS is down
+- cloud integration is down
+- Home Assistant is unavailable
+- Frigate cannot receive frames
+- recording has stopped
+
+Network reachability is only one observation.
+
+======================================================================
+11. CAMERA STREAM SERVICE HEALTH
+======================================================================
+
+For cameras expected to expose a local streaming service, HIOC should eventually distinguish:
+
+- endpoint reachable
+- service port open
+- authentication successful
+- session established
+- media negotiation successful
+- video frames actually flowing
+- audio actually flowing
+- stream progressing
+- repeated reconnects
+- stalled stream
+- abnormal disconnect rate
+
+For camara_parque, RTSPS port 322 previously demonstrated an important failure mode:
+
+the camera could remain reachable on the network while Secure RTSP was unavailable.
+
+This must be represented as:
+
+CAMERA NETWORK HEALTHY
+LOCAL STREAM SERVICE FAILED
+
+rather than CAMERA OFFLINE.
+
+======================================================================
+12. FRIGATE HEALTH
+======================================================================
+
+Monitor Frigate itself separately from camera health.
+
+Potential authoritative signals may include:
+
+- Home Assistant app state
+- container health
+- Frigate API availability
+- Frigate stats
+- camera role states
+- ffmpeg processes
+- go2rtc state
+- Home Assistant integration entities
+- MQTT if/when used
+- internal watchdog/restart behavior
+- recording activity
+- process resource health
+
+Differentiate:
+
+FRIGATE_UNAVAILABLE
+
+from:
+
+FRIGATE_RUNNING_CAMERA_PIPELINE_FAILED
+
+from:
+
+FRIGATE_RUNNING_RECORDING_FAILED
+
+from:
+
+FRIGATE_RUNNING_MOTION_PIPELINE_FAILED
+
+from:
+
+GO2RTC_SOURCE_FAILED
+
+from:
+
+FFMPEG_CONSUMER_FAILED
+
+======================================================================
+13. GO2RTC PRODUCER / CONSUMER HEALTH
+======================================================================
+
+For Frigate cameras, HIOC should eventually understand the embedded go2rtc producer/consumer relationship.
+
+For camara_parque the validated model is:
+
+RTSPS producer
+   ->
+Frigate embedded go2rtc
+   ->
+localhost RTSP restream
+   ->
+Frigate ffmpeg consumer
+
+go2rtc exposes useful metadata including:
+
+- producer
+- consumer
+- codecs
+- bytes
+- packets
+- connection state
+
+HIOC should not merely check that a stream is configured.
+
+It should determine whether traffic is progressing.
+
+A configured stream with static packet/byte counters is not healthy.
+
+Potential future checks:
+
+- producer exists
+- producer connected
+- consumer exists
+- consumer connected
+- byte counters increasing
+- packet counters increasing
+- video codec present
+- audio codec present
+- restart/reconnect rate
+
+======================================================================
+14. FRAME HEALTH
+======================================================================
+
+HIOC should detect when Frigate stops receiving useful frames.
+
+Evaluate current Frigate metrics such as:
+
+camera_fps
+process_fps
+skipped_fps
+detection_fps
+ffmpeg role state
+or the current equivalent metrics exposed by the installed Frigate version
+
+A camera expected to be active that reports zero useful frames for a sustained period should transition through normal HIOC health semantics.
+
+Avoid false incidents for extremely short renegotiations.
+
+Use HIOC debounce / grace / incident-lifecycle semantics.
+
+======================================================================
+15. RECORDING INTEGRITY IS A PRIMARY REQUIREMENT
+======================================================================
+
+This is one of the most important requirements.
+
+HIOC must prove that recording is ACTUALLY OCCURRING.
+
+The following are individually insufficient:
+
+- camera responds to ping
+- camera app works
+- RTSP/RTSPS port is open
+- Frigate app is running
+- go2rtc stream exists
+- ffmpeg process exists
+- camera entity says idle/streaming
+- MQTT device says connected
+
+Recording freshness must be independently validated.
+
+Potential signals:
+
+- timestamp of newest recording segment
+- recording file creation rate
+- Frigate recording API/metrics
+- current segment progression
+- media directory activity
+- most recent successful finalized recording
+- age of latest valid recording
+
+If continuous recording is expected and new valid recording output stops beyond an appropriate threshold:
+
+create a recording failure incident.
+
+======================================================================
+16. DEEP MEDIA VALIDATION
+======================================================================
+
+At a lower cadence than basic health checks, HIOC should inspect a recently completed recording file.
+
+For Frigate/Wyze camara_parque, expected media currently includes:
+
+VIDEO:
+H.264
+
+AUDIO:
+PCMA / pcm_alaw at the source
+
+Validate at minimum:
+
+- file exists
+- file size > 0
+- container parses
+- video track exists
+- audio track exists when audio is expected
+- video can be probed/decoded
+- audio can be probed/decoded
+- duration is sane
+- timestamps are sane
+- file is not corrupt
+
+Possible future implementation:
+
+ffprobe
+or another trusted local media validator
+
+Do not run expensive deep validation every second.
+
+Use an appropriate periodic cadence.
+
+======================================================================
+17. AUDIO HEALTH
+======================================================================
+
+Audio is part of the expected surveillance evidence for cameras configured with audio.
+
+HIOC should distinguish:
+
+VIDEO HEALTHY
+AUDIO HEALTHY
+
+from:
+
+VIDEO HEALTHY
+AUDIO MISSING
+
+Loss of audio should normally produce a DEGRADED surveillance state rather than CAMERA OFFLINE, unless camera policy explicitly defines audio as critical.
+
+Recorded-media validation should verify expected audio presence.
+
+======================================================================
+18. MOTION PROCESSING HEALTH
+======================================================================
+
+Frigate motion processing should be monitored separately from recording.
+
+A valid state may be:
+
+RECORDING:
+HEALTHY
+
+MOTION PROCESSING:
+FAILED
+
+CAMERA:
+ONLINE
+
+Do not classify the entire surveillance pipeline offline because one analytical capability fails.
+
+======================================================================
+19. FUTURE OBJECT-DETECTION HEALTH
+======================================================================
+
+AI object detection is currently intentionally disabled.
+
+When enabled in a future checkpoint, extend the model to include:
+
+- detector availability
+- accelerator availability
+- detector FPS / inference health
+- detector queue/backlog
+- inference latency
+- hardware acceleration/fallback
+- detector crashes
+- CPU fallback
+- abnormal performance degradation
+
+Object detection must remain a separate health dimension from recording availability.
+
+======================================================================
+20. STORAGE HEALTH
+======================================================================
+
+Surveillance reliability depends on storage.
+
+HIOC should eventually monitor:
+
+- expected media filesystem mounted
+- expected storage device present
+- filesystem writable
+- free space
+- percent used
+- write failures
+- media directory accessible
+- recording growth
+- abnormal storage-growth changes
+- projected retention
+- filesystem errors
+- read-only state
+- retention pressure
+
+Storage disappearance or read-only state should be CRITICAL because cameras can remain online while footage is no longer preserved.
+
+Do not use static historical capacity assumptions.
+
+Use current observed storage metrics.
+
+======================================================================
+21. EXPECTED AVAILABILITY
+======================================================================
+
+Security cameras should be modeled as permanent infrastructure assets.
+
+They are not transient Wi-Fi clients.
+
+A camera expected to be always available should integrate with the HIOC expected-availability model.
+
+The model should support:
+
+- always-on camera
+- event camera
+- battery camera
+- cloud-dependent camera
+- temporarily disabled camera
+- maintenance state
+- intentionally offline state
+
+Expected availability should affect incident generation.
+
+======================================================================
+22. PROTECTION STATUS
+======================================================================
+
+Add a higher-level surveillance concept:
+
+PROTECTION STATUS
+
+This is separate from ordinary device health.
+
+Example states:
+
+HEALTHY / FULLY PROTECTED
+
+CAMERA HEALTHY / RECORDING DEGRADED
+
+CAMERA HEALTHY / LOCAL PATH FAILED
+
+CAMERA HEALTHY / CLOUD RECORDING ONLY
+
+CAMERA HEALTHY / LOCAL RECORDING ONLY
+
+LIVE VIEW ONLY
+
+MONITORING ONLY
+
+DEVICE OFFLINE
+
+SURVEILLANCE UNAVAILABLE
+
+The protection status should answer:
+
+"If an incident happens right now, what evidence are we reasonably confident will exist?"
+
+======================================================================
+23. CAMERA ASSET MODEL
+======================================================================
+
+Each camera should eventually become a first-class HIOC asset.
+
+Relevant metadata may include:
+
+- asset ID
+- friendly name
+- physical location
+- vendor
+- model
+- MAC address
+- expected/reserved IP
+- current observed IP
+- hostname
+- power type
+- battery-powered vs wired
+- Wi-Fi vs Ethernet
+- Wi-Fi network
+- stream protocol
+- stream port
+- Frigate camera ID
+- Ring-MQTT camera ID
+- Home Assistant entity IDs
+- expected video codec
+- expected audio codec
+- expected availability
+- criticality
+- recording policy
+- retention policy
+- local/cloud dependencies
+- subscription dependency
+- motion capability
+- object-detection capability
+- notes
+- maintenance history
+
+Never store stream passwords or authentication tokens in the asset record.
+
+======================================================================
+24. CAMERA NETWORK ADDRESS HARDENING
+======================================================================
+
+Permanent cameras should not depend on arbitrary DHCP addresses.
+
+However, do NOT default to manually configured device-side static IPs.
+
+The preferred architecture should be:
+
+PI-HOLE DHCP RESERVATIONS / STATIC DHCP LEASES
+
+based on:
+
+MAC ADDRESS
+    ->
+RESERVED IP
+    ->
+DOCUMENTED HIOC ASSET IDENTITY
+
+This provides stable addressing while retaining centralized network control.
+
+Before scaling Frigate or other IP-based camera integrations, determine whether surveillance-address hardening should be a prerequisite.
+
+======================================================================
+25. CAMERA DHCP RESERVATION CHECKPOINT
+======================================================================
+
+Create or preserve a future checkpoint for surveillance address hardening.
+
+Suggested work:
+
+- inventory all cameras
+- record MAC
+- record current IP
+- identify vendor/model
+- determine whether MAC is stable
+- inspect Pi-hole DHCP configuration
+- select intended reservation
+- verify no conflict
+- ensure reservation fits network addressing plan
+- apply reservation
+- renew/reboot one camera at a time
+- prove correct address is received
+- confirm persistence after camera restart
+- confirm persistence after Pi-hole restart
+- update Frigate/HA references only after identity is proven
+- integrate expected IP into HIOC asset metadata
+
+Do not change all cameras simultaneously.
+
+Use incremental production validation.
+
+======================================================================
+26. CANONICAL IP WARNING
+======================================================================
+
+This camera work must respect HIOC's canonical-address correctness work.
+
+HIOC has previously identified a class of problem where:
+
+one MAC
+may have
+multiple neighbor-table IP addresses
+
+and a stale neighbor entry may incorrectly become the canonical address even when an active DHCP lease exists.
+
+Do not trust HIOC camera IP conclusions until canonical-address semantics are correct enough for this use.
+
+Camera-IP monitoring should correlate:
+
+- MAC identity
+- Pi-hole DHCP lease
+- DHCP reservation
+- neighbor table
+- Home Assistant entities
+- Frigate source configuration
+- HIOC asset record
+
+An unexpected IP should not silently replace the expected address.
+
+======================================================================
+27. UNEXPECTED CAMERA IP CHANGE
+======================================================================
+
+For permanent surveillance assets, detect unexpected addressing changes.
+
+Example:
+
+EXPECTED:
+192.168.100.133
+
+OBSERVED:
+192.168.100.147
+
+Possible causes:
+
+- missing reservation
+- reservation not applied
+- camera reset
+- randomized MAC
+- duplicate IP
+- stale neighbor entry
+- DHCP issue
+- manual configuration
+- operator change
+
+HIOC should create an observation and possibly an incident depending on impact.
+
+A camera online at the wrong address may still break Frigate.
+
+======================================================================
+28. ADDRESS DEPENDENCY MODEL
+======================================================================
+
+Represent addressing as part of the dependency graph.
+
+Conceptually:
+
+Camera MAC
+   ->
+Pi-hole DHCP reservation
+   ->
+expected IP
+   ->
+camera stream service
+   ->
+go2rtc / integration
+   ->
+recording
+
+HIOC should eventually be able to say:
+
+"Camera is online, but Frigate is still attempting to reach the previous IP."
+
+That is not the same as:
+
+"Camera is offline."
+
+======================================================================
+29. WYZE VENDOR-APP VS HOME ASSISTANT DISCREPANCY
+======================================================================
+
+There is a real current failure mode that must be preserved in the roadmap as evidence.
+
+At times, Wyze cameras are:
+
+VISIBLE AND WORKING IN THE WYZE APP
+
+while:
+
+NOT AVAILABLE / NOT DISPLAYING CORRECTLY IN HOME ASSISTANT
+
+This is currently happening with more than one Wyze camera.
+
+Do NOT troubleshoot those cameras as part of this documentation-only task.
+
+Instead, preserve the problem as an explicit future surveillance-health scenario.
+
+Potential layers to distinguish later:
+
+- physical camera
+- power
+- Wi-Fi
+- DHCP/IP
+- vendor cloud
+- Wyze app path
+- Home Assistant Wyze integration
+- Home Assistant camera entity
+- Secure RTSP
+- go2rtc
+- Frigate
+- recording
+
+The architectural requirement is:
+
+HIOC must be capable of explaining WHY a camera is unavailable in Home Assistant even when the vendor app still works.
+
+Do not collapse this into CAMERA_OFFLINE.
+
+======================================================================
+30. EXAMPLE WYZE MULTI-PATH STATES
+======================================================================
+
+CASE A
+
+Wyze app:
+AVAILABLE
+
+LAN:
+AVAILABLE
+
+RTSPS:
+AVAILABLE
+
+Home Assistant:
+UNAVAILABLE
+
+Frigate:
+UNAVAILABLE
+
+Interpretation:
+
+camera hardware/network likely healthy
+Home Assistant/local integration path degraded
+
+------------------------------------------------------------
+
+CASE B
+
+Wyze app:
+AVAILABLE
+
+LAN:
+AVAILABLE
+
+RTSPS:
+UNAVAILABLE
+
+Home Assistant cloud/vendor integration:
+AVAILABLE
+
+Frigate:
+UNAVAILABLE
+
+Interpretation:
+
+camera vendor/cloud path works
+local Secure RTSP service failed
+
+------------------------------------------------------------
+
+CASE C
+
+Wyze app:
+UNAVAILABLE
+
+LAN:
+UNAVAILABLE
+
+Frigate:
+UNAVAILABLE
+
+Interpretation:
+
+likely camera/power/network outage
+
+------------------------------------------------------------
+
+CASE D
+
+Wyze app:
+AVAILABLE
+
+Frigate live stream:
+AVAILABLE
+
+Recording:
+STALE
+
+Interpretation:
+
+camera can be viewed but surveillance protection has failed
+
+======================================================================
+31. EXISTING RING CAMERA ARCHITECTURE
+======================================================================
+
+Do NOT treat Ring camera support as an unknown greenfield integration.
+
+A working Ring architecture already exists on PI5 HA and must be preserved, inventoried, and integrated into HIOC.
+
+At the time this requirement was documented, production includes:
+
+- official Home Assistant Ring integration
+- Ring-MQTT with Video Streaming 5.9.3
+- Mosquitto Broker 7.1.1
+- Ring-MQTT set to automatic boot
+- Mosquitto set to automatic boot
+- Ring-MQTT internal RTSP/go2rtc gateway
+- multiple Ring cameras in Home Assistant
+
+Known Ring cameras include at least:
+
+- Puerta principal
+- Cochera
+- Sala
+- Salón
+
+Do not store the Ring account email address anywhere in the Master Plan.
+
+Do not store Ring authentication information, access tokens, entity proxy tokens, recording URLs, or credentials.
+
+======================================================================
+32. DUAL RING INTEGRATION MODEL
+======================================================================
+
+The existing Ring architecture has two parallel integration paths.
+
+PATH A:
+Official Home Assistant Ring integration
+
+PATH B:
+Ring-MQTT through Mosquitto
+
+Conceptually:
+
+                         RING CLOUD
+                            |
+               +------------+------------+
+               |                         |
+               v                         v
+       Official HA Ring              Ring-MQTT
+         Integration                + Mosquitto
+               |                         |
+               |                         +-- MQTT telemetry
+               |                         +-- snapshots
+               |                         +-- motion/ding
+               |                         +-- battery
+               |                         +-- Wi-Fi
+               |                         +-- device info
+               |                         +-- stream controls
+               |                         +-- on-demand RTSP
+               |
+               +-- Live View
+               +-- Last Recording
+               +-- Motion events
+               +-- Ding events
+
+These overlapping paths are valuable.
+
+HIOC should use them as partially independent observations.
+
+======================================================================
+33. PROVEN OFFICIAL RING ENTITIES
+======================================================================
+
+The Home Assistant entity registry confirms the following are owned by the official Ring integration:
+
+camera.cochera
+camera.cochera_live_view
+
+camera.puerta_principal
+camera.puerta_principal_live_view
+
+camera.sala
+camera.sala_live_view
+
+camera.salon
+camera.salon_live_view
+
+Official Ring event entities include:
+
+event.cochera_motion
+event.puerta_principal_motion
+event.puerta_principal_ding
+event.sala_motion
+event.salon_motion
+
+Current entity behavior is consistent with the current Home Assistant Ring model:
+
+camera.<name>_live_view
+=
+LIVE VIEW camera
+
+camera.<name>
+=
+LAST RECORDING / historical recording camera using its existing legacy entity ID
+
+Observed behavior supporting this:
+
+- _live_view entities expose stream functionality
+- plain camera entities do not expose the same stream feature
+- both contain Ring video metadata
+- official Ring integration currently separates live_view and last_recording behavior
+
+If external verification is performed while updating the Master Plan, confirm this against the current Home Assistant Ring source/documentation.
+
+Do not rename production entities merely to normalize naming.
+
+Existing automations/dashboards may depend on current IDs.
+
+======================================================================
+34. RING PROTECT DEPENDENCY
+======================================================================
+
+Ring Protect should be modeled as a CAPABILITY DEPENDENCY.
+
+Do not treat subscription state as basic camera health.
+
+Official Ring Live View can operate without Ring Protect.
+
+Official Ring Last Recording depends on Ring cloud recording/history and therefore on an appropriate Ring Protect recording plan.
+
+Ring-MQTT also exposes two distinct video concepts:
+
+<camera_id>_live
+
+and:
+
+<camera_id>_event
+
+LIVE:
+current on-demand Ring live session
+
+EVENT:
+previously recorded Ring cloud event
+
+The event-recording path depends on Ring cloud recording / subscription.
+
+A Ring camera can therefore be:
+
+CAMERA HEALTHY
+LIVE VIEW HEALTHY
+MOTION HEALTHY
+LOCAL EVENT CAPTURE HEALTHY
+
+while:
+
+RING CLOUD RECORDING NOT AVAILABLE
+
+because Ring Protect is not active.
+
+That is not a camera failure.
+
+======================================================================
+35. PROVEN RING-MQTT / MOSQUITTO ENTITIES
+======================================================================
+
+The Home Assistant entity registry proves that the following types of entities arrive through MQTT / core Mosquitto.
+
+Known motion/ding sensors:
+
+binary_sensor.cochera_motion
+binary_sensor.puerta_principal_motion
+binary_sensor.puerta_principal_ding
+binary_sensor.sala_motion
+binary_sensor.salon_motion
+
+Known snapshot cameras:
+
+camera.cochera_snapshot
+camera.puerta_principal_snapshot
+camera.sala_snapshot
+camera.salon_snapshot
+
+Known live-stream switches:
+
+switch.cochera_live_stream
+switch.puerta_principal_live_stream
+switch.sala_live_stream
+switch.salon_live_stream
+
+Known information sensors include:
+
+sensor.cochera_info
+sensor.puerta_principal_info_2
+sensor.sala_info
+sensor.salon_info
+
+Additional MQTT/Ring-MQTT telemetry already exists for:
+
+- battery
+- wireless signal
+- last activity
+- device info/update timestamps
+- snapshot interval
+- snapshot mode
+- snapshot trigger
+- event stream
+- event selection
+- live stream
+- motion duration
+- siren/controls where applicable
+- Ring-MQTT service running state
+- Ring-MQTT CPU usage
+- Ring-MQTT memory usage
+- Ring-MQTT version
+- update availability
+
+Prefer ingesting existing authoritative signals rather than creating duplicates.
+
+======================================================================
+36. PROVEN RING-MQTT STREAM GATEWAY
+======================================================================
+
+Ring-MQTT already exposes on-demand RTSP streams using an internal streaming bridge.
+
+Known pattern:
+
+rtsp://<ring-mqtt-host>:8554/<camera-id>_live
+
+Equivalent streams exist for:
+
+- Puerta principal
+- Cochera
+- Sala
+- Salón
+
+The RTSP bridge initiates a Ring live session when a client connects.
+
+This is an on-demand bridge.
+
+It does NOT convert the Ring camera into a native local LAN RTSP device.
+
+Underlying video still depends on Ring's cloud infrastructure.
+
+======================================================================
+37. DO NOT USE RING AS CONTINUOUS FRIGATE SOURCE
+======================================================================
+
+Do NOT plan to configure Ring cameras as permanent 24/7 Frigate sources.
+
+Ring cameras are event/on-demand devices.
+
+Important limitations include:
+
+- Ring video still traverses Ring cloud infrastructure
+- live sessions are intended to be temporary
+- prolonged use may create power/battery issues
+- battery cameras may drain rapidly
+- prolonged streaming may create thermal concerns
+- while a Ring live session is active, normal Ring motion/ding behavior can be affected
+- using Ring as a continuous NVR source is not the intended Ring-MQTT architecture
+
+Therefore:
+
+WYZE LOCAL RTSPS CAMERAS
+may use continuous Frigate recording
+
+RING CAMERAS
+should use event-driven/on-demand strategies unless future evidence demonstrates another safe supported architecture
+
+Do not force all vendors into identical recording models.
+
+======================================================================
+38. RING LOCAL RECORDING WITHOUT RING PROTECT
+======================================================================
+
+One explicit user goal is to determine whether local Ring event recording can eventually reduce or eliminate the need to pay for Ring Protect.
+
+This is technically plausible.
+
+Do NOT assume success.
+
+Ring-MQTT already provides an on-demand LIVE stream that can be started without relying on cloud-recorded event playback.
+
+A future proof of concept should determine whether Home Assistant/HIOC can:
+
+1. receive a Ring motion/ding event
+2. start the Ring-MQTT live stream
+3. capture the stream locally with FFmpeg or an equivalent trusted recorder
+4. store the video on the Home Assistant external media HDD
+5. capture audio as well as video
+6. validate the file
+7. stop the Ring stream promptly
+8. preserve event metadata/history
+9. notify HIOC of recording success/failure
+
+======================================================================
+39. PROPOSED RING EVENT RECORDING PIPELINE
+======================================================================
+
+Conceptual architecture:
+
+Ring camera detects motion/ding
+        |
+        v
+Ring event reaches HA and/or Ring-MQTT
+        |
+        v
+event-triggered recording logic
+        |
+        v
+connect to Ring-MQTT <camera_id>_live
+        |
+        v
+Ring-MQTT establishes Ring live session
+        |
+        v
+FFmpeg records video + audio locally
+        |
+        v
+file stored on HA external media HDD
+        |
+        v
+media integrity validator
+        |
+        v
+HIOC observation / history / protection state
+
+Terminate the stream after the configured event window.
+
+Do not leave Ring live streams permanently active.
+
+======================================================================
+40. IMPORTANT RING LOCAL RECORDING LIMITATION
+======================================================================
+
+Local motion-triggered Ring recording cannot begin before the triggering event reaches Home Assistant.
+
+There is also a live-session startup delay.
+
+Therefore locally triggered recording may miss the first seconds of an incident.
+
+Ring Protect may provide better beginning-of-event coverage because Ring can preserve footage before the event notification reaches Home Assistant.
+
+This difference must be measured.
+
+Potential timestamps:
+
+T0
+physical motion/event begins, where observable
+
+T1
+Ring motion/ding event received by HA
+
+T2
+RTSP connection initiated
+
+T3
+first usable video frame received
+
+T4
+local recording successfully starts
+
+Measure:
+
+T1 - T0 where possible
+T2 - T1
+T3 - T1
+T4 - T1
+
+The security question is:
+
+"How much of the beginning of an incident would local recording miss?"
+
+======================================================================
+41. RING RECORDING TEST MATRIX
+======================================================================
+
+When the future Ring local-recording checkpoint becomes active, test at least:
+
+1. motion-triggered recording
+2. ding-triggered recording where applicable
+3. manual recording
+4. video presence
+5. audio presence
+6. startup latency
+7. MP4 integrity
+8. sane duration
+9. clean stream termination
+10. repeated events
+11. back-to-back events
+12. concurrent events on multiple Ring cameras
+13. Ring-MQTT restart
+14. Mosquitto restart
+15. Home Assistant restart
+16. Internet loss
+17. Ring cloud/API disruption where observable
+18. storage unavailable
+19. storage full/near threshold
+20. battery impact
+21. thermal impact where safely observable
+22. impact on motion/ding event generation
+23. failed stream activation
+24. recovery after failed activation
+25. file-integrity validation
+26. missed-event rate
+
+Do not perform unsafe destructive testing.
+
+======================================================================
+42. WIRED VS BATTERY RING CAMERAS
+======================================================================
+
+Do not assume all Ring cameras can use the same capture policy.
+
+Battery and wired devices must be modeled separately.
+
+Capture:
+
+- power type
+- battery level
+- external power state where available
+- expected availability
+- reasonable event-recording duration
+- battery impact
+- stream-duration impact
+- recovery/charging behavior
+
+Puerta principal currently exposes battery telemetry and should be treated accordingly.
+
+======================================================================
+43. RING PROTECT REPLACEMENT DECISION
+======================================================================
+
+Do NOT recommend cancellation of Ring Protect just because local recording works once.
+
+The future Ring local-recording architecture must pass an extended production reliability test.
+
+Measure:
+
+- percentage of motion events successfully recorded locally
+- percentage of doorbell events successfully recorded locally
+- median startup latency
+- worst-case startup latency
+- percent of recordings with valid video
+- percent with valid audio
+- corruption rate
+- missed beginning-of-event duration
+- cloud-related failures
+- Ring-MQTT-related failures
+- HA-related failures
+- MQTT-related failures
+- storage-related failures
+- battery impact
+- recovery behavior
+- protection availability percentage
+
+Then classify the result as one of:
+
+LOCAL RECORDING CAN RELIABLY REPLACE RING PROTECT
+
+LOCAL RECORDING CAN PARTIALLY REPLACE RING PROTECT
+
+LOCAL RECORDING WORKS BUT SECURITY COVERAGE IS MATERIALLY WORSE
+
+LOCAL RECORDING IS NOT RELIABLE ENOUGH FOR SECURITY USE
+
+RING PROTECT REMAINS NECESSARY FOR THE DESIRED PROTECTION LEVEL
+
+The conclusion must be evidence-driven.
+
+======================================================================
+44. DUAL-PATH RING HEALTH MONITORING
+======================================================================
+
+Use the official Ring integration and Ring-MQTT as partially independent observations.
+
+CASE A
+
+Official Ring live view:
+HEALTHY
+
+Official Ring events:
+HEALTHY
+
+Ring-MQTT:
+HEALTHY
+
+RTSP live bridge:
+HEALTHY
+
+Interpretation:
+Ring surveillance paths healthy
+
+------------------------------------------------------------
+
+CASE B
+
+Official Ring live view:
+FAILED
+
+Official Ring events:
+FAILED
+
+Ring-MQTT telemetry:
+HEALTHY
+
+Ring-MQTT snapshot:
+HEALTHY
+
+Interpretation:
+do NOT classify physical camera offline
+
+Likely official HA Ring integration/realtime path issue
+
+------------------------------------------------------------
+
+CASE C
+
+Official Ring live view:
+HEALTHY
+
+Official Ring events:
+HEALTHY
+
+Ring-MQTT telemetry:
+STALE
+
+Ring-MQTT service:
+FAILED
+
+Interpretation:
+Ring-MQTT/MQTT path failure
+
+Camera itself may still be healthy
+
+------------------------------------------------------------
+
+CASE D
+
+Official Ring live view:
+HEALTHY
+
+Ring-MQTT telemetry:
+HEALTHY
+
+Ring-MQTT RTSP:
+FAILED
+
+Interpretation:
+Ring-MQTT streaming bridge failure
+
+------------------------------------------------------------
+
+CASE E
+
+Official Ring:
+FAILED
+
+Ring-MQTT:
+FAILED
+
+WAN:
+FAILED
+
+LAN:
+HEALTHY
+
+Interpretation:
+likely upstream Internet/Ring cloud dependency
+
+Avoid duplicate camera incidents when one WAN incident explains multiple failures.
+
+------------------------------------------------------------
+
+CASE F
+
+Official Ring live view:
+HEALTHY
+
+Ring-MQTT RTSP:
+HEALTHY
+
+Local event recording:
+FAILED
+
+Interpretation:
+camera is healthy but protection is degraded
+
+======================================================================
+45. OFFICIAL RING EVENTS VS MQTT EVENTS
+======================================================================
+
+Two event paths already exist.
+
+Official Ring:
+
+event.cochera_motion
+event.puerta_principal_motion
+event.puerta_principal_ding
+event.sala_motion
+event.salon_motion
+
+Ring-MQTT:
+
+binary_sensor.cochera_motion
+binary_sensor.puerta_principal_motion
+binary_sensor.puerta_principal_ding
+binary_sensor.sala_motion
+binary_sensor.salon_motion
+
+Use this redundancy for cross-path validation.
+
+Example:
+
+Official Ring event occurs
+but Ring-MQTT equivalent does not
+
+or:
+
+Ring-MQTT event occurs
+but official Ring event does not
+
+These should become observations.
+
+However:
+
+Do not infer failure merely because no motion occurred for a long period.
+
+A quiet camera may legitimately have no events.
+
+Use corroborating active health signals.
+
+======================================================================
+46. RING-MQTT SERVICE HEALTH
+======================================================================
+
+Ring-MQTT itself should become a monitored infrastructure dependency.
+
+Existing HA telemetry already includes:
+
+- running state
+- CPU usage
+- memory usage
+- current version
+- newest version/update state
+
+Also consider:
+
+- app/container health
+- Ring authentication health
+- MQTT broker connectivity
+- go2rtc/RTSP gateway availability
+- stream activation state
+- stream activation failure
+- abnormal restart frequency
+- abnormal CPU/memory behavior
+
+Differentiate:
+
+RING_MQTT_SERVICE_FAILURE
+
+from:
+
+INDIVIDUAL_RING_CAMERA_FAILURE
+
+======================================================================
+47. MOSQUITTO DEPENDENCY
+======================================================================
+
+Mosquitto is already a production dependency for Ring-MQTT.
+
+It may also become important for Frigate/HIOC monitoring.
+
+Represent it explicitly in the dependency graph.
+
+Conceptually:
+
+Ring camera
+   ->
+Ring cloud
+   ->
+Ring-MQTT
+   ->
+Mosquitto
+   ->
+HA MQTT entities
+   ->
+HIOC
+
+A Mosquitto outage can make multiple cameras appear unhealthy at once.
+
+HIOC should correlate this before creating duplicate incidents.
+
+======================================================================
+48. CURRENT RING SNAPSHOT PARTIAL FAILURE
+======================================================================
+
+Current Ring-MQTT production logs demonstrate a useful real-world partial failure.
+
+Cochera:
+
+interval snapshots are being retrieved successfully.
+
+Sala:
+
+snapshots repeatedly report unavailable.
+
+Salón:
+
+snapshots repeatedly report unavailable.
+
+At the same time:
+
+Ring-MQTT continues publishing device information and stream metadata for Sala and Salón.
+
+Preserve this as evidence that camera health is multi-dimensional.
+
+Possible state:
+
+DEVICE:
+HEALTHY
+
+MQTT:
+HEALTHY
+
+LIVE STREAM:
+HEALTHY
+
+SNAPSHOT:
+FAILED
+
+This should generally be DEGRADED rather than OFFLINE.
+
+When the future surveillance-health checkpoint is active, investigate whether this is caused by:
+
+- Ring motion capture settings
+- Ring mode configuration
+- camera model capability
+- Ring-MQTT configuration
+- cloud behavior
+- permissions
+- integration behavior
+- another known Ring limitation
+
+Do not troubleshoot this during the documentation-only task.
+
+======================================================================
+49. RING PROTECTION STATUS EXAMPLE
+======================================================================
+
+Example dashboard state:
+
+PUERTA PRINCIPAL
+
+Physical/device health       HEALTHY
+Network                      HEALTHY
+Ring cloud path              HEALTHY
+Official Ring integration    HEALTHY
+Official Live View           HEALTHY
+Official Ring events         HEALTHY
+Ring-MQTT                    HEALTHY
+Mosquitto                    HEALTHY
+Snapshot                     HEALTHY
+On-demand RTSP               HEALTHY
+Local event recording        HEALTHY
+Ring cloud recording         PROTECTED
+Ring Protect                 ACTIVE
+
+If Protect is later removed:
+
+Physical/device health       HEALTHY
+Official Live View           HEALTHY
+Official Ring events         HEALTHY
+Ring-MQTT                    HEALTHY
+On-demand RTSP               HEALTHY
+Local event recording        HEALTHY
+Ring cloud recording         NOT AVAILABLE
+Ring Protect                 NOT ACTIVE
+
+The camera should not become red merely because the paid cloud recording capability is absent.
+
+======================================================================
+50. CAMERA ECOSYSTEM INVENTORY
+======================================================================
+
+Before broad surveillance implementation, create an authoritative inventory.
+
+For every camera capture:
+
+- HIOC asset ID
+- friendly name
+- physical location
+- vendor
+- model
+- MAC
+- expected/reserved IP
+- current IP
+- power type
+- Wi-Fi/Ethernet
+- Wi-Fi network
+- vendor application
+- HA integration
+- local streaming capability
+- RTSP/RTSPS capability
+- Frigate-compatible
+- Frigate ID
+- Ring-MQTT ID
+- official Ring entities
+- MQTT entities
+- expected audio
+- expected video
+- motion capability
+- AI capability
+- continuous recording expectation
+- event recording expectation
+- recording destination
+- retention
+- cloud dependency
+- subscription dependency
+- expected availability
+- criticality
+
+Do not store credentials.
+
+======================================================================
+51. RECORDING POLICY BY CAMERA TYPE
+======================================================================
+
+Different camera ecosystems require different recording strategies.
+
+CATEGORY A:
+LOCAL CONTINUOUS CAMERA
+
+Example:
+Wyze Secure RTSPS camera through Frigate
+
+Desired:
+- continuous recording
+- configured retention
+- motion processing
+- future AI
+- recording-integrity validation
+
+CATEGORY B:
+CLOUD / EVENT CAMERA
+
+Example:
+Ring
+
+Desired may include:
+- live-view health
+- event health
+- local event capture
+- snapshots
+- cloud recording awareness
+- subscription awareness
+
+CATEGORY C:
+MONITOR-ONLY CAMERA
+
+If no reliable recording path exists:
+
+HIOC should still monitor:
+- availability
+- integration health
+- network state
+- battery/power
+- event path
+- vendor/cloud dependencies
+
+Do not imply equal protection across all categories.
+
+======================================================================
+52. CROSS-SYSTEM FAILURE CORRELATION
+======================================================================
+
+HIOC should identify likely root cause across multiple cameras.
+
+Examples:
+
+MULTIPLE WYZE CAMERAS DISAPPEAR FROM HA
+but vendor app remains healthy
+
+Possible root cause:
+Home Assistant integration or local stream path
+
+------------------------------------------------------------
+
+ALL FRIGATE CAMERAS FAIL
+but cameras remain reachable
+
+Possible root cause:
+Frigate/go2rtc
+
+------------------------------------------------------------
+
+ONE CAMERA FAILS EVERYWHERE
+
+Possible root cause:
+camera/power/network
+
+------------------------------------------------------------
+
+ALL RING CAMERAS FAIL IN HA
+while local Frigate cameras remain healthy
+
+Possible root cause:
+Ring cloud/integration/MQTT
+
+------------------------------------------------------------
+
+ALL CLOUD-DEPENDENT CAMERAS FAIL
+while local streams remain healthy
+
+Possible root cause:
+Internet/WAN
+
+------------------------------------------------------------
+
+ALL RECORDINGS STOP
+while streams remain healthy
+
+Possible root cause:
+storage/recording subsystem
+
+Avoid opening one incident per downstream symptom when a common dependency explains the failure.
+
+======================================================================
+53. DEPENDENCY GRAPH
+======================================================================
+
+Eventually represent surveillance dependencies in HIOC.
+
+Example for Wyze:
+
+Camera Parque
+   ->
+Wi-Fi/LAN
+   ->
+Pi-hole DHCP reservation
+   ->
+expected IP
+   ->
+RTSPS service
+   ->
+Frigate embedded go2rtc
+   ->
+Frigate ffmpeg
+   ->
+recording
+   ->
+external HDD
+
+Motion:
+video stream
+   ->
+Frigate motion pipeline
+
+Future AI:
+video stream
+   ->
+Frigate
+   ->
+detector / accelerator
+
+Example for Ring:
+
+Ring camera
+   ->
+Wi-Fi/Internet
+   ->
+Ring cloud
+   ->
+Official Ring integration
+
+and independently:
+
+Ring camera
+   ->
+Ring cloud
+   ->
+Ring-MQTT
+   ->
+Mosquitto
+   ->
+HA MQTT entities
+
+and for local recording:
+
+Ring-MQTT
+   ->
+on-demand RTSP
+   ->
+FFmpeg capture
+   ->
+external HDD
+   ->
+media validation
+
+======================================================================
+54. INCIDENT MODEL
+======================================================================
+
+Use HIOC's existing incident architecture.
+
+Do NOT create an isolated surveillance incident engine.
+
+Conceptual incident classes may include:
+
+CAMERA_OFFLINE
+CAMERA_NETWORK_UNAVAILABLE
+CAMERA_ADDRESS_MISMATCH
+CAMERA_STREAM_UNAVAILABLE
+CAMERA_AUTH_FAILURE
+CAMERA_STREAM_STALLED
+CAMERA_VIDEO_MISSING
+CAMERA_AUDIO_MISSING
+
+HOME_ASSISTANT_CAMERA_INTEGRATION_FAILED
+
+FRIGATE_UNAVAILABLE
+FRIGATE_CAMERA_PIPELINE_FAILURE
+FRIGATE_RECORDING_FAILURE
+FRIGATE_REPEATED_RESTART
+
+GO2RTC_SOURCE_FAILURE
+GO2RTC_CONSUMER_FAILURE
+
+RECORDING_STALE
+RECORDING_CORRUPT
+RECORDING_AUDIO_MISSING
+
+CAMERA_MOTION_PIPELINE_FAILURE
+CAMERA_OBJECT_DETECTION_FAILURE
+
+SURVEILLANCE_STORAGE_UNAVAILABLE
+SURVEILLANCE_STORAGE_READ_ONLY
+SURVEILLANCE_STORAGE_LOW
+SURVEILLANCE_STORAGE_CRITICAL
+
+CAMERA_RECONNECT_INSTABILITY
+
+RING_INTEGRATION_UNAVAILABLE
+RING_MQTT_UNAVAILABLE
+RING_CLOUD_PATH_UNAVAILABLE
+RING_LIVE_VIEW_UNAVAILABLE
+RING_EVENT_PATH_UNAVAILABLE
+RING_SNAPSHOT_UNAVAILABLE
+RING_LOCAL_RECORDING_FAILED
+
+These names are conceptual.
+
+Review the existing HIOC taxonomy and generalize/reuse existing incident types where practical.
+
+======================================================================
+55. SEVERITY MODEL
+======================================================================
+
+Severity should reflect surveillance impact.
+
+Conceptual examples:
+
+INFO
+
+- brief reconnect
+- automatic recovery
+- no meaningful recording loss
+
+WARNING
+
+- short stream interruption
+- snapshot capability degraded
+- motion-processing failure
+- audio missing while video continues
+- unexpected IP change without recording loss
+- storage capacity trending low
+- Ring integration path failed but alternate path still works
+
+CRITICAL
+
+- expected camera unavailable
+- no new recording beyond critical threshold
+- Frigate unavailable
+- recording filesystem missing
+- storage read-only
+- recording corrupt
+- significant footage gap
+- camera video pipeline dead
+- local Ring recording repeatedly fails when it is the only active recording protection
+
+Align this with HIOC's existing severity semantics.
+
+======================================================================
+56. ALERT DEBOUNCE / GRACE PERIODS
+======================================================================
+
+Do not alert on every one-second interruption.
+
+Use HIOC lifecycle/debounce semantics.
+
+Conceptually:
+
+brief interruption:
+observation / transient degradation
+
+sustained stream failure:
+incident
+
+no valid recording for an unacceptable interval:
+critical recording incident
+
+Frigate may automatically restart ffmpeg when it detects recording problems.
+
+HIOC should observe these recoveries without producing unnecessary notification storms.
+
+Thresholds must be configurable and validated experimentally.
+
+======================================================================
+57. NOTIFICATION REQUIREMENTS
+======================================================================
+
+Use HIOC's normal Home Assistant phone-notification architecture.
+
+Notifications should be actionable.
+
+Include where appropriate:
+
+- camera friendly name
+- physical location
+- severity
+- failure type
+- start time
+- duration
+- recording affected yes/no
+- live view affected yes/no
+- video affected yes/no
+- audio affected yes/no
+- likely root cause when sufficiently certain
+- recommended action
+- upstream dependency if relevant
+
+Example:
+
+"Camera Parque recording critical: no valid recording segment for 2m 14s. RTSPS stream is also unavailable."
+
+Example:
+
+"Camera Parque degraded: video recording continues but recent files contain no audio track."
+
+Example:
+
+"Ring Cochera degraded: official Ring live view unavailable, but Ring-MQTT and snapshots remain healthy."
+
+Do not expose:
+- camera credentials
+- RTSP URLs with credentials
+- tokens
+- Ring recording URLs
+- Ring account identifiers
+
+======================================================================
+58. RECOVERY NOTIFICATIONS
+======================================================================
+
+Notify on meaningful recovery.
+
+Include:
+
+- what recovered
+- outage duration
+- whether recovery was automatic
+- whether recording resumed
+- estimated/measured footage gap
+- whether all health dimensions are restored
+
+Example:
+
+"Camera Parque recording restored after 4m 32s. Continuous recording resumed. Estimated footage gap: 4m 10s."
+
+Avoid recovery notifications for trivial one-second events.
+
+======================================================================
+59. AUTOMATIC REMEDIATION POLICY
+======================================================================
+
+Initial HIOC surveillance behavior should be:
+
+OBSERVE
+CLASSIFY
+ALERT
+RECORD HISTORY
+
+Do NOT automatically:
+
+- reboot cameras
+- restart Home Assistant
+- restart Frigate
+- restart Ring-MQTT
+- restart network equipment
+- power-cycle devices
+- modify DHCP
+- remount storage
+
+unless a separately approved future remediation policy exists.
+
+HIOC should record when Frigate's own built-in watchdog performs automatic recovery.
+
+Future controlled remediation may be a separate checkpoint.
+
+======================================================================
+60. DASHBOARD INTEGRATION
+======================================================================
+
+Surveillance health must appear in the SAME HIOC dashboard.
+
+Do not require routine checking of Frigate/Ring/Wyze interfaces.
+
+Create or plan a unified Surveillance / Cameras area.
+
+High-level view should answer:
+
+ALL CAMERAS HEALTHY
+
+1 CAMERA DEGRADED
+
+1 RECORDING CRITICAL
+
+RING CLOUD DEGRADED
+
+FRIGATE DEGRADED
+
+STORAGE WARNING
+
+For each camera, show only the most important information at top level.
+
+Use drill-down for detailed telemetry.
+
+======================================================================
+61. PER-CAMERA DASHBOARD DATA
+======================================================================
+
+Potential fields:
+
+- friendly name
+- physical location
+- vendor
+- overall health
+- protection status
+- expected availability
+- network health
+- expected IP
+- actual IP
+- stream health
+- video health
+- audio health
+- camera FPS
+- reconnect state
+- latest recording age
+- recording health
+- media-integrity result
+- motion pipeline
+- object detection status
+- storage dependency
+- active incident
+- last outage
+- last successful health check
+
+Frigate-specific detail may include:
+
+- go2rtc producer
+- go2rtc consumer
+- bytes/packets progressing
+- Frigate role status
+- ffmpeg status
+
+Ring-specific detail may include:
+
+- official Live View
+- official Ring event path
+- Ring-MQTT status
+- Mosquitto status
+- snapshot health
+- Ring-MQTT RTSP activation
+- battery
+- Wi-Fi signal
+- Ring Protect state
+- cloud recording capability
+- local event-recording capability
+
+Do not show unsupported fields as failures.
+
+Use N/A where appropriate.
+
+======================================================================
+62. HISTORICAL DATA
+======================================================================
+
+Retain enough surveillance history to answer:
+
+- camera availability over 7/30/90 days
+- recording availability
+- footage gap duration
+- number of reconnects
+- Frigate ffmpeg restarts
+- stream instability
+- Ring-MQTT restarts
+- integration outages
+- storage incidents
+- audio-loss events
+- media-integrity failures
+- local Ring recording success rate
+- Ring event capture latency
+- battery impact
+- unexpected IP changes
+
+Avoid retaining unnecessary high-frequency raw telemetry forever.
+
+Use HIOC's normal aggregation/downsampling strategy.
+
+======================================================================
+63. DERIVED RELIABILITY METRICS
+======================================================================
+
+Consider metrics such as:
+
+- camera availability %
+- live-view availability %
+- recording availability %
+- protection availability %
+- total recording-gap duration
+- reconnect count
+- MTBF
+- MTTR
+- latest recording age
+- media-validation success %
+- Ring local-event capture success %
+- median Ring event start latency
+- worst-case Ring event start latency
+- storage consumption/day
+- projected retention
+- integration uptime
+
+Use actual observations, not guesses.
+
+======================================================================
+64. WATCHDOG CADENCE
+======================================================================
+
+Use layered checks.
+
+FAST CHECKS
+
+Examples:
+- Frigate availability
+- camera FPS
+- go2rtc traffic progression
+- recording freshness
+- Ring-MQTT availability
+- Mosquitto availability
+- critical stream state
+
+MEDIUM-CADENCE CHECKS
+
+Examples:
+- storage state
+- file progression
+- camera service reachability
+- IP-address consistency
+- Ring snapshot health
+- integration entity freshness
+- reconnect frequency
+
+DEEP PERIODIC CHECKS
+
+Examples:
+- ffprobe newest completed recording
+- validate audio/video tracks
+- verify decodability
+- verify expected codec
+- validate Ring locally recorded event file
+- calculate storage consumption trend
+
+Choose exact timing during implementation based on performance and failure-detection requirements.
+
+======================================================================
+65. SECURITY / SECRET HANDLING
+======================================================================
+
+Camera and integration data can expose sensitive runtime values.
+
+Never expose or persist:
+
+- RTSP passwords
+- RTSPS passwords
+- authenticated stream URLs
+- Ring account email
+- Ring refresh/auth tokens
+- Home Assistant access tokens
+- camera proxy access tokens
+- entity_picture query tokens
+- video_url values
+- recording URLs
+- MQTT passwords
+- API tokens
+
+Home Assistant Ring camera entities expose sensitive runtime attributes.
+
+The surveillance collector should use:
+
+DENY BY DEFAULT
+
+Only explicitly approved attributes should be retained.
+
+Do not dump raw camera entity attributes into:
+
+- HIOC logs
+- Git
+- Master Plan
+- incidents
+- Evidence Reports
+- dashboards
+
+======================================================================
+66. TESTING REQUIREMENTS
+======================================================================
+
+When the future surveillance checkpoint becomes active, deliberately test failures.
+
+For local/Frigate cameras, test at minimum:
+
+1. camera powered off
+2. camera Wi-Fi/network unavailable
+3. camera still pingable but RTSPS unavailable
+4. authentication failure
+5. stream stall
+6. Frigate app stopped
+7. go2rtc producer lost
+8. Frigate consumer lost
+9. ffmpeg capture failure
+10. recording files stop advancing
+11. recording directory unavailable
+12. storage near threshold
+13. safe read-only simulation if possible
+14. corrupt media file
+15. missing video
+16. missing audio
+17. motion pipeline failure
+18. future detector failure
+19. camera IP changes
+20. camera returns/recovery
+21. notification delivery
+22. incident resolution
+23. dashboard state transition
+24. historical data correctness
+
+For Ring, use the separate Ring test matrix described above.
+
+Use reversible/synthetic fault injection where possible.
+
+======================================================================
+67. SUCCESS CRITERIA
+======================================================================
+
+This capability is NOT complete merely because sensors exist.
+
+Completion requires evidence that HIOC can:
+
+- detect physical camera/network loss
+- detect local stream loss
+- detect integration-specific failures
+- distinguish vendor-app availability from Home Assistant availability
+- detect loss of Frigate frames
+- detect actual recording failure
+- detect stale recordings
+- detect corrupt recordings
+- detect missing audio
+- detect storage failure
+- detect storage capacity risk
+- detect camera IP mismatch
+- detect Ring-MQTT failure separately from Ring camera failure
+- detect Mosquitto dependency failure
+- detect Ring official-integration failure separately from Ring-MQTT
+- distinguish snapshot degradation from full Ring camera outage
+- validate locally captured Ring event video/audio
+- notify the user
+- detect recovery
+- resolve incidents correctly
+- preserve historical evidence
+- avoid exposing secrets
+- avoid notification storms
+- scale to additional cameras
+- integrate into the unified HIOC dashboard
+
+Additional completion criteria:
+
+- permanent cameras have validated DHCP reservations where appropriate
+- unexpected IP changes are detected
+- Wyze-app-available / HA-unavailable scenarios are classified
+- Ring cameras appear in the same surveillance model as Frigate cameras
+- Ring local recording limitations are documented and production-tested
+- the dashboard clearly shows each camera's protection level
+- HIOC can answer whether usable footage is reasonably expected if an incident happens now
+
+======================================================================
+68. RELATIONSHIP TO EXISTING HIOC ROADMAP
+======================================================================
+
+This work relates to already planned HIOC concepts including:
+
+- asset-centric living digital twin
+- expected availability
+- permanent IoT monitoring
+- observation vs stale vs degraded vs offline
+- canonical IP correctness
+- Pi-hole DHCP ingestion
+- dependency graph
+- automatic service relationships
+- failure propagation
+- infrastructure topology
+- historical trends
+- predictive recommendations
+- notification semantics
+- repository/deployment hygiene
+- retention/archive policy
+- infrastructure backup/disaster recovery
+
+Do not create competing implementations.
+
+Use the existing architecture.
+
+======================================================================
+69. LIKELY ARCHITECTURAL PREREQUISITES
+======================================================================
+
+Do not blindly use this order.
+
+Review the current Master Plan and choose the correct placement.
+
+Potential prerequisites may include:
+
+1. asset identity correctness
+2. canonical IP correctness
+3. Pi-hole DHCP/lease correctness
+4. expected-availability semantics
+5. health/incident lifecycle
+6. notification framework
+7. dependency model
+8. surveillance asset inventory
+9. DHCP reservation/address hardening
+10. local/Frigate camera health
+11. recording integrity
+12. Ring dual-path health
+13. Ring local-event recording POC
+14. media validation
+15. unified dashboard
+16. historical reliability analytics
+17. Ring Protect replacement decision
+18. optional future controlled remediation
+
+The Master Plan must decide the final sequencing.
+
+======================================================================
+70. POSSIBLE PHASE STRUCTURE
+======================================================================
+
+If this capability is too large for one checkpoint, consider a phased structure such as:
+
+SURVEILLANCE A
+Asset inventory and identity
+
+SURVEILLANCE B
+Camera address/DHCP hardening
+
+SURVEILLANCE C
+Frigate/local-stream health foundation
+
+SURVEILLANCE D
+Recording freshness and media integrity
+
+SURVEILLANCE E
+Ring dual-path health model
+
+SURVEILLANCE F
+Ring event-driven local recording proof of concept
+
+SURVEILLANCE G
+Incidents and notifications
+
+SURVEILLANCE H
+Unified dashboard
+
+SURVEILLANCE I
+Historical reliability and protection metrics
+
+SURVEILLANCE J
+Ring Protect replacement decision
+
+SURVEILLANCE K
+Optional controlled remediation
+
+Use different names/numbers if the Master Plan structure requires it.
+
+Do not create unnecessary phases.
+
+======================================================================
+71. DOCUMENTATION DELIVERABLE
+======================================================================
+
+Update docs/HIOC_MASTER_PLAN.md so this requirement survives chat history.
+
+Document:
+
+- why surveillance monitoring is needed
+- the operational risk being solved
+- heterogeneous camera architecture
+- Frigate architecture
+- Wyze Secure RTSP path
+- Ring dual-integration architecture
+- Ring-MQTT
+- Mosquitto dependency
+- Ring Protect capability dependency
+- recording-integrity requirements
+- storage health
+- audio/video validation
+- camera-IP/DHCP hardening
+- vendor-app vs HA discrepancies
+- expected availability
+- protection status
+- incidents
+- notifications
+- recovery
+- dashboard integration
+- asset model
+- dependency graph
+- historical metrics
+- test requirements
+- prerequisites
+- explicit deferrals
+- success criteria
+
+Also update any relevant:
+
+- Implementation Status
+- Future Capabilities
+- Architecture
+- Decisions
+- Dependencies
+- Roadmap
+- Security
+- Validation
+
+sections needed to keep the Master Plan internally consistent.
+
+======================================================================
+72. IMPORTANT DEFERRALS
+======================================================================
+
+Do NOT implement as part of this planning task:
+
+- MQTT changes
+- Frigate config changes
+- new HA sensors
+- automations
+- watchdog code
+- notification code
+- dashboard cards
+- camera restarts
+- Ring recording scripts
+- FFmpeg recording
+- Ring-MQTT changes
+- Ring Protect changes
+- DHCP reservations
+- Pi-hole changes
+- Frigate object detection
+- hardware acceleration
+- Ring snapshot troubleshooting
+- Wyze integration troubleshooting
+- camera IP migrations
+- storage fault injection
+
+This request is documentation / roadmap planning only.
+
+======================================================================
+73. STOP CONDITION
+======================================================================
+
+After the Master Plan planning/documentation change is completed:
+
+STOP.
+
+Do not begin implementation simply because the roadmap entry exists.
+
+Provide:
+
+1. Exact roadmap/checkpoint placement chosen.
+2. Why that placement is architecturally appropriate.
+3. Summary of all Master Plan changes.
+4. Dependencies/prerequisites identified.
+5. Existing HIOC work this integrates with.
+6. Any conflicts/overlap discovered.
+7. Explicit deferred work.
+8. Commit hash.
+9. Push confirmation.
+10. Clean working tree confirmation.
+11. Standard HIOC Evidence Report.
+
+The Evidence Report should include:
+
+- deployment/documentation result
+- intended behavior
+- invariant/governance checks
+- warnings
+- PASS/FAIL
+
+The final result should leave HIOC with a clear future surveillance roadmap while preserving the current active project sequence unchanged.
+```
+<!-- ORIGINAL_SURVEILLANCE_SPECIFICATION_END -->
+
 
 ### Status Vocabulary
 
@@ -2816,6 +5858,7 @@ Phase 7A remains focused on trustworthy passive discovery and enrichment. Comple
 - Continued Phase 7A enrichment from passive sources.
 
 Active Discovery remains postponed. Future YAML dashboard deployment modernization also remains planned and must not be folded into unrelated inventory checkpoints.
+Future surveillance remains within PE-10 and must not reopen completed DHCP ingestion or Canonical Address Selection Hardening. Camera addressing sub-checkpoints and unresolved historical-identity/local-address decisions remain separately governed; no surveillance implementation or current-sequence change is authorized.
 
 ### Asset-Centric Evolution
 
@@ -2834,6 +5877,7 @@ After reliable passive identity is established, Living Inventory should graduall
 - Safe configurable retention and archival governed by asset policy rather than stale age alone.
 
 These are future concepts. They do not add runtime fields or change current health, monitoring, incident, retention, or discovery behavior.
+Future surveillance camera policy extends this same Asset-centric model; it does not claim criticality, expected availability, recording/subscription policy or maintenance fields are already accepted PE-2.1 fields.
 
 ### Roadmap Dependencies
 
@@ -2844,6 +5888,7 @@ These are future concepts. They do not add runtime fields or change current heal
 - Historical infrastructure trends and predictive recommendations depend on reliable identity, asset classification, relationships, and retained history.
 
 The asset-centric vision expands the meaning of future work; it does not replace or reorder any existing phase or capability.
+Surveillance consumes stable identity/Asset policy and PE-7/PE-8/PE-9 through PE-10. Recording assurance requires actual media/storage evidence; Ring local capture and subscription replacement require separate experiment/decision gates. Retention follows Asset policy, notifications reuse shared semantics, and recovery follows separate backup/DR/cold-boot governance. No future item is promoted to the current next task.
 
 ---
 
@@ -4927,6 +7972,11 @@ Architectural decisions currently in effect:
 - Incident testing will occur during real operational events rather than synthetic simulations.
 - New features must not interrupt the current implementation phase.
 - Scope changes require an intentional revision of this master plan.
+
+## Surveillance roadmap planning — user-established future testing exception
+
+- Surveillance roadmap preservation is documentation only, under future PE-10, using the six approved architectural checkpoints and existing shared HIOC models. Current sequencing and implementation authorization are unchanged.
+- Normally, HIOC does not intentionally create failures. For future surveillance reliability testing, controlled and reversible failures are allowed when they can be performed safely, because otherwise we may never be able to prove that HIOC detects important camera and recording failures. This is the explicit future surveillance exception to the normal incident-testing policy above; no failure injection is authorized by this planning record.
 
 ---
 

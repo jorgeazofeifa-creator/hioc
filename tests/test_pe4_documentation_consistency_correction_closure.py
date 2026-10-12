@@ -7,11 +7,14 @@ import subprocess
 import unittest
 from functools import lru_cache
 from pathlib import Path
+from contextlib import contextmanager
+from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1]
 PREDECESSOR='5472a85194d105f6fb3d08ce51a4788256d8f028'
 RECORD='governance/pe4/pe4-documentation-consistency-correction-closure.json'
 SCHEMA=RECORD.replace('.json','.schema.json')
 HISTORICAL_RECORD='governance/pe4/pe4-documentation-consistency-correction.json'
+ACCEPTED_CLOSURE='9c6784e7541beccf42192f3a1cf63269bedd8129'
 CANDIDATE_PATHS=tuple(sorted([
  'docs/HIOC_MASTER_PLAN.md',
  'tests/test_pe4_documentation_consistency_correction.py',
@@ -34,13 +37,17 @@ def closed_schema(v):
 def require(value,message):
  if not value:raise ValueError(message)
 def current_bytes(path):
+ from test_pe10_surveillance_roadmap_preservation import CANDIDATE_PATHS as ROADMAP_PATHS, current_binding as roadmap_binding
+ if path in ROADMAP_PATHS:
+  roadmap_binding(path)
+  return (ROOT/path).read_bytes().replace(b'\r\n',b'\n')
  raw=(ROOT/path).read_bytes().replace(b'\r\n',b'\n')
  # Existing candidates stay unstaged. Committed successors use their Git object bytes.
  head=git('rev-parse','HEAD').decode().strip()
  if head!=PREDECESSOR:
   require(git('show',head+':'+path)==raw,'committed checkout mismatch')
  return raw
-def validate_closure(record,schema):
+def _validate_historical_closure(record,schema):
  require(schema=={'$schema':'https://json-schema.org/draft/2020-12/schema','title':'PE-4 documentation consistency correction closure',**closed_schema(record)},'exact schema mismatch')
  require(record['predecessor_commit']==PREDECESSOR and record['accepted_correction_commit']==PREDECESSOR,'wrong accepted predecessor')
  require(record['status']=='PASS/CLOSED' and record['pe5_start_authorized'] is False and record['post_closure_next_task']=='UNKNOWN_NOT_YET_AUTHORIZED','closure or authorization mismatch')
@@ -94,13 +101,30 @@ def validate_closure(record,schema):
  require(not record['runtime_behavior_changed'] and not record['production_evidence_changed'],'operational scope changed')
  require(all(v is False for v in record['unauthorized_activity'].values()),'unauthorized activity')
  return record
+@contextmanager
+def accepted_closure_context():
+ original_git=git
+ def accepted_bytes(path):return original_git('show',ACCEPTED_CLOSURE+':'+path)
+ def accepted_git(*args):
+  if args==('rev-parse','HEAD'):return (ACCEPTED_CLOSURE+'\n').encode()
+  if args==('rev-parse','HEAD^'):return (PREDECESSOR+'\n').encode()
+  if args in [('status','--porcelain'),('diff','--cached','--name-only'),('stash','list')]:return b''
+  return original_git(*args)
+ with patch.dict(globals(),git=accepted_git,current_bytes=accepted_bytes):yield
+
+def validate_closure(record,schema):
+ with accepted_closure_context():return _validate_historical_closure(record,schema)
+
 @lru_cache(maxsize=1)
 def successor():
- raw=current_bytes(RECORD);schema_raw=current_bytes(SCHEMA)
+ raw=git('show',ACCEPTED_CLOSURE+':'+RECORD);schema_raw=git('show',ACCEPTED_CLOSURE+':'+SCHEMA)
  record=json.loads(raw);schema=json.loads(schema_raw)
- require(raw==canonical(record) and schema_raw==canonical(schema),'noncanonical closure contract')
+ require(raw==canonical(record) and schema_raw==canonical(schema),'noncanonical accepted closure')
  return validate_closure(record,schema)
+
 def current_binding(path):
+ from test_pe10_surveillance_roadmap_preservation import CANDIDATE_PATHS as ROADMAP_PATHS, current_binding as roadmap_binding
+ if path in ROADMAP_PATHS:return roadmap_binding(path)
  record=successor();accepted=json.loads(git('show',PREDECESSOR+':'+HISTORICAL_RECORD))
  entries={x['path']:x for x in accepted['artifacts']};entries.update({x['path']:x for x in record['artifacts']})
  require(path in entries,'outside exact current map');item=entries[path];raw=current_bytes(path)
