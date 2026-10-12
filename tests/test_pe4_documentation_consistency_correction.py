@@ -9,11 +9,14 @@ import subprocess
 import unittest
 from functools import lru_cache
 from pathlib import Path
+from contextlib import contextmanager
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 PREDECESSOR = '017686549acb27dbf7a8ad3577d0f84cf9f3f066'
 RECORD = 'governance/pe4/pe4-documentation-consistency-correction.json'
 SCHEMA = RECORD.replace('.json', '.schema.json')
+ACCEPTED_CORRECTION = '5472a85194d105f6fb3d08ce51a4788256d8f028'
 
 def git(*args):
     return subprocess.check_output(['git', '--no-optional-locks', *args], cwd=ROOT,
@@ -79,7 +82,7 @@ def _history(record, path):
     if ''.join(candidate).encode('utf8') != stage(path):
         raise ValueError('document edit outside exact finding operations: '+path)
 
-def validate_candidate(record, schema):
+def _validate_historical_candidate(record, schema):
     validate(record, schema)
     expected_schema = {'$schema':'https://json-schema.org/draft/2020-12/schema',
                        'title':'PE-4 documentation consistency correction', **closed_schema(record)}
@@ -123,23 +126,50 @@ def validate_candidate(record, schema):
         if phrase not in document: raise ValueError('missing correction evidence')
     return record
 
+@contextmanager
+def accepted_candidate_context():
+    """Replay the original candidate law against immutable accepted Git objects."""
+    original_git = git
+    def accepted_stage(path):
+        return original_git('show', ACCEPTED_CORRECTION + ':' + path)
+    def candidate_git(*args):
+        if args == ('rev-parse', 'HEAD'): return (PREDECESSOR+'\n').encode()
+        if args == ('diff', 'HEAD', '--name-only'):
+            return original_git('diff', PREDECESSOR, ACCEPTED_CORRECTION, '--name-only')
+        if args == ('ls-files', '--others', '--exclude-standard'): return b''
+        if args == ('ls-files', '--stage'):
+            rows=original_git('ls-tree','-r',ACCEPTED_CORRECTION).decode().splitlines()
+            return ''.join(row.split(' ',1)[0]+' '+row.split('\t',1)[0].split()[2]+' 0\t'+row.split('\t',1)[1]+'\n' for row in rows).encode()
+        return original_git(*args)
+    with patch.dict(globals(), git=candidate_git, stage=accepted_stage): yield
+
+def validate_candidate(record, schema):
+    with accepted_candidate_context():
+        return _validate_historical_candidate(record, schema)
+
 @lru_cache(maxsize=1)
 def successor():
-    raw=stage(RECORD);schema_raw=stage(SCHEMA)
+    raw=git('show',ACCEPTED_CORRECTION+':'+RECORD)
+    schema_raw=git('show',ACCEPTED_CORRECTION+':'+SCHEMA)
     record=json.loads(raw);schema=json.loads(schema_raw)
-    if canonical(record)!=raw or canonical(schema)!=schema_raw: raise ValueError('noncanonical successor')
+    if canonical(record)!=raw or canonical(schema)!=schema_raw: raise ValueError('noncanonical accepted correction')
     return validate_candidate(record,schema)
 
+def current_artifacts():
+    from test_pe4_documentation_consistency_correction_closure import successor as closure
+    bindings={item['path']:item for item in successor()['artifacts']}
+    bindings.update({item['path']:item for item in closure()['artifacts']})
+    return list(bindings.values())
+
 def current_binding(path):
-    record=successor()
-    item=next((x for x in record['artifacts'] if x['path']==path),None)
-    if item is None: raise ValueError('path outside current artifact map')
-    raw=stage(path)
-    if digest(raw)!=item['sha256'] or blob(raw)!=item['git_blob']: raise ValueError('current identity mismatch')
-    return item
+    from test_pe4_documentation_consistency_correction_closure import current_binding as closure_binding
+    return closure_binding(path)
 
 def verify_document_history(path):
-    _history(successor(),path)
+    record=successor()
+    with accepted_candidate_context(): _history(record,path)
+    from test_pe4_documentation_consistency_correction_closure import successor as closure
+    closure()
 
 class DocumentationConsistencyCorrectionTests(unittest.TestCase):
     def test_exact_closed_candidate_and_stage_identities(self): successor()
@@ -170,6 +200,6 @@ class DocumentationConsistencyCorrectionTests(unittest.TestCase):
         path='governance/pe4/pe4-ha-association-public-projection-test-binding-correction.json'
         self.assertEqual(stage(path),historical(path));self.assertEqual(len(json.loads(stage(path))['binding_exception_paths']),4)
     def test_new_test_is_bytecode_free_parseable(self):
-        ast.parse(stage('tests/test_pe4_documentation_consistency_correction.py').decode('utf8'))
+        ast.parse(git('show',ACCEPTED_CORRECTION+':tests/test_pe4_documentation_consistency_correction.py').decode('utf8'))
 
 if __name__=='__main__': unittest.main()

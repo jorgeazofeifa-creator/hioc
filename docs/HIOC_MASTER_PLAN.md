@@ -3281,7 +3281,7 @@ Rollback NOT_PERFORMED; Manual Second Adapter Execution NOT_AUTHORIZED / NOT_PER
 Recurring Association Scheduler ACTIVE / AUTHORIZED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
 No runtime implementation or future roadmap work changed.
 OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
-Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
+Historical correction-candidate sequencing at 5472a85194d105f6fb3d08ce51a4788256d8f028: Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
 Ordered next task: PE-5 - MQTT and Passive Service Association; separately governed, NOT_STARTED.
 [Closure authority](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md).
 
@@ -3835,6 +3835,7 @@ completion. Historical chronology elsewhere does not override it.
 | Public Projection Retained Payload Equality | PASS |
 | PE-5 | NOT STARTED |
 | Historical vs Current Lifecycle Test-Binding Correction | PASS/CLOSED |
+| Documentation Consistency Correction | PASS/CLOSED |
 | PE-4 | PASS/CLOSED |
 | Phase 7A | ACTIVE |
 | Rollback | NOT PERFORMED |
@@ -4076,6 +4077,22 @@ Phase 7A - Passive Living Inventory
 
 ## Current Objective
 
+**PE-4 Documentation Consistency Correction Closure**
+
+Documentation Consistency Correction PASS/CLOSED. Accepted correction commit: 5472a85194d105f6fb3d08ce51a4788256d8f028.
+Validation, independent review, commit, push, independent repository/GitHub verification and repository synchronization are complete.
+Authorized stash disposition is complete: the superseded PE-4 closure-draft stash was separately dropped; no stash remains.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
+PE-5 START NOT AUTHORIZED. Post-closure next task: UNKNOWN / NOT YET AUTHORIZED.
+No operational or roadmap capability work is authorized by this closure transition.
+
+Post-closure PI3 source synchronization and independent source review through 017686549acb27dbf7a8ad3577d0f84cf9f3f066 remain COMPLETED/PASS on OPERATOR_SUPPLIED evidence. No new source synchronization or production action is authorized.
+[Closure authority](PE4_DOCUMENTATION_CONSISTENCY_CORRECTION_CLOSURE.md).
+
+### Historical documentation correction candidate objective at 5472a85194d105f6fb3d08ce51a4788256d8f028
+
+The following snapshot records preparation before acceptance; its pending gates are historical, not current authority.
+
 **PE-4 Documentation Consistency Correction**
 
 PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
@@ -4264,6 +4281,22 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+
+### Post-Closure Next Task — UNKNOWN / NOT YET AUTHORIZED
+
+Documentation Consistency Correction PASS/CLOSED. Accepted correction commit: 5472a85194d105f6fb3d08ce51a4788256d8f028.
+Validation, independent review, commit, push, independent repository/GitHub verification and repository synchronization are complete.
+Authorized stash disposition is complete: the superseded PE-4 closure-draft stash was separately dropped; no stash remains.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
+PE-5 START NOT AUTHORIZED. Post-closure next task: UNKNOWN / NOT YET AUTHORIZED.
+No operational or roadmap capability work is authorized by this closure transition.
+
+The correction closure is complete; current authoritative evidence does not establish a next authorized operational/roadmap task. UNKNOWN remains UNKNOWN. Separate governance must establish sequencing and separate authorization before implementation. No PI3 or production action is authorized.
+PE-5 is a later roadmap capability, not the immediate authorized task. Existing future roadmap commitments retain their order and gates.
+
+### Historical documentation correction candidate next-task snapshot at 5472a85194d105f6fb3d08ce51a4788256d8f028
+
+The following preparation snapshot is preserved as historical evidence. It is not current sequencing or authorization.
 
 ### PE-4 Documentation Consistency Correction Validation and Independent Review
 

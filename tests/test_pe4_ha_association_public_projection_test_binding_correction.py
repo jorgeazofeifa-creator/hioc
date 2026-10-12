@@ -1,4 +1,4 @@
-from test_pe4_documentation_consistency_correction import successor as documentation_successor, current_binding as documentation_binding, PREDECESSOR as DOCUMENTATION_PREDECESSOR
+from test_pe4_documentation_consistency_correction import successor as documentation_successor, current_binding as documentation_binding, PREDECESSOR as DOCUMENTATION_PREDECESSOR, current_artifacts as documentation_current_artifacts
 """Governed historical/current test identities; repository-only, no production access."""
 import ast
 import copy
@@ -31,6 +31,8 @@ def blob(raw):
 def normalized(path):
  return (ROOT/path).read_bytes().replace(b'\r\n', b'\n')
 def current_index(path):
+ from test_pe4_documentation_consistency_correction_closure import current_bytes, CANDIDATE_PATHS
+ if path in CANDIDATE_PATHS: return current_bytes(path)
  # Stage-0 bytes are the successor authority; checkout bytes are an observation.
  raw=git('show', ':'+path)
  if normalized(path) != raw:
@@ -230,7 +232,7 @@ def closure_artifact_bindings():
  record=successor();closure=validate_closure_successor(correction=record)
  bindings={item['path']:item for item in record['artifacts']}
  bindings.update({item['path']:item for item in closure['artifacts']})
- bindings.update({item['path']:item for item in documentation_successor()['artifacts']})
+ bindings.update({item['path']:item for item in documentation_current_artifacts()})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings
