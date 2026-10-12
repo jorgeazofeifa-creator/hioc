@@ -8,10 +8,13 @@ import re
 import subprocess
 import unittest
 from functools import lru_cache
+from contextlib import contextmanager
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 PREDECESSOR='6f69c4dfb85924a83b59e85ef2da602fc75ec5ea'
+ACCEPTED_PREPARATION='f3730ba5a8745361934ff822a9c29c16c9d0767b'
 RECORD='governance/pe5/pe5-implementation-preparation.json'
 SCHEMA=RECORD.replace('.json','.schema.json')
 MASTER='docs/HIOC_MASTER_PLAN.md'
@@ -50,7 +53,7 @@ def validate_identity(item,raw):
  require(set(item)=={'path','sha256','git_blob'},'identity fields changed')
  require(digest(raw)==item['sha256'] and blob(raw)==item['git_blob'],'artifact identity mismatch: '+item['path'])
 
-def validate_record(record,schema):
+def _validate_historical_preparation(record,schema):
  require(canonical(schema)==canonical(schema_for(record)),'exact typed preparation schema mismatch')
  require(record['predecessor_commit']==PREDECESSOR and record['authorized_paths']==list(CANDIDATE_PATHS),'wrong preparation scope')
  require(record['executive_decision']==DECISION,'executive decision changed')
@@ -122,16 +125,34 @@ def validate_record(record,schema):
  for phrase in record['required_preparation_phrases']:require(phrase in doc,'preparation requirement absent: '+phrase)
  return record
 
+def historical_bytes(path):
+ return git('show',ACCEPTED_PREPARATION+':'+path)
+
+@contextmanager
+def accepted_preparation_context():
+ original_git=git
+ def accepted_git(*args):
+  if args==('rev-parse','HEAD'):return (ACCEPTED_PREPARATION+'\n').encode()
+  if args==('rev-parse','HEAD^'):return (PREDECESSOR+'\n').encode()
+  if args in [('status','--porcelain'),('diff','--cached','--name-only'),('stash','list')]:return b''
+  return original_git(*args)
+ with patch.dict(globals(),git=accepted_git,current_bytes=historical_bytes):yield
+
+def validate_record(record,schema):
+ with accepted_preparation_context():return _validate_historical_preparation(record,schema)
+
 @lru_cache(maxsize=1)
 def successor():
- raw=current_bytes(RECORD);schema_raw=current_bytes(SCHEMA);record=json.loads(raw);schema=json.loads(schema_raw)
+ raw=historical_bytes(RECORD);schema_raw=historical_bytes(SCHEMA);record=json.loads(raw);schema=json.loads(schema_raw)
  require(raw==canonical(record) and schema_raw==canonical(schema),'noncanonical preparation contract')
  return validate_record(record,schema)
 def current_binding(path):
+ from test_pe5_local_service_association import IMPLEMENTATION_PATHS, implementation_current_binding
+ if path in IMPLEMENTATION_PATHS:return implementation_current_binding(path)
  record=successor();item=next((x for x in record['artifacts'] if x['path']==path),None)
  require(item is not None,'path outside preparation current map');validate_identity(item,current_bytes(path));return item
 
-def assert_current_sequence(text):
+def _assert_historical_preparation_sequence(text):
  # Current sequencing follows executive authority; the accepted UNKNOWN snapshot remains immutable.
  current_binding(MASTER)
  current=text.split('## Next Planned Task',1)[1].split('### Historical',1)[0]
@@ -141,13 +162,19 @@ def assert_current_sequence(text):
  require(accepted.strip().startswith('### Post-Closure Next Task — UNKNOWN / NOT YET AUTHORIZED'),'historical UNKNOWN authority changed')
  require('### Historical post-closure next-task snapshot at '+PREDECESSOR in text and '### Post-Closure Next Task — UNKNOWN / NOT YET AUTHORIZED' in text,'historical UNKNOWN snapshot removed')
 
+def assert_current_sequence(text):
+ from test_pe5_local_service_association import assert_implementation_sequence
+ return assert_implementation_sequence(text)
+
 class PE5ImplementationPreparationTests(unittest.TestCase):
  def test_exact_preparation_contract_and_current_bindings(self):successor()
  def test_historical_unknown_retained_with_current_authority(self):
   r=successor();self.assertTrue(r['historical_unknown_preserved']);self.assertEqual(r['current_next_task'],'PE5_IMPLEMENTATION_PREPARATION')
  def test_runtime_and_future_work_remain_unauthorized(self):
   r=successor();self.assertFalse(r['runtime_implementation_authorized']);self.assertTrue(all(v is False for v in r['implementation_activity'].values()))
-  for path in FUTURE_PATHS:self.assertFalse((ROOT/path).exists())
+  for path in FUTURE_PATHS:
+   result=subprocess.run(['git','cat-file','-e',ACCEPTED_PREPARATION+':'+path],cwd=ROOT,capture_output=True)
+   self.assertNotEqual(result.returncode,0)
  def test_completed_packages_and_source_identities_preserved(self):
   for item in successor()['historical_artifacts']:validate_identity(item,current_bytes(item['path']))
  def test_publication_mapping_and_weak_identity_not_first_stage(self):
@@ -185,8 +212,8 @@ class PE5ImplementationPreparationTests(unittest.TestCase):
   with self.assertRaises(ValueError):validate_record(r,s)
  def test_reject_unrelated_master_mutation(self):
   from unittest.mock import patch
-  reader=current_bytes
+  reader=historical_bytes
   def altered(path):return reader(path)+b'UNRELATED CHANGE\n' if path==MASTER else reader(path)
-  with patch.dict(globals(),current_bytes=altered),self.assertRaises(ValueError):validate_record(successor(),schema_for(successor()))
+  with patch.dict(globals(),historical_bytes=altered),self.assertRaises(ValueError):validate_record(successor(),schema_for(successor()))
 
 if __name__=='__main__':unittest.main()

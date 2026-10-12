@@ -2582,6 +2582,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
    administrative Action 10 closure, and final governance closure are complete.
 4. **PE-4 - Home Assistant Association** — PASS/CLOSED; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation, deployment, independent production acceptance and Public Projection PASS/CLOSED; scheduler ACTIVE/AUTHORIZED; PE-4 PASS/CLOSED. Production evidence remains OPERATOR_SUPPLIED.
 5. **PE-5 - MQTT and Passive Service Association** — not started.
+   Current PE-5.1 is an authorized private pure-library implementation candidate; broader runtime integration is NOT_STARTED / NOT AUTHORIZED. The following preparation status is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
    Implementation remains NOT_STARTED. Selected next roadmap checkpoint by executive decision; Implementation Preparation is current and PREPARED_FOR_REVIEW. Runtime/production implementation requires separate authorization.
 6. **PE-6 - Classification & Metadata Quality** — not started.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
@@ -7124,6 +7125,24 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+**PE-5.1 - Private Local Service Association Contract and Pure Resolver: repository implementation candidate**
+
+The user separately authorized the bounded PE-5.1 library, private contract and synthetic tests.
+The pure resolver is IMPLEMENTED_REPOSITORY_CANDIDATE. This is descriptive post-identity
+association using finalized inventory and explicit time/age inputs; no collection or runtime integration.
+Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED;
+Documentation Consistency Correction PASS/CLOSED. PE-5 preparation is committed at
+f3730ba5a8745361934ff822a9c29c16c9d0767b; no completed checkpoint is reopened.
+PE-5 remains in progress for repository work only; runtime integration, publication,
+persistence, scheduling and production implementation remain NOT AUTHORIZED.
+Snapshot-age policy remains UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE; no production threshold is chosen.
+Current next task: validate/review the PE-5.1 repository candidate, then obtain separate commit/push authorization.
+[Implementation contract, tests and STOP boundary](PE5_LOCAL_SERVICE_ASSOCIATION_IMPLEMENTATION.md).
+Surveillance remains PLANNED_NOT_STARTED future PE-10 work; Active Discovery remains postponed.
+The prior preparation objective and UNKNOWN chronology below remain historical.
+
+### Historical implementation-preparation objective at f3730ba5a8745361934ff822a9c29c16c9d0767b
+
 **PE-5 - MQTT and Passive Service Association: Implementation Preparation**
 
 The user selected PE-5 as the next authorized HIOC roadmap checkpoint and authorized
@@ -7352,6 +7371,19 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-5.1 private resolver — implementation candidate review
+
+Current governed work is the separately authorized PE-5.1 repository implementation and validation.
+The private contract/pure resolver is IMPLEMENTED_REPOSITORY_CANDIDATE; after validation STOP for independent review.
+Commit and push require separate authorization. No next runtime/integration checkpoint is authorized.
+Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; completed preceding work remains closed.
+PE-5.1 production use, deployment, MQTT ingestion/publication, persistence and scheduling remain NOT AUTHORIZED.
+The snapshot-age threshold remains UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE; synthetic supplied values are not production policy.
+PE-6 through PE-10 sequencing is unchanged; surveillance and Active Discovery remain deferred.
+See [bounded implementation](PE5_LOCAL_SERVICE_ASSOCIATION_IMPLEMENTATION.md).
+
+### Historical implementation-preparation next task at f3730ba5a8745361934ff822a9c29c16c9d0767b
+
 ### PE-5 Implementation Preparation — current governed checkpoint
 
 The explicit user executive sequencing decision resolves the former UNKNOWN next-task
@@ -7410,6 +7442,8 @@ then separately authorized commit/push and closure remain required before PE-5.
 This uncommitted candidate authorizes no roadmap implementation.
 
 ### PE-5 - MQTT and Passive Service Association
+
+Current selection is PE-5.1 private pure-resolver repository implementation/validation, followed by independent candidate review. Production and runtime integration remain NOT AUTHORIZED. The following preparation selection is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
 
 **Current selection:** PE-5 Implementation Preparation is the current authorized checkpoint, PREPARED_FOR_REVIEW; runtime implementation remains NOT_STARTED / NOT AUTHORIZED. See the current section above and the preparation document. The following NEXT ROADMAP CAPABILITY / no-authorization paragraph is preserved as the historical pre-executive-decision definition; it no longer controls current sequencing.
 
@@ -8006,6 +8040,15 @@ Do not begin Active Discovery until Phase 7A has been completed.
 ---
 
 # Decision Log
+
+## PE-5.1 bounded repository implementation authorization
+
+The user separately authorized the Private Local Service Association Contract and Pure Resolver only.
+Inputs are finalized inventory, explicit evaluation time and explicitly supplied maximum snapshot age.
+No operational age threshold, collector, network/MQTT access, persistence, scheduler,
+public projection, runtime integration or production work is authorized. The candidate stops
+after repository validation for review and separate commit/push authorization.
+
 
 ## PE-5 executive sequencing decision — preparation only
 

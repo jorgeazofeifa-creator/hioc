@@ -237,6 +237,8 @@ def closure_artifact_bindings():
  bindings.update({item['path']:item for item in roadmap_successor()['artifacts']})
  from test_pe5_implementation_preparation import successor as pe5_successor
  bindings.update({item['path']:item for item in pe5_successor()['artifacts']})
+ from test_pe5_local_service_association import implementation_successor
+ bindings.update({item['path']:item for item in implementation_successor()['artifacts']})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings
