@@ -248,6 +248,8 @@ def closure_artifact_bindings():
  bindings.update({item['path']:item for item in implementation_successor()['artifacts']})
  from test_pe5_service_association_caller import caller_successor
  bindings.update({item['path']:item for item in caller_successor()['artifacts']})
+ from test_pe5_snapshot_age_policy import policy_successor
+ bindings.update({item['path']:item for item in policy_successor()['artifacts']})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings

@@ -7125,6 +7125,46 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-5.1 snapshot-age policy selection candidate
+
+<!-- PE5_1_CURRENT_POLICY_BEGIN -->
+PE5_1_SNAPSHOT_AGE_POLICY_STATUS=SELECTED_CANDIDATE_PENDING_COMMIT
+PE5_1_MAX_SNAPSHOT_AGE_SECONDS=2100
+
+Explicit user-approved operational policy informed by OPERATOR_SUPPLIED production evidence:
+accept finalized inventory when evaluation_time - inventory.updated <= 2100 seconds;
+reject age > 2100 seconds, including one microsecond beyond the boundary.
+Existing future-timestamp rejection remains unchanged. The pure resolver and offline caller
+retain required explicit age/time inputs, no policy default, and byte-identical runtime code.
+
+Observed */30 cadence, active cron/canonical command and synchronized NTP accompanied two
+natural refreshes. Previous-snapshot ages at replacement were approximately 1801.594635 and
+1800.903011 seconds; new-snapshot ages at observation were 6.096861 and 5.739757 seconds.
+Engine duration bounds were several seconds. The directly observed producer hashes match
+historical deployment authority: engine 5c12a368d8db7b045348cf201331c5e24390fbfe715fe399a4afef79fa594ca0;
+inventory module df1dc4e2de7d8d77b54acdcb3f340281ead6cc03d74a73ad59b2864b03564503.
+These are OPERATOR_SUPPLIED production observations linked to IMMUTABLE_REPOSITORY_FACT authority.
+No final capture_summary was obtained; termination cause remains UNKNOWN and bounded logs
+do not prove complete failure history. No additional long capture is required for this decision.
+
+1800 seconds is too strict for the observed normal replacement window. The selected 2100 seconds
+allows 300 seconds of operational tolerance beyond the scheduled 1800-second cadence.
+It refuses an unchanged snapshot after 35 minutes, before a second full scheduled interval.
+A skipped nonblocking flock attempt does not refresh inventory.updated or extend this allowance.
+Five minutes of jitter was NOT observed; 2100 is neither a measured worst-case bound nor a
+guarantee for future successful cycles. Longer collection/scheduling delay fails closed.
+
+Repository and independently accepted PI3 release source are at eda8c9930d7f7fbf09bcc08b252bef05b385cf7e.
+Source synchronization does not prove production state. PE-5.1 production deployment/use,
+runtime execution/integration and the next implementation checkpoint remain NOT AUTHORIZED.
+No producer hook, persistence, scheduler, cadence, MQTT, HA, credentials or public contract changes.
+PRIVATE_STATE_REQUIREMENT=DEFERRED_NOT_REQUIRED_FOR_OFFLINE_CALLER.
+Current policy selection replaces historical UNKNOWN only; historical records remain immutable.
+Next action: CONCISE_INDEPENDENT_CANDIDATE_ACCEPTANCE; STOP before commit or push.
+<!-- PE5_1_CURRENT_POLICY_END -->
+
+### Historical caller checkpoint at eda8c9930d7f7fbf09bcc08b252bef05b385cf7e
+
 **PE-5.1 - Runtime/Caller Integration Preparation: bounded repository caller candidate**
 
 Separate user authorization permits this repository-only caller checkpoint. Phase 7A ACTIVE;
@@ -7385,6 +7425,16 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-5.1 snapshot-age policy — independent candidate acceptance
+
+PE5_1_MAX_SNAPSHOT_AGE_SECONDS=2100; SELECTED_CANDIDATE_PENDING_COMMIT.
+Next action: CONCISE_INDEPENDENT_CANDIDATE_ACCEPTANCE. STOP before commit/push.
+Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+Production deployment/use and further implementation remain NOT AUTHORIZED.
+See Current Objective and the successor policy record.
+
+### Historical caller checkpoint at eda8c9930d7f7fbf09bcc08b252bef05b385cf7e
+
 ### PE-5.1 caller integration — repository candidate validation and review
 
 Validate/review the explicitly authorized offline caller; STOP for separate commit/push authorization.

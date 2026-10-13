@@ -38,7 +38,7 @@ def schema_for(v):return {"$schema":"https://json-schema.org/draft/2020-12/schem
 def require(v,message):
     if not v:raise ValueError(message)
 
-def validate_caller_record(r,s):
+def _validate_historical_caller(r,s):
     require(s==schema_for(r),"exact caller schema mismatch")
     require(r["predecessor_commit"]==BASE and r["authorized_paths"]==list(CALLER_PATHS),"wrong caller scope")
     require(r["status"]=="IMPLEMENTED_REPOSITORY_CALLER_CANDIDATE","wrong caller status")
@@ -79,22 +79,45 @@ def validate_caller_record(r,s):
     require(extract(master)==extract(original),"surveillance changed")
     return r
 
+ACCEPTED_CALLER = "eda8c9930d7f7fbf09bcc08b252bef05b385cf7e"
+
+def caller_historical_bytes(path):
+    return git("show", ACCEPTED_CALLER+":"+path)
+
+def validate_caller_record(r,s):
+    original_git=git
+    def historical_git(*args):
+        if args == ("rev-parse","HEAD"):return (ACCEPTED_CALLER+"\n").encode()
+        if args == ("rev-parse","HEAD^"):return (BASE+"\n").encode()
+        if args in [("status","--porcelain"),("diff","--cached","--name-only"),("stash","list")]:return b""
+        return original_git(*args)
+    with patch.dict(globals(),git=historical_git,raw=caller_historical_bytes):
+        return _validate_historical_caller(r,s)
+
 @lru_cache(maxsize=1)
 def caller_successor():
-    r=json.loads(raw(RECORD));s=json.loads(raw(SCHEMA))
-    require(raw(RECORD)==canonical(r) and raw(SCHEMA)==canonical(s),"noncanonical contract")
+    rraw=caller_historical_bytes(RECORD);sraw=caller_historical_bytes(SCHEMA)
+    r=json.loads(rraw);s=json.loads(sraw)
+    require(rraw==canonical(r) and sraw==canonical(s),"noncanonical historical caller")
     return validate_caller_record(r,s)
+
 def caller_current_binding(path):
+    from test_pe5_snapshot_age_policy import POLICY_PATHS, policy_current_binding
+    if path in POLICY_PATHS:return policy_current_binding(path)
     r=caller_successor();i=next((x for x in r["artifacts"] if x["path"]==path),None)
     require(i is not None,"outside caller map")
     require(sha(raw(path))==i["sha256"] and blob(raw(path))==i["git_blob"],"caller identity mismatch")
     return i
-def assert_caller_sequence(text):
+def _assert_historical_caller_sequence(text):
     caller_current_binding("docs/HIOC_MASTER_PLAN.md")
     current=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
     require(current.strip().startswith("### PE-5.1 caller integration"),"caller task absent")
     require("NOT AUTHORIZED" in current and "UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE" in current,"policy gate absent")
 
+
+def assert_caller_sequence(text):
+    from test_pe5_snapshot_age_policy import assert_policy_sequence
+    return assert_policy_sequence(text)
 
 def assert_historical_runtime_tree(historical_commit, roots):
     # Original runtime artifacts remain immutable; only exact later additions are permitted.
