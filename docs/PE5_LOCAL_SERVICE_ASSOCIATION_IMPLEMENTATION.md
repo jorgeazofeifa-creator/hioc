@@ -1,4 +1,23 @@
-# Current PE-5.1 Snapshot-Age Policy Selection
+# Current PE-5.1 Production Deployment and First Native Execution Acceptance
+
+Classification: CURRENT. The [Master Plan](HIOC_MASTER_PLAN.md#current-objective)
+owns current status and sequencing. The approved 2100-second policy is finalized
+at ed3a80508d101652bac89e1dcc111167670aaebc; PI3 source synchronization, two-artifact
+production deployment and first native production execution are accepted on
+OPERATOR_SUPPLIED evidence. Execution count 1, return code 0, valid private
+output/closed schema, 8 associations, 0 rejections, snapshot age 1756.120272 seconds;
+inventory/public inventory unchanged. No persistent state, scheduler/cron mutation,
+MQTT publication, HA/credential access, service restart, adapter execution or
+intentional inventory-engine execution occurred in those operator blocks.
+No repeat manual first execution is authorized. Implementation/API bytes remain
+unchanged; PRIVATE_STATE_REQUIREMENT=DEFERRED_NOT_REQUIRED_FOR_OFFLINE_CALLER.
+NEXT_CHECKPOINT=UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP. Wider PE-5 remains
+in progress; no persistence, scheduling, publication or producer hookup is selected.
+
+## Historical Snapshot-Age Policy Selection Candidate at ed3a80508d101652bac89e1dcc111167670aaebc
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. The following candidate text
+and original marker names preserve the earlier checkpoint, not current authority.
 
 <!-- PE5_1_CURRENT_POLICY_BEGIN -->
 PE5_1_SNAPSHOT_AGE_POLICY_STATUS=SELECTED_CANDIDATE_PENDING_COMMIT

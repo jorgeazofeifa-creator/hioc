@@ -557,7 +557,24 @@ for this offline caller; persisted state/publication remain separately governed 
 Production use/deployment are NOT AUTHORIZED; policy remains UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE.
 The Master Plan owns sequencing; identity, public MQTT, PE-4 and unrelated roadmap contracts are unchanged.
 
-## Current PE-5.1 snapshot-age policy selection
+## Current PE-5.1 accepted production checkpoint
+
+Classification: CURRENT. The [Master Plan](HIOC_MASTER_PLAN.md#current-objective)
+records finalized 2100-second policy at ed3a80508d101652bac89e1dcc111167670aaebc,
+accepted PI3 source synchronization, accepted two-artifact production deployment
+and one accepted first native private caller execution. OPERATOR_SUPPLIED evidence:
+return code 0, output/closed schema valid, 8 private associations, 0 rejections,
+snapshot age 1756.120272 seconds; inventory/public inventory unchanged.
+The private count is not public inventory authority. No persistence, scheduling,
+MQTT/public projection, HA/credential access or producer integration is added.
+The first manual execution is complete and must not be repeated under its consumed
+authorization. PE-5 remains in progress; NEXT_CHECKPOINT=
+UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP. Deferred architecture remains future work.
+
+## Historical policy-selection candidate at ed3a80508d101652bac89e1dcc111167670aaebc
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. The following candidate text
+and original marker names are an earlier snapshot, not current sequencing.
 
 <!-- PE5_1_CURRENT_POLICY_BEGIN -->
 PE5_1_SNAPSHOT_AGE_POLICY_STATUS=SELECTED_CANDIDATE_PENDING_COMMIT

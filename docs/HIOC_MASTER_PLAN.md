@@ -2581,7 +2581,12 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
    production deployment, generation, PI3 validation, final Evidence Report,
    administrative Action 10 closure, and final governance closure are complete.
 4. **PE-4 - Home Assistant Association** — PASS/CLOSED; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation, deployment, independent production acceptance and Public Projection PASS/CLOSED; scheduler ACTIVE/AUTHORIZED; PE-4 PASS/CLOSED. Production evidence remains OPERATOR_SUPPLIED.
-5. **PE-5 - MQTT and Passive Service Association** — not started.
+5. **PE-5 - MQTT and Passive Service Association** — IN PROGRESS. PE-5.1 private
+   caller/resolver deployment and first native execution PASS/ACCEPTED; 2100-second
+   policy finalized. Wider MQTT association capabilities remain incomplete.
+   NEXT_CHECKPOINT=UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP; no continuation authorized.
+   Historical roadmap status at ed3a80508d101652bac89e1dcc111167670aaebc (HISTORICAL_INTENTIONALLY_PRESERVED):
+   **PE-5 - MQTT and Passive Service Association** — not started.
    Current PE-5.1 is an authorized private pure-library implementation candidate; broader runtime integration is NOT_STARTED / NOT AUTHORIZED. The following preparation status is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
    Implementation remains NOT_STARTED. Selected next roadmap checkpoint by executive decision; Implementation Preparation is current and PREPARED_FOR_REVIEW. Runtime/production implementation requires separate authorization.
 6. **PE-6 - Classification & Metadata Quality** — not started.
@@ -6262,6 +6267,17 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## Current PE-5.1 deployment and first native execution acceptance — 2026-10-13
+
+Classification: CURRENT. Production deployment and the first native private caller
+execution are PASS/ACCEPTED on OPERATOR_SUPPLIED evidence. Policy 2100 seconds is
+finalized at ed3a80508d101652bac89e1dcc111167670aaebc; execution count 1, return
+code 0, valid output/schema, 8 private associations, 0 rejections, snapshot age
+1756.120272 seconds, inventory/public inventory unchanged. No persistence,
+scheduling, publication or broader PE-5 completion is established. See the current
+PE-5.1 acceptance in Current Objective for exact evidence and boundaries.
+
+
 ## Historical/current lifecycle test-binding correction
 
 Historical accepted checkpoint snapshot at 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5.
@@ -6882,7 +6898,7 @@ completion. Historical chronology elsewhere does not override it.
 | First Natural Public Projection MQTT Acceptance | PASS |
 | Public Projection Retained MQTT Topics | 7/7 |
 | Public Projection Retained Payload Equality | PASS |
-| PE-5 | NOT STARTED |
+| PE-5 | IN PROGRESS; PE-5.1 deployment / first native execution PASS/ACCEPTED; wider capability incomplete |
 | Historical vs Current Lifecycle Test-Binding Correction | PASS/CLOSED |
 | Documentation Consistency Correction | PASS/CLOSED |
 | PE-4 | PASS/CLOSED |
@@ -7125,7 +7141,80 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
-### PE-5.1 snapshot-age policy selection candidate
+### PE-5.1 deployment and first native execution — accepted current state
+
+Classification: CURRENT. The formerly current policy-candidate and pre-production
+sequencing statements were STALE_REQUIRES_UPDATE. They are retained below as
+HISTORICAL_INTENTIONALLY_PRESERVED snapshots of their original checkpoint.
+
+PE5_1_SNAPSHOT_AGE_POLICY_STATUS=SELECTED_FINALIZED
+PE5_1_MAX_SNAPSHOT_AGE_SECONDS=2100
+
+The policy was independently accepted, committed and pushed in
+ed3a80508d101652bac89e1dcc111167670aaebc (PE-5.1: select snapshot age policy),
+whose parent is eda8c9930d7f7fbf09bcc08b252bef05b385cf7e.
+Independent GitHub verification and PI3 source synchronization completed.
+OPERATOR_SUPPLIED source evidence establishes /home/jazofv1/hioc-release-source,
+main, HEAD=origin/main=ed3a80508d101652bac89e1dcc111167670aaebc,
+ahead/behind=0/0 and a clean source tree. That source-sync checkpoint performed
+no production deployment; deployment and execution were separately authorized later.
+
+OPERATOR_SUPPLIED production evidence establishes:
+PASS_PE5_1_PRODUCTION_DEPLOYMENT; two authorized runtime artifacts installed,
+DEPLOYED_SET_VERIFIED=true and PROTECTED_SURFACES_UNCHANGED=true;
+TRANSACTION_STATUS=ABSENT, ROLLBACK=NOT_PERFORMED, MANUAL_REVIEW_REQUIRED=false.
+The deployment itself executed neither PE-5.1, the inventory engine nor the adapter.
+The corrected historical-journal gate is closed; the valid COMMITTED historical
+PE-4 association journal remained protected and unchanged. No journal revalidation
+or cleanup is required by this documentation reconciliation.
+
+The installed artifacts are:
+- pi4/lib/hioc/service_association.py: SHA-256
+  dfdbab8bea085dfa0755e61b1952ee7991d663055c1f58b715997af751260bc5;
+  Git blob e7a758dd8187027b50e01b1f3edde06be6f44f86; mode 0644; UID/GID 1000/1000.
+- pi4/bin/hioc-resolve-local-services.py: SHA-256
+  6e22fdd9f5e6e4d2d6d9540aa97a17c4927818ed688198cfda52887fc3b0ffef;
+  Git blob 9c756dd0c928509252afa2a6bf4c367c6fb5f47f; mode 0755; UID/GID 1000/1000.
+
+The separately authorized first native production execution is accepted:
+PASS_PE5_1_FIRST_NATIVE_PRODUCTION_EXECUTION; SOURCE_COMMIT=
+ed3a80508d101652bac89e1dcc111167670aaebc; execution count exactly 1;
+caller return code 0; private output valid and closed schema valid.
+INVENTORY_PATH=/home/jazofv1/hioc/state/inventory/inventory.json;
+INVENTORY_UPDATED=2026-10-13T14:30:02-06:00;
+EVALUATED_AT=2026-10-13T20:59:18.120272Z;
+SNAPSHOT_AGE_SECONDS=1756.120272, fresh under the explicit 2100-second policy.
+The private result contained 8 service associations and 0 rejections;
+STDOUT_BYTES=3826 and STDERR_BYTES=0. No raw private association material is recorded.
+These eight private results are not public inventory authority.
+
+Inventory and public inventory remained unchanged. No persistent PE-5.1
+association state was created. Neither the deployment nor first-execution block
+intentionally executed the inventory engine or PE-4 adapter, mutated cron or
+scheduler configuration, restarted a service, published MQTT, accessed Home
+Assistant or accessed credentials. These are operator-supplied observations,
+not independent Codex production observations or claims about unrelated activity.
+
+PRIVATE_STATE_REQUIREMENT=DEFERRED_NOT_REQUIRED_FOR_OFFLINE_CALLER.
+The first manual execution authorization is exhausted; no repeat execution,
+producer integration, persistence, scheduler, MQTT mapping/subscription/publication
+or public projection is authorized by this closure. PE-5 remains in progress;
+this accepted PE-5.1 checkpoint does not complete the wider PE-5 capability.
+Phase 7A remains ACTIVE; PE-4 and Public Projection remain PASS/CLOSED.
+
+NEXT_CHECKPOINT=UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP.
+The existing PE-5 preparation requires STOP after separately authorized production
+evidence and lists mapping, persistence, scheduling, publication and producer
+integration as deferred work without selecting their order. No unique checkpoint
+after this successful first native execution is specified. PE-6 onward, surveillance
+and Active Discovery remain later/postponed work. This reconciliation selects no
+new implementation task and prepares no production command.
+
+### Historical policy-selection candidate at ed3a80508d101652bac89e1dcc111167670aaebc
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. The following candidate text
+and its original marker names describe the policy preparation checkpoint, not
+current authorization, completion or sequencing.
 
 <!-- PE5_1_CURRENT_POLICY_BEGIN -->
 PE5_1_SNAPSHOT_AGE_POLICY_STATUS=SELECTED_CANDIDATE_PENDING_COMMIT
@@ -7425,6 +7514,21 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-5.1 — no subsequent checkpoint defined by the existing roadmap
+
+Classification: CURRENT.
+NEXT_CHECKPOINT=UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP.
+Policy selection, source synchronization, deployment and the first native manual
+execution are accepted and complete as recorded in Current Objective. The existing
+PE-5 preparation requires STOP after production evidence; it does not select a
+unique successor to this first execution. Broader PE-5 goals and deferred items
+are not immediate authorization. No repeat first execution, persistence, scheduling,
+publication, producer integration or next implementation is selected here.
+
+### Historical policy-selection next task at ed3a80508d101652bac89e1dcc111167670aaebc
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED.
+
 ### PE-5.1 snapshot-age policy — independent candidate acceptance
 
 PE5_1_MAX_SNAPSHOT_AGE_SECONDS=2100; SELECTED_CANDIDATE_PENDING_COMMIT.
@@ -7515,7 +7619,11 @@ checkpoint evidence is preserved. Correction validation and independent review,
 then separately authorized commit/push and closure remain required before PE-5.
 This uncommitted candidate authorizes no roadmap implementation.
 
-### PE-5 - MQTT and Passive Service Association
+### Historical PE-5 roadmap selection before current production acceptance
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Current sequencing is the
+explicit UNKNOWN recorded at the start of Next Planned Task, not the prior
+selection below.
 
 Current selection is PE-5.1 private pure-resolver repository implementation/validation, followed by independent candidate review. Production and runtime integration remain NOT AUTHORIZED. The following preparation selection is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
 
