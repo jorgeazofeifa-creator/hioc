@@ -1,3 +1,104 @@
+# Current Runtime/Caller Integration Preparation
+
+Status: **IMPLEMENTED_REPOSITORY_CALLER_CANDIDATE**, pending validation and independent review.
+Separate user authorization follows the accepted pure-resolver commit
+e30e483d7e5ede1cde1f75bc25bc65ff4ec115b1. This is repository work only.
+Production access/use/deployment, policy selection and the next checkpoint are NOT AUTHORIZED.
+
+## Exact source architecture and minimal caller
+
+- inventory.py: discover_inventory reconciles devices before constructing owned services and returning
+  the finalized schema 1.0 inventory. It remains byte-identical.
+- hioc-inventory-engine.py: main removes internal compatibility/capability/hostname evidence,
+  applies existing optional PE-4 projection, then writes inventory.json with INVENTORY_SCHEMA.
+  StateStore writes a temporary sibling followed by replacement. The seven inventory MQTT payloads
+  are constructed later. Hostname enrichment already has a separate private stage and 0600 artifact.
+- StateStore has a fixed sibling temporary filename and no internal writer lock. The installation
+  cron supplies flock -n /tmp/hioc-inventory-engine.lock; manual invocations do not acquire that lock.
+  Existing source cron is */30, not a production cadence fact or approved PE-5 age threshold.
+- install_pi4.sh sets state/inventory directory 0750 and private Asset artifacts 0600; hostname
+  runtime writes use 0600. Existing hostname failure recovery preserves prior enrichment and emits
+  separate status. StateStore.read_json falls back on corruption. These are source patterns, not
+  evidence of current production ownership/permissions/locks.
+- ConfigService overlays toolkit.conf, hioc.conf, then HIOC_/MQTT_ environment values. Its as_int
+  helper defaults on invalid values, so it is inappropriate for required no-default age policy.
+
+The smallest caller is pi4/bin/hioc-resolve-local-services.py. It reads ONE explicitly named regular
+file containing a finalized inventory (prefer a privately captured bound copy), then invokes the
+unchanged pure resolver. It never collects or reconciles identity. It never starts inventory-engine
+or contacts MQTT. No producer hook is necessary to evaluate an already finalized file.
+The source producer's atomic replacement permits a single opened version. Symlinks/nonregular files,
+oversized input, changed file metadata during read, duplicate JSON keys and invalid UTF-8/JSON fail safely.
+This is not a multi-file consistent-cycle capture; it does not claim collector success.
+Later operator capture must establish the source/capture identity and native filesystem behavior.
+
+## Required explicit configuration and private result
+
+All three command-line options are required:
+--inventory-file PATH --evaluated-at RFC3339 --max-snapshot-age-seconds INTEGER
+There is no source-file default, current-time default, age default, environment/config read or activation flag.
+The age option is the explicit caller configuration mechanism; its value must be independently approved
+before operational use. No config file entry, production command with a guessed threshold or scheduler is added.
+PE5_1_SNAPSHOT_AGE_POLICY_STATUS=UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE.
+The parser validates required policy/time before reading the source. The resolver requires finalized
+schema 1.0 input, unique MAC-backed owners, systemd/ss only and all established identity/freshness gates.
+Private output is completely resolved, validated and deterministically serialized before stdout.
+stdout is a PRIVATE caller channel, not an MQTT/public contract. No names, MAC/IP, labels, credentials
+or raw snapshot appear in the output. Errors are fixed safe codes on stderr with exit 1; success is exit 0.
+The caller does not fetch or attest production policy approval; operator evidence must establish approval.
+
+## Private-state decision and safety boundary
+
+PRIVATE_STATE_REQUIREMENT=DEFERRED_NOT_REQUIRED_FOR_OFFLINE_CALLER.
+The committed pure-resolver document explicitly lists persistence/writers as separate later work.
+Architecture's service_associations domain is recomputed with operations exposure Later; its existing
+enrichment.json proposal does not require this caller to extend the hostname artifact.
+This caller returns an in-memory/private stdout envelope; there is no persistent consumer or writer.
+Reusing StateStore would add a writer, restart/retention/LKG and concurrency policy with no current
+requirement. Therefore no state directory, state permissions, lock, atomic private writer or recovery
+architecture is added. No artifact is loaded on restart and no prior result is promoted as current.
+Existing directory/ownership conventions are documented above for a future separately reviewed writer.
+Output redirection is not an approved atomic/private state writer: a later operator capture must provide
+its separately governed private destination/permissions. A failed stdout transport can leave a partial
+private stream; the caller reports error, never claims an atomic persisted result or public publication.
+
+## Failure semantics and compatibility
+
+Missing/invalid age or evaluation time fails before source read. Missing/unsafe/changing/oversized file,
+corrupt JSON, malformed snapshot, invalid owner-global contract, stale/future snapshot or malformed
+resolver output fails before result output. Per-service rejection remains the resolver's private behavior.
+No private output is fed into canonical inventory, Assets, health/liveness, incidents, topology,
+dependencies, Home Assistant, MQTT, history, correlation or dashboards.
+The caller has no write/public publisher, so failures cannot partially rewrite public/canonical state.
+An empty collection yields zero relationships, never collection success/absence/health/outage.
+Concurrent independent caller runs do not share writable state; no lock contention/recovery is introduced.
+Production native compatibility, source atomicity, capture identity and permissions remain UNKNOWN.
+
+## Validation and preserved history
+
+Focused caller tests, accepted pure-resolver/historical preparation tests, affected inventory/runtime,
+PE-4/public projection and governance consumers, full native Windows regression, diff/integrity checks
+are required. Results are reported separately after execution. The historical implementation validator
+is replayed against accepted Git objects without weakening its body; current bindings overlay only the
+exact caller candidate. Prior record/schema and resolver/envelope bytes remain immutable.
+Two PE-4 whole-tree current guards previously rejected the now-tracked committed resolver addition.
+Their original protected-source comparisons remain intact. A current exact-addition check permits
+only the accepted resolver and this caller, proves both absent from the historical tree, verifies exact
+SHA/blob authority, and rejects every existing runtime change or unapproved addition. Negative tests
+cover both cases. No historical production artifact or executable changes.
+Current-byte/current-binding entry points in the existing documentation-closure and PE-5 preparation
+helpers also delegate the exact caller path set, including the two updated PE-4 tests. Their original
+historical validator bodies and records/schemas remain unchanged; no broader runtime exception exists.
+After validation STOP for review; no commit, push, production deployment or operational activation here.
+Remaining UNKNOWNs: approved production age, collectors/cadence/success, MAC-backed owners,
+broker/security, mappings, native/deployed source identities, permissions and scheduler state.
+Production prerequisites: separately authorized operator capture/native/source review, approved age,
+private output destination, sanitized hashes/counts/invariant evidence and explicit deployment/use approval.
+Deferred: automatic producer integration, private persistence/LKG/retention, scheduling, mapping/Discovery
+ingestion, public projection/topics, dependency intelligence, PE-6 onward, surveillance and Active Discovery.
+
+## Historical accepted pure-resolver implementation at e30e483d7e5ede1cde1f75bc25bc65ff4ec115b1
+
 # PE-5.1 - Private Local Service Association Contract and Pure Resolver
 
 Status: **IMPLEMENTED_REPOSITORY_CANDIDATE**, pending complete regression and independent review.

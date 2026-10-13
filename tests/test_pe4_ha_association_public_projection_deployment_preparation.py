@@ -46,7 +46,8 @@ class DeploymentPreparationTests(unittest.TestCase):
         for path,digest in D.CANONICAL:
             old=git("show",D.IMPLEMENTATION+":"+path)
             self.assertEqual(normalized(path),old);self.assertEqual(D.sha(old),digest)
-        self.assertEqual(git("diff","--name-only",D.PARENT,"--","pi4","pi4-tools","release","homeassistant","requirements-pe4.lock"),b"")
+        from test_pe5_service_association_caller import assert_historical_runtime_tree
+        assert_historical_runtime_tree(D.PARENT,["pi4","pi4-tools","release","homeassistant","requirements-pe4.lock"])
     def test_predeployment_baseline_is_required_and_not_claimed_observed(self):
         self.assertTrue(R["PREDEPLOYMENT_BASELINE_VALIDATION_REQUIRED"])
         self.assertEqual(R["predeployment_pi3_baseline_validation"],"NOT_STARTED/PREPARED_FOR_SEPARATE_AUTHORIZATION")

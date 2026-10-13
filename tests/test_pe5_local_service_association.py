@@ -380,7 +380,7 @@ def evidence_require(value, message):
     if not value:raise ValueError(message)
 
 
-def validate_implementation_record(record, schema):
+def _validate_historical_implementation(record, schema):
     evidence_require(evidence_canonical(schema)==evidence_canonical(evidence_schema(record)), "exact typed implementation schema mismatch")
     evidence_require(record["predecessor_commit"]==IMPLEMENTATION_BASE and record["authorized_paths"]==list(IMPLEMENTATION_PATHS), "wrong implementation scope")
     evidence_require(record["status"]=="IMPLEMENTED_REPOSITORY_CANDIDATE" and record["lifecycle"]==IMPLEMENTATION_LIFECYCLE, "wrong implementation lifecycle")
@@ -431,25 +431,48 @@ def validate_implementation_record(record, schema):
     return record
 
 
+ACCEPTED_IMPLEMENTATION = "e30e483d7e5ede1cde1f75bc25bc65ff4ec115b1"
+
+def implementation_historical_bytes(path):
+    return evidence_git("show", ACCEPTED_IMPLEMENTATION+":"+path)
+
+def validate_implementation_record(record, schema):
+    original_git = evidence_git
+    def historical_git(*args):
+        if args == ("rev-parse", "HEAD"):return (ACCEPTED_IMPLEMENTATION+"\n").encode()
+        if args == ("rev-parse", "HEAD^"):return (IMPLEMENTATION_BASE+"\n").encode()
+        if args in [("status", "--porcelain"), ("diff", "--cached", "--name-only"), ("stash", "list")]:return b""
+        return original_git(*args)
+    with patch.dict(globals(), evidence_git=historical_git, evidence_bytes=implementation_historical_bytes):
+        return _validate_historical_implementation(record, schema)
+
+
 @lru_cache(maxsize=1)
 def implementation_successor():
-    raw=evidence_bytes(IMPLEMENTATION_RECORD);schema_raw=evidence_bytes(IMPLEMENTATION_SCHEMA);r=json.loads(raw);s=json.loads(schema_raw)
+    raw=implementation_historical_bytes(IMPLEMENTATION_RECORD);schema_raw=implementation_historical_bytes(IMPLEMENTATION_SCHEMA);r=json.loads(raw);s=json.loads(schema_raw)
     evidence_require(raw==evidence_canonical(r) and schema_raw==evidence_canonical(s), "noncanonical implementation record")
     return validate_implementation_record(r,s)
 
 
 def implementation_current_binding(path):
+    from test_pe5_service_association_caller import CALLER_PATHS, caller_current_binding
+    if path in CALLER_PATHS:return caller_current_binding(path)
     record=implementation_successor();item=next((x for x in record["artifacts"] if x["path"]==path),None)
     evidence_require(item is not None,"path outside implementation map")
     raw=evidence_bytes(path);evidence_require(evidence_digest(raw)==item["sha256"] and evidence_blob(raw)==item["git_blob"],"current implementation identity mismatch")
     return item
 
 
-def assert_implementation_sequence(text):
+def _assert_historical_implementation_sequence(text):
     implementation_current_binding("docs/HIOC_MASTER_PLAN.md")
     current=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
     evidence_require(current.strip().startswith("### PE-5.1 private resolver"), "missing current implementation checkpoint")
     evidence_require("NOT AUTHORIZED" in current and "UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE" in current, "runtime or policy gate absent")
+
+
+def assert_implementation_sequence(text):
+    from test_pe5_service_association_caller import assert_caller_sequence
+    return assert_caller_sequence(text)
 
 
 class LocalServiceImplementationGovernanceTests(unittest.TestCase):

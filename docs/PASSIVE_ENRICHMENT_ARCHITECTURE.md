@@ -547,4 +547,12 @@ Historical gate snapshot at 6f69c4dfb85924a83b59e85ef2da602fc75ec5ea: Phase 7A A
 
 Historical preparation sequencing snapshot at f3730ba5a8745361934ff822a9c29c16c9d0767b: Current sequencing is superseded by the user executive decision in the [Master Plan](HIOC_MASTER_PLAN.md#current-objective): PE-5 Implementation Preparation is PREPARED_FOR_REVIEW; PE-5 runtime implementation remains NOT_STARTED and NOT_AUTHORIZED. PE-4 and Documentation Consistency Correction remain PASS/CLOSED; Phase 7A remains ACTIVE. [Preparation](PE5_IMPLEMENTATION_PREPARATION.md) defines the first separately authorized pure resolver checkpoint. This update changes no enrichment or identity contract.
 
-Current governed work is PE-5.1 - Private Local Service Association Contract and Pure Resolver, IMPLEMENTED_REPOSITORY_CANDIDATE under separate repository-only authorization. Phase 7A ACTIVE; PE-4/Public Projection remain PASS/CLOSED. Runtime integration and production are NOT AUTHORIZED; snapshot-age policy is UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE. See [implementation](PE5_LOCAL_SERVICE_ASSOCIATION_IMPLEMENTATION.md) and the authoritative current Master Plan. No identity, observation, public or operational contract changes.
+Historical pure-resolver checkpoint at e30e483d7e5ede1cde1f75bc25bc65ff4ec115b1: Current governed work is PE-5.1 - Private Local Service Association Contract and Pure Resolver, IMPLEMENTED_REPOSITORY_CANDIDATE under separate repository-only authorization. Phase 7A ACTIVE; PE-4/Public Projection remain PASS/CLOSED. Runtime integration and production are NOT AUTHORIZED; snapshot-age policy is UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE. See [implementation](PE5_LOCAL_SERVICE_ASSOCIATION_IMPLEMENTATION.md) and the authoritative current Master Plan. No identity, observation, public or operational contract changes.
+
+
+Current PE-5.1 caller-integration preparation is a bounded repository candidate using an explicit
+finalized-inventory file, evaluation time and maximum age. It does not hook the producer or write state.
+The existing recomputed relationship domain and later operations exposure do not require persistence
+for this offline caller; persisted state/publication remain separately governed later work.
+Production use/deployment are NOT AUTHORIZED; policy remains UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE.
+The Master Plan owns sequencing; identity, public MQTT, PE-4 and unrelated roadmap contracts are unchanged.

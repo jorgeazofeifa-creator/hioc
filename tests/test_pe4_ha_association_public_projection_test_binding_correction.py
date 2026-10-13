@@ -31,6 +31,10 @@ def blob(raw):
 def normalized(path):
  return (ROOT/path).read_bytes().replace(b'\r\n', b'\n')
 def current_index(path):
+ from test_pe5_service_association_caller import CALLER_PATHS, caller_current_binding
+ if path in CALLER_PATHS:
+  caller_current_binding(path)
+  return normalized(path)
  from test_pe4_documentation_consistency_correction_closure import current_bytes, CANDIDATE_PATHS
  if path in CANDIDATE_PATHS: return current_bytes(path)
  # Stage-0 bytes are the successor authority; checkout bytes are an observation.
@@ -217,7 +221,10 @@ def validate_successor(record, schema):
  current={item['path']:item for item in closure['artifacts']}
  for item in record['artifacts']:
   identity(git('show',CORRECTION_COMMIT+':'+item['path']),item)
-  if item['path'] in documentation_successor()['authorized_paths']:
+  from test_pe5_service_association_caller import CALLER_PATHS, caller_current_binding
+  if item['path'] in CALLER_PATHS:
+   caller_current_binding(item['path'])
+  elif item['path'] in documentation_successor()['authorized_paths']:
    documentation_binding(item['path'])
   else: identity(current_index(item['path']),current.get(item['path'],item))
  return record
@@ -239,6 +246,8 @@ def closure_artifact_bindings():
  bindings.update({item['path']:item for item in pe5_successor()['artifacts']})
  from test_pe5_local_service_association import implementation_successor
  bindings.update({item['path']:item for item in implementation_successor()['artifacts']})
+ from test_pe5_service_association_caller import caller_successor
+ bindings.update({item['path']:item for item in caller_successor()['artifacts']})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings

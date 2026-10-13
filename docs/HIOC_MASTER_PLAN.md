@@ -7125,6 +7125,20 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+**PE-5.1 - Runtime/Caller Integration Preparation: bounded repository caller candidate**
+
+Separate user authorization permits this repository-only caller checkpoint. Phase 7A ACTIVE;
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED. The accepted private pure resolver remains
+committed at e30e483d7e5ede1cde1f75bc25bc65ff4ec115b1, without redesign.
+The candidate adds an explicit offline caller for a privately supplied finalized inventory file.
+No inventory-engine hook, writer, persistence, scheduler, MQTT or public projection is added.
+Production deployment/use and the next PE-5 checkpoint remain NOT AUTHORIZED.
+Snapshot-age policy remains UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE.
+Current work: validate and independently review the caller candidate; commit/push require separate authorization.
+[Caller design and source evidence](PE5_LOCAL_SERVICE_ASSOCIATION_IMPLEMENTATION.md#current-runtimecaller-integration-preparation).
+Surveillance remains PLANNED_NOT_STARTED; Active Discovery remains postponed.
+
+### Historical pure-resolver objective at e30e483d7e5ede1cde1f75bc25bc65ff4ec115b1
 **PE-5.1 - Private Local Service Association Contract and Pure Resolver: repository implementation candidate**
 
 The user separately authorized the bounded PE-5.1 library, private contract and synthetic tests.
@@ -7371,6 +7385,16 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-5.1 caller integration — repository candidate validation and review
+
+Validate/review the explicitly authorized offline caller; STOP for separate commit/push authorization.
+Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+Operational integration/deployment and production use remain NOT AUTHORIZED.
+The required policy is UNKNOWN_REQUIRED_BEFORE_OPERATIONAL_USE; no default threshold is chosen.
+No scheduler, persistence, MQTT mapping/Discovery, public projection, Active Discovery or surveillance is authorized.
+PE-6 through PE-10 ordering is unchanged.
+
+### Historical pure-resolver next task at e30e483d7e5ede1cde1f75bc25bc65ff4ec115b1
 ### PE-5.1 private resolver — implementation candidate review
 
 Current governed work is the separately authorized PE-5.1 repository implementation and validation.
@@ -8040,6 +8064,14 @@ Do not begin Active Discovery until Phase 7A has been completed.
 ---
 
 # Decision Log
+
+## PE-5.1 separate caller-integration preparation authorization
+
+The user authorized source-based preparation and bounded repository caller implementation/testing.
+Production access/deployment and policy selection are not authorized. The minimal caller reads an
+explicit finalized inventory copy, requires explicit evaluation time/maximum age, and returns private
+in-memory/stdout output only. Persistence and automatic inventory-engine integration remain deferred.
+
 
 ## PE-5.1 bounded repository implementation authorization
 

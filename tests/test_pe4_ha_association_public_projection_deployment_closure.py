@@ -33,7 +33,8 @@ class PublicProjectionClosureTests(unittest.TestCase):
    self.assertEqual(hashlib.sha256(raw).hexdigest(),i['sha256']);self.assertEqual(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),i['git_blob'])
   for i in R['protected_sources']:
    self.assertEqual((ROOT/i['path']).read_bytes().replace(b'\r\n',b'\n'),subprocess.check_output(['git','show',HISTORICAL_PRODUCTION_SOURCE+':'+i['path']],cwd=ROOT))
-  self.assertEqual(subprocess.check_output(['git','diff','--name-only',HISTORICAL_PRODUCTION_SOURCE,'--','pi4','release','tools','requirements-pe4.lock'],cwd=ROOT),b'')
+  from test_pe5_service_association_caller import assert_historical_runtime_tree
+  assert_historical_runtime_tree(HISTORICAL_PRODUCTION_SOURCE,['pi4','release','tools','requirements-pe4.lock'])
  def test_specific_repository_prerequisite_closures(self):
   expected=[
    ('pe4-0b2a-execution-closure.json','lifecycle_state','PASS_CLOSED'),
