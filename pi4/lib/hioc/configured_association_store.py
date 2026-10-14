@@ -25,7 +25,7 @@ class PosixFS:
     def __init__(self):
         if os.name != "posix" or not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
             raise model.AssociationError("WRITE_FAILED", "POSIX_CAPABILITY_UNAVAILABLE")
-        if not {os.open, os.stat, os.rename, os.unlink} <= os.supports_dir_fd:
+        if not {os.open, os.stat, os.rename, os.unlink, os.mkdir} <= os.supports_dir_fd:
             raise model.AssociationError("WRITE_FAILED", "POSIX_CAPABILITY_UNAVAILABLE")
         try:
             import fcntl
@@ -47,6 +47,12 @@ class PosixFS:
         except BaseException:
             os.close(fd)
             raise
+
+    def child_directory(self, fd, name):
+        return os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+
+    def mkdir(self, fd, name):
+        os.mkdir(name, 0o700, dir_fd=fd)
 
     def statdir(self, fd):
         return os.fstat(fd)
@@ -124,6 +130,81 @@ class Store:
             yield fd
         finally:
             self.fs.close_dir(fd)
+
+    @contextlib.contextmanager
+    def initialize_directories(self):
+        """Only approved initial source installation enters this fixed bootstrap.
+        Existing directories are never chmod/chown repaired. No primary rollback.
+        Hold anchors until source publication finishes; race checks also precede
+        mkdir and primary publication. Failed attempts may leave safe empty dirs.
+        """
+        anchors = []
+        def check():
+            for path, fd, identity, private in anchors:
+                info = self.fs.statdir(fd)
+                self.bootstrap_directory(info, private)
+                if (info.st_dev, info.st_ino) != identity:
+                    raise model.AssociationError("SOURCE_CHANGED")
+                current = self.fs.directory(path)
+                try:
+                    visible = self.fs.statdir(current)
+                    self.bootstrap_directory(visible, private)
+                    if (visible.st_dev, visible.st_ino) != identity:
+                        raise model.AssociationError("SOURCE_CHANGED")
+                finally:
+                    self.fs.close_dir(current)
+        def attach(path, fd, private):
+            anchors.append((path, fd, None, private))
+            info = self.fs.statdir(fd)
+            self.bootstrap_directory(info, private)
+            anchors[-1] = (path, fd, (info.st_dev, info.st_ino), private)
+        def child(path, parent_fd, private, create=False):
+            check()
+            try:
+                fd = self.fs.child_directory(parent_fd, path.name)
+            except FileNotFoundError:
+                if not create:
+                    raise
+                try:
+                    self.fs.mkdir(parent_fd, path.name)
+                except FileExistsError:
+                    # Another approved initializer may win mkdir, never adopt
+                    # an unsafe replacement or normalize its permissions.
+                    pass
+                fd = self.fs.child_directory(parent_fd, path.name)
+            attach(path, fd, private)
+            check()
+            if create:
+                # Certify surviving safe directory entries after partial/restart
+                # bootstrap as well as newly created entries.
+                self.fs.syncdir(fd, "BOOTSTRAP_CHILD")
+                self.fs.syncdir(parent_fd, "BOOTSTRAP_PARENT")
+        try:
+            attach(self.root, self.fs.directory(self.root), False)
+            root_fd = anchors[-1][1]
+            child(self.root / "config", root_fd, False)
+            config_fd = anchors[-1][1]
+            child(self.root / "config/enrichment", config_fd, True, True)
+            child(self.root / "state", root_fd, False)
+            state_fd = anchors[-1][1]
+            child(self.root / "state/enrichment", state_fd, True, True)
+            enrichment_fd = anchors[-1][1]
+            child(self.root / "state/enrichment/service_associations", enrichment_fd, True, True)
+            check()
+            yield check
+        except model.AssociationError:
+            raise
+        except OSError:
+            raise model.AssociationError("WRITE_FAILED", "INITIALIZATION_INFRASTRUCTURE_FAILED") from None
+        finally:
+            for unused, fd, unused_identity, unused_private in reversed(anchors):
+                self.fs.close_dir(fd)
+
+    def bootstrap_directory(self, info, private):
+        mode = stat.S_IMODE(info.st_mode)
+        if (not stat.S_ISDIR(info.st_mode) or info.st_uid != self.uid
+                or (mode != 0o700 if private else bool(mode & 0o022) or mode & 0o700 != 0o700)):
+            raise model.AssociationError("SOURCE_METADATA_INVALID")
 
     def safe_file(self, s, private=True):
         if not stat.S_ISREG(s.st_mode) or s.st_nlink != 1:
@@ -511,7 +592,12 @@ class Store:
         if approved is not True:
             raise model.AssociationError("WRITE_FAILED", "OPERATOR_APPROVAL_REQUIRED")
         model.validate_source(source)
-        with self.lock():
+        # Recovery retains its existing authority; --initialize combined with
+        # recovery never grants missing-directory creation.
+        bootstrap = self.initialize_directories() if initialize is True and not recovery else contextlib.nullcontext(None)
+        with bootstrap as infrastructure_check, self.lock():
+            if infrastructure_check:
+                infrastructure_check()
             anchors = []
             if not recovery:
                 current, anchor, unused = self.confirmed(SOURCE, allow_initial=initialize, resync=True)
@@ -530,7 +616,7 @@ class Store:
             model.check_revision(source, anchors)
             if recovery:
                 self.recovery_revision_floor(source, anchors)
-            return self.publish(SOURCE, source, recovery=recovery, initial=initialize)
+            return self.publish(SOURCE, source, before_replace=infrastructure_check, recovery=recovery, initial=initialize)
 
     def read_handoff(self, evaluated_at):
         with self.lock():

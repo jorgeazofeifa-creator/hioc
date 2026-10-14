@@ -1,6 +1,6 @@
 # PE-5.3 Configured Association Repository Implementation
 
-Classification: CURRENT. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED PE-5.3 completion snapshot. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
 Baseline: 72e878f9c0c8f5d3fe6357979e045943f3cf9d34.
 Next: PE-5.4 - PI3 Release Source Synchronization; NOT STARTED.
 PE-5 is IN_PROGRESS; PE-5.1 remains accepted. No production authority is granted.
@@ -151,3 +151,67 @@ and PE-6 interpretation remain later checkpoints.
 - AR: public projection; separate output path; public writer/module unchanged.
 - AS: MQTT compatibility; additive modules; existing publisher artifacts unchanged.
 - AT: future Discovery provenance; source_kind const; reject discovered kind/no subscriber.
+
+
+## Current PE-5.6 production-found initial infrastructure correction
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
+PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
+CURRENT_PE5_CHECKPOINT=PE-5.6.
+PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY.
+PE5_7_STARTED=FALSE. Recurring execution remains disabled.
+
+OPERATOR_SUPPLIED evidence reports PE-5.5 installed the accepted six-artifact disabled
+payload. The first PE-5.6 approved revision-1 source installation returned
+WRITE_FAILED / LOCK_UNAVAILABLE. This was missing infrastructure, not lock contention.
+Post-failure observation established config exists, jazofv1:jazofv1 mode0755; no
+config/enrichment, source, source sidecar, state/enrichment, output parent, lock,
+output or output sidecar existed; no relevant installer/composer process was running.
+Candidate /home/jazofv1/pe5-mqtt-mappings-candidate.json remained intact,
+SHA256 961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295.
+
+The implementation incorrectly required the shared lock parent to preexist before
+initialization. Repository correction now bounds directory creation to approved
+initial source installation. No retry has occurred. Corrected production deployment
+is NOT ESTABLISHED. Source state does not prove production state.
+Next operator actions: independently accept repository correction, synchronize exact
+accepted source, replace only changed accepted payload bytes, independently accept
+corrected deployment, then separately authorize the PE-5.6 initialization retry.
+No composer invocation, scheduler activation, recovery, or PE-5.7 is authorized here.
+See [configured association implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
+Separate authorization is required for the retry and every later checkpoint.
+
+### Exact bootstrap authority and security
+
+Only install --approved --initialize without --fresh-recovery may bootstrap.
+The source schema is validated before any bootstrap syscall. Existing root,
+config and state directories must be owned by jazofv1, have owner rwx and no
+group/world write bits; config0755 is accepted. They are never created or repaired.
+The only creatable paths are config/enrichment, state/enrichment and
+state/enrichment/service_associations, each exact0700, owner jazofv1.
+Anchored mkdir/open with dir_fd and O_DIRECTORY|O_NOFOLLOW validates each opened
+directory, its visible identity and held ancestor identities. Existing wrong-owner,
+wrong-mode, symlink or non-directory paths fail closed; no chmod/chown repair.
+Concurrent mkdir EEXIST is accepted only after the same full validation.
+Directory and parent fsync certify each entry before opening the shared0600 lock.
+Held anchors are revalidated before source replacement. Failure may leave safe empty
+directories; no automatic directory or primary rollback is introduced.
+INITIALIZATION_INFRASTRUCTURE_FAILED reports mkdir/fsync/open failure; an absent
+lock parent outside initialization retains LOCK_UNAVAILABLE, never OVERLAP_SKIPPED.
+Actual nonblocking flock contention still returns OVERLAP_SKIPPED.
+Composer, handoff, recertify, output recompute and fresh source recovery have no
+missing-directory creation authority. Publication PENDING/primary/CONFIRMED,
+single replacement, explicit recovery, revision and privacy semantics are unchanged.
+
+### Deployment impact and evidence limits
+
+Compare against accepted PE-5.3 commit 348f9787ae0ab364570a2ba07ada9527fc8db0e2:
+only pi4/lib/hioc/configured_association_store.py changes in the six-artifact payload.
+The other five installed artifacts retain exact accepted bytes.
+Intended replacement: /home/jazofv1/hioc/pi4/lib/hioc/configured_association_store.py,
+owner/group jazofv1:jazofv1, mode0644. Exact final SHA256/blob is recorded in the existing
+implementation governance payload. The historical PE-5.3 manifest remains available
+from its immutable commit. No new checkpoint or governance hierarchy is introduced.
+Windows fixtures simulate POSIX ownership, directory fsync and flock; they are not
+native PI3 crash or permission evidence. Corrected deployment and retry are separate
+operator-controlled actions; no production correction or PE-5.6 closure is claimed.

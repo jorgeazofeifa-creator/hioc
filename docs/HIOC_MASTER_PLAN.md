@@ -7141,9 +7141,40 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-5.6 - Bounded Mapping and Storage Production Validation
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
+PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
+CURRENT_PE5_CHECKPOINT=PE-5.6.
+PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY.
+PE5_7_STARTED=FALSE. Recurring execution remains disabled.
+
+OPERATOR_SUPPLIED evidence reports PE-5.5 installed the accepted six-artifact disabled
+payload. The first PE-5.6 approved revision-1 source installation returned
+WRITE_FAILED / LOCK_UNAVAILABLE. This was missing infrastructure, not lock contention.
+Post-failure observation established config exists, jazofv1:jazofv1 mode0755; no
+config/enrichment, source, source sidecar, state/enrichment, output parent, lock,
+output or output sidecar existed; no relevant installer/composer process was running.
+Candidate /home/jazofv1/pe5-mqtt-mappings-candidate.json remained intact,
+SHA256 961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295.
+
+The implementation incorrectly required the shared lock parent to preexist before
+initialization. Repository correction now bounds directory creation to approved
+initial source installation. No retry has occurred. Corrected production deployment
+is NOT ESTABLISHED. Source state does not prove production state.
+Next operator actions: independently accept repository correction, synchronize exact
+accepted source, replace only changed accepted payload bytes, independently accept
+corrected deployment, then separately authorize the PE-5.6 initialization retry.
+No composer invocation, scheduler activation, recovery, or PE-5.7 is authorized here.
+See [configured association implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
+Separate authorization is required for the retry and every later checkpoint.
+
+### Historical PE-5.3 repository completion at 348f9787ae0ab364570a2ba07ada9527fc8db0e2
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED.
 ### PE-5.3 repository implementation complete
 
-Classification: CURRENT. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION; PE5_4_STARTED=FALSE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION; PE5_4_STARTED=FALSE.
 Current next checkpoint: PE-5.4 - PI3 Release Source Synchronization.
 The configured mapping resolver, private POSIX composer/store, explicit source installer
 and bounded durability recovery are implemented in the repository. Activation remains
@@ -7153,6 +7184,7 @@ Projection remain PASS/CLOSED, and Phase 7A remains ACTIVE.
 The PE-5.2 design and its corrected durability contract are unchanged authority.
 See [PE-5.3 repository implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and its exact governance payload.
 Separate authorization is required for PE-5.4 and every later lifecycle checkpoint.
+
 
 ### Historical PE-5.2 complete contract design closure at 72e878f9c0c8f5d3fe6357979e045943f3cf9d34
 
@@ -7527,9 +7559,40 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-5.6 - Bounded Mapping and Storage Production Validation
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
+PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
+CURRENT_PE5_CHECKPOINT=PE-5.6.
+PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY.
+PE5_7_STARTED=FALSE. Recurring execution remains disabled.
+
+OPERATOR_SUPPLIED evidence reports PE-5.5 installed the accepted six-artifact disabled
+payload. The first PE-5.6 approved revision-1 source installation returned
+WRITE_FAILED / LOCK_UNAVAILABLE. This was missing infrastructure, not lock contention.
+Post-failure observation established config exists, jazofv1:jazofv1 mode0755; no
+config/enrichment, source, source sidecar, state/enrichment, output parent, lock,
+output or output sidecar existed; no relevant installer/composer process was running.
+Candidate /home/jazofv1/pe5-mqtt-mappings-candidate.json remained intact,
+SHA256 961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295.
+
+The implementation incorrectly required the shared lock parent to preexist before
+initialization. Repository correction now bounds directory creation to approved
+initial source installation. No retry has occurred. Corrected production deployment
+is NOT ESTABLISHED. Source state does not prove production state.
+Next operator actions: independently accept repository correction, synchronize exact
+accepted source, replace only changed accepted payload bytes, independently accept
+corrected deployment, then separately authorize the PE-5.6 initialization retry.
+No composer invocation, scheduler activation, recovery, or PE-5.7 is authorized here.
+See [configured association implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
+Separate authorization is required for the retry and every later checkpoint.
+
+### Historical PE-5.3 repository completion at 348f9787ae0ab364570a2ba07ada9527fc8db0e2
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED.
 ### PE-5.4 - PI3 Release Source Synchronization
 
-Classification: CURRENT. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION; PE5_4_STARTED=FALSE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION; PE5_4_STARTED=FALSE.
 Current next checkpoint: PE-5.4 - PI3 Release Source Synchronization.
 The configured mapping resolver, private POSIX composer/store, explicit source installer
 and bounded durability recovery are implemented in the repository. Activation remains
@@ -7539,6 +7602,7 @@ Projection remain PASS/CLOSED, and Phase 7A remains ACTIVE.
 The PE-5.2 design and its corrected durability contract are unchanged authority.
 See [PE-5.3 repository implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and its exact governance payload.
 Separate authorization is required for PE-5.4 and every later lifecycle checkpoint.
+
 
 ### Historical PE-5.3 implementation selection at 72e878f9c0c8f5d3fe6357979e045943f3cf9d34
 
@@ -9566,9 +9630,9 @@ change authorized. Separate authorization is required for PE-5.3 and all later c
 original eight-stage ordering unchanged. PE-6 classification/role_suggestion/metadata_quality
 and future Discovery remain outside PE-5.
 
-## Current PE-5.3 repository implementation
+## Historical PE-5.3 repository implementation
 
-Classification: CURRENT. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION; PE5_4_STARTED=FALSE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION; PE5_4_STARTED=FALSE.
 Current next checkpoint: PE-5.4 - PI3 Release Source Synchronization.
 The configured mapping resolver, private POSIX composer/store, explicit source installer
 and bounded durability recovery are implemented in the repository. Activation remains
@@ -9578,3 +9642,31 @@ Projection remain PASS/CLOSED, and Phase 7A remains ACTIVE.
 The PE-5.2 design and its corrected durability contract are unchanged authority.
 See [PE-5.3 repository implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and its exact governance payload.
 Separate authorization is required for PE-5.4 and every later lifecycle checkpoint.
+
+## Current PE-5.6 initial infrastructure defect correction
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
+PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
+CURRENT_PE5_CHECKPOINT=PE-5.6.
+PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY.
+PE5_7_STARTED=FALSE. Recurring execution remains disabled.
+
+OPERATOR_SUPPLIED evidence reports PE-5.5 installed the accepted six-artifact disabled
+payload. The first PE-5.6 approved revision-1 source installation returned
+WRITE_FAILED / LOCK_UNAVAILABLE. This was missing infrastructure, not lock contention.
+Post-failure observation established config exists, jazofv1:jazofv1 mode0755; no
+config/enrichment, source, source sidecar, state/enrichment, output parent, lock,
+output or output sidecar existed; no relevant installer/composer process was running.
+Candidate /home/jazofv1/pe5-mqtt-mappings-candidate.json remained intact,
+SHA256 961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295.
+
+The implementation incorrectly required the shared lock parent to preexist before
+initialization. Repository correction now bounds directory creation to approved
+initial source installation. No retry has occurred. Corrected production deployment
+is NOT ESTABLISHED. Source state does not prove production state.
+Next operator actions: independently accept repository correction, synchronize exact
+accepted source, replace only changed accepted payload bytes, independently accept
+corrected deployment, then separately authorize the PE-5.6 initialization retry.
+No composer invocation, scheduler activation, recovery, or PE-5.7 is authorized here.
+See [configured association implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
+Separate authorization is required for the retry and every later checkpoint.

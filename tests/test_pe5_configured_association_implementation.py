@@ -50,6 +50,11 @@ def validate_implementation(r,s,identities=True):
     require(r["deployment_requirements"]["language_floor"]=="CPython 3.10" and r["deployment_requirements"]["owner"]=="jazofv1" and r["deployment_requirements"]["activation"]=="DISABLED_THROUGH_PE5_5" and r["deployment_requirements"]["source_provisioned"] is False,"disabled deployment")
     require(len(r["required_existing_dependencies"])==8 and all(i in r["protected"] for i in r["required_existing_dependencies"]),"dependency authority")
     require(len(r["checklist"])==46 and {x["label"] for x in r["checklist"]}==set(list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")+["A"+x for x in "ABCDEFGHIJKLMNOPQRST"]),"coverage")
+    if r.get("defect_correction"):
+        c=r["defect_correction"]
+        require(c["baseline_commit"]=="348f9787ae0ab364570a2ba07ada9527fc8db0e2" and c["checkpoint"]=="PE-5.6","correction authority")
+        require(c["retry_performed"] is False and c["corrected_production_deployment_established"] is False,"production remains unknown")
+        require(c["changed_payload_sources"]==["pi4/lib/hioc/configured_association_store.py"],"bounded payload")
     if identities:
         scope=set(r["authorized_paths"])
         require(scope=={i["path"] for i in r["artifacts"]}|{RECORD,SCHEMA},"scope")
@@ -79,6 +84,10 @@ def implementation_binding(path):
 def assert_implementation_sequence(text):
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
+    if implementation_successor().get("defect_correction"):
+        require(section.strip().startswith("### PE-5.6 - Bounded Mapping and Storage Production Validation"),"current corrected checkpoint")
+        require("PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY" in section and "PE5_7_STARTED=FALSE" in section,"no validation closure or activation")
+        return
     require(section.strip().startswith("### PE-5.4 - PI3 Release Source Synchronization"),"current next task")
     require("PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION" in section and "PE5_4_STARTED=FALSE" in section and "Separate authorization is required" in section,"lifecycle gate")
 
@@ -102,6 +111,16 @@ class FakePosix(storage.PosixFS):
         path=Path(path)
         if path.is_symlink() or not path.is_dir():raise OSError("unsafe synthetic directory")
         return path
+    def child_directory(self,d,name):
+        p=d/name
+        if p.is_symlink():raise OSError("unsafe synthetic symlink")
+        if not p.exists():raise FileNotFoundError(str(p))
+        if not p.is_dir():raise NotADirectoryError(str(p))
+        return p
+    def mkdir(self,d,name):
+        self.trace.append("BOOTSTRAP_MKDIR")
+        if self.fault=="BOOTSTRAP_MKDIR":raise OSError("synthetic mkdir failure")
+        (d/name).mkdir(mode=0o700)
     def statdir(self,path):return self.info(path.stat(),path,True)
     def close_dir(self,fd):pass
     def statat(self,d,name):
@@ -466,6 +485,122 @@ class PersistenceTests(unittest.TestCase):
         (self.f.root/storage.INVENTORY).unlink();self.f.install()
         r=self.f.store.composer(NOW);self.assertEqual(r["state"],"UNAVAILABLE");self.assertIsNone(r["local"])
         self.assertEqual(r["valid_until"],r["evaluated_at"]);self.assert_error(lambda:self.f.store.read_handoff(NOW))
+
+
+class InitialInfrastructureTests(unittest.TestCase):
+    def setUp(self):
+        self.f=Fixture()
+        # Existing config/state bases; all three approved private dirs absent.
+        (self.f.root/"config/enrichment").rmdir()
+        (self.f.root/"state/enrichment/service_associations").rmdir()
+        (self.f.root/"state/enrichment").rmdir()
+    def tearDown(self):self.f.close()
+    def failure(self,call,code=None):
+        with self.assertRaises(m.AssociationError) as caught:call()
+        if code:self.assertEqual(caught.exception.code,code)
+        self.assertFalse(self.f.primary(storage.SOURCE).exists())
+        return caught.exception
+    def test_posix_bootstrap_uses_anchored_no_follow_exact_mode_syscalls(self):
+        fs=object.__new__(storage.PosixFS)
+        with patch.object(storage.os,"O_DIRECTORY",0x10000,create=True),patch.object(storage.os,"O_NOFOLLOW",0x20000,create=True),patch.object(storage.os,"open",return_value=17) as opened,patch.object(storage.os,"mkdir") as made:
+            self.assertEqual(fs.child_directory(12,"enrichment"),17)
+            opened.assert_called_once_with("enrichment",storage.os.O_RDONLY|0x10000|0x20000,dir_fd=12)
+            fs.mkdir(12,"enrichment");made.assert_called_once_with("enrichment",0o700,dir_fd=12)
+    def test_concurrent_mkdir_accepts_only_safe_existing_winner(self):
+        original=self.f.fs.mkdir
+        def winner(d,name):
+            original(d,name)
+            raise FileExistsError()
+        self.f.fs.mkdir=winner;self.f.install()
+        self.assertEqual(self.f.meta(storage.SOURCE)["state"],"CONFIRMED")
+    def test_ancestor_replacement_before_creation_fails_closed(self):
+        original=self.f.fs.child_directory
+        def replaced(d,name):
+            value=original(d,name)
+            if name=="config":self.f.fs.overrides[str(self.f.root)]={"st_ino":0}
+            return value
+        self.f.fs.child_directory=replaced
+        self.failure(self.f.install,"SOURCE_CHANGED")
+        self.assertNotIn("BOOTSTRAP_MKDIR",self.f.fs.trace)
+    def test_clean_initial_install_all_directories_and_confirmed_sidecar(self):
+        self.assertEqual(self.f.install(),"CONFIRMED_DURABLE_CURRENT")
+        for p in ("config/enrichment","state/enrichment","state/enrichment/service_associations"):
+            info=self.f.fs.statdir(self.f.root/p)
+            self.assertEqual(stat.S_IMODE(info.st_mode),0o700);self.assertEqual(info.st_uid,1000)
+        self.assertEqual(self.f.meta(storage.SOURCE)["state"],"CONFIRMED")
+        self.assertTrue((self.f.root/storage.LOCK).is_file())
+        self.assertEqual(stat.S_IMODE(self.f.fs.statat(self.f.primary(storage.SOURCE).parent,self.f.primary(storage.SOURCE).name).st_mode),0o600)
+        self.assertEqual(self.f.fs.trace.count("PRIMARY_REPLACE"),1)
+    def test_missing_without_initialization_is_not_contention(self):
+        e=self.failure(lambda:self.f.store.install_source(source(),approved=True),"WRITE_FAILED")
+        self.assertEqual(e.phase,"LOCK_UNAVAILABLE");self.assertNotIn("BOOTSTRAP_MKDIR",self.f.fs.trace)
+    def test_missing_without_approval_does_not_create(self):
+        self.failure(lambda:self.f.store.install_source(source(),initialize=True),"WRITE_FAILED")
+        self.assertNotIn("BOOTSTRAP_MKDIR",self.f.fs.trace)
+    def test_composer_cannot_bootstrap(self):
+        self.failure(lambda:self.f.store.composer(NOW),"WRITE_FAILED")
+        self.assertNotIn("BOOTSTRAP_MKDIR",self.f.fs.trace)
+    def test_recovery_paths_cannot_bootstrap(self):
+        for call in [lambda:self.f.store.install_source(source(),approved=True,initialize=True,recovery=True),
+                     lambda:self.f.store.composer(NOW,recovery=True,approved=True),
+                     lambda:self.f.store.recertify(storage.SOURCE,NOW,True)]:
+            self.failure(call);self.assertNotIn("BOOTSTRAP_MKDIR",self.f.fs.trace)
+    def test_wrong_existing_private_modes_and_owners_not_repaired(self):
+        for p in ("config/enrichment","state/enrichment","state/enrichment/service_associations"):
+            (self.f.root/p).mkdir(parents=True,exist_ok=True)
+        for relative in ("config/enrichment","state/enrichment","state/enrichment/service_associations"):
+            for override in ({"st_mode":stat.S_IFDIR|0o755},{"st_uid":1001}):
+                self.f.fs.overrides[str(self.f.root/relative)]=override
+                self.failure(self.f.install,"SOURCE_METADATA_INVALID")
+                self.assertEqual(self.f.fs.overrides[str(self.f.root/relative)],override)
+                self.f.fs.overrides={}
+    def test_unsafe_base_directory_fails(self):
+        for p in ("config","state"):
+            for override in ({"st_mode":stat.S_IFDIR|0o777},{"st_uid":1001}):
+                self.f.fs.overrides[str(self.f.root/p)]=override
+                self.failure(self.f.install,"SOURCE_METADATA_INVALID")
+                self.f.fs.overrides={}
+    def test_non_directory_and_symlink_rejected(self):
+        p=self.f.root/"config/enrichment";p.write_bytes(b"unchanged")
+        self.failure(self.f.install);self.assertEqual(p.read_bytes(),b"unchanged")
+        p.unlink()
+        # Inject a symlink identity in the syscall model without Windows privilege.
+        p.mkdir();self.f.fs.overrides[str(p)]={"st_mode":stat.S_IFLNK|0o700}
+        self.failure(self.f.install,"SOURCE_METADATA_INVALID")
+    def test_mkdir_and_directory_fsync_failure_prevent_primary(self):
+        for phase in ("BOOTSTRAP_MKDIR","BOOTSTRAP_CHILD","BOOTSTRAP_PARENT"):
+            self.f.fs.fault=phase
+            e=self.failure(self.f.install,"WRITE_FAILED")
+            self.assertEqual(e.phase,"INITIALIZATION_INFRASTRUCTURE_FAILED")
+            self.assertNotIn("PRIMARY_REPLACE",self.f.fs.trace)
+        self.f.fs.fault=None;self.f.install()
+    def test_path_replacement_detected_before_source_primary(self):
+        self.f.install();original=self.f.primary(storage.SOURCE).read_bytes()
+        def change(phase,path):
+            if phase=="PENDING_REPLACE":
+                self.f.fs.overrides[str(self.f.root/"config/enrichment")]={"st_ino":0}
+        self.f.fs.after_replace=change
+        with self.assertRaises(m.AssociationError) as caught:
+            self.f.store.install_source(source(revision=2),approved=True,initialize=True)
+        self.assertEqual(caught.exception.code,"SOURCE_CHANGED")
+        self.assertEqual(self.f.primary(storage.SOURCE).read_bytes(),original)
+    def test_contending_lock_still_overlap(self):
+        self.f.install();self.f.fs.busy=True
+        with self.assertRaises(m.AssociationError) as caught:self.f.install()
+        self.assertEqual(caught.exception.code,"OVERLAP_SKIPPED")
+    def test_repeated_operation_does_not_recreate_or_repair(self):
+        self.f.install();self.f.fs.trace=[]
+        self.f.store.install_source(source(revision=2),approved=True)
+        self.assertNotIn("BOOTSTRAP_MKDIR",self.f.fs.trace)
+        self.f.fs.overrides[str(self.f.root/"config/enrichment")]={"st_mode":stat.S_IFDIR|0o755}
+        with self.assertRaises(m.AssociationError):self.f.store.install_source(source(revision=3),approved=True)
+    def test_preexisting_bases_are_required_no_generic_recursive_creation(self):
+        (self.f.root/"config").rmdir()
+        self.failure(self.f.install,"WRITE_FAILED");self.assertFalse((self.f.root/"config").exists())
+    def test_malformed_candidate_does_not_bootstrap(self):
+        bad=source();bad["revision"]=0
+        self.failure(lambda:self.f.store.install_source(bad,approved=True,initialize=True))
+        self.assertNotIn("BOOTSTRAP_MKDIR",self.f.fs.trace)
 
 class EntrypointAndGovernanceTests(unittest.TestCase):
     def load(self,name):
