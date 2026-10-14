@@ -7141,9 +7141,55 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
-### PE-5.7 - Conditional Execution Activation
+### PE-5.8 - Operational Evidence and Independent Production Acceptance
 
 Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS.
+RECURRING_EXECUTION_ACTIVE=TRUE; PE5_8_STARTED=FALSE.
+Current next checkpoint: PE-5.8 - Operational Evidence and Independent Production Acceptance.
+Separate authorization is required for PE-5.8. No PE-5.8 work is performed here.
+
+OPERATOR_SUPPLIED evidence reports one separately authorized jazofv1 scheduler
+activation: PASS_PE5_7_SCHEDULER_ACTIVATION. The accepted entry is exactly:
+2,17,32,47 * * * * /usr/bin/python3 /home/jazofv1/hioc/pi4/bin/hioc-compose-service-associations.py
+Marker: # HIOC_PE5_SERVICE_ASSOCIATIONS. Marker count1, entry count1,
+unexpected PE-5 entry count0. Before crontab SHA256:
+8f900f4679aa861b02e781a61927683db5900ddfe159d78c3831a1595ae7fe71.
+After/install/read-only-verification SHA256:
+3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9.
+Full crontab bytes were not independently received; these hashes and exact
+post-install-byte verification are operator observations, not repository-derived hashes.
+Existing jobs were reported preserved, including the governed PE-4 5/35 entry.
+
+Activation did not manually execute the composer, execute the installer, or access MQTT.
+The command uses the existing internal shared nonblocking lock; no execution-model,
+runtime implementation, persistence, public inventory or authority change is made here.
+The disabled deployment template remains byte-identical and commented; activation
+changed the operator's crontab, not that source artifact.
+
+Pre-activation PI3 source HEAD/origin were reported as
+4990c62afbce22a804229f3cb8329986741067a6 with empty porcelain status.
+No synchronization to PE-5.6 closure commit 21ca5f676bb96d376b3a6f098decfecfe3c6ea49
+is inferred. Immutable Git comparison establishes unchanged runtime payload between
+those commits; reported composer and disabled-template hashes match accepted bytes.
+
+Separate post-activation read-only verification reported the same crontab hash,
+one marker, one accepted entry and no unexpected PE-5 entry.
+NO_RELEVANT_PROCESS_MATCH records only that instant. It does not prove no natural
+scheduled cycle has ever occurred. Natural-cycle evidence is NOT ESTABLISHED.
+No current generated-output freshness, recurring operational acceptance or naturally
+observed overlap/missed-cycle/staleness/failure behavior is claimed.
+PE-5.8 retains its natural-cycle and independent production acceptance requirements.
+PE-5.6 first-failure, corrected-deployment and bounded-execution evidence remains historical.
+Codex performed repository work only; no PI3/PI5/production access or mutation occurred.
+See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and the
+existing governance record's scheduler_activation evidence.
+
+### Historical PE-5.6 closure at 21ca5f676bb96d376b3a6f098decfecfe3c6ea49
+
+### PE-5.7 - Conditional Execution Activation
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
 PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE; RECURRING_EXECUTION_ACTIVE=FALSE.
 Current next checkpoint: PE-5.7 - Conditional Execution Activation.
 PE-4/Public Projection remain PASS/CLOSED; PE-5.1 remains accepted/closed.
@@ -7191,6 +7237,7 @@ All required committed Windows suites passed before closure; native fault/crash 
 and PE-5.8 natural-cycle requirements are not waived. Codex accessed no production system.
 See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
 Separate authorization is required for PE-5.7. Do not activate or implement it here.
+
 
 ### Historical PE-5.6 correction pending deployment at 4990c62afbce22a804229f3cb8329986741067a6
 
@@ -7613,9 +7660,55 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
-### PE-5.7 - Conditional Execution Activation
+### PE-5.8 - Operational Evidence and Independent Production Acceptance
 
 Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS.
+RECURRING_EXECUTION_ACTIVE=TRUE; PE5_8_STARTED=FALSE.
+Current next checkpoint: PE-5.8 - Operational Evidence and Independent Production Acceptance.
+Separate authorization is required for PE-5.8. No PE-5.8 work is performed here.
+
+OPERATOR_SUPPLIED evidence reports one separately authorized jazofv1 scheduler
+activation: PASS_PE5_7_SCHEDULER_ACTIVATION. The accepted entry is exactly:
+2,17,32,47 * * * * /usr/bin/python3 /home/jazofv1/hioc/pi4/bin/hioc-compose-service-associations.py
+Marker: # HIOC_PE5_SERVICE_ASSOCIATIONS. Marker count1, entry count1,
+unexpected PE-5 entry count0. Before crontab SHA256:
+8f900f4679aa861b02e781a61927683db5900ddfe159d78c3831a1595ae7fe71.
+After/install/read-only-verification SHA256:
+3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9.
+Full crontab bytes were not independently received; these hashes and exact
+post-install-byte verification are operator observations, not repository-derived hashes.
+Existing jobs were reported preserved, including the governed PE-4 5/35 entry.
+
+Activation did not manually execute the composer, execute the installer, or access MQTT.
+The command uses the existing internal shared nonblocking lock; no execution-model,
+runtime implementation, persistence, public inventory or authority change is made here.
+The disabled deployment template remains byte-identical and commented; activation
+changed the operator's crontab, not that source artifact.
+
+Pre-activation PI3 source HEAD/origin were reported as
+4990c62afbce22a804229f3cb8329986741067a6 with empty porcelain status.
+No synchronization to PE-5.6 closure commit 21ca5f676bb96d376b3a6f098decfecfe3c6ea49
+is inferred. Immutable Git comparison establishes unchanged runtime payload between
+those commits; reported composer and disabled-template hashes match accepted bytes.
+
+Separate post-activation read-only verification reported the same crontab hash,
+one marker, one accepted entry and no unexpected PE-5 entry.
+NO_RELEVANT_PROCESS_MATCH records only that instant. It does not prove no natural
+scheduled cycle has ever occurred. Natural-cycle evidence is NOT ESTABLISHED.
+No current generated-output freshness, recurring operational acceptance or naturally
+observed overlap/missed-cycle/staleness/failure behavior is claimed.
+PE-5.8 retains its natural-cycle and independent production acceptance requirements.
+PE-5.6 first-failure, corrected-deployment and bounded-execution evidence remains historical.
+Codex performed repository work only; no PI3/PI5/production access or mutation occurred.
+See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and the
+existing governance record's scheduler_activation evidence.
+
+### Historical PE-5.6 closure at 21ca5f676bb96d376b3a6f098decfecfe3c6ea49
+
+### PE-5.7 - Conditional Execution Activation
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
 PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE; RECURRING_EXECUTION_ACTIVE=FALSE.
 Current next checkpoint: PE-5.7 - Conditional Execution Activation.
 PE-4/Public Projection remain PASS/CLOSED; PE-5.1 remains accepted/closed.
@@ -7663,6 +7756,7 @@ All required committed Windows suites passed before closure; native fault/crash 
 and PE-5.8 natural-cycle requirements are not waived. Codex accessed no production system.
 See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
 Separate authorization is required for PE-5.7. Do not activate or implement it here.
+
 
 ### Historical PE-5.6 correction pending deployment at 4990c62afbce22a804229f3cb8329986741067a6
 
@@ -9779,9 +9873,9 @@ No composer invocation, scheduler activation, recovery, or PE-5.7 is authorized 
 See [configured association implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
 Separate authorization is required for the retry and every later checkpoint.
 
-## Current PE-5.6 final acceptance and closure
+## Historical PE-5.6 final acceptance and closure
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
 PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE; RECURRING_EXECUTION_ACTIVE=FALSE.
 Current next checkpoint: PE-5.7 - Conditional Execution Activation.
 PE-4/Public Projection remain PASS/CLOSED; PE-5.1 remains accepted/closed.
@@ -9829,3 +9923,47 @@ All required committed Windows suites passed before closure; native fault/crash 
 and PE-5.8 natural-cycle requirements are not waived. Codex accessed no production system.
 See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
 Separate authorization is required for PE-5.7. Do not activate or implement it here.
+
+## Current PE-5.7 final acceptance and closure
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS.
+RECURRING_EXECUTION_ACTIVE=TRUE; PE5_8_STARTED=FALSE.
+Current next checkpoint: PE-5.8 - Operational Evidence and Independent Production Acceptance.
+Separate authorization is required for PE-5.8. No PE-5.8 work is performed here.
+
+OPERATOR_SUPPLIED evidence reports one separately authorized jazofv1 scheduler
+activation: PASS_PE5_7_SCHEDULER_ACTIVATION. The accepted entry is exactly:
+2,17,32,47 * * * * /usr/bin/python3 /home/jazofv1/hioc/pi4/bin/hioc-compose-service-associations.py
+Marker: # HIOC_PE5_SERVICE_ASSOCIATIONS. Marker count1, entry count1,
+unexpected PE-5 entry count0. Before crontab SHA256:
+8f900f4679aa861b02e781a61927683db5900ddfe159d78c3831a1595ae7fe71.
+After/install/read-only-verification SHA256:
+3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9.
+Full crontab bytes were not independently received; these hashes and exact
+post-install-byte verification are operator observations, not repository-derived hashes.
+Existing jobs were reported preserved, including the governed PE-4 5/35 entry.
+
+Activation did not manually execute the composer, execute the installer, or access MQTT.
+The command uses the existing internal shared nonblocking lock; no execution-model,
+runtime implementation, persistence, public inventory or authority change is made here.
+The disabled deployment template remains byte-identical and commented; activation
+changed the operator's crontab, not that source artifact.
+
+Pre-activation PI3 source HEAD/origin were reported as
+4990c62afbce22a804229f3cb8329986741067a6 with empty porcelain status.
+No synchronization to PE-5.6 closure commit 21ca5f676bb96d376b3a6f098decfecfe3c6ea49
+is inferred. Immutable Git comparison establishes unchanged runtime payload between
+those commits; reported composer and disabled-template hashes match accepted bytes.
+
+Separate post-activation read-only verification reported the same crontab hash,
+one marker, one accepted entry and no unexpected PE-5 entry.
+NO_RELEVANT_PROCESS_MATCH records only that instant. It does not prove no natural
+scheduled cycle has ever occurred. Natural-cycle evidence is NOT ESTABLISHED.
+No current generated-output freshness, recurring operational acceptance or naturally
+observed overlap/missed-cycle/staleness/failure behavior is claimed.
+PE-5.8 retains its natural-cycle and independent production acceptance requirements.
+PE-5.6 first-failure, corrected-deployment and bounded-execution evidence remains historical.
+Codex performed repository work only; no PI3/PI5/production access or mutation occurred.
+See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and the
+existing governance record's scheduler_activation evidence.

@@ -57,12 +57,21 @@ def validate_implementation(r,s,identities=True):
         require(c["changed_payload_sources"]==["pi4/lib/hioc/configured_association_store.py"],"bounded payload")
     if r.get("production_validation"):
         c=r["production_validation"]
-        require(c["classification"]=="CURRENT" and c["checkpoint"]=="PE-5.6" and c["status"]=="COMPLETE/PASS","closure authority")
+        require(c["classification"]==("HISTORICAL_INTENTIONALLY_PRESERVED" if r.get("scheduler_activation") else "CURRENT") and c["checkpoint"]=="PE-5.6" and c["status"]=="COMPLETE/PASS","closure authority")
         require(c["evidence_authority"]=="OPERATOR_SUPPLIED" and c["implementation_commit"]=="4990c62afbce22a804229f3cb8329986741067a6","evidence scope")
         require(c["next_checkpoint"]=="PE-5.7 - Conditional Execution Activation" and c["pe5_7_started"] is False and c["scheduler_active"] is False and c["recurring_execution_accepted"] is False,"closed bounded execution only")
         require(c["corrected_initialization"]["execution_count"]==1 and c["bounded_composer"]["execution_count"]==1 and c["bounded_composer"]["accepted_count"]==1 and c["bounded_composer"]["rejected_count"]==0,"bounded observations")
         require(c["configured_branch"]["association"]["relationship_id"]==m.relationship_id(c["configured_branch"]["association"]),"observed relationship identity")
         require(all(v["failures"]==v["errors"]==0 for v in c["validation"]["results"].values()),"required validation")
+    if r.get("scheduler_activation"):
+        a=r["scheduler_activation"]
+        require(a["classification"]=="CURRENT" and a["checkpoint"]=="PE-5.7" and a["status"]=="COMPLETE/PASS","activation closure authority")
+        require(a["evidence_authority"]=="OPERATOR_SUPPLIED" and a["predecessor_closure_commit"]=="21ca5f676bb96d376b3a6f098decfecfe3c6ea49","activation predecessor")
+        require(a["next_checkpoint"]=="PE-5.8 - Operational Evidence and Independent Production Acceptance" and a["recurring_execution_active"] is True and a["pe5_8_started"] is False and a["natural_cycle_evidence_established"] is False and a["recurring_operational_acceptance_established"] is False,"activation versus operational acceptance")
+        e=a["activation"];post=a["post_activation"]
+        require(e["marker_count"]==e["entry_count"]==post["marker_count"]==post["entry_count"]==1 and post["unexpected_pe5_entry_count"]==0,"single accepted cron entry")
+        require(e["schedule"]=="2,17,32,47 * * * *" and e["command"]=="/usr/bin/python3 /home/jazofv1/hioc/pi4/bin/hioc-compose-service-associations.py","frozen execution model")
+        require(e["after_sha256"]==post["crontab_sha256"] and e["composer_executed_manually"] is False and e["installer_executed"] is False and e["mqtt_accessed"] is False,"bounded activation evidence")
     if identities:
         scope=set(r["authorized_paths"])
         require(scope=={i["path"] for i in r["artifacts"]}|{RECORD,SCHEMA},"scope")
@@ -92,6 +101,10 @@ def implementation_binding(path):
 def assert_implementation_sequence(text):
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
+    if implementation_successor().get("scheduler_activation"):
+        require(section.strip().startswith("### PE-5.8 - Operational Evidence and Independent Production Acceptance"),"next operational evidence checkpoint")
+        require("PE5_7_STATUS=COMPLETE/PASS" in section and "RECURRING_EXECUTION_ACTIVE=TRUE" in section and "PE5_8_STARTED=FALSE" in section and "Separate authorization is required for PE-5.8" in section,"activation closure sequence")
+        return
     if implementation_successor().get("production_validation"):
         require(section.strip().startswith("### PE-5.7 - Conditional Execution Activation"),"next activation checkpoint only")
         require("PE5_6_STATUS=COMPLETE/PASS" in section and "PE5_7_STARTED=FALSE" in section and "RECURRING_EXECUTION_ACTIVE=FALSE" in section and "Separate authorization is required for PE-5.7" in section,"bounded closure sequence")

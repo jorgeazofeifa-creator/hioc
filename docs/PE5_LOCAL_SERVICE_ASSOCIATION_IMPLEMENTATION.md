@@ -363,10 +363,22 @@ Separate authorization is required for PE-5.4 and every later lifecycle checkpoi
 
 ## Current PE-5.6 production validation closure
 
-Classification: CURRENT. PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED PE-5.6 closure snapshot. PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE.
 OPERATOR_SUPPLIED evidence records accepted corrected deployment, one successful
 corrected source initialization and exactly one successful bounded composer execution.
 Recurring execution remains disabled. The failed first initialization and its
 bootstrap correction remain historical evidence. No runtime/authority contract changes.
 Next: PE-5.7 - Conditional Execution Activation; separate authorization required.
 See the authoritative [Master Plan](HIOC_MASTER_PLAN.md) and its linked implementation evidence.
+
+## Current PE-5.7 activation closure
+
+Classification: CURRENT. PE5_7_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
+OPERATOR_SUPPLIED activation/read-only verification reported one accepted marker
+and one accepted entry, zero unexpected PE-5 entries, and identical post-activation
+crontab SHA256 3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9.
+No manual composer execution occurred during activation. Natural-cycle evidence and
+current output freshness are not established by activation. PE5_8_STARTED=FALSE.
+Next: PE-5.8 - Operational Evidence and Independent Production Acceptance;
+separate authorization required. No runtime or execution-model change.
+See the authoritative [Master Plan](HIOC_MASTER_PLAN.md).
