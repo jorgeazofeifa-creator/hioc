@@ -76,7 +76,7 @@ def validate_roadmap(r,s):
         for i in r[key]:
             historical=historical_bytes(i["path"]);check_identity(i["path"],historical,i)
             require(raw(i["path"])==historical,"historical/runtime artifact changed")
-    assert_roadmap_sequence(raw("docs/HIOC_MASTER_PLAN.md").decode(),binding=False)
+    _assert_historical_roadmap_sequence(raw("docs/HIOC_MASTER_PLAN.md").decode(),binding=False)
     # Original policy validator body survives exactly under historical name.
     old=ast.parse(git("show","ed3a80508d101652bac89e1dcc111167670aaebc:tests/test_pe5_snapshot_age_policy.py"))
     new=ast.parse(raw("tests/test_pe5_snapshot_age_policy.py"))
@@ -118,10 +118,13 @@ def roadmap_successor():
     with patch.dict(globals(),raw=accepted_bytes,git=accepted_git):
         return validate_roadmap(r,s)
 def roadmap_binding(path):
+    from test_pe5_mapping_contract_design import design_binding
+    latest=design_binding(path)
+    if latest is not None:return latest
     r=roadmap_successor();i=next((x for x in r["artifacts"] if x["path"]==path),None)
     if i is not None:check_identity(path,raw(path),i)
     return i
-def assert_roadmap_sequence(text,binding=True):
+def _assert_historical_roadmap_sequence(text,binding=True):
     if binding:roadmap_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
     require(section.strip().startswith("### PE-5.2 - "+NAMES[0]),"current next checkpoint")
@@ -133,6 +136,10 @@ def assert_roadmap_sequence(text,binding=True):
     for n,name in zip(NUMBERS,NAMES):require("#### "+n+" - "+name in roadmap,"missing checkpoint")
     require("TOTAL_REMAINING_PE5_CHECKPOINTS=8" in roadmap and "PE5_FINAL_SUCCESSOR=PE-6" in roadmap,"phase endpoints")
     require("### PE-5 Definition of Done" in roadmap and "### UNKNOWN resolution matrix" in roadmap and "### Efficiency review" in roadmap,"roadmap gates")
+def assert_roadmap_sequence(text,binding=True):
+    from test_pe5_mapping_contract_design import assert_design_sequence
+    return assert_design_sequence(text)
+
 class ExecutionRoadmapTests(unittest.TestCase):
     def test_current_exact_roadmap(self):roadmap_successor()
     def test_current_sequence(self):assert_roadmap_sequence(raw("docs/HIOC_MASTER_PLAN.md").decode())
@@ -160,8 +167,8 @@ class ExecutionRoadmapTests(unittest.TestCase):
         mapping={i['path']:i for i in current_artifacts()}
         for item in roadmap_successor()['artifacts']:
             with self.subTest(path=item['path']):
-                self.assertEqual(mapping[item['path']],item)
-                self.assertEqual(current_binding(item['path']),item)
+                self.assertEqual(mapping[item['path']],roadmap_binding(item['path']))
+                self.assertEqual(current_binding(item['path']),roadmap_binding(item['path']))
                 self.assertEqual(current_bytes(item['path']),raw(item['path']))
                 self.assertEqual(current_index(item['path']),raw(item['path']))
         for path,name in [('tests/test_pe4_documentation_consistency_correction.py','_validate_historical_candidate'),

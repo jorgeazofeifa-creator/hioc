@@ -613,6 +613,8 @@ Next action: CONCISE_INDEPENDENT_CANDIDATE_ACCEPTANCE; STOP before commit or pus
 
 ## Current complete PE-5 execution roadmap
 
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED planning publication at 78ee4cd16120bf4ea3166901994727a19d1faad1; ordering remains authoritative. Current status follows PE-5.2 complete design below.
+
 PE5_STATUS=IN_PROGRESS
 PE5_1_STATUS=COMPLETE_THROUGH_ACCEPTED_FIRST_NATIVE_EXECUTION
 CURRENT_PE5_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design
@@ -621,3 +623,22 @@ PE5_FINAL_SUCCESSOR=PE-6
 TOTAL_REMAINING_PE5_CHECKPOINTS=8
 
 The [Master Plan](HIOC_MASTER_PLAN.md#complete-pe-5-execution-roadmap) owns every remaining checkpoint and Definition of Done. PE-5.1 is accepted. This planning publication grants no implementation or operational access. PE-5.2 resolves mapping authority/contract, storage/current-history/retention/LKG/restart/corruption and execution/trigger/cadence/integration/locking/failure decisions before PE-5.3 implements accepted contracts. Source sync PE-5.4, inactive deployment PE-5.5, bounded validation PE-5.6, conditional activation PE-5.7, natural/operational acceptance PE-5.8 and final closure/private PE-6 handoff PE-5.9 are fixed. Configured mappings remain distinct from Discovery, broker/topic/client observations, HA Discovery and publication. No identity, canonical-IP, observation, liveness, health, Asset, incident, classification or public payload authority is added. Existing MQTT topics/subscriptions/retained messages/credentials/broker/HA consumers stay unchanged; any compatibility change needs explicit review before implementation. Private schema/store evolution is assigned to PE-5.2/3, never silently applied during planning.
+
+## Current PE-5.2 complete contract design
+
+Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
+Current next checkpoint: PE-5.3 - Remaining Capability Implementation and Comprehensive Validation.
+See [PE-5.2 complete contract design](PE5_MAPPING_CONTRACT_DESIGN.md) and
+governance/pe5/pe5-mapping-contract-design.json for source, relationship, schema, privacy,
+storage, execution and private PE-6 handoff decisions. Original undefined source/store/
+freshness is now DESIGN, not a discovered store. No universal production absence claimed.
+Future private configuration config/enrichment/mqtt_mappings.json remains distinct from
+known-infrastructure DEVICE METADATA and generated state/enrichment/service_associations/current.json.
+Opaque endpoint IDs require no raw topics or live broker/HA/client/Discovery access.
+Private source/output persistence required; standalone 15-minute recurrence and 20-minute
+handoff validity are selected NEW DESIGN values, not observed schedules. Inventory
+freshness remains 2100 seconds; accepted PE-5.1 runtime/caller/schema/rules unchanged.
+No public payload/topic/subscription/retention, inventory writer, scheduler or production
+change authorized. Separate authorization is required for PE-5.3 and all later checkpoints;
+original eight-stage ordering unchanged. PE-6 classification/role_suggestion/metadata_quality
+and future Discovery remain outside PE-5.

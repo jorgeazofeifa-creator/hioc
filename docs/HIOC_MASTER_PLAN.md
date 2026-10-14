@@ -7141,6 +7141,11 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-5.2 complete contract design — current checkpoint closure
+
+Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
+Original mapping authority/store/freshness UNKNOWNs resolved by explicit governed design, not assumed historical deployment. All 30 decisions closed in [the contract](PE5_MAPPING_CONTRACT_DESIGN.md). No runtime/prod activity occurred. Next separately authorized PE-5.3. Accepted PE-5.1 foundation below remains current evidence, not reopened.
+
 ### PE-5.1 deployment and first native execution — accepted current state
 
 Classification: CURRENT. The formerly current policy-candidate and pre-production
@@ -7509,9 +7514,9 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
-### PE-5.2 - Mapping Source Authority and Complete Contract Design
+### PE-5.3 - Remaining Capability Implementation and Comprehensive Validation
 
-Classification: CURRENT. CURRENT_PE5_CHECKPOINT=PE-5.2. The complete fixed sequence is PE-5.2 source authority/design -> PE-5.3 implementation/validation -> PE-5.4 source sync -> PE-5.5 inactive deployment -> PE-5.6 bounded validation -> PE-5.7 conditional activation -> PE-5.8 operational evidence/independent acceptance -> PE-5.9 closure/handoff -> PE-6. See [Complete PE-5 Execution Roadmap](#complete-pe-5-execution-roadmap). Separate authorization is required; PE-5.1 first execution is complete and is not repeated.
+Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; CURRENT_PE5_CHECKPOINT=PE-5.3; PE5_3_STARTED=FALSE. Next is PE-5.3 implementation/validation under separate authorization, then unchanged PE-5.4 through PE-5.9 and PE-6. See [complete contract](PE5_MAPPING_CONTRACT_DESIGN.md). Separate authorization is required; PE-5.1 first execution is complete and is not repeated.
 
 ### Historical policy-selection next task at ed3a80508d101652bac89e1dcc111167670aaebc
 
@@ -9071,6 +9076,9 @@ presence, reconstruction, substitution, or cleanup authority is implied.
 
 ## Complete PE-5 Execution Roadmap
 
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED planning snapshot accepted in 78ee4cd16120bf4ea3166901994727a19d1faad1. Checkpoint order/Definition of Done remain authoritative; planning-era current-pointer/UNKNOWN statements superseded by PE-5.2 complete design for current status only.
+
+
 <!-- PE5_EXECUTION_ROADMAP_BEGIN -->
 
 Classification: CURRENT. This user-authorized decomposition resolves the formerly undefined sequence, without starting any implementation or production checkpoint. Original architecture c914cfc4dc39a90005bad42984396291f5b2a751 and preparation f3730ba5a8745361934ff822a9c29c16c9d0767b retain their scope; historical records are immutable.
@@ -9497,3 +9505,22 @@ Keep PE-5.2 before implementation while unknown decisions remain. Keep source sy
 Task L.5 precedes Task M. Every tracked baseline file (428) was searched without exclusions. Counts use one classified file-level reference group per keyword-matched or explicitly traced dependency file, retaining literal keyword-hit counts and separate test-binding functions. Three new candidate record/schema/test files are reviewed separately from the 428-file tracked baseline. The canonical record/schema in governance/pe5 use the existing exact typed checkpoint convention, not a new governance hierarchy. Original preparation/implementation/caller/policy records stay historical; current consumers follow an exact successor artifact map. Historical validator bodies read their accepted Git snapshots. The roadmap validator likewise resolves its unique accepted child of the planning baseline by exact subject/parent and replays that immutable object, rather than requiring every future HEAD to be the roadmap commit. Every later checkpoint must synchronize its directly affected current-consumer artifact bindings within its existing implementation/evidence scope; this is an explicit lifecycle dependency, not a new planning checkpoint. See governance/pe5/pe5-execution-roadmap.json for all reference classifications, contradiction dispositions and affected tests. Acceptance requires focused/current consumers, affected cross-phase tests, broader PE regression and full native suite; zero unexplained material references or known static contradictions. No technical checkpoint runs in this planning task.
 
 <!-- PE5_EXECUTION_ROADMAP_END -->
+
+## Current PE-5.2 complete contract design
+
+Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
+Current next checkpoint: PE-5.3 - Remaining Capability Implementation and Comprehensive Validation.
+See [PE-5.2 complete contract design](PE5_MAPPING_CONTRACT_DESIGN.md) and
+governance/pe5/pe5-mapping-contract-design.json for source, relationship, schema, privacy,
+storage, execution and private PE-6 handoff decisions. Original undefined source/store/
+freshness is now DESIGN, not a discovered store. No universal production absence claimed.
+Future private configuration config/enrichment/mqtt_mappings.json remains distinct from
+known-infrastructure DEVICE METADATA and generated state/enrichment/service_associations/current.json.
+Opaque endpoint IDs require no raw topics or live broker/HA/client/Discovery access.
+Private source/output persistence required; standalone 15-minute recurrence and 20-minute
+handoff validity are selected NEW DESIGN values, not observed schedules. Inventory
+freshness remains 2100 seconds; accepted PE-5.1 runtime/caller/schema/rules unchanged.
+No public payload/topic/subscription/retention, inventory writer, scheduler or production
+change authorized. Separate authorization is required for PE-5.3 and all later checkpoints;
+original eight-stage ordering unchanged. PE-6 classification/role_suggestion/metadata_quality
+and future Discovery remain outside PE-5.

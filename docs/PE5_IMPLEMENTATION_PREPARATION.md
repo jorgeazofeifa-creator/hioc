@@ -2,6 +2,8 @@
 
 ## Current complete PE-5 execution roadmap
 
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED planning publication at 78ee4cd16120bf4ea3166901994727a19d1faad1; ordering remains authoritative. Current status follows PE-5.2 complete design below.
+
 PE5_STATUS=IN_PROGRESS
 PE5_1_STATUS=COMPLETE_THROUGH_ACCEPTED_FIRST_NATIVE_EXECUTION
 CURRENT_PE5_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design
@@ -320,3 +322,22 @@ Preparation PASS requires focused governance/consumer tests, required complete
 repository Windows regression and git diff --check, with no file mutation by
 tests, staging/commit/push/production access. Failed validation requires diagnosis
 before any further change. Candidate remains PREPARED_FOR_REVIEW until reviewed.
+
+## Current PE-5.2 complete contract design
+
+Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
+Current next checkpoint: PE-5.3 - Remaining Capability Implementation and Comprehensive Validation.
+See [PE-5.2 complete contract design](PE5_MAPPING_CONTRACT_DESIGN.md) and
+governance/pe5/pe5-mapping-contract-design.json for source, relationship, schema, privacy,
+storage, execution and private PE-6 handoff decisions. Original undefined source/store/
+freshness is now DESIGN, not a discovered store. No universal production absence claimed.
+Future private configuration config/enrichment/mqtt_mappings.json remains distinct from
+known-infrastructure DEVICE METADATA and generated state/enrichment/service_associations/current.json.
+Opaque endpoint IDs require no raw topics or live broker/HA/client/Discovery access.
+Private source/output persistence required; standalone 15-minute recurrence and 20-minute
+handoff validity are selected NEW DESIGN values, not observed schedules. Inventory
+freshness remains 2100 seconds; accepted PE-5.1 runtime/caller/schema/rules unchanged.
+No public payload/topic/subscription/retention, inventory writer, scheduler or production
+change authorized. Separate authorization is required for PE-5.3 and all later checkpoints;
+original eight-stage ordering unchanged. PE-6 classification/role_suggestion/metadata_quality
+and future Discovery remain outside PE-5.

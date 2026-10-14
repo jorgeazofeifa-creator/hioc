@@ -1,7 +1,7 @@
 ## Deployment Execution governance closure — 2026-10-06
 
 PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-5.1 accepted; wider PE-5 incomplete.
-Documentation consistency correction PASS/CLOSED. Current planned next checkpoint: PE-5.2 - Mapping Source Authority and Complete Contract Design. See the Master Plan's complete roadmap. Source sync, deployment, execution and activation remain separately authorized stages.
+Documentation consistency correction PASS/CLOSED. Current planned next checkpoint: PE-5.3 - Remaining Capability Implementation and Comprehensive Validation. See the Master Plan's complete roadmap. Source sync, deployment, execution and activation remain separately authorized stages.
 OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
 Current authority: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle) and [accepted closure](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md).
 
@@ -3087,3 +3087,22 @@ validation contracts are in HIOC_MASTER_PLAN.md.
 Current operator-observed availability is recorded in the transfer-evidence
 recovery status above. Historical paths remain audit facts; no continued
 presence, reconstruction, substitution, or cleanup authority is implied.
+
+## Current PE-5.2 complete contract design
+
+Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
+Current next checkpoint: PE-5.3 - Remaining Capability Implementation and Comprehensive Validation.
+See [PE-5.2 complete contract design](PE5_MAPPING_CONTRACT_DESIGN.md) and
+governance/pe5/pe5-mapping-contract-design.json for source, relationship, schema, privacy,
+storage, execution and private PE-6 handoff decisions. Original undefined source/store/
+freshness is now DESIGN, not a discovered store. No universal production absence claimed.
+Future private configuration config/enrichment/mqtt_mappings.json remains distinct from
+known-infrastructure DEVICE METADATA and generated state/enrichment/service_associations/current.json.
+Opaque endpoint IDs require no raw topics or live broker/HA/client/Discovery access.
+Private source/output persistence required; standalone 15-minute recurrence and 20-minute
+handoff validity are selected NEW DESIGN values, not observed schedules. Inventory
+freshness remains 2100 seconds; accepted PE-5.1 runtime/caller/schema/rules unchanged.
+No public payload/topic/subscription/retention, inventory writer, scheduler or production
+change authorized. Separate authorization is required for PE-5.3 and all later checkpoints;
+original eight-stage ordering unchanged. PE-6 classification/role_suggestion/metadata_quality
+and future Discovery remain outside PE-5.
