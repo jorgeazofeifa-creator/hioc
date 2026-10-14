@@ -1,7 +1,7 @@
 ## Deployment Execution governance closure — 2026-10-06
 
-PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-5.1 accepted; wider PE-5 incomplete.
-Documentation consistency correction PASS/CLOSED. Current planned next checkpoint: PE-5.4 - PI3 Release Source Synchronization. See the Master Plan's complete roadmap. Source sync, deployment, execution and activation remain separately authorized stages.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 COMPLETE; PE-5.9 COMPLETE/PASS; PE-6 NOT_STARTED.
+Documentation consistency correction PASS/CLOSED. Current next checkpoint: PE-6 - Classification & Metadata Quality; separate authorization required. PE-5 source synchronization, deployment, execution, activation and operational acceptance are completed historical checkpoints; closure grants no further runtime action.
 OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
 Current authority: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle) and [accepted closure](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md).
 
@@ -3151,7 +3151,7 @@ See the authoritative [Master Plan](HIOC_MASTER_PLAN.md).
 
 ## Current PE-5.8 operational acceptance closure
 
-Classification: CURRENT. PE5_8_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED PE-5.8 closure snapshot. PE5_8_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
 OPERATOR_SUPPLIED observations establish three consecutive natural successful
 windows (:17/:32/:47), distinct outputs and CONFIRMED transactions, unchanged
 source revision1/SHA and accepted scheduler SHA. No manual PE-5.8 producer run.
@@ -3162,3 +3162,40 @@ full production bytes and freshness after observation times are not asserted.
 PE-5 remains IN_PROGRESS. PE5_9_STARTED=FALSE.
 Next: PE-5.9 - Final PE-5 Closure and PE-6 Handoff; separate authorization required.
 See the authoritative [Master Plan](HIOC_MASTER_PLAN.md) for exact receipts and limitations.
+
+## Current PE-5.9 final closure and private PE-6 handoff
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
+Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
+
+All 37 original PE-5 requirements and all 14 Definition of Done conditions pass;
+all 11 roadmap UNKNOWN decisions have evidence-backed resolutions. The original
+roadmap and 46 implementation checklist items remain immutable authority.
+The current coverage/evidence ledger and complete private handoff are in
+[PE-5 implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#current-pe-59-final-closure-and-private-pe-6-handoff)
+and final_closure in the existing implementation governance record.
+PE-5.6/7/8 accepted observations remain OPERATOR_SUPPLIED. Preserve
+OPERATOR_OBSERVATIONS_ONLY; FULL_PRODUCTION_BYTES_NOT_RECEIVED;
+NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM; NO_CURRENT_FRESHNESS_CLAIM.
+First-cycle fields not separately supplied remain UNKNOWN; none is a completion
+waiver or new production observation. No runtime, scheduler, public interface,
+MQTT or production change occurs here. PE-6 may later consume only validated,
+confirmed, unexpired private relationship evidence under the unchanged contract.
+Publication remains gated by exact commit, push and independent GitHub verification.
+
+### PE-5 accepted execution and reader obligations
+
+Approved offline installer writes source; standalone recurring composer writes output; never inventory engine or caller hook.
+2,17,32,47 * * * *; independent composer every900 seconds, no catch-up/retry
+Command: /usr/bin/python3 /home/jazofv1/hioc/pi4/bin/hioc-compose-service-associations.py
+Inventory age <=2100 seconds with accepted clock rules; output valid_until=min(evaluated_at+1200,inventory.updated+2100). Reject at now>=valid_until and on future/backward clock or changed consumed inventory/source identity.
+Absent/invalid source may preserve independent local output only with confirmed current output and valid current inputs/schema/time; local null is unavailable, not empty/success. Explicit empty source is known-empty; reject conflicting/duplicate or unknown-owner configured rows per contract.
+CONFIRMED matching current output digest/domain/revision, closed schema, stable read fingerprint; reject PENDING/missing/malformed/mismatched sidecar.
+For configured VALID require CONFIRMED current source digest/revision and final source/output rechecks under lock. Root VALID alone does not establish all branches valid.
+hioc.configured_association_store.Store.read_handoff(evaluated_at): Store.lock() uses nonblocking exclusive flock and may create missing .lock in approved private parent. Existing API is not a filesystem-pure read; future PE-6 must explicitly govern reader/lock lifecycle. Do not call it in PE-5.9.
+PENDING barrier -> exclusive temporary write/file fsync -> one primary replace -> parent fsync -> CONFIRMED sidecar/file/parent barriers. Pre-replace failure preserves prior; post-replace parent failure is INDETERMINATE/WRITE_FAILED, not rollback success.
+Only separately approved recertification of exact recorded candidate/prior, fsync without primary replacement or time refresh; unmatched/corrupt bytes stop. Fresh producer recomputation is separate approved action.
+One current primary per domain and bounded sidecar descriptors; no archive/application-payload LKG replay. Stale crash temporaries never adopted; cleanup not authorized.
+Historical accepted deployment/activation/natural-cycle receipts are OPERATOR_SUPPLIED; no new observation or execution authorized. Existing provenance-bound recovery/rollback guidance is preserved in DEPLOYMENT.md. Future PE-6 reader authorization must cover locking and failure gates explicitly.

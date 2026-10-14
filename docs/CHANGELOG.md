@@ -1,3 +1,15 @@
+## PE-5.9 final PE-5 closure and private PE-6 handoff — 2026-10-14
+
+Classification: CURRENT. PE5_9_STATUS=COMPLETE/PASS; PE5_STATUS=COMPLETE.
+All 37 original requirements, 11 UNKNOWN resolutions and 14 Definition of Done
+conditions reconciled against accepted contracts, implementation and evidence.
+Private handoff documented without runtime/schema/public interface changes.
+PE-5.6/7/8 operator evidence and four limitations preserved; no new production access.
+Next: PE-6 - Classification & Metadata Quality, NOT_STARTED; separate authorization
+required. Exact current authority and evidence: HIOC_MASTER_PLAN.md and
+PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md / existing final_closure record.
+Earlier entries below are HISTORICAL_INTENTIONALLY_PRESERVED checkpoint snapshots.
+
 ## Deployment Execution governance closure — 2026-10-06
 
 Current authority (2026-10-07): **PE-4 Home Assistant Association Adapter Independent Production Acceptance**.

@@ -2581,10 +2581,11 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
    production deployment, generation, PI3 validation, final Evidence Report,
    administrative Action 10 closure, and final governance closure are complete.
 4. **PE-4 - Home Assistant Association** — PASS/CLOSED; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation, deployment, independent production acceptance and Public Projection PASS/CLOSED; scheduler ACTIVE/AUTHORIZED; PE-4 PASS/CLOSED. Production evidence remains OPERATOR_SUPPLIED.
-5. **PE-5 - MQTT and Passive Service Association** — IN PROGRESS. PE-5.1 private
-   caller/resolver deployment and first native execution PASS/ACCEPTED; 2100-second
-   policy finalized. Wider MQTT association capabilities remain incomplete.
-   NEXT_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design; separate checkpoint authorization required.
+5. **PE-5 - MQTT and Passive Service Association** — COMPLETE. PE5_9_STATUS=COMPLETE/PASS;
+   all 37 requirements and 14 Definition of Done conditions accepted.
+   NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE;
+   separate authorization required. The following PE-5.1 planning paragraphs are
+   HISTORICAL_INTENTIONALLY_PRESERVED snapshots, not current capability status.
    Historical roadmap status at ed3a80508d101652bac89e1dcc111167670aaebc (HISTORICAL_INTENTIONALLY_PRESERVED):
    **PE-5 - MQTT and Passive Service Association** — not started.
    Current PE-5.1 is an authorized private pure-library implementation candidate; broader runtime integration is NOT_STARTED / NOT AUTHORIZED. The following preparation status is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
@@ -6267,9 +6268,31 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
-## Current PE-5.1 deployment and first native execution acceptance — 2026-10-13
+## Current PE-5 final closure — 2026-10-14
 
-Classification: CURRENT. Production deployment and the first native private caller
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
+Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
+
+All 37 original PE-5 requirements and all 14 Definition of Done conditions pass;
+all 11 roadmap UNKNOWN decisions have evidence-backed resolutions. The original
+roadmap and 46 implementation checklist items remain immutable authority.
+The current coverage/evidence ledger and complete private handoff are in
+[PE-5 implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#current-pe-59-final-closure-and-private-pe-6-handoff)
+and final_closure in the existing implementation governance record.
+PE-5.6/7/8 accepted observations remain OPERATOR_SUPPLIED. Preserve
+OPERATOR_OBSERVATIONS_ONLY; FULL_PRODUCTION_BYTES_NOT_RECEIVED;
+NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM; NO_CURRENT_FRESHNESS_CLAIM.
+First-cycle fields not separately supplied remain UNKNOWN; none is a completion
+waiver or new production observation. No runtime, scheduler, public interface,
+MQTT or production change occurs here. PE-6 may later consume only validated,
+confirmed, unexpired private relationship evidence under the unchanged contract.
+Publication remains gated by exact commit, push and independent GitHub verification.
+
+## Historical PE-5.1 deployment and first native execution acceptance — 2026-10-13
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Production deployment and the first native private caller
 execution are PASS/ACCEPTED on OPERATOR_SUPPLIED evidence. Policy 2100 seconds is
 finalized at ed3a80508d101652bac89e1dcc111167670aaebc; execution count 1, return
 code 0, valid output/schema, 8 private associations, 0 rejections, snapshot age
@@ -6898,7 +6921,7 @@ completion. Historical chronology elsewhere does not override it.
 | First Natural Public Projection MQTT Acceptance | PASS |
 | Public Projection Retained MQTT Topics | 7/7 |
 | Public Projection Retained Payload Equality | PASS |
-| PE-5 | IN PROGRESS; PE-5.1 deployment / first native execution PASS/ACCEPTED; wider capability incomplete |
+| PE-5 | COMPLETE; PE-5.9 COMPLETE/PASS; PE-6 next NOT_STARTED, separate authorization required |
 | Historical vs Current Lifecycle Test-Binding Correction | PASS/CLOSED |
 | Documentation Consistency Correction | PASS/CLOSED |
 | PE-4 | PASS/CLOSED |
@@ -7141,9 +7164,33 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-6 - Classification & Metadata Quality
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
+Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
+
+All 37 original PE-5 requirements and all 14 Definition of Done conditions pass;
+all 11 roadmap UNKNOWN decisions have evidence-backed resolutions. The original
+roadmap and 46 implementation checklist items remain immutable authority.
+The current coverage/evidence ledger and complete private handoff are in
+[PE-5 implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#current-pe-59-final-closure-and-private-pe-6-handoff)
+and final_closure in the existing implementation governance record.
+PE-5.6/7/8 accepted observations remain OPERATOR_SUPPLIED. Preserve
+OPERATOR_OBSERVATIONS_ONLY; FULL_PRODUCTION_BYTES_NOT_RECEIVED;
+NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM; NO_CURRENT_FRESHNESS_CLAIM.
+First-cycle fields not separately supplied remain UNKNOWN; none is a completion
+waiver or new production observation. No runtime, scheduler, public interface,
+MQTT or production change occurs here. PE-6 may later consume only validated,
+confirmed, unexpired private relationship evidence under the unchanged contract.
+Publication remains gated by exact commit, push and independent GitHub verification.
+
+### Historical PE-5.8 closure at 10b9c9929f740f3cd24c1768998f854d4837c3bb
+
 ### PE-5.9 - Final PE-5 Closure and PE-6 Handoff
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
 PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 RECURRING_EXECUTION_ACTIVE=TRUE; PE5_9_STARTED=FALSE.
 Current next checkpoint: PE-5.9 - Final PE-5 Closure and PE-6 Handoff.
@@ -7717,9 +7764,33 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-6 - Classification & Metadata Quality
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
+Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
+
+All 37 original PE-5 requirements and all 14 Definition of Done conditions pass;
+all 11 roadmap UNKNOWN decisions have evidence-backed resolutions. The original
+roadmap and 46 implementation checklist items remain immutable authority.
+The current coverage/evidence ledger and complete private handoff are in
+[PE-5 implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#current-pe-59-final-closure-and-private-pe-6-handoff)
+and final_closure in the existing implementation governance record.
+PE-5.6/7/8 accepted observations remain OPERATOR_SUPPLIED. Preserve
+OPERATOR_OBSERVATIONS_ONLY; FULL_PRODUCTION_BYTES_NOT_RECEIVED;
+NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM; NO_CURRENT_FRESHNESS_CLAIM.
+First-cycle fields not separately supplied remain UNKNOWN; none is a completion
+waiver or new production observation. No runtime, scheduler, public interface,
+MQTT or production change occurs here. PE-6 may later consume only validated,
+confirmed, unexpired private relationship evidence under the unchanged contract.
+Publication remains gated by exact commit, push and independent GitHub verification.
+
+### Historical PE-5.8 closure at 10b9c9929f740f3cd24c1768998f854d4837c3bb
+
 ### PE-5.9 - Final PE-5 Closure and PE-6 Handoff
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
 PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 RECURRING_EXECUTION_ACTIVE=TRUE; PE5_9_STARTED=FALSE.
 Current next checkpoint: PE-5.9 - Final PE-5 Closure and PE-6 Handoff.
@@ -10082,9 +10153,9 @@ Codex performed repository work only; no PI3/PI5/production access or mutation o
 See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and the
 existing governance record's scheduler_activation evidence.
 
-## Current PE-5.8 final acceptance and closure
+## Historical PE-5.8 final acceptance and closure
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
 PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 RECURRING_EXECUTION_ACTIVE=TRUE; PE5_9_STARTED=FALSE.
 Current next checkpoint: PE-5.9 - Final PE-5 Closure and PE-6 Handoff.
@@ -10135,3 +10206,55 @@ See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and
 operational_acceptance in the existing governance record for exact receipts,
 evidence limitations and repository validation. No runtime or authority model changes.
 Codex accessed no PI3, PI5 or production. PE-5.9 requires separate authorization.
+
+## Current PE-5.9 final closure and private PE-6 handoff
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
+Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
+
+All 37 original PE-5 requirements and all 14 Definition of Done conditions pass;
+all 11 roadmap UNKNOWN decisions have evidence-backed resolutions. The original
+roadmap and 46 implementation checklist items remain immutable authority.
+The current coverage/evidence ledger and complete private handoff are in
+[PE-5 implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#current-pe-59-final-closure-and-private-pe-6-handoff)
+and final_closure in the existing implementation governance record.
+PE-5.6/7/8 accepted observations remain OPERATOR_SUPPLIED. Preserve
+OPERATOR_OBSERVATIONS_ONLY; FULL_PRODUCTION_BYTES_NOT_RECEIVED;
+NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM; NO_CURRENT_FRESHNESS_CLAIM.
+First-cycle fields not separately supplied remain UNKNOWN; none is a completion
+waiver or new production observation. No runtime, scheduler, public interface,
+MQTT or production change occurs here. PE-6 may later consume only validated,
+confirmed, unexpired private relationship evidence under the unchanged contract.
+Publication remains gated by exact commit, push and independent GitHub verification.
+
+### Individual PE-5 Definition of Done acceptance
+
+1. **PASS — Accepted local branch preserved; no repeated PE-5.1 first execution**. Unchanged local resolver/caller and policy2100; accepted first execution retained, never repeated.
+
+2. **PASS — Declared mapping source/producer/identifier/time/expiry authority established**. Corrected PE-5.2 contract plus 46 PE-5.3 implementation checklist items; source installer and explicit revision authority.
+
+3. **PASS — Local and mapping relationships stable/deterministic/bounded with source/rule provenance**. Local semantic IDs and configured mqra_ semantic domain; deterministic source/rule provenance fixtures.
+
+4. **PASS — Ambiguity/missing endpoints/duplicates/conflicts handled by accepted contract**. Closed source/input schemas, duplicate/conflict/device/service/expiry fixtures; no fabricated missing-input success.
+
+5. **PASS — No transport-based identity/canonical-IP/observation/liveness/health authority**. Protected 226 artifacts and no runtime changes; relationship-only source/rule provenance.
+
+6. **PASS — No secrets/topic leakage/private raw exposure/public or publish-subscribe compatibility change**. Closed no-secret/topic schemas, bounded prior operator search, static no-network mutation tests; public compatibility unchanged.
+
+7. **PASS — Private-storage/current-history/retention/LKG/restart/corruption disposition approved and implemented/validated if required**. PE-5.2 atomic correction; PE-5.6 accepted corrected initialization; PENDING/CONFIRMED recovery/corruption synthetic fault fixtures.
+
+8. **PASS — Execution/trigger/cadence/integration/locking/missed/failure disposition approved; required activation and natural cycles accepted**. PE-5.2 900-second schedule, flock/no-catch-up; PE-5.7 accepted cron and PE-5.8 three consecutive natural windows.
+
+9. **PASS — Governed source sync, exact deployment, bounded validation and independent acceptance complete**. 4990c62 Master Plan records accepted disabled PE-5.5 payload/source; PE-5.6 corrected one-artifact deployment and bounded acceptance; PE-5.7/8 immutable independent closures.
+
+10. **PASS — Private file/API/schema/version/freshness/conflict handoff sufficient for PE-6, without implementing PE-6**. Complete private handoff below; exact schema/semantic/confirmation/time/input identity gates; no PE-6 implementation.
+
+11. **PASS — Operational docs answer what/why/how/source/freshness/failure/rollback; Master Plan synchronized**. Seventeen existing affected paths synchronized; operational what/why/how/inputs/failures/recovery and canonical changelog updated.
+
+12. **PASS — Privacy-safe durable Evidence Reports/exact commit identities; source/runtime separation and clean synchronized Git**. Immutable predecessor commit references; accepted source/runtime distinction; final publication acceptance requires exact commit/push/independent GitHub and clean main=origin/main.
+
+13. **PASS — Every original requirement COMPLETE or explicit authorized outside-phase/not-required disposition; no unknown completion requirement**. Thirty-seven COMPLETE evidence rows; all eleven UNKNOWN decisions resolved, original assignments and deferrals preserved.
+
+14. **PASS — Only after all gates PE5_STATUS=COMPLETE; PE-6 then becomes next passive-enrichment checkpoint under separate authorization**. Only final accepted PE-5.9 closure marks PE-5 COMPLETE; PE-6 next NOT_STARTED with separate authorization.

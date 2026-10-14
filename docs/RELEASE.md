@@ -1,7 +1,7 @@
 # HIOC Release Process
 
-PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-5.1 accepted; wider PE-5 incomplete.
-Documentation consistency correction PASS/CLOSED. Current planned next checkpoint: PE-5.4 - PI3 Release Source Synchronization. See the Master Plan's complete roadmap. Source sync, deployment, execution and activation remain separately authorized stages.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 COMPLETE; PE-5.9 COMPLETE/PASS; PE-6 NOT_STARTED.
+Documentation consistency correction PASS/CLOSED. Current next checkpoint: PE-6 - Classification & Metadata Quality; separate authorization required. PE-5 source synchronization, deployment, execution, activation and operational acceptance are completed historical checkpoints; closure grants no further runtime action.
 Current lifecycle: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle).
 
 The following Action G closure status, limitations and next task are historical
@@ -1877,7 +1877,7 @@ See the authoritative [Master Plan](HIOC_MASTER_PLAN.md).
 
 ## Current PE-5.8 operational acceptance closure
 
-Classification: CURRENT. PE5_8_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED PE-5.8 closure snapshot. PE5_8_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
 OPERATOR_SUPPLIED observations establish three consecutive natural successful
 windows (:17/:32/:47), distinct outputs and CONFIRMED transactions, unchanged
 source revision1/SHA and accepted scheduler SHA. No manual PE-5.8 producer run.
@@ -1888,3 +1888,25 @@ full production bytes and freshness after observation times are not asserted.
 PE-5 remains IN_PROGRESS. PE5_9_STARTED=FALSE.
 Next: PE-5.9 - Final PE-5 Closure and PE-6 Handoff; separate authorization required.
 See the authoritative [Master Plan](HIOC_MASTER_PLAN.md) for exact receipts and limitations.
+
+## Current PE-5.9 final closure and private PE-6 handoff
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
+Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
+
+All 37 original PE-5 requirements and all 14 Definition of Done conditions pass;
+all 11 roadmap UNKNOWN decisions have evidence-backed resolutions. The original
+roadmap and 46 implementation checklist items remain immutable authority.
+The current coverage/evidence ledger and complete private handoff are in
+[PE-5 implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#current-pe-59-final-closure-and-private-pe-6-handoff)
+and final_closure in the existing implementation governance record.
+PE-5.6/7/8 accepted observations remain OPERATOR_SUPPLIED. Preserve
+OPERATOR_OBSERVATIONS_ONLY; FULL_PRODUCTION_BYTES_NOT_RECEIVED;
+NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM; NO_CURRENT_FRESHNESS_CLAIM.
+First-cycle fields not separately supplied remain UNKNOWN; none is a completion
+waiver or new production observation. No runtime, scheduler, public interface,
+MQTT or production change occurs here. PE-6 may later consume only validated,
+confirmed, unexpired private relationship evidence under the unchanged contract.
+Publication remains gated by exact commit, push and independent GitHub verification.

@@ -388,7 +388,7 @@ See the authoritative [Master Plan](HIOC_MASTER_PLAN.md).
 
 ## Current PE-5.8 operational acceptance closure
 
-Classification: CURRENT. PE5_8_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED PE-5.8 closure snapshot. PE5_8_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
 OPERATOR_SUPPLIED observations establish three consecutive natural successful
 windows (:17/:32/:47), distinct outputs and CONFIRMED transactions, unchanged
 source revision1/SHA and accepted scheduler SHA. No manual PE-5.8 producer run.
@@ -399,3 +399,49 @@ full production bytes and freshness after observation times are not asserted.
 PE-5 remains IN_PROGRESS. PE5_9_STARTED=FALSE.
 Next: PE-5.9 - Final PE-5 Closure and PE-6 Handoff; separate authorization required.
 See the authoritative [Master Plan](HIOC_MASTER_PLAN.md) for exact receipts and limitations.
+
+## Current PE-5.9 final closure and private PE-6 handoff
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
+Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
+
+All 37 original PE-5 requirements and all 14 Definition of Done conditions pass;
+all 11 roadmap UNKNOWN decisions have evidence-backed resolutions. The original
+roadmap and 46 implementation checklist items remain immutable authority.
+The current coverage/evidence ledger and complete private handoff are in
+[PE-5 implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#current-pe-59-final-closure-and-private-pe-6-handoff)
+and final_closure in the existing implementation governance record.
+PE-5.6/7/8 accepted observations remain OPERATOR_SUPPLIED. Preserve
+OPERATOR_OBSERVATIONS_ONLY; FULL_PRODUCTION_BYTES_NOT_RECEIVED;
+NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM; NO_CURRENT_FRESHNESS_CLAIM.
+First-cycle fields not separately supplied remain UNKNOWN; none is a completion
+waiver or new production observation. No runtime, scheduler, public interface,
+MQTT or production change occurs here. PE-6 may later consume only validated,
+confirmed, unexpired private relationship evidence under the unchanged contract.
+Publication remains gated by exact commit, push and independent GitHub verification.
+
+### PE-5 private envelope contract for later PE-6
+
+{"durability": "1.0", "local": "1.0", "output": "2.0", "source": "1.0"}
+Source required fields: schema_version, source_id, revision, mappings.
+Mapping required fields: mapping_id, endpoint_id, device_id, service_id.
+Output required fields: changes, configured, evaluated_at, inventory, local, schema_version, state, valid_until.
+Opaque endpoint me_[0-9a-f]{32}; row map_[0-9a-f]{32}; existing strong dev_[0-9a-f]{16}; optional existing same-owner service.
+mqra_ + SHA256(ASCII canonical JSON array ['configured_mqtt_v1',source_id,endpoint_id,device_id,service_id,'endpoint_to_device']); excludes revision, mapping_id and evaluation.
+source_kind configured_mqtt, rule_id declared_endpoint_device_v1; source_id/revision/digest/mapping_id remain private. Local schema unchanged.
+Integer 1..9007199254740991, never bool; approved content changes increment revision; rollback or equal revision with changed content rejected; PENDING recovery floors enforced. No source TTL/observed_at/mtime authority.
+Inventory age <=2100 seconds with accepted clock rules; output valid_until=min(evaluated_at+1200,inventory.updated+2100). Reject at now>=valid_until and on future/backward clock or changed consumed inventory/source identity.
+The closed embedded local schema has NO state field; local null means unavailable. Root VALID does not assert configured/local branch validity or service health. Exact closed nested schemas remain in the immutable corrected PE-5.2 contract and unchanged runtime schema module; PE-5.9 private_handoff stores their canonical SHA-256 identities. Public inventory and schemas are unchanged.
+
+### Durability and private branch field reference
+
+- **metadata_fields**: ["candidate", "confirmed", "domain", "schema_version", "state", "transaction_id"]
+- **metadata_domains**: ["CONFIGURED_MAPPING_SOURCE", "GENERATED_RELATIONSHIP_OUTPUT"]
+- **metadata_descriptor_contract**: Closed schema1.0: dur_[0-9a-f]{32} transaction_id; PENDING requires candidate descriptor and nullable prior confirmed; CONFIRMED requires candidate=null and confirmed descriptor. Descriptors contain only sha256 (64 lowercase hex) and source_revision. Source revision is integer1..9007199254740991; output source_revision may be null for no configured revision. Exact current bytes/domain/revision must match; filenames alone are not confirmation.
+- **configured_fields**: ["associations", "candidate_count", "error_code", "rejections", "revision", "source_id", "source_sha256", "state"]
+- **configured_states**: ["VALID", "UNAVAILABLE"]
+- **relationship_fields**: ["device_id", "direction", "endpoint_id", "mapping_id", "relationship_id", "rule_id", "service_id", "source_id", "source_kind", "source_revision", "source_sha256"]
+- **changes_fields**: ["added", "added_count", "baseline", "removed", "removed_count", "truncated"]
+- **changes_bound**: added/removed relationship-ID arrays at most64 each; exact total counts and truncation flag, no invented removal from unavailable/noncomparable prior.

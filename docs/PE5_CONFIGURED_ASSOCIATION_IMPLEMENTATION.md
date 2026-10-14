@@ -349,9 +349,9 @@ primary hashes matching the prior accepted PE-5.6 observations. These are
 PRE-ACTIVATION observations, not claims of current post-activation file contents.
 No new scheduler, deployment mechanism, evidence hierarchy or runtime behavior is introduced.
 
-## Current PE-5.8 final acceptance and closure
+## Historical PE-5.8 final acceptance and closure
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
 PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 RECURRING_EXECUTION_ACTIVE=TRUE; PE5_9_STARTED=FALSE.
 Current next checkpoint: PE-5.9 - Final PE-5 Closure and PE-6 Handoff.
@@ -402,3 +402,544 @@ See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and
 operational_acceptance in the existing governance record for exact receipts,
 evidence limitations and repository validation. No runtime or authority model changes.
 Codex accessed no PI3, PI5 or production. PE-5.9 requires separate authorization.
+
+## Current PE-5.9 final closure and private PE-6 handoff
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
+Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
+
+All 37 original PE-5 requirements and all 14 Definition of Done conditions pass;
+all 11 roadmap UNKNOWN decisions have evidence-backed resolutions. The original
+roadmap and 46 implementation checklist items remain immutable authority.
+The current coverage/evidence ledger and complete private handoff are in
+[PE-5 implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#current-pe-59-final-closure-and-private-pe-6-handoff)
+and final_closure in the existing implementation governance record.
+PE-5.6/7/8 accepted observations remain OPERATOR_SUPPLIED. Preserve
+OPERATOR_OBSERVATIONS_ONLY; FULL_PRODUCTION_BYTES_NOT_RECEIVED;
+NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM; NO_CURRENT_FRESHNESS_CLAIM.
+First-cycle fields not separately supplied remain UNKNOWN; none is a completion
+waiver or new production observation. No runtime, scheduler, public interface,
+MQTT or production change occurs here. PE-6 may later consume only validated,
+confirmed, unexpired private relationship evidence under the unchanged contract.
+Publication remains gated by exact commit, push and independent GitHub verification.
+
+### Authority and original requirement reconciliation
+
+The following 37 rows preserve the exact original requirement and checkpoint assignments
+from governance/pe5/pe5-execution-roadmap.json. The original architecture is
+c914cfc4dc39a90005bad42984396291f5b2a751:docs/PASSIVE_ENRICHMENT_ARCHITECTURE.md; original preparation f3730ba5a8745361934ff822a9c29c16c9d0767b:docs/PE5_IMPLEMENTATION_PREPARATION.md.
+Each row is COMPLETE/PASS using existing behavior and accepted evidence, not merely
+because its historical roadmap disposition was ASSIGNED. Production scope and limits
+above apply to every row. Exact structured authorities and per-row current references
+are in final_closure.coverage of the existing implementation record.
+
+#### Requirement 1: local service ownership relationships
+
+Status: COMPLETE/PASS. Assigned: PE-5.1.
+
+Existing strong-MAC device and same-owner service references only; local schema 1.0 embedded unchanged.
+
+Evidence: PE-5.1 accepted first execution; PE-5.6 bounded and PE-5.8 natural local eight/zero observations.
+Validation: tests/test_pe5_local_service_association.py:LocalServiceAssociationTests.test_valid_systemd_strong_owner_existing_ids_and_provenance.
+
+#### Requirement 2: systemd evidence
+
+Status: COMPLETE/PASS. Assigned: PE-5.1.
+
+systemd ownership is relationship evidence using existing stable service/device IDs.
+
+Evidence: PE-5.1 accepted implementation and first execution.
+Validation: tests/test_pe5_local_service_association.py:LocalServiceAssociationTests.test_valid_systemd_strong_owner_existing_ids_and_provenance.
+
+#### Requirement 3: ss/listening-socket evidence
+
+Status: COMPLETE/PASS. Assigned: PE-5.1.
+
+ss/listening-socket input joins existing ownership; no network probe or live broker observation.
+
+Evidence: PE-5.1 accepted implementation; existing inventory snapshot authority.
+Validation: tests/test_pe5_local_service_association.py:LocalServiceAssociationTests.test_multiple_services_one_owner_and_all_ss_services.
+
+#### Requirement 4: stable device binding
+
+Status: COMPLETE/PASS. Assigned: PE-5.1.
+
+Reject missing, weak, malformed or mismatched MAC-derived dev_ identities; no identity creation.
+
+Evidence: PE-5.1 strong-owner resolver and PE-5.3 configured device rejection fixtures.
+Validation: tests/test_pe5_local_service_association.py:LocalServiceAssociationTests.test_device_id_must_match_mac_derived_existing_id.
+
+#### Requirement 5: stable relationship identifiers
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Deterministic domain-separated semantic relationship identity; source revision/mapping row label/evaluation do not change identity.
+
+Evidence: PE-5.3 implementation accepted; local:test_ids_stable_across_snapshot_cycles.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_relationship_id_exact_domain_and_revision_invariance.
+
+#### Requirement 6: source provenance
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Private source kind, source_id, source revision and digest identify declared configuration; local consumed provenance retained.
+
+Evidence: PE-5.6 configured association and PE-5.8 stable source receipts.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_valid_configured_opaque_strong_owner_private_provenance.
+
+#### Requirement 7: rule provenance
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Private rule_id declared_endpoint_device_v1 and unchanged local rule provenance explain relationships.
+
+Evidence: PE-5.3 closed schemas and deterministic rule implementation.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_preserves_exact_local_foundation.
+
+#### Requirement 8: configured MQTT mappings
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Explicit approved offline source installation, closed schema and bounded rows; configuration is not observation.
+
+Evidence: PE-5.6 corrected source installation accepted once; PE-5.8 configured one/zero.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_valid_configured_opaque_strong_owner_private_provenance.
+
+#### Requirement 9: MQTT association evidence
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Declared opaque MQTT endpoint-to-device relationship only; no broker/client/topic telemetry required.
+
+Evidence: PE-5.2 corrected contract mqtt requirements false; PE-5.3 synthetic validation.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_closed_source_rejects_secrets_topics_authority_fields.
+
+#### Requirement 10: mapping source authority
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Private operator configuration is mapping authority; no unseen production store presumed.
+
+Evidence: PE-5.2 absent-source observation and approved design; PE-5.6 created source receipt.
+Validation: tests/test_pe5_configured_association_implementation.py:PersistenceTests.test_approval_and_explicit_initialization_required.
+
+#### Requirement 11: mapping producer authority
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Approved installer is source writer; standalone composer is output writer; owner jazofv1.
+
+Evidence: PE-5.5 accepted disabled six-artifact installation; PE-5.6 corrected installer acceptance.
+Validation: tests/test_pe5_configured_association_implementation.py:PersistenceTests.test_source_output_separation_and_confirmed_handoff.
+
+#### Requirement 12: mapping identifier semantics
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Opaque me_ and map_ 32-hex IDs, existing dev_ 16-hex and optional same-owner existing service.
+
+Evidence: Frozen PE-5.2 input schema and PE-5.3 parser.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_unknown_schema_and_identifiers.
+
+#### Requirement 13: mapping relationship semantics
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Source-scoped endpoint/device/service semantics; sorted deterministic rows and fan-in, no arbitrary dependency inference.
+
+Evidence: PE-5.2 corrected relationship contract.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_deterministic_multirow_sorting_and_fan_in.
+
+#### Requirement 14: mapping freshness
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Source configuration has revision, not liveness timestamp/TTL; output freshness comes from inventory/evaluation.
+
+Evidence: PE-5.2 revision contract; PE-5.8 source revision1 unchanged.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_revision_rollback_equal_changed_and_equal_identical.
+
+#### Requirement 15: mapping expiry
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Current output expires at min(evaluation+1200, inventory.updated+2100); now >= deadline rejects.
+
+Evidence: PE-5.1 policy2100 preserved; PE-5.8 observed bounded deadlines.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_inventory_clock_freshness_and_deadline.
+
+#### Requirement 16: duplicate handling
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Identical consumed local duplicates deduplicate; configured duplicate mapping/endpoint rows reject under closed source contract.
+
+Evidence: local:test_identical_consumed_duplicates_deduplicate_without_rejection.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_duplicate_rows_ids_and_endpoints.
+
+#### Requirement 17: conflict handling
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Conflicting endpoint/device declarations reject whole configured source; conflicting local service ownership rejects ambiguous IDs.
+
+Evidence: local:test_conflicting_service_ownership_rejects_all_same_id.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_conflicting_endpoint_rejects_whole_source.
+
+#### Requirement 18: missing endpoint handling
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Unknown device/service rejected; missing/invalid source does not fabricate relationships or absence; independent local branch remains available.
+
+Evidence: PE-5.2 source-state semantics and device/service rejection fixtures.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_absent_or_invalid_source_keeps_independent_local.
+
+#### Requirement 19: privacy
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Private source/output/sidecars owner-restricted, opaque metadata only; public inventory and protected contracts unchanged.
+
+Evidence: PE-5.6 bounded five-term inventory search only; protected 226 artifact check.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_network_subprocess_and_input_authority_untouched.
+
+#### Requirement 20: credentials/secrets
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+No credentials are required by declared-source design; closed fields reject secrets and unsafe free text.
+
+Evidence: PE-5.2 broker/HA/credential requirements explicitly false; no access this checkpoint.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_closed_source_rejects_secrets_topics_authority_fields.
+
+#### Requirement 21: topic leakage prevention
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Opaque endpoints and closed schemas prohibit topics, payloads, discovery internals and raw broker identifiers.
+
+Evidence: PE-5.3 privacy fixtures and protected public projection.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_closed_source_rejects_secrets_topics_authority_fields.
+
+#### Requirement 22: no identity authority
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Consume existing strong identity only; relationship evidence cannot assign identity.
+
+Evidence: local:test_device_id_must_match_mac_derived_existing_id.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_device_rejections.
+
+#### Requirement 23: no canonical-IP authority
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+No canonical address mutation or preference from transport; input snapshot remains unchanged.
+
+Evidence: local:test_inputs_all_protected_fields_unchanged_and_no_data_leaks.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_network_subprocess_and_input_authority_untouched.
+
+#### Requirement 24: no liveness authority
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+No service/MQTT transport evidence confers observation, presence or liveness; empty local collections are not successful collection.
+
+Evidence: Frozen PE-5.2 forbidden authority boundaries.
+Validation: tests/test_pe5_local_service_association.py:LocalServiceAssociationTests.test_empty_collections_do_not_assert_health_success_or_absence.
+
+#### Requirement 25: no health authority
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Transport/relationship does not confer health, expected availability or asset/role classification.
+
+Evidence: PE-5.2 forbidden authority; PE-6 responsibility remains future.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_closed_source_rejects_secrets_topics_authority_fields.
+
+#### Requirement 26: bounded diff
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Bounded deterministic added/removed change summary from comparable valid prior result; unavailable prior does not fabricate removals.
+
+Evidence: configured:test_bounded_change_fields_checked.
+Validation: tests/test_pe5_configured_association_implementation.py:ConfiguredResolutionTests.test_current_comparison_and_unavailable_do_not_fabricate_removals.
+
+#### Requirement 27: unchanged publish/subscribe behavior
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+No new subscribe/publish/runtime public fields; MQTT Discovery and live telemetry explicitly deferred.
+
+Evidence: Unchanged protected MQTT/public schemas and publisher artifacts.
+Validation: tests/test_pe5_configured_association_implementation.py:EntrypointAndGovernanceTests.test_static_no_network_shell_credentials_public_mutation.
+
+#### Requirement 28: persistence requirement
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Shared private current output plus bounded exact durability sidecars required; one primary replace and explicit approval.
+
+Evidence: PE-5.2 corrected atomic contract; PE-5.6 confirmed native bounded output.
+Validation: tests/test_pe5_configured_association_implementation.py:PersistenceTests.test_exact_atomic_order_and_one_primary_replace.
+
+#### Requirement 29: recurring execution decision
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Independent recurring composer required, activated once; three natural consecutive successful windows accepted.
+
+Evidence: PE-5.7 activation and PE-5.8 20:17/20:32/20:47 operator receipts.
+Validation: tests/test_pe5_configured_association_implementation.py:PersistenceTests.test_overlap_nonblocking_no_output_replace.
+
+#### Requirement 30: producer/inventory integration decision
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Standalone producer only; no inventory engine hook or hidden caller side effect; existing local caller retained.
+
+Evidence: PE-5.2 independent execution contract; protected payload/engine invariants.
+Validation: tests/test_pe5_configured_association_implementation.py:EntrypointAndGovernanceTests.test_static_no_network_shell_credentials_public_mutation.
+
+#### Requirement 31: retention decision
+
+Status: COMPLETE/PASS. Assigned: PE-5.2.
+
+Only current primary and bounded sidecar descriptors; no archive/payload last-known-good replay; stale temporary files not adopted.
+
+Evidence: PE-5.2 approved retention and explicit recovery disposition.
+Validation: tests/test_pe5_configured_association_implementation.py:PersistenceTests.test_no_stale_temp_or_hidden_payload_lkg_consumed.
+
+#### Requirement 32: deployment
+
+Status: COMPLETE/PASS. Assigned: PE-5.4, PE-5.5.
+
+Accepted disabled installation plus bounded one-artifact store correction; no deployment performed for PE-5.9.
+
+Evidence: PE-5.6 production_validation.corrected_deployment and source identity receipts; original six-artifact acceptance in 4990c62 Master Plan.
+Validation: tests/test_pe5_configured_association_implementation.py:InitialInfrastructureTests.test_composer_cannot_bootstrap.
+
+#### Requirement 33: bounded production validation
+
+Status: COMPLETE/PASS. Assigned: PE-5.6, PE-5.8.
+
+Approved initial source once and composer once accepted; synthetic faults allowed by contract; no repeated first execution.
+
+Evidence: PE-5.6 production_validation, preserved bootstrap failure and corrected acceptance.
+Validation: tests/test_pe5_configured_association_implementation.py:PersistenceTests.test_post_replace_parent_failure_indeterminate_no_rollback.
+
+#### Requirement 34: independent acceptance
+
+Status: COMPLETE/PASS. Assigned: PE-5.3, PE-5.6, PE-5.8, PE-5.9.
+
+Repository validation and concise independent acceptance; OPERATOR_SUPPLIED operational evidence accepted at immutable predecessor closures.
+
+Evidence: PE-5.6/7/8 immutable closure commits and present PE-5.9 independent Git-object acceptance.
+Validation: tests/test_pe5_configured_association_implementation.py:EntrypointAndGovernanceTests.test_exact_implementation_contract_scope_and_payload.
+
+#### Requirement 35: operational documentation
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.9.
+
+Current Master Plan, operations/data model/deployment/reference and roadmap synchronized; historical receipts retained.
+
+Evidence: Existing 17-path PE-5.9 documentation/governance scope; canonical docs/CHANGELOG.md.
+Validation: tests/test_pe5_configured_association_implementation.py:FinalClosureTests.test_complete_ledger_handoff_and_sequence.
+
+#### Requirement 36: final PE-5 closure
+
+Status: COMPLETE/PASS. Assigned: PE-5.9.
+
+All 37 original requirements, 11 resolved UNKNOWN rows and 14 DoD conditions evaluated; closure only through gated validation/publication.
+
+Evidence: PE-5.9 final_closure and published commit verification; PE-5.8 predecessor preserved.
+Validation: tests/test_pe5_configured_association_implementation.py:FinalClosureTests.test_complete_ledger_handoff_and_sequence.
+
+#### Requirement 37: PE-6 handoff readiness
+
+Status: COMPLETE/PASS. Assigned: PE-5.2, PE-5.3, PE-5.8, PE-5.9.
+
+Exact private file/API, schemas, identities, confirmation, time, failure and authority gates established; PE-6 implementation requires separate authorization.
+
+Evidence: Frozen PE-5.2 corrected contract, PE-5.3 implementation, accepted PE-5.6/7/8 evidence and PE-5.9 handoff.
+Validation: tests/test_pe5_configured_association_implementation.py:FinalClosureTests.test_reject_unconfirmed_reader_or_pe6_start.
+
+### All eleven original UNKNOWN resolutions
+
+1. **RESOLVED — source/store existence and location, producer/owner authority, identifier and relationship semantics** (PE-5.2). Corrected PE-5.2 contract establishes private source paths and writers; earlier absent source observation is historical, PE-5.6 approved source creation accepted.
+
+2. **RESOLVED — meaningful timestamps versus configuration version, freshness/expiry/conflict/privacy and secret handling** (PE-5.2). PE-5.2 immutable revision/configuration versus evaluation/inventory time distinction, expiry/conflict/privacy contract and PE-5.3 tests.
+
+3. **RESOLVED — whether shared private storage is required for PE-5 completion; exact artifact/schema/ownership/permissions/atomic writes/readers/writers/current versus history/retention/LKG/restart/corruption** (PE-5.2). PE-5.2 corrected atomic durability contract; PE-5.3 implementation and PE-5.6 bootstrap correction/accepted private store.
+
+4. **RESOLVED — whether recurring execution is required; trigger/cadence/independent versus inventory or other producer integration/locking/missed execution/restart/failure** (PE-5.2). PE-5.2 independent recurring composer disposition; PE-5.7 accepted activation and PE-5.8 natural cycles.
+
+5. **RESOLVED — exact private file/API/schema/version/freshness/conflict handoff to PE-6** (PE-5.2). Unchanged accepted private schemas plus complete PE-5.9 handoff; PE-6 implementation not required for readiness.
+
+6. **RESOLVED — exact commit, parent/subject/scope; source main/origin clean and synchronized** (PE-5.4). Accepted source synchronization recorded in 4990c62 Master Plan and PE-5.6 source identity receipts; Git commit ancestry independently readable.
+
+7. **RESOLVED — exact installed identities and metadata; inactive activation state; current prerequisites and provenance-bound rollback** (PE-5.5). 4990c62 Master Plan records accepted disabled six-artifact deployment; PE-5.6 bounded correction establishes exact changed store identity. No new full installed-byte receipt is claimed.
+
+8. **RESOLVED — direct native mapping evidence/output identity, bounds, missing/duplicate/conflict cases and approved store/restart/corruption behavior where applicable** (PE-5.6). PE-5.6 once-only approved installation/composition receipts; bounded output/schema validation and accepted synthetic duplicate/conflict/fault cases; native crash not established.
+
+9. **RESOLVED — activation necessity/mechanism already approved by PE-5.2; exact activation result or not-required receipt** (PE-5.7). PE-5.7 accepted one marker/entry/cadence/command identity; no manual producer at activation.
+
+10. **RESOLVED — natural-cycle/overlap/missed-cycle/staleness/failure evidence required by contract; independent production acceptance** (PE-5.8). PE-5.8 accepted three natural cycles and synthetic overlap/missed/expiry/failure disposition; operator-only/full-bytes/current-freshness limits preserved.
+
+11. **RESOLVED — complete coverage/evidence ledger; private handoff contract and operational documents; no unknown completion requirements** (PE-5.9). Present complete 37-row ledger, 14 DoD evaluations, private handoff and synchronized current docs; publication remains a mandatory final verification gate.
+
+### Fourteen individual Definition of Done decisions
+
+1. **PASS — Accepted local branch preserved; no repeated PE-5.1 first execution**. Unchanged local resolver/caller and policy2100; accepted first execution retained, never repeated.
+
+2. **PASS — Declared mapping source/producer/identifier/time/expiry authority established**. Corrected PE-5.2 contract plus 46 PE-5.3 implementation checklist items; source installer and explicit revision authority.
+
+3. **PASS — Local and mapping relationships stable/deterministic/bounded with source/rule provenance**. Local semantic IDs and configured mqra_ semantic domain; deterministic source/rule provenance fixtures.
+
+4. **PASS — Ambiguity/missing endpoints/duplicates/conflicts handled by accepted contract**. Closed source/input schemas, duplicate/conflict/device/service/expiry fixtures; no fabricated missing-input success.
+
+5. **PASS — No transport-based identity/canonical-IP/observation/liveness/health authority**. Protected 226 artifacts and no runtime changes; relationship-only source/rule provenance.
+
+6. **PASS — No secrets/topic leakage/private raw exposure/public or publish-subscribe compatibility change**. Closed no-secret/topic schemas, bounded prior operator search, static no-network mutation tests; public compatibility unchanged.
+
+7. **PASS — Private-storage/current-history/retention/LKG/restart/corruption disposition approved and implemented/validated if required**. PE-5.2 atomic correction; PE-5.6 accepted corrected initialization; PENDING/CONFIRMED recovery/corruption synthetic fault fixtures.
+
+8. **PASS — Execution/trigger/cadence/integration/locking/missed/failure disposition approved; required activation and natural cycles accepted**. PE-5.2 900-second schedule, flock/no-catch-up; PE-5.7 accepted cron and PE-5.8 three consecutive natural windows.
+
+9. **PASS — Governed source sync, exact deployment, bounded validation and independent acceptance complete**. 4990c62 Master Plan records accepted disabled PE-5.5 payload/source; PE-5.6 corrected one-artifact deployment and bounded acceptance; PE-5.7/8 immutable independent closures.
+
+10. **PASS — Private file/API/schema/version/freshness/conflict handoff sufficient for PE-6, without implementing PE-6**. Complete private handoff below; exact schema/semantic/confirmation/time/input identity gates; no PE-6 implementation.
+
+11. **PASS — Operational docs answer what/why/how/source/freshness/failure/rollback; Master Plan synchronized**. Seventeen existing affected paths synchronized; operational what/why/how/inputs/failures/recovery and canonical changelog updated.
+
+12. **PASS — Privacy-safe durable Evidence Reports/exact commit identities; source/runtime separation and clean synchronized Git**. Immutable predecessor commit references; accepted source/runtime distinction; final publication acceptance requires exact commit/push/independent GitHub and clean main=origin/main.
+
+13. **PASS — Every original requirement COMPLETE or explicit authorized outside-phase/not-required disposition; no unknown completion requirement**. Thirty-seven COMPLETE evidence rows; all eleven UNKNOWN decisions resolved, original assignments and deferrals preserved.
+
+14. **PASS — Only after all gates PE5_STATUS=COMPLETE; PE-6 then becomes next passive-enrichment checkpoint under separate authorization**. Only final accepted PE-5.9 closure marks PE-5 COMPLETE; PE-6 next NOT_STARTED with separate authorization.
+
+### Complete private PE-6 handoff
+
+These are accepted existing PE-5.2/3 contracts, not a schema redesign or PE-6 authorization.
+
+- **authority**: 72e878f9c0c8f5d3fe6357979e045943f3cf9d34:governance/pe5/pe5-atomic-durability-contract-correction.json
+- **producer**: Approved offline installer writes source; standalone recurring composer writes output; never inventory engine or caller hook.
+- **consumer**: Future PE-6 private relationship reader only; no current PE-6 implementation or runtime authorization.
+- **root**: /home/jazofv1/hioc
+- **source**: config/enrichment/mqtt_mappings.json
+- **source_metadata**: config/enrichment/mqtt_mappings.durability.json
+- **output**: state/enrichment/service_associations/current.json
+- **output_metadata**: state/enrichment/service_associations/current.durability.json
+- **inventory**: state/inventory/inventory.json
+- **lock**: state/enrichment/service_associations/.lock
+- **versions**: {"durability": "1.0", "local": "1.0", "output": "2.0", "source": "1.0"}
+- **schema_authority**: {"input_schema": "c4ca34ae123617769d25a694d55f50473d7f69670974e6cfae2a9607e9bbe6c4", "metadata_schema": "18c041c4d2dafb3d7420260a5fe4fc8edf8aee6759253a9f4ad8e8683a75972c", "output_schema": "c2e33c2cbaa1c26d73f153a5dcd4be224c96b682e793a6b751f3d63d9ed6bba6"}
+- **source_id**: operator_mqtt_v1 (exact schema constant)
+- **source_fields**: ["schema_version", "source_id", "revision", "mappings"]
+- **mapping_fields**: ["mapping_id", "endpoint_id", "device_id", "service_id"]
+- **output_fields**: ["changes", "configured", "evaluated_at", "inventory", "local", "schema_version", "state", "valid_until"]
+- **local_state_field_defined**: false
+- **permissions**: Private parents 0700; regular nonlink single-link files 0600; owner jazofv1, accepted operator UID/GID1000/1000. Future consumer must enforce safety; no permission change here.
+- **bounds**: {"mapping_rows": 4096, "metadata_bytes": 8192, "output_bytes": 16777216, "source_bytes": 262144}
+- **identifiers**: Opaque endpoint me_[0-9a-f]{32}; row map_[0-9a-f]{32}; existing strong dev_[0-9a-f]{16}; optional existing same-owner service.
+- **relationship_identity**: mqra_ + SHA256(ASCII canonical JSON array ['configured_mqtt_v1',source_id,endpoint_id,device_id,service_id,'endpoint_to_device']); excludes revision, mapping_id and evaluation.
+- **provenance**: source_kind configured_mqtt, rule_id declared_endpoint_device_v1; source_id/revision/digest/mapping_id remain private. Local schema unchanged.
+- **revision**: Integer 1..9007199254740991, never bool; approved content changes increment revision; rollback or equal revision with changed content rejected; PENDING recovery floors enforced. No source TTL/observed_at/mtime authority.
+- **cadence**: 2,17,32,47 * * * *; independent composer every900 seconds, no catch-up/retry
+- **command**: /usr/bin/python3 /home/jazofv1/hioc/pi4/bin/hioc-compose-service-associations.py
+- **freshness**: Inventory age <=2100 seconds with accepted clock rules; output valid_until=min(evaluated_at+1200,inventory.updated+2100). Reject at now>=valid_until and on future/backward clock or changed consumed inventory/source identity.
+- **reader_api**: hioc.configured_association_store.Store.read_handoff(evaluated_at)
+- **reader_lock_may_create_file**: true
+- **reader_lock_note**: Store.lock() uses nonblocking exclusive flock and may create missing .lock in approved private parent. Existing API is not a filesystem-pure read; future PE-6 must explicitly govern reader/lock lifecycle. Do not call it in PE-5.9.
+- **required_output_confirmation**: CONFIRMED matching current output digest/domain/revision, closed schema, stable read fingerprint; reject PENDING/missing/malformed/mismatched sidecar.
+- **configured_valid_requires_confirmed_source**: true
+- **source_confirmation**: For configured VALID require CONFIRMED current source digest/revision and final source/output rechecks under lock. Root VALID alone does not establish all branches valid.
+- **missing_and_errors**: Absent/invalid source may preserve independent local output only with confirmed current output and valid current inputs/schema/time; local null is unavailable, not empty/success. Explicit empty source is known-empty; reject conflicting/duplicate or unknown-owner configured rows per contract.
+- **durability**: PENDING barrier -> exclusive temporary write/file fsync -> one primary replace -> parent fsync -> CONFIRMED sidecar/file/parent barriers. Pre-replace failure preserves prior; post-replace parent failure is INDETERMINATE/WRITE_FAILED, not rollback success.
+- **recovery**: Only separately approved recertification of exact recorded candidate/prior, fsync without primary replacement or time refresh; unmatched/corrupt bytes stop. Fresh producer recomputation is separate approved action.
+- **retention**: One current primary per domain and bounded sidecar descriptors; no archive/application-payload LKG replay. Stale crash temporaries never adopted; cleanup not authorized.
+- **private_only**: true
+- **prohibited_authority**: ["identity", "canonical_ip", "observation", "liveness", "health", "asset_classification", "operator_role"]
+- **public_boundary**: No raw private source/output/endpoint/topic/credential exposure, public schema change, publication/subscription or inference of MQTT broker health.
+- **pe6_responsibility**: Separately authorized explainable classification/role_suggestion/metadata_quality design and validation; protect operator_role, provenance/privacy/time/rejection and reader-lock lifecycle; no automatic promotion of relationships.
+
+### Production provenance, recovery and deferred work
+
+PE-5.6 corrected installation and bounded execution; PE-5.7 single-entry activation;
+PE-5.8 three consecutive natural cycles remain accepted OPERATOR_SUPPLIED historical
+receipts in production_validation, scheduler_activation and operational_acceptance.
+The last is reclassified historical, never rewritten. Exact accepted output/source/
+scheduler hashes, transactions, counts, limitations and supplied/unknown fields remain
+there and in the historical sections above. No native fault/crash or current freshness
+claim is introduced. Original failed bootstrap is retained. Source checkout, accepted
+installed runtime and current output observations are distinct authorities.
+
+Recovery is governed by the existing PE-5.2 atomic correction and PE-5.6 accepted
+correction: retain indeterminate evidence, reject unconfirmed output, separately approve
+exact recertification/fresh recomputation; no automatic rollback, adoption, time refresh,
+manual producer, deployment or scheduler change is authorized by closure. Original
+provenance-bound deployment rollback guidance remains in DEPLOYMENT.md and historical
+PE-5.6 sections; do not treat source synchronization as runtime rollback.
+
+Explicitly deferred (unchanged original roadmap):
+
+- PE-6 classification/role_suggestion/metadata_quality
+- PE-7 expected availability/permanent IoT monitoring
+- PE-8 functional/automation impact
+- PE-9 dependency intelligence/automatic service relationships/improved graph/topology
+- PE-10 application/integration/service assurance/surveillance reliability
+- MQTT Discovery/live broker/client/topic observation/new public projection or publication
+- DHCP service health/capacity
+- canonical-address changes
+- phone notifications
+- Asset-aware retention/archive
+- incident-history validator hardening
+- backup/disaster recovery/hardware migration
+- cold-boot/power-loss recovery
+- failure propagation visualization
+- historical trends
+- predictive recommendations
+- Safe Active Discovery
+
+### Exact Windows validation and publication gates
+
+Established bundled interpreter: C:/Users/JorgeAzofeifaCastill/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe -B - (stdin unittest harness), repository root working directory.
+PYTHONUTF8=1; PYTHONDONTWRITEBYTECODE=1; HIOC_TEST_SHELL removed. PATH contains only Windows System32, Windows root, WindowsPowerShell/v1.0, Git/cmd and bundled interpreter directory (no shell tools). sys.path[:0]=['tests','pi4/lib'].
+
+Exact selections: unittest.defaultTestLoader.loadTestsFromName('test_pe5_configured_association_implementation'); unittest.defaultTestLoader.discover('tests',pattern='test_pe5*.py'); unittest.defaultTestLoader.discover('tests',pattern='test_pe4*.py').
+Affected suite loads test_pe4_documentation_consistency_correction, test_pe4_documentation_consistency_correction_closure, test_pe4_ha_association_public_projection_test_binding_correction, test_pe4_ha_association_public_projection_deployment_closure, test_pe10_surveillance_roadmap_preservation, test_compatibility_master_plan_governance, test_pe3_action10_governance, test_release, test_python_runtime_compatibility, test_mqtt_runtime_validation, test_mqtt_dashboard_health, test_incident_mqtt, test_inventory, test_compatibility.
+
+Direct baseline unittest result counts (run/passed/failed/errors/skipped/class-level skips):
+
+- focused: 79/79/0/0/0/0.
+- pe5: 238/238/0/0/0/0.
+- cross: 333/332/0/0/1/0.
+- compatibility: 1905/1887/0/0/18/0.
+
+Baseline broader regression is retained because runtime sources/frozen contracts and all existing test bodies remain unchanged; focused/PE-5/affected selections run again on final candidate including closure-specific positive/negative tests. Exact final counts are reported from direct unittest results before commit. Static independent Git-object acceptance verifies all 226 protected objects, payloads, preserved historical evidence, scope, schemas/identities, original surveillance specification and clean publication state. Full suite: NOT_REQUIRED_WITH_AUTHORITY: Master Plan PE-5.9 Tests required specifies full suite for source implementation. Only current documentation/governance/test bindings change; every runtime payload and frozen contract unchanged.
+No unobserved final counts or commit SHA are fabricated in this self-bound record. Commit identity, normal main-only push, independent GitHub retrieval and clean HEAD=origin/main are mandatory final external publication evidence. Stop if any required validation/publication fails; do not start PE-6.
+
+### Durability and private branch field reference
+
+- **metadata_fields**: ["candidate", "confirmed", "domain", "schema_version", "state", "transaction_id"]
+- **metadata_domains**: ["CONFIGURED_MAPPING_SOURCE", "GENERATED_RELATIONSHIP_OUTPUT"]
+- **metadata_descriptor_contract**: Closed schema1.0: dur_[0-9a-f]{32} transaction_id; PENDING requires candidate descriptor and nullable prior confirmed; CONFIRMED requires candidate=null and confirmed descriptor. Descriptors contain only sha256 (64 lowercase hex) and source_revision. Source revision is integer1..9007199254740991; output source_revision may be null for no configured revision. Exact current bytes/domain/revision must match; filenames alone are not confirmation.
+- **configured_fields**: ["associations", "candidate_count", "error_code", "rejections", "revision", "source_id", "source_sha256", "state"]
+- **configured_states**: ["VALID", "UNAVAILABLE"]
+- **relationship_fields**: ["device_id", "direction", "endpoint_id", "mapping_id", "relationship_id", "rule_id", "service_id", "source_id", "source_kind", "source_revision", "source_sha256"]
+- **changes_fields**: ["added", "added_count", "baseline", "removed", "removed_count", "truncated"]
+- **changes_bound**: added/removed relationship-ID arrays at most64 each; exact total counts and truncation flag, no invented removal from unavailable/noncomparable prior.
+
+### Observed candidate validation results
+
+Direct established Windows harness results (run/passed/failed/errors/skipped/class-level skips):
+
+- focused: 84/84/0/0/0/0.
+- pe5: 243/243/0/0/0/0.
+- cross: 333/332/0/0/1/0.
+
+The exact selections and interpreter/environment are recorded above. These observed results are synchronized into final_closure.validation.candidate_results; final unchanged-code binding validation rechecks this evidence-bearing candidate before commit. No source or execution model change is made. Broader baseline remains 1905/1887/0/0/18/0 under the same frozen runtime and preserved original test classes. Final publication remains separately verified from exact committed Git objects and GitHub.

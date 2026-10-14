@@ -74,7 +74,7 @@ def validate_implementation(r,s,identities=True):
         require(e["after_sha256"]==post["crontab_sha256"] and e["composer_executed_manually"] is False and e["installer_executed"] is False and e["mqtt_accessed"] is False,"bounded activation evidence")
     if r.get("operational_acceptance"):
         a=r["operational_acceptance"]
-        require(a["classification"]=="CURRENT" and a["checkpoint"]=="PE-5.8" and a["status"]=="COMPLETE/PASS","operational closure authority")
+        require(a["classification"]==("HISTORICAL_INTENTIONALLY_PRESERVED" if r.get("final_closure") else "CURRENT") and a["checkpoint"]=="PE-5.8" and a["status"]=="COMPLETE/PASS","operational closure authority")
         require(a["evidence_authority"]=="OPERATOR_SUPPLIED" and a["predecessor_closure_commit"]=="de0279fd3667e096fd940b80d20a096f7082e8ac","operational predecessor")
         require(a["natural_cycle_count_required_minimum"]==3 and a["natural_cycle_count_accepted"]==len(a["cycles"])==3 and a["three_consecutive_natural_cycles"] is True,"three required natural cycles")
         require([x["scheduler_minute"] for x in a["cycles"]]==[17,32,47] and len({x["output_sha256"] for x in a["cycles"]})==len({x["output_durability"]["transaction_id"] for x in a["cycles"]})==3,"consecutive distinct natural receipts")
@@ -89,6 +89,20 @@ def validate_implementation(r,s,identities=True):
         require(a["next_checkpoint"]=="PE-5.9 - Final PE-5 Closure and PE-6 Handoff" and a["pe5_9_started"] is False and a["pe5_complete"] is False,"next checkpoint only")
         require(set(a["behavioral_evidence"])=={"overlap","missed_cycle","staleness","failure"} and all("SYNTHETIC" in x["authority"] for x in a["behavioral_evidence"].values()),"fault evidence basis")
         require(all(x["failures"]==x["errors"]==0 for x in a["validation"]["results"].values()),"operational repository validation")
+    if r.get("final_closure"):
+        f=r["final_closure"]
+        roadmap=json.loads(raw("governance/pe5/pe5-execution-roadmap.json"))
+        require(f["classification"]=="CURRENT" and f["checkpoint"]=="PE-5.9" and f["status"]=="COMPLETE/PASS" and f["pe5_status"]=="COMPLETE","final phase closure")
+        require(f["predecessor_closure_commit"]=="10b9c9929f740f3cd24c1768998f854d4837c3bb" and f["pe6_started"] is False and f["pe6_authorized"] is False and f["next_checkpoint"]=="PE-6 - Classification & Metadata Quality","separate next phase")
+        require(len(f["coverage"])==37 and [x["requirement"] for x in f["coverage"]]==[x["requirement"] for x in roadmap["coverage"]] and all(x["status"]=="COMPLETE" and x["validation_status"]=="PASS" and x["behavior"] and x["accepted_evidence"] and x["validation_test"] for x in f["coverage"]),"complete original requirement ledger")
+        require([x["assigned_checkpoints"] for x in f["coverage"]]==[x["checkpoints"] for x in roadmap["coverage"]],"original assignments")
+        require(len(f["definition_of_done"])==14 and [x["condition"] for x in f["definition_of_done"]]==roadmap["definition_of_done"] and all(x["status"]=="PASS" and x["evidence"] for x in f["definition_of_done"]),"fourteen done gates")
+        require(len(f["unknown_resolution"])==11 and [x["original_fact"] for x in f["unknown_resolution"]]==[x["fact"] for x in roadmap["unknown_resolution"]] and all(x["status"]=="RESOLVED" and x["evidence"] for x in f["unknown_resolution"]) and f["completion_unknowns"]==[],"no unknown completion requirements")
+        h=f["private_handoff"]
+        require(h["required_output_confirmation"].startswith("CONFIRMED") and h["configured_valid_requires_confirmed_source"] is True and h["reader_lock_may_create_file"] is True and h["private_only"] is True and h["local_state_field_defined"] is False,"safe confirmed private handoff")
+        require(h["versions"]=={"source":"1.0","output":"2.0","local":"1.0","durability":"1.0"} and "now>=valid_until" in h["freshness"] and set(h["prohibited_authority"])=={"identity","canonical_ip","observation","liveness","health","asset_classification","operator_role"},"handoff schema time authority")
+        require(f["evidence_limitations"]==["OPERATOR_OBSERVATIONS_ONLY","FULL_PRODUCTION_BYTES_NOT_RECEIVED","NO_NATURAL_FAULT_OR_NATIVE_CRASH_CLAIM","NO_CURRENT_FRESHNESS_CLAIM"] and f["first_cycle_unknowns_preserved"] is True and f["production_access"] is False and f["production_mutation"] is False and f["runtime_source_changed"] is False,"closure provenance boundary")
+        require(len(f["closure_paths"])==17 and f["current_binding_additions"]==["docs/CHANGELOG.md"] and f["deferred_work"]==roadmap["deferred_work"],"finite closure scope and deferrals")
     if identities:
         scope=set(r["authorized_paths"])
         require(scope=={i["path"] for i in r["artifacts"]}|{RECORD,SCHEMA},"scope")
@@ -118,6 +132,10 @@ def implementation_binding(path):
 def assert_implementation_sequence(text):
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
+    if implementation_successor().get("final_closure"):
+        require(section.strip().startswith("### PE-6 - Classification & Metadata Quality"),"next separately authorized PE-6")
+        require("PE5_9_STATUS=COMPLETE/PASS" in section and "PE5_STATUS=COMPLETE" in section and "PE6_STARTED=FALSE" in section and "Separate authorization is required for PE-6" in section,"closed PE-5 sequence")
+        return
     if implementation_successor().get("operational_acceptance"):
         require(section.strip().startswith("### PE-5.9 - Final PE-5 Closure and PE-6 Handoff"),"next final closure checkpoint")
         require("PE5_8_STATUS=COMPLETE/PASS" in section and "PE5_9_STARTED=FALSE" in section and "Separate authorization is required for PE-5.9" in section,"operational closure sequence")
@@ -693,5 +711,41 @@ class EntrypointAndGovernanceTests(unittest.TestCase):
         with self.assertRaises(ValueError):validate_implementation(r,s,False)
     def test_checklist_complete_and_protected_previous_contract(self):
         r=implementation_successor();self.assertEqual(len(r["checklist"]),46);self.assertGreater(len(r["protected"]),223)
+
+
+
+class FinalClosureTests(unittest.TestCase):
+    def candidate(self):
+        return copy.deepcopy(implementation_successor())
+    def check(self,r):
+        return validate_implementation(r,schema_for(r),identities=False)
+    def test_complete_ledger_handoff_and_sequence(self):
+        r=self.candidate()
+        self.check(r)
+        assert_implementation_sequence(raw("docs/HIOC_MASTER_PLAN.md").decode())
+        self.assertEqual(len(r["final_closure"]["coverage"]),37)
+    def test_reject_missing_or_planned_requirement(self):
+        for mutation in ("missing","planned"):
+            r=self.candidate()
+            if mutation=="missing":r["final_closure"]["coverage"].pop()
+            else:r["final_closure"]["coverage"][0]["status"]="ASSIGNED"
+            with self.assertRaisesRegex(ValueError,"complete original requirement ledger"):self.check(r)
+    def test_reject_failed_definition_of_done(self):
+        r=self.candidate();r["final_closure"]["definition_of_done"][8]["status"]="FAIL"
+        with self.assertRaisesRegex(ValueError,"fourteen done gates"):self.check(r)
+    def test_reject_unconfirmed_reader_or_pe6_start(self):
+        for mutation in ("confirmation","next_phase"):
+            r=self.candidate()
+            if mutation=="confirmation":r["final_closure"]["private_handoff"]["configured_valid_requires_confirmed_source"]=False
+            else:r["final_closure"]["pe6_started"]=True
+            with self.assertRaises(ValueError):self.check(r)
+    def test_preserves_accepted_production_history(self):
+        r=self.candidate()
+        prior=json.loads(git("show","10b9c9929f740f3cd24c1768998f854d4837c3bb:"+RECORD))
+        for key in ("production_validation","scheduler_activation"):self.assertEqual(r[key],prior[key])
+        accepted=copy.deepcopy(prior["operational_acceptance"])
+        accepted["classification"]="HISTORICAL_INTENTIONALLY_PRESERVED"
+        accepted["historical_snapshot_commit"]="10b9c9929f740f3cd24c1768998f854d4837c3bb"
+        self.assertEqual(r["operational_acceptance"],accepted)
 
 if __name__=="__main__":unittest.main()
