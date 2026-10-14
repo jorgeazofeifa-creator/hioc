@@ -1,3 +1,20 @@
+# Current PE-5 Execution Preparation
+
+## Current complete PE-5 execution roadmap
+
+PE5_STATUS=IN_PROGRESS
+PE5_1_STATUS=COMPLETE_THROUGH_ACCEPTED_FIRST_NATIVE_EXECUTION
+CURRENT_PE5_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design
+PE5_FINAL_CHECKPOINT=PE-5.9 - Final PE-5 Closure and PE-6 Handoff
+PE5_FINAL_SUCCESSOR=PE-6
+TOTAL_REMAINING_PE5_CHECKPOINTS=8
+
+The [Master Plan](HIOC_MASTER_PLAN.md#complete-pe-5-execution-roadmap) owns every remaining checkpoint and Definition of Done. PE-5.1 is accepted. This planning publication grants no implementation or operational access. PE-5.2 resolves mapping authority/contract, storage/current-history/retention/LKG/restart/corruption and execution/trigger/cadence/integration/locking/failure decisions before PE-5.3 implements accepted contracts. Source sync PE-5.4, inactive deployment PE-5.5, bounded validation PE-5.6, conditional activation PE-5.7, natural/operational acceptance PE-5.8 and final closure/private PE-6 handoff PE-5.9 are fixed. Configured mappings remain distinct from Discovery, broker/topic/client observations, HA Discovery and publication. No identity, canonical-IP, observation, liveness, health, Asset, incident, classification or public payload authority is added. Existing MQTT topics/subscriptions/retained messages/credentials/broker/HA consumers stay unchanged; any compatibility change needs explicit review before implementation. Private schema/store evolution is assigned to PE-5.2/3, never silently applied during planning.
+
+## Historical accepted implementation preparation at f3730ba5a8745361934ff822a9c29c16c9d0767b
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Original proposal, UNKNOWN facts and authorization restrictions below describe that preparation checkpoint and do not override the complete current sequence.
+
 # PE-5 - MQTT and Passive Service Association: Implementation Preparation
 
 Status: **PREPARED_FOR_REVIEW**. Runtime implementation **NOT_STARTED / NOT AUTHORIZED**.

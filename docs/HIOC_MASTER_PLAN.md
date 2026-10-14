@@ -2584,7 +2584,7 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 5. **PE-5 - MQTT and Passive Service Association** — IN PROGRESS. PE-5.1 private
    caller/resolver deployment and first native execution PASS/ACCEPTED; 2100-second
    policy finalized. Wider MQTT association capabilities remain incomplete.
-   NEXT_CHECKPOINT=UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP; no continuation authorized.
+   NEXT_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design; separate checkpoint authorization required.
    Historical roadmap status at ed3a80508d101652bac89e1dcc111167670aaebc (HISTORICAL_INTENTIONALLY_PRESERVED):
    **PE-5 - MQTT and Passive Service Association** — not started.
    Current PE-5.1 is an authorized private pure-library implementation candidate; broader runtime integration is NOT_STARTED / NOT AUTHORIZED. The following preparation status is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
@@ -7202,13 +7202,8 @@ or public projection is authorized by this closure. PE-5 remains in progress;
 this accepted PE-5.1 checkpoint does not complete the wider PE-5 capability.
 Phase 7A remains ACTIVE; PE-4 and Public Projection remain PASS/CLOSED.
 
-NEXT_CHECKPOINT=UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP.
-The existing PE-5 preparation requires STOP after separately authorized production
-evidence and lists mapping, persistence, scheduling, publication and producer
-integration as deferred work without selecting their order. No unique checkpoint
-after this successful first native execution is specified. PE-6 onward, surveillance
-and Active Discovery remain later/postponed work. This reconciliation selects no
-new implementation task and prepares no production command.
+NEXT_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design.
+Historical reconstruction correctly found no named successor before this planning task. This separately authorized decomposition now fixes PE-5.2 through PE-5.9; technical unknowns belong to predefined gates. PE-6 onward, surveillance and Active Discovery remain later/postponed. No implementation or production command is prepared here.
 
 ### Historical policy-selection candidate at ed3a80508d101652bac89e1dcc111167670aaebc
 
@@ -7514,16 +7509,9 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
-### PE-5.1 — no subsequent checkpoint defined by the existing roadmap
+### PE-5.2 - Mapping Source Authority and Complete Contract Design
 
-Classification: CURRENT.
-NEXT_CHECKPOINT=UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP.
-Policy selection, source synchronization, deployment and the first native manual
-execution are accepted and complete as recorded in Current Objective. The existing
-PE-5 preparation requires STOP after production evidence; it does not select a
-unique successor to this first execution. Broader PE-5 goals and deferred items
-are not immediate authorization. No repeat first execution, persistence, scheduling,
-publication, producer integration or next implementation is selected here.
+Classification: CURRENT. CURRENT_PE5_CHECKPOINT=PE-5.2. The complete fixed sequence is PE-5.2 source authority/design -> PE-5.3 implementation/validation -> PE-5.4 source sync -> PE-5.5 inactive deployment -> PE-5.6 bounded validation -> PE-5.7 conditional activation -> PE-5.8 operational evidence/independent acceptance -> PE-5.9 closure/handoff -> PE-6. See [Complete PE-5 Execution Roadmap](#complete-pe-5-execution-roadmap). Separate authorization is required; PE-5.1 first execution is complete and is not repeated.
 
 ### Historical policy-selection next task at ed3a80508d101652bac89e1dcc111167670aaebc
 
@@ -7622,7 +7610,7 @@ This uncommitted candidate authorizes no roadmap implementation.
 ### Historical PE-5 roadmap selection before current production acceptance
 
 Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Current sequencing is the
-explicit UNKNOWN recorded at the start of Next Planned Task, not the prior
+complete sequence recorded at the start of Next Planned Task, not the prior
 selection below.
 
 Current selection is PE-5.1 private pure-resolver repository implementation/validation, followed by independent candidate review. Production and runtime integration remain NOT AUTHORIZED. The following preparation selection is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
@@ -9080,3 +9068,432 @@ D-PREP evidence is audit-only. Frozen Action D SHA-256:
 Current operator-observed availability is recorded in the transfer-evidence
 recovery status above. Historical paths remain audit facts; no continued
 presence, reconstruction, substitution, or cleanup authority is implied.
+
+## Complete PE-5 Execution Roadmap
+
+<!-- PE5_EXECUTION_ROADMAP_BEGIN -->
+
+Classification: CURRENT. This user-authorized decomposition resolves the formerly undefined sequence, without starting any implementation or production checkpoint. Original architecture c914cfc4dc39a90005bad42984396291f5b2a751 and preparation f3730ba5a8745361934ff822a9c29c16c9d0767b retain their scope; historical records are immutable.
+
+PE5_STATUS=IN_PROGRESS
+PE5_1_STATUS=COMPLETE_THROUGH_ACCEPTED_FIRST_NATIVE_EXECUTION
+CURRENT_PE5_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design
+PE5_FINAL_CHECKPOINT=PE-5.9 - Final PE-5 Closure and PE-6 Handoff
+PE5_FINAL_SUCCESSOR=PE-6
+TOTAL_REMAINING_PE5_CHECKPOINTS=8
+
+PE-5.1 remains accepted: policy/source ed3a80508d101652bac89e1dcc111167670aaebc, explicit 2100 seconds, one execution, return 0, valid private output/schema, 8 associations, 0 rejections, inventory/public inventory unchanged, no persistent state or scheduler mutation. Counts are not public authority; the first execution is not repeated.
+
+### Ordered checkpoint table
+
+| Number | Name | Objective | Prerequisite | Type | Production access | Acceptance | Successor |
+|---|---|---|---|---|---|---|---|
+| PE-5.2 | Mapping Source Authority and Complete Contract Design | Establish source/producer authority first, then close complete mapping, persistence, retention, execution-model and handoff design before implementation. | PE-5.1 | DISCOVERY/DESIGN | READ_ONLY | Resolved facts/invariants/exact identity and concise independent acceptance | PE-5.3 |
+| PE-5.3 | Remaining Capability Implementation and Comprehensive Validation | Implement only accepted remaining contracts, including any required private store and disabled execution adapter; comprehensive tests and concise independent candidate acceptance. | PE-5.2 | IMPLEMENTATION/VALIDATION | NONE | Resolved facts/invariants/exact identity and concise independent acceptance | PE-5.4 |
+| PE-5.4 | PI3 Release Source Synchronization | Synchronize only the accepted independently verified commit into the PI3 Git release source; no runtime installation. | PE-5.3 | DEPLOYMENT | NONE | Resolved facts/invariants/exact identity and concise independent acceptance | PE-5.5 |
+| PE-5.5 | Disabled Production Deployment | Prepare reviewed operator transaction and install the exact accepted remaining payload, with recurring execution disabled. | PE-5.4 | DEPLOYMENT | MUTATING | Resolved facts/invariants/exact identity and concise independent acceptance | PE-5.6 |
+| PE-5.6 | Bounded Mapping and Storage Production Validation | One separately authorized bounded mapping-branch execution; validate output and required private-store behavior plus protected invariants before activation. | PE-5.5 | VALIDATION | MUTATING_IF_APPROVED_STORE_REQUIRED_OTHERWISE_READ_ONLY | Resolved facts/invariants/exact identity and concise independent acceptance | PE-5.7 |
+| PE-5.7 | Conditional Execution Activation | Activate only the accepted execution model under separate authorization, or accept an explicit not-required receipt and advance. | PE-5.6 | DEPLOYMENT | MUTATING_IF_REQUIRED_OTHERWISE_NONE | Resolved facts/invariants/exact identity and concise independent acceptance | PE-5.8 |
+| PE-5.8 | Operational Evidence and Independent Production Acceptance | Observe required natural cycles without manual producer execution; or accept the approved manual model evidence. Independently accept direct results. | PE-5.7 | VALIDATION | READ_ONLY | Resolved facts/invariants/exact identity and concise independent acceptance | PE-5.9 |
+| PE-5.9 | Final PE-5 Closure and PE-6 Handoff | Close all coverage/dispositions, operational documentation and private handoff readiness; PE-5 COMPLETE before PE-6. | PE-5.8 | CLOSURE | NONE | Resolved facts/invariants/exact identity and concise independent acceptance | PE-6 |
+
+### Detailed checkpoint contracts
+
+Common rule: separate authorization for every future checkpoint; Codex PI3/PI5/production access prohibited. No PI5 action, live MQTT broker access, Discovery subscriber, publication, credential access or public inventory change is required by this plan. A demonstrated necessity outside these boundaries stops for specific authority, not silent scope expansion. GitHub publication is not PI3 source sync; source sync is not production installation. /home/jazofv1/hioc-release-source remains Git source; /home/jazofv1/hioc remains non-Git runtime. Valid historical COMMITTED PE-4 journals remain preserved, not presumed conflicts or cleaned; unknown active transactions require authoritative review. Source-only operations never authorize runtime changes.
+
+#### PE-5.2 - Mapping Source Authority and Complete Contract Design
+
+- **objective:** Establish source/producer authority first, then close complete mapping, persistence, retention, execution-model and handoff design before implementation.
+- **why required:** Original PE-5 scope plus this authorized complete decomposition; no silent omission.
+- **authoritative dependency:** Original architecture c914cfc4dc39a90005bad42984396291f5b2a751, preparation f3730ba5a8745361934ff822a9c29c16c9d0767b, accepted PE-5.1 edb406b2243b7256c919a08a7162971265df1d08
+- **predecessor:** PE-5.1
+- **dependencies:** PE-5.1
+- **inputs:** Accepted predecessor evidence; Original descriptive relationship/privacy/protected-field contracts
+- **outputs:** Sanitized Evidence Report; Exact accepted artifacts/decisions and next-stage gate
+- **established facts:** PE-5.1 accepted; no reopening; Inventory policy explicit 2100 seconds; Planning grants no operational authorization
+- **facts resolved:** source/store existence and location, producer/owner authority, identifier and relationship semantics; meaningful timestamps versus configuration version, freshness/expiry/conflict/privacy and secret handling; whether shared private storage is required for PE-5 completion; exact artifact/schema/ownership/permissions/atomic writes/readers/writers/current versus history/retention/LKG/restart/corruption; whether recurring execution is required; trigger/cadence/independent versus inventory or other producer integration/locking/missed execution/restart/failure; exact private file/API/schema/version/freshness/conflict handoff to PE-6
+- **types:** DISCOVERY; DESIGN
+- **production access:** READ_ONLY
+- **repository changes allowed:** Direct design/implementation/evidence/docs only; immutable historical records preserved
+- **production observation allowed:** Separately authorized operator-only bounded read-only observation
+- **production mutation allowed:** PROHIBITED
+- **pi3 operator action required:** True
+- **codex pi3 access:** PROHIBITED
+- **pi5 action:** NOT_REQUIRED
+- **mqtt access:** NOT_REQUIRED; live broker/Discovery/subscription/publication changes outside this plan
+- **credential access:** PROHIBITED; any demonstrated necessity stops for specific separate authority and secret-safe contract
+- **persistence changes:** Design decision only
+- **scheduler changes:** Design decision only
+- **inventory engine changes:** Decision only, no code
+- **public inventory changes:** PROHIBITED
+- **mqtt publication changes:** PROHIBITED
+- **tests required:** Focused contract/current bindings; Affected cross-phase consumers; Relevant native regression; full suite for source implementation; Privacy and protected invariants; Synthetic operator/fault validation
+- **production validation required:** Future direct operator result when applicable; none during planning; never infer live facts
+- **evidence report required:** True
+- **acceptance criteria:** All prerequisites established before action; Resolved facts and exact identities; Protected invariants unchanged; Concise independent acceptance; No unauthorized MQTT or later-phase behavior; Signed REQUIRED, NOT_REQUIRED_WITH_AUTHORITY or DEFERRED_OUTSIDE_PE5_WITH_AUTHORITY decisions; no silent waiver of original scope; complete all detail before PE-5.3
+- **rollback recovery:** No production rollback; preserve source/evidence
+- **stop condition:** STOP on missing authority/prerequisite, mismatch, leak, protected change, failed validation or uncertain mutation; never invent successor
+- **successor:** PE-5.3
+- **conditional disposition:** Always required
+- **authorization:** PLANNED_ONLY_SEPARATE_CHECKPOINT_AUTHORIZATION_REQUIRED
+
+#### PE-5.3 - Remaining Capability Implementation and Comprehensive Validation
+
+- **objective:** Implement only accepted remaining contracts, including any required private store and disabled execution adapter; comprehensive tests and concise independent candidate acceptance.
+- **why required:** Original PE-5 scope plus this authorized complete decomposition; no silent omission.
+- **authoritative dependency:** Original architecture c914cfc4dc39a90005bad42984396291f5b2a751, preparation f3730ba5a8745361934ff822a9c29c16c9d0767b, accepted PE-5.1 edb406b2243b7256c919a08a7162971265df1d08
+- **predecessor:** PE-5.2
+- **dependencies:** PE-5.2
+- **inputs:** Accepted predecessor evidence; Original descriptive relationship/privacy/protected-field contracts
+- **outputs:** Sanitized Evidence Report; Exact accepted artifacts/decisions and next-stage gate
+- **established facts:** PE-5.1 accepted; no reopening; Inventory policy explicit 2100 seconds; Planning grants no operational authorization; Accepted complete PE-5.2 decisions
+- **facts resolved:** accepted design implemented; exact payload manifest; synthetic tests, privacy review and independent candidate acceptance
+- **types:** IMPLEMENTATION; VALIDATION
+- **production access:** NONE
+- **repository changes allowed:** Direct design/implementation/evidence/docs only; immutable historical records preserved
+- **production observation allowed:** NONE
+- **production mutation allowed:** PROHIBITED
+- **pi3 operator action required:** False
+- **codex pi3 access:** PROHIBITED
+- **pi5 action:** NOT_REQUIRED
+- **mqtt access:** NOT_REQUIRED; live broker/Discovery/subscription/publication changes outside this plan
+- **credential access:** PROHIBITED; any demonstrated necessity stops for specific separate authority and secret-safe contract
+- **persistence changes:** Accepted PE-5.2 private-storage contract only, separately authorized in production
+- **scheduler changes:** Disabled implementation only, no scheduler mutation
+- **inventory engine changes:** Only if PE-5.2 proves required and approves isolated additive integration; no PE-5.1 redesign
+- **public inventory changes:** PROHIBITED
+- **mqtt publication changes:** PROHIBITED
+- **tests required:** Focused contract/current bindings; Affected cross-phase consumers; Relevant native regression; full suite for source implementation; Privacy and protected invariants; Synthetic operator/fault validation
+- **production validation required:** Future direct operator result when applicable; none during planning; never infer live facts
+- **evidence report required:** True
+- **acceptance criteria:** All prerequisites established before action; Resolved facts and exact identities; Protected invariants unchanged; Concise independent acceptance; No unauthorized MQTT or later-phase behavior
+- **rollback recovery:** No production rollback; preserve source/evidence
+- **stop condition:** STOP on missing authority/prerequisite, mismatch, leak, protected change, failed validation or uncertain mutation; never invent successor
+- **successor:** PE-5.4
+- **conditional disposition:** Always required
+- **authorization:** PLANNED_ONLY_SEPARATE_CHECKPOINT_AUTHORIZATION_REQUIRED
+
+#### PE-5.4 - PI3 Release Source Synchronization
+
+- **objective:** Synchronize only the accepted independently verified commit into the PI3 Git release source; no runtime installation.
+- **why required:** Original PE-5 scope plus this authorized complete decomposition; no silent omission.
+- **authoritative dependency:** Original architecture c914cfc4dc39a90005bad42984396291f5b2a751, preparation f3730ba5a8745361934ff822a9c29c16c9d0767b, accepted PE-5.1 edb406b2243b7256c919a08a7162971265df1d08
+- **predecessor:** PE-5.3
+- **dependencies:** PE-5.3
+- **inputs:** Accepted predecessor evidence; Original descriptive relationship/privacy/protected-field contracts
+- **outputs:** Sanitized Evidence Report; Exact accepted artifacts/decisions and next-stage gate
+- **established facts:** PE-5.1 accepted; no reopening; Inventory policy explicit 2100 seconds; Planning grants no operational authorization; Accepted complete PE-5.2 decisions
+- **facts resolved:** exact commit, parent/subject/scope; source main/origin clean and synchronized
+- **types:** DEPLOYMENT
+- **production access:** NONE
+- **repository changes allowed:** Safe preparation/evidence/closure docs and exact bindings; no ad hoc implementation
+- **production observation allowed:** NONE
+- **production mutation allowed:** PROHIBITED
+- **pi3 operator action required:** True
+- **codex pi3 access:** PROHIBITED
+- **pi5 action:** NOT_REQUIRED
+- **mqtt access:** NOT_REQUIRED; live broker/Discovery/subscription/publication changes outside this plan
+- **credential access:** PROHIBITED; any demonstrated necessity stops for specific separate authority and secret-safe contract
+- **persistence changes:** PROHIBITED
+- **scheduler changes:** PROHIBITED
+- **inventory engine changes:** PROHIBITED
+- **public inventory changes:** PROHIBITED
+- **mqtt publication changes:** PROHIBITED
+- **tests required:** Focused contract/current bindings; Affected cross-phase consumers; Relevant native regression; full suite for source implementation; Privacy and protected invariants; Synthetic operator/fault validation
+- **production validation required:** Future direct operator result when applicable; none during planning; never infer live facts
+- **evidence report required:** True
+- **acceptance criteria:** All prerequisites established before action; Resolved facts and exact identities; Protected invariants unchanged; Concise independent acceptance; No unauthorized MQTT or later-phase behavior
+- **rollback recovery:** No production rollback; preserve source/evidence
+- **stop condition:** STOP on missing authority/prerequisite, mismatch, leak, protected change, failed validation or uncertain mutation; never invent successor
+- **successor:** PE-5.5
+- **conditional disposition:** Always required
+- **authorization:** PLANNED_ONLY_SEPARATE_CHECKPOINT_AUTHORIZATION_REQUIRED
+
+#### PE-5.5 - Disabled Production Deployment
+
+- **objective:** Prepare reviewed operator transaction and install the exact accepted remaining payload, with recurring execution disabled.
+- **why required:** Original PE-5 scope plus this authorized complete decomposition; no silent omission.
+- **authoritative dependency:** Original architecture c914cfc4dc39a90005bad42984396291f5b2a751, preparation f3730ba5a8745361934ff822a9c29c16c9d0767b, accepted PE-5.1 edb406b2243b7256c919a08a7162971265df1d08
+- **predecessor:** PE-5.4
+- **dependencies:** PE-5.4
+- **inputs:** Accepted predecessor evidence; Original descriptive relationship/privacy/protected-field contracts
+- **outputs:** Sanitized Evidence Report; Exact accepted artifacts/decisions and next-stage gate
+- **established facts:** PE-5.1 accepted; no reopening; Inventory policy explicit 2100 seconds; Planning grants no operational authorization; Accepted complete PE-5.2 decisions
+- **facts resolved:** exact installed identities and metadata; inactive activation state; current prerequisites and provenance-bound rollback
+- **types:** DEPLOYMENT
+- **production access:** MUTATING
+- **repository changes allowed:** Safe preparation/evidence/closure docs and exact bindings; no ad hoc implementation
+- **production observation allowed:** Separately authorized operator-only bounded read-only observation
+- **production mutation allowed:** Exact approved inactive installation only
+- **pi3 operator action required:** True
+- **codex pi3 access:** PROHIBITED
+- **pi5 action:** NOT_REQUIRED
+- **mqtt access:** NOT_REQUIRED; live broker/Discovery/subscription/publication changes outside this plan
+- **credential access:** PROHIBITED; any demonstrated necessity stops for specific separate authority and secret-safe contract
+- **persistence changes:** Accepted PE-5.2 private-storage contract only, separately authorized in production
+- **scheduler changes:** PROHIBITED
+- **inventory engine changes:** Only if PE-5.2 proves required and approves isolated additive integration; no PE-5.1 redesign
+- **public inventory changes:** PROHIBITED
+- **mqtt publication changes:** PROHIBITED
+- **tests required:** Focused contract/current bindings; Affected cross-phase consumers; Relevant native regression; full suite for source implementation; Privacy and protected invariants; Synthetic operator/fault validation
+- **production validation required:** Future direct operator result when applicable; none during planning; never infer live facts
+- **evidence report required:** True
+- **acceptance criteria:** All prerequisites established before action; Resolved facts and exact identities; Protected invariants unchanged; Concise independent acceptance; No unauthorized MQTT or later-phase behavior
+- **rollback recovery:** Reviewed exact provenance-bound recovery before mutation; preserve historical journals; no guessed cleanup, broad rollback or repeated execution
+- **stop condition:** STOP on missing authority/prerequisite, mismatch, leak, protected change, failed validation or uncertain mutation; never invent successor
+- **successor:** PE-5.6
+- **conditional disposition:** Always required
+- **authorization:** PLANNED_ONLY_SEPARATE_CHECKPOINT_AUTHORIZATION_REQUIRED
+
+#### PE-5.6 - Bounded Mapping and Storage Production Validation
+
+- **objective:** One separately authorized bounded mapping-branch execution; validate output and required private-store behavior plus protected invariants before activation.
+- **why required:** Original PE-5 scope plus this authorized complete decomposition; no silent omission.
+- **authoritative dependency:** Original architecture c914cfc4dc39a90005bad42984396291f5b2a751, preparation f3730ba5a8745361934ff822a9c29c16c9d0767b, accepted PE-5.1 edb406b2243b7256c919a08a7162971265df1d08
+- **predecessor:** PE-5.5
+- **dependencies:** PE-5.5
+- **inputs:** Accepted predecessor evidence; Original descriptive relationship/privacy/protected-field contracts
+- **outputs:** Sanitized Evidence Report; Exact accepted artifacts/decisions and next-stage gate
+- **established facts:** PE-5.1 accepted; no reopening; Inventory policy explicit 2100 seconds; Planning grants no operational authorization; Accepted complete PE-5.2 decisions
+- **facts resolved:** direct native mapping evidence/output identity, bounds, missing/duplicate/conflict cases and approved store/restart/corruption behavior where applicable
+- **types:** VALIDATION
+- **production access:** MUTATING_IF_APPROVED_STORE_REQUIRED_OTHERWISE_READ_ONLY
+- **repository changes allowed:** Safe preparation/evidence/closure docs and exact bindings; no ad hoc implementation
+- **production observation allowed:** Separately authorized operator-only bounded read-only observation
+- **production mutation allowed:** Accepted mapping branch/private store operation only; never another PE-5.1 first execution
+- **pi3 operator action required:** True
+- **codex pi3 access:** PROHIBITED
+- **pi5 action:** NOT_REQUIRED
+- **mqtt access:** NOT_REQUIRED; live broker/Discovery/subscription/publication changes outside this plan
+- **credential access:** PROHIBITED; any demonstrated necessity stops for specific separate authority and secret-safe contract
+- **persistence changes:** Accepted PE-5.2 private-storage contract only, separately authorized in production
+- **scheduler changes:** PROHIBITED
+- **inventory engine changes:** PROHIBITED
+- **public inventory changes:** PROHIBITED
+- **mqtt publication changes:** PROHIBITED
+- **tests required:** Focused contract/current bindings; Affected cross-phase consumers; Relevant native regression; full suite for source implementation; Privacy and protected invariants; Synthetic operator/fault validation
+- **production validation required:** Future direct operator result when applicable; none during planning; never infer live facts
+- **evidence report required:** True
+- **acceptance criteria:** All prerequisites established before action; Resolved facts and exact identities; Protected invariants unchanged; Concise independent acceptance; No unauthorized MQTT or later-phase behavior
+- **rollback recovery:** Reviewed exact provenance-bound recovery before mutation; preserve historical journals; no guessed cleanup, broad rollback or repeated execution
+- **stop condition:** STOP on missing authority/prerequisite, mismatch, leak, protected change, failed validation or uncertain mutation; never invent successor
+- **successor:** PE-5.7
+- **conditional disposition:** Always required
+- **authorization:** PLANNED_ONLY_SEPARATE_CHECKPOINT_AUTHORIZATION_REQUIRED
+
+#### PE-5.7 - Conditional Execution Activation
+
+- **objective:** Activate only the accepted execution model under separate authorization, or accept an explicit not-required receipt and advance.
+- **why required:** Original PE-5 scope plus this authorized complete decomposition; no silent omission.
+- **authoritative dependency:** Original architecture c914cfc4dc39a90005bad42984396291f5b2a751, preparation f3730ba5a8745361934ff822a9c29c16c9d0767b, accepted PE-5.1 edb406b2243b7256c919a08a7162971265df1d08
+- **predecessor:** PE-5.6
+- **dependencies:** PE-5.6
+- **inputs:** Accepted predecessor evidence; Original descriptive relationship/privacy/protected-field contracts
+- **outputs:** Sanitized Evidence Report; Exact accepted artifacts/decisions and next-stage gate
+- **established facts:** PE-5.1 accepted; no reopening; Inventory policy explicit 2100 seconds; Planning grants no operational authorization; Accepted complete PE-5.2 decisions
+- **facts resolved:** activation necessity/mechanism already approved by PE-5.2; exact activation result or not-required receipt
+- **types:** DEPLOYMENT
+- **production access:** MUTATING_IF_REQUIRED_OTHERWISE_NONE
+- **repository changes allowed:** Safe preparation/evidence/closure docs and exact bindings; no ad hoc implementation
+- **production observation allowed:** Separately authorized operator-only bounded read-only observation
+- **production mutation allowed:** Accepted activation only
+- **pi3 operator action required:** True
+- **codex pi3 access:** PROHIBITED
+- **pi5 action:** NOT_REQUIRED
+- **mqtt access:** NOT_REQUIRED; live broker/Discovery/subscription/publication changes outside this plan
+- **credential access:** PROHIBITED; any demonstrated necessity stops for specific separate authority and secret-safe contract
+- **persistence changes:** PROHIBITED
+- **scheduler changes:** Accepted model activation under separate authorization
+- **inventory engine changes:** Only if PE-5.2 proves required and approves isolated additive integration; no PE-5.1 redesign
+- **public inventory changes:** PROHIBITED
+- **mqtt publication changes:** PROHIBITED
+- **tests required:** Focused contract/current bindings; Affected cross-phase consumers; Relevant native regression; full suite for source implementation; Privacy and protected invariants; Synthetic operator/fault validation
+- **production validation required:** Future direct operator result when applicable; none during planning; never infer live facts
+- **evidence report required:** True
+- **acceptance criteria:** All prerequisites established before action; Resolved facts and exact identities; Protected invariants unchanged; Concise independent acceptance; No unauthorized MQTT or later-phase behavior
+- **rollback recovery:** Reviewed exact provenance-bound recovery before mutation; preserve historical journals; no guessed cleanup, broad rollback or repeated execution
+- **stop condition:** STOP on missing authority/prerequisite, mismatch, leak, protected change, failed validation or uncertain mutation; never invent successor
+- **successor:** PE-5.8
+- **conditional disposition:** Approved PE-5.2 not-required receipt may close this conditional stage with the same fixed successor
+- **authorization:** PLANNED_ONLY_SEPARATE_CHECKPOINT_AUTHORIZATION_REQUIRED
+
+#### PE-5.8 - Operational Evidence and Independent Production Acceptance
+
+- **objective:** Observe required natural cycles without manual producer execution; or accept the approved manual model evidence. Independently accept direct results.
+- **why required:** Original PE-5 scope plus this authorized complete decomposition; no silent omission.
+- **authoritative dependency:** Original architecture c914cfc4dc39a90005bad42984396291f5b2a751, preparation f3730ba5a8745361934ff822a9c29c16c9d0767b, accepted PE-5.1 edb406b2243b7256c919a08a7162971265df1d08
+- **predecessor:** PE-5.7
+- **dependencies:** PE-5.7
+- **inputs:** Accepted predecessor evidence; Original descriptive relationship/privacy/protected-field contracts
+- **outputs:** Sanitized Evidence Report; Exact accepted artifacts/decisions and next-stage gate
+- **established facts:** PE-5.1 accepted; no reopening; Inventory policy explicit 2100 seconds; Planning grants no operational authorization; Accepted complete PE-5.2 decisions
+- **facts resolved:** natural-cycle/overlap/missed-cycle/staleness/failure evidence required by contract; independent production acceptance
+- **types:** VALIDATION
+- **production access:** READ_ONLY
+- **repository changes allowed:** Safe preparation/evidence/closure docs and exact bindings; no ad hoc implementation
+- **production observation allowed:** Separately authorized operator-only bounded read-only observation
+- **production mutation allowed:** PROHIBITED
+- **pi3 operator action required:** True
+- **codex pi3 access:** PROHIBITED
+- **pi5 action:** NOT_REQUIRED
+- **mqtt access:** NOT_REQUIRED; live broker/Discovery/subscription/publication changes outside this plan
+- **credential access:** PROHIBITED; any demonstrated necessity stops for specific separate authority and secret-safe contract
+- **persistence changes:** PROHIBITED
+- **scheduler changes:** PROHIBITED
+- **inventory engine changes:** PROHIBITED
+- **public inventory changes:** PROHIBITED
+- **mqtt publication changes:** PROHIBITED
+- **tests required:** Focused contract/current bindings; Affected cross-phase consumers; Relevant native regression; full suite for source implementation; Privacy and protected invariants; Synthetic operator/fault validation
+- **production validation required:** Future direct operator result when applicable; none during planning; never infer live facts
+- **evidence report required:** True
+- **acceptance criteria:** All prerequisites established before action; Resolved facts and exact identities; Protected invariants unchanged; Concise independent acceptance; No unauthorized MQTT or later-phase behavior
+- **rollback recovery:** No production rollback; preserve source/evidence
+- **stop condition:** STOP on missing authority/prerequisite, mismatch, leak, protected change, failed validation or uncertain mutation; never invent successor
+- **successor:** PE-5.9
+- **conditional disposition:** Approved PE-5.2 not-required receipt may close this conditional stage with the same fixed successor
+- **authorization:** PLANNED_ONLY_SEPARATE_CHECKPOINT_AUTHORIZATION_REQUIRED
+
+#### PE-5.9 - Final PE-5 Closure and PE-6 Handoff
+
+- **objective:** Close all coverage/dispositions, operational documentation and private handoff readiness; PE-5 COMPLETE before PE-6.
+- **why required:** Original PE-5 scope plus this authorized complete decomposition; no silent omission.
+- **authoritative dependency:** Original architecture c914cfc4dc39a90005bad42984396291f5b2a751, preparation f3730ba5a8745361934ff822a9c29c16c9d0767b, accepted PE-5.1 edb406b2243b7256c919a08a7162971265df1d08
+- **predecessor:** PE-5.8
+- **dependencies:** PE-5.8
+- **inputs:** Accepted predecessor evidence; Original descriptive relationship/privacy/protected-field contracts
+- **outputs:** Sanitized Evidence Report; Exact accepted artifacts/decisions and next-stage gate
+- **established facts:** PE-5.1 accepted; no reopening; Inventory policy explicit 2100 seconds; Planning grants no operational authorization; Accepted complete PE-5.2 decisions
+- **facts resolved:** complete coverage/evidence ledger; private handoff contract and operational documents; no unknown completion requirements
+- **types:** CLOSURE
+- **production access:** NONE
+- **repository changes allowed:** Direct design/implementation/evidence/docs only; immutable historical records preserved
+- **production observation allowed:** NONE
+- **production mutation allowed:** PROHIBITED
+- **pi3 operator action required:** False
+- **codex pi3 access:** PROHIBITED
+- **pi5 action:** NOT_REQUIRED
+- **mqtt access:** NOT_REQUIRED; live broker/Discovery/subscription/publication changes outside this plan
+- **credential access:** PROHIBITED; any demonstrated necessity stops for specific separate authority and secret-safe contract
+- **persistence changes:** PROHIBITED
+- **scheduler changes:** PROHIBITED
+- **inventory engine changes:** PROHIBITED
+- **public inventory changes:** PROHIBITED
+- **mqtt publication changes:** PROHIBITED
+- **tests required:** Focused contract/current bindings; Affected cross-phase consumers; Relevant native regression; full suite for source implementation; Privacy and protected invariants; Synthetic operator/fault validation
+- **production validation required:** Future direct operator result when applicable; none during planning; never infer live facts
+- **evidence report required:** True
+- **acceptance criteria:** All prerequisites established before action; Resolved facts and exact identities; Protected invariants unchanged; Concise independent acceptance; No unauthorized MQTT or later-phase behavior
+- **rollback recovery:** No production rollback; preserve source/evidence
+- **stop condition:** STOP on missing authority/prerequisite, mismatch, leak, protected change, failed validation or uncertain mutation; never invent successor
+- **successor:** PE-6
+- **conditional disposition:** Always required
+- **authorization:** PLANNED_ONLY_SEPARATE_CHECKPOINT_AUTHORIZATION_REQUIRED
+
+### Original requirement coverage
+
+| Requirement | Disposition | Checkpoints |
+|---|---|---|
+| local service ownership relationships | COVERED_BY_COMPLETED_PE5_1 | PE-5.1 |
+| systemd evidence | COVERED_BY_COMPLETED_PE5_1 | PE-5.1 |
+| ss/listening-socket evidence | COVERED_BY_COMPLETED_PE5_1 | PE-5.1 |
+| stable device binding | COVERED_BY_COMPLETED_PE5_1 | PE-5.1 |
+| stable relationship identifiers | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| source provenance | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| rule provenance | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| configured MQTT mappings | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| MQTT association evidence | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| mapping source authority | ASSIGNED_TO_PE5_X | PE-5.2 |
+| mapping producer authority | ASSIGNED_TO_PE5_X | PE-5.2 |
+| mapping identifier semantics | ASSIGNED_TO_PE5_X | PE-5.2 |
+| mapping relationship semantics | ASSIGNED_TO_PE5_X | PE-5.2 |
+| mapping freshness | ASSIGNED_TO_PE5_X | PE-5.2 |
+| mapping expiry | ASSIGNED_TO_PE5_X | PE-5.2 |
+| duplicate handling | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| conflict handling | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| missing endpoint handling | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| privacy | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| credentials/secrets | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| topic leakage prevention | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| no identity authority | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| no canonical-IP authority | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| no liveness authority | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| no health authority | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| bounded diff | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| unchanged publish/subscribe behavior | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| persistence requirement | ASSIGNED_TO_PE5_X | PE-5.2 |
+| recurring execution decision | ASSIGNED_TO_PE5_X | PE-5.2 |
+| producer/inventory integration decision | ASSIGNED_TO_PE5_X | PE-5.2 |
+| retention decision | ASSIGNED_TO_PE5_X | PE-5.2 |
+| deployment | ASSIGNED_TO_PE5_X | PE-5.4, PE-5.5 |
+| bounded production validation | ASSIGNED_TO_PE5_X | PE-5.6, PE-5.8 |
+| independent acceptance | ASSIGNED_TO_PE5_X | PE-5.3, PE-5.6, PE-5.8, PE-5.9 |
+| operational documentation | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.9 |
+| final PE-5 closure | ASSIGNED_TO_PE5_X | PE-5.9 |
+| PE-6 handoff readiness | ASSIGNED_TO_PE5_X | PE-5.2, PE-5.3, PE-5.8, PE-5.9 |
+
+Local-branch completion never waives mapping-branch invariants. PE-5.2 decides REQUIRED / NOT_REQUIRED_WITH_AUTHORITY / DEFERRED_OUTSIDE_PE5_WITH_AUTHORITY with explicit evidence; original scope cannot be silently cancelled. Required storage: implementation PE-5.3, deployment PE-5.5, validation PE-5.6/8, acceptance PE-5.9. Required execution adapter: implementation PE-5.3, inactive deployment PE-5.5, activation PE-5.7, natural validation PE-5.8 and closure PE-5.9. Conditional receipts retain fixed successors, not new checkpoint discovery.
+
+### UNKNOWN resolution matrix
+
+| Unknown fact | Resolution | Blocks |
+|---|---|---|
+| source/store existence and location, producer/owner authority, identifier and relationship semantics | PE-5.2 | PE-5.3, PE-5.4, PE-5.5, PE-5.6, PE-5.7, PE-5.8, PE-5.9 |
+| meaningful timestamps versus configuration version, freshness/expiry/conflict/privacy and secret handling | PE-5.2 | PE-5.3, PE-5.4, PE-5.5, PE-5.6, PE-5.7, PE-5.8, PE-5.9 |
+| whether shared private storage is required for PE-5 completion; exact artifact/schema/ownership/permissions/atomic writes/readers/writers/current versus history/retention/LKG/restart/corruption | PE-5.2 | PE-5.3, PE-5.4, PE-5.5, PE-5.6, PE-5.7, PE-5.8, PE-5.9 |
+| whether recurring execution is required; trigger/cadence/independent versus inventory or other producer integration/locking/missed execution/restart/failure | PE-5.2 | PE-5.3, PE-5.4, PE-5.5, PE-5.6, PE-5.7, PE-5.8, PE-5.9 |
+| exact private file/API/schema/version/freshness/conflict handoff to PE-6 | PE-5.2 | PE-5.3, PE-5.4, PE-5.5, PE-5.6, PE-5.7, PE-5.8, PE-5.9 |
+| exact commit, parent/subject/scope; source main/origin clean and synchronized | PE-5.4 | PE-5.5, PE-5.6, PE-5.7, PE-5.8, PE-5.9 |
+| exact installed identities and metadata; inactive activation state; current prerequisites and provenance-bound rollback | PE-5.5 | PE-5.6, PE-5.7, PE-5.8, PE-5.9 |
+| direct native mapping evidence/output identity, bounds, missing/duplicate/conflict cases and approved store/restart/corruption behavior where applicable | PE-5.6 | PE-5.7, PE-5.8, PE-5.9 |
+| activation necessity/mechanism already approved by PE-5.2; exact activation result or not-required receipt | PE-5.7 | PE-5.8, PE-5.9 |
+| natural-cycle/overlap/missed-cycle/staleness/failure evidence required by contract; independent production acceptance | PE-5.8 | PE-5.9 |
+| complete coverage/evidence ledger; private handoff contract and operational documents; no unknown completion requirements | PE-5.9 |  |
+
+### PE-5 Definition of Done
+
+1. Accepted local branch preserved; no repeated PE-5.1 first execution.
+2. Declared mapping source/producer/identifier/time/expiry authority established.
+3. Local and mapping relationships stable/deterministic/bounded with source/rule provenance.
+4. Ambiguity/missing endpoints/duplicates/conflicts handled by accepted contract.
+5. No transport-based identity/canonical-IP/observation/liveness/health authority.
+6. No secrets/topic leakage/private raw exposure/public or publish-subscribe compatibility change.
+7. Private-storage/current-history/retention/LKG/restart/corruption disposition approved and implemented/validated if required.
+8. Execution/trigger/cadence/integration/locking/missed/failure disposition approved; required activation and natural cycles accepted.
+9. Governed source sync, exact deployment, bounded validation and independent acceptance complete.
+10. Private file/API/schema/version/freshness/conflict handoff sufficient for PE-6, without implementing PE-6.
+11. Operational docs answer what/why/how/source/freshness/failure/rollback; Master Plan synchronized.
+12. Privacy-safe durable Evidence Reports/exact commit identities; source/runtime separation and clean synchronized Git.
+13. Every original requirement COMPLETE or explicit authorized outside-phase/not-required disposition; no unknown completion requirement.
+14. Only after all gates PE5_STATUS=COMPLETE; PE-6 then becomes next passive-enrichment checkpoint under separate authorization.
+
+### Efficiency review
+
+Source-authority observation and complete contract design are combined in PE-5.2: evidence first, design next, no production mutation. Mapping/schema/storage/execution/retention/handoff decisions are one package. Implementation, comprehensive validation, privacy review and concise independent acceptance are combined in PE-5.3. Each production checkpoint includes safe preparation, authorized operator action, direct-result review and documentation closure. Commit/identity verification/push/independent GitHub verification are gates inside checkpoints, not acceptance-only micro-checkpoints.
+
+Keep PE-5.2 before implementation while unknown decisions remain. Keep source sync PE-5.4 separate from production deployment PE-5.5: source acceptance cannot authorize runtime mutation. Keep inactive installation before bounded execution PE-5.6 so exact installed identity/rollback are accepted first. Keep execution before activation PE-5.7 because scheduling changes execution and recovery authority. Keep activation before natural evidence PE-5.8: no forced producer run or assumed future cycle. Whole-phase PE-5.9 closes all requirements/handoff, not identical-byte rereviews. Eight is the fewest safe structural stages under these source/mutation/execution/evidence boundaries, with conditional gates closed only by accepted not-required receipts.
+
+### Deferred cross-phase work
+
+- PE-6 classification/role_suggestion/metadata_quality.
+- PE-7 expected availability/permanent IoT monitoring.
+- PE-8 functional/automation impact.
+- PE-9 dependency intelligence/automatic service relationships/improved graph/topology.
+- PE-10 application/integration/service assurance/surveillance reliability.
+- MQTT Discovery/live broker/client/topic observation/new public projection or publication.
+- DHCP service health/capacity.
+- canonical-address changes.
+- phone notifications.
+- Asset-aware retention/archive.
+- incident-history validator hardening.
+- backup/disaster recovery/hardware migration.
+- cold-boot/power-loss recovery.
+- failure propagation visualization.
+- historical trends.
+- predictive recommendations.
+- Safe Active Discovery.
+
+### Audit and validation authority
+
+Task L.5 precedes Task M. Every tracked baseline file (428) was searched without exclusions. Counts use one classified file-level reference group per keyword-matched or explicitly traced dependency file, retaining literal keyword-hit counts and separate test-binding functions. Three new candidate record/schema/test files are reviewed separately from the 428-file tracked baseline. The canonical record/schema in governance/pe5 use the existing exact typed checkpoint convention, not a new governance hierarchy. Original preparation/implementation/caller/policy records stay historical; current consumers follow an exact successor artifact map. Historical validator bodies read their accepted Git snapshots. The roadmap validator likewise resolves its unique accepted child of the planning baseline by exact subject/parent and replays that immutable object, rather than requiring every future HEAD to be the roadmap commit. Every later checkpoint must synchronize its directly affected current-consumer artifact bindings within its existing implementation/evidence scope; this is an explicit lifecycle dependency, not a new planning checkpoint. See governance/pe5/pe5-execution-roadmap.json for all reference classifications, contradiction dispositions and affected tests. Acceptance requires focused/current consumers, affected cross-phase tests, broader PE regression and full native suite; zero unexplained material references or known static contradictions. No technical checkpoint runs in this planning task.
+
+<!-- PE5_EXECUTION_ROADMAP_END -->

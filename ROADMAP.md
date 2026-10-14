@@ -22,7 +22,7 @@ The detailed status and sequencing authority is
 3. PE-3 - Manufacturer Reference Enrichment — PE-3.0 through PE-3.3 and
    production Actions 1-10 complete; deployment and PI3 validation complete.
 4. PE-4 - Home Assistant Association — PASS/CLOSED; Public Projection PASS/CLOSED.
-5. PE-5 - MQTT and Passive Service Association — not started.
+5. PE-5 - MQTT and Passive Service Association — IN PROGRESS; PE-5.1 accepted; wider PE-5 incomplete. Next: PE-5.2 - Mapping Source Authority and Complete Contract Design; all eight remaining stages through PE-5.9 / PE-6 are defined in the Master Plan.
 6. PE-6 - Classification & Metadata Quality — not started.
 7. PE-7 - Expected Availability & Permanent IoT Monitoring — planned.
 8. PE-8 - Automation Correlation & Impact Analysis — planned.

@@ -102,6 +102,9 @@ def caller_successor():
     return validate_caller_record(r,s)
 
 def caller_current_binding(path):
+    from test_pe5_execution_roadmap import roadmap_binding
+    bound=roadmap_binding(path)
+    if bound is not None:return bound
     from test_pe5_snapshot_age_policy import POLICY_PATHS, policy_current_binding
     if path in POLICY_PATHS:return policy_current_binding(path)
     r=caller_successor();i=next((x for x in r["artifacts"] if x["path"]==path),None)

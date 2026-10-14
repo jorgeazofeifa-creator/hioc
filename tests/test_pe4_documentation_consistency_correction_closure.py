@@ -37,6 +37,10 @@ def closed_schema(v):
 def require(value,message):
  if not value:raise ValueError(message)
 def current_bytes(path):
+ from test_pe5_execution_roadmap import roadmap_binding as pe5_roadmap_binding
+ bound=pe5_roadmap_binding(path)
+ if bound is not None:
+  return (ROOT/path).read_bytes().replace(b'\r\n',b'\n')
  from test_pe5_service_association_caller import CALLER_PATHS, caller_current_binding
  if path in CALLER_PATHS:
   caller_current_binding(path)
@@ -131,6 +135,10 @@ def successor():
  return validate_closure(record,schema)
 
 def current_binding(path):
+ from test_pe5_execution_roadmap import roadmap_binding as pe5_roadmap_binding
+ bound=pe5_roadmap_binding(path)
+ if bound is not None:
+  return bound
  from test_pe5_service_association_caller import CALLER_PATHS, caller_current_binding
  if path in CALLER_PATHS:return caller_current_binding(path)
  from test_pe5_implementation_preparation import CANDIDATE_PATHS as PE5_PATHS, current_binding as pe5_binding

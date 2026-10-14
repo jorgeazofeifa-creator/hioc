@@ -31,6 +31,8 @@ def blob(raw):
 def normalized(path):
  return (ROOT/path).read_bytes().replace(b'\r\n', b'\n')
 def current_index(path):
+ from test_pe5_execution_roadmap import roadmap_binding as pe5_roadmap_binding
+ if pe5_roadmap_binding(path) is not None:return normalized(path)
  from test_pe5_service_association_caller import CALLER_PATHS, caller_current_binding
  if path in CALLER_PATHS:
   caller_current_binding(path)
@@ -250,6 +252,8 @@ def closure_artifact_bindings():
  bindings.update({item['path']:item for item in caller_successor()['artifacts']})
  from test_pe5_snapshot_age_policy import policy_successor
  bindings.update({item['path']:item for item in policy_successor()['artifacts']})
+ from test_pe5_execution_roadmap import roadmap_successor
+ bindings.update({item['path']:item for item in roadmap_successor()['artifacts']})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings
@@ -271,6 +275,12 @@ def verify_source_binding(item, historical_raw, original_record, original_commit
  if item['historical_only']:
   return
  current=normalized(item['path']) if current_raw is None else current_raw.replace(b'\r\n',b'\n')
+ from test_pe5_execution_roadmap import roadmap_binding
+ bound=roadmap_binding(item['path'])
+ if bound is not None:
+  if sha(current)!=bound['sha256'] or blob(current)!=bound['git_blob']:
+   raise ValueError('changed current source differs from PE-5 roadmap successor')
+  return
  # The original four-path correction is preserved; later documentary/test
  # evolution has a distinct exact successor map, never a runtime exception.
  candidate=documentation_successor()

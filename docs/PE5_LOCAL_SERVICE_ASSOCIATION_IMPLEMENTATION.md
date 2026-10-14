@@ -11,7 +11,7 @@ MQTT publication, HA/credential access, service restart, adapter execution or
 intentional inventory-engine execution occurred in those operator blocks.
 No repeat manual first execution is authorized. Implementation/API bytes remain
 unchanged; PRIVATE_STATE_REQUIREMENT=DEFERRED_NOT_REQUIRED_FOR_OFFLINE_CALLER.
-NEXT_CHECKPOINT=UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP. Wider PE-5 remains
+NEXT_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design. Wider PE-5 remains
 in progress; no persistence, scheduling, publication or producer hookup is selected.
 
 ## Historical Snapshot-Age Policy Selection Candidate at ed3a80508d101652bac89e1dcc111167670aaebc
@@ -315,3 +315,14 @@ After focused/affected/full Windows regression and diff/integrity checks, STOP f
 and separate commit/push authorization. Runtime integration, persistence, MQTT mapping/Discovery,
 remote service evidence, schedulers, deployment, public projection, dependency intelligence, PE-6 onward,
 Active Discovery and surveillance are separate work. PE-5 as a whole is not closed by this library.
+
+## Current complete PE-5 execution roadmap
+
+PE5_STATUS=IN_PROGRESS
+PE5_1_STATUS=COMPLETE_THROUGH_ACCEPTED_FIRST_NATIVE_EXECUTION
+CURRENT_PE5_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design
+PE5_FINAL_CHECKPOINT=PE-5.9 - Final PE-5 Closure and PE-6 Handoff
+PE5_FINAL_SUCCESSOR=PE-6
+TOTAL_REMAINING_PE5_CHECKPOINTS=8
+
+The [Master Plan](HIOC_MASTER_PLAN.md#complete-pe-5-execution-roadmap) owns every remaining checkpoint and Definition of Done. PE-5.1 is accepted. This planning publication grants no implementation or operational access. PE-5.2 resolves mapping authority/contract, storage/current-history/retention/LKG/restart/corruption and execution/trigger/cadence/integration/locking/failure decisions before PE-5.3 implements accepted contracts. Source sync PE-5.4, inactive deployment PE-5.5, bounded validation PE-5.6, conditional activation PE-5.7, natural/operational acceptance PE-5.8 and final closure/private PE-6 handoff PE-5.9 are fixed. Configured mappings remain distinct from Discovery, broker/topic/client observations, HA Discovery and publication. No identity, canonical-IP, observation, liveness, health, Asset, incident, classification or public payload authority is added. Existing MQTT topics/subscriptions/retained messages/credentials/broker/HA consumers stay unchanged; any compatibility change needs explicit review before implementation. Private schema/store evolution is assigned to PE-5.2/3, never silently applied during planning.

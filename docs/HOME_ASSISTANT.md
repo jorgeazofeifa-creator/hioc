@@ -16,7 +16,7 @@ PE-4.0B.1 credential-free preflight and authenticated 2a/2b proof are PASS/CLOSE
 The dedicated post-identity association adapter, independent production acceptance
 and sanitized Public Projection are PASS/CLOSED; recurring scheduler ACTIVE/AUTHORIZED.
 See the [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle). Evidence is OPERATOR_SUPPLIED; private HA identifiers remain private.
-This correction grants no API access or execution; PE-5 remains NOT_STARTED.
+Historical correction boundary: it granted no API access or execution and recorded PE-5 NOT_STARTED then. Current PE-5 IN_PROGRESS; PE-5.1 accepted. The complete roadmap grants no additional HA access, MQTT behavior or public projection.
 
 PE-4.0B.2a is frozen to authenticated `GET /api/` followed by WebSocket
 authentication at `/api/websocket`, with no command or data enumeration. See

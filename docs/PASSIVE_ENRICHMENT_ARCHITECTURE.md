@@ -1,6 +1,6 @@
 # Passive Enrichment Architecture and Specification
 
-Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3 COMPLETE - PRODUCTION VALIDATED; PE-4 PASS/CLOSED; PUBLIC PROJECTION PASS/CLOSED; PHASE 7A ACTIVE; PE-5 NOT_STARTED**
+Status: **PE-0 COMPLETE; PE-1 COMPLETE - PRODUCTION VALIDATED; PE-2.1 COMPLETE - PRODUCTION VALIDATED; PE-3 COMPLETE - PRODUCTION VALIDATED; PE-4 PASS/CLOSED; PUBLIC PROJECTION PASS/CLOSED; PHASE 7A ACTIVE; PE-5 IN_PROGRESS; PE-5.1 ACCEPTED; WIDER PE-5 NOT_COMPLETE**
 
 This document is the implementation-ready design for the remaining Phase 7A
 passive-enrichment work. It does not authorize executable changes, production
@@ -140,7 +140,7 @@ by default.
 | Retained prior inventory | Previous generated inventory supplied to `merge_records` | Prior public device record and first/last-seen state | Preserves stable identities and prior records; current evidence can update selected fields | Aggregate `sources`, `first_seen`, `last_seen` | Historical candidates cannot be distinguished from selected values |
 | Derived classification | `classify_device`, `operator_role`, `inventory_class`, health and monitoring helpers | roles, public role, class, display name, status, observation and health fields | Deterministic keyword and state rules after source merge | Result exists, but derivation inputs/rule version are not recorded per field | Derived value may look observed; no explanation/confidence envelope |
 | Local services and sockets | systemd and listening-socket collection | service name/type/status/port/device owner | Stable service construction, then dependency enrichment | `source=systemd` or `ss` | Device descriptive enrichment is not obtained from services |
-| Home Assistant registry metadata | Accepted dedicated read-only post-identity association adapter | Private device/entity associations; sanitized public association summary only | Cannot replace identity, canonical IP, liveness, health or operator Asset fields | Private schema 1.1 producer and five-field Public Projection PASS/CLOSED on OPERATOR_SUPPLIED evidence | No generic registry ingestion into central reconciliation; PE-5 NOT_STARTED |
+| Home Assistant registry metadata | Accepted dedicated read-only post-identity association adapter | Private device/entity associations; sanitized public association summary only | Cannot replace identity, canonical IP, liveness, health or operator Asset fields | Private schema 1.1 producer and five-field Public Projection PASS/CLOSED on OPERATOR_SUPPLIED evidence | No generic registry ingestion into central reconciliation; PE-5 IN_PROGRESS; PE-5.1 accepted; wider PE-5 incomplete |
 | MQTT metadata | No central inventory enrichment subscriber found | HIOC inventory and summaries are published retained | None as an input | MQTT is transport/publication today | Legacy/external publishers must not silently become enrichment authority |
 | MAC/OUI vendor lookup | Original pre-PE3 source audit found no implementation; later PE-3 private manufacturer producer is complete | Private manufacturer sidecars; `vendor` may arrive from known or integration records | No OUI identity/liveness authority | PE-3 acceptance is separately recorded | Pinned data, license/version and deterministic fallback remain governed |
 | Legacy network probe | Separate governed producer publishes bounded PI5/network evidence | Configured PI5 identity/reachability | Does not feed central `inventory.py` merge in repository evidence | External MQTT producer with its own governed configuration | Must not be mistaken for central enrichment or a second identity authority |
@@ -568,8 +568,7 @@ snapshot age 1756.120272 seconds; inventory/public inventory unchanged.
 The private count is not public inventory authority. No persistence, scheduling,
 MQTT/public projection, HA/credential access or producer integration is added.
 The first manual execution is complete and must not be repeated under its consumed
-authorization. PE-5 remains in progress; NEXT_CHECKPOINT=
-UNKNOWN_NOT_DEFINED_BY_EXISTING_ROADMAP. Deferred architecture remains future work.
+authorization. PE-5 remains in progress; NEXT_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design. Deferred architecture remains future work.
 
 ## Historical policy-selection candidate at ed3a80508d101652bac89e1dcc111167670aaebc
 
@@ -611,3 +610,14 @@ PRIVATE_STATE_REQUIREMENT=DEFERRED_NOT_REQUIRED_FOR_OFFLINE_CALLER.
 Current policy selection replaces historical UNKNOWN only; historical records remain immutable.
 Next action: CONCISE_INDEPENDENT_CANDIDATE_ACCEPTANCE; STOP before commit or push.
 <!-- PE5_1_CURRENT_POLICY_END -->
+
+## Current complete PE-5 execution roadmap
+
+PE5_STATUS=IN_PROGRESS
+PE5_1_STATUS=COMPLETE_THROUGH_ACCEPTED_FIRST_NATIVE_EXECUTION
+CURRENT_PE5_CHECKPOINT=PE-5.2 - Mapping Source Authority and Complete Contract Design
+PE5_FINAL_CHECKPOINT=PE-5.9 - Final PE-5 Closure and PE-6 Handoff
+PE5_FINAL_SUCCESSOR=PE-6
+TOTAL_REMAINING_PE5_CHECKPOINTS=8
+
+The [Master Plan](HIOC_MASTER_PLAN.md#complete-pe-5-execution-roadmap) owns every remaining checkpoint and Definition of Done. PE-5.1 is accepted. This planning publication grants no implementation or operational access. PE-5.2 resolves mapping authority/contract, storage/current-history/retention/LKG/restart/corruption and execution/trigger/cadence/integration/locking/failure decisions before PE-5.3 implements accepted contracts. Source sync PE-5.4, inactive deployment PE-5.5, bounded validation PE-5.6, conditional activation PE-5.7, natural/operational acceptance PE-5.8 and final closure/private PE-6 handoff PE-5.9 are fixed. Configured mappings remain distinct from Discovery, broker/topic/client observations, HA Discovery and publication. No identity, canonical-IP, observation, liveness, health, Asset, incident, classification or public payload authority is added. Existing MQTT topics/subscriptions/retained messages/credentials/broker/HA consumers stay unchanged; any compatibility change needs explicit review before implementation. Private schema/store evolution is assigned to PE-5.2/3, never silently applied during planning.

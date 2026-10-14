@@ -1,7 +1,7 @@
 ## Deployment Execution governance closure — 2026-10-06
 
-PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
-Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-5.1 accepted; wider PE-5 incomplete.
+Documentation consistency correction PASS/CLOSED. Current planned next checkpoint: PE-5.2 - Mapping Source Authority and Complete Contract Design. See the Master Plan's complete roadmap. Source sync, deployment, execution and activation remain separately authorized stages.
 OPERATOR_SUPPLIED post-closure PI3 release-source synchronization COMPLETED and independent source review PASS: c7db29f795909d7926e36c02f1166034bcebb8b0 -> 30010c54d3f3078a9b07dada36dfe8dd4db2f6e5 (STOP; review PASS) -> 017686549acb27dbf7a8ad3577d0f84cf9f3f066 (STOP; review PASS). Observed final source tree: 6a59929189bc65fa8487e73ba97477eb009a43f0. Production was not accessed or mutated during this source-only sequence; Codex did not perform or observe it.
 Current authority: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle) and [accepted closure](PE4_HOME_ASSISTANT_ASSOCIATION_PUBLIC_PROJECTION_DEPLOYMENT_CLOSURE.md).
 

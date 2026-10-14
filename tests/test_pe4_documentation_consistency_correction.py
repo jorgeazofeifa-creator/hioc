@@ -159,6 +159,8 @@ def current_artifacts():
     from test_pe4_documentation_consistency_correction_closure import successor as closure
     bindings={item['path']:item for item in successor()['artifacts']}
     bindings.update({item['path']:item for item in closure()['artifacts']})
+    from test_pe5_execution_roadmap import roadmap_successor
+    bindings.update({item['path']:item for item in roadmap_successor()['artifacts']})
     return list(bindings.values())
 
 def current_binding(path):

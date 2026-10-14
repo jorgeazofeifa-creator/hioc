@@ -1,7 +1,7 @@
 # HIOC Release Process
 
-PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 NOT_STARTED.
-Current governed checkpoint: documentation consistency correction, an uncommitted candidate. Validation, independent review and separately authorized commit/push must close this correction before PE-5.
+PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-5.1 accepted; wider PE-5 incomplete.
+Documentation consistency correction PASS/CLOSED. Current planned next checkpoint: PE-5.2 - Mapping Source Authority and Complete Contract Design. See the Master Plan's complete roadmap. Source sync, deployment, execution and activation remain separately authorized stages.
 Current lifecycle: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle).
 
 The following Action G closure status, limitations and next task are historical

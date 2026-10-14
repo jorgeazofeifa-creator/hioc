@@ -147,6 +147,9 @@ def successor():
  require(raw==canonical(record) and schema_raw==canonical(schema),'noncanonical preparation contract')
  return validate_record(record,schema)
 def current_binding(path):
+ from test_pe5_execution_roadmap import roadmap_binding
+ bound=roadmap_binding(path)
+ if bound is not None:return bound
  from test_pe5_service_association_caller import CALLER_PATHS, caller_current_binding
  if path in CALLER_PATHS:return caller_current_binding(path)
  from test_pe5_local_service_association import IMPLEMENTATION_PATHS, implementation_current_binding

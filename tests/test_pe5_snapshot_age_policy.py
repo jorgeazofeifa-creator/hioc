@@ -50,7 +50,7 @@ def schema_for(record):
     return {"$schema":"https://json-schema.org/draft/2020-12/schema",
             "title":"PE-5.1 approved snapshot-age policy selection", **closed(record)}
 
-def validate_policy_record(record, schema):
+def _validate_historical_policy(record, schema):
     require(schema == schema_for(record), "exact policy schema mismatch")
     require(record["predecessor_commit"] == BASE and record["authorized_paths"] == list(POLICY_PATHS), "policy scope changed")
     require(record["max_snapshot_age_seconds"] == 2100 and type(record["max_snapshot_age_seconds"]) is int, "approved value changed")
@@ -119,6 +119,23 @@ OPERATOR_EVIDENCE = {
     "whole_failure_history_proven":False,
 }
 
+ACCEPTED_POLICY = "ed3a80508d101652bac89e1dcc111167670aaebc"
+
+def validate_policy_record(record, schema):
+    require(git("show","-s","--format=%P",ACCEPTED_POLICY).decode().strip()==BASE,
+            "historical policy parent mismatch")
+    require(git("show","-s","--format=%s",ACCEPTED_POLICY).strip()==b"PE-5.1: select snapshot age policy",
+            "historical policy subject mismatch")
+    original_git=git
+    def historical_git(*args):
+        if args==("rev-parse","HEAD"):return (ACCEPTED_POLICY+"\n").encode()
+        if args==("rev-parse","HEAD^"):return (BASE+"\n").encode()
+        if args in [("status","--porcelain"),("diff","--cached","--name-only"),("stash","list")]:return b""
+        return original_git(*args)
+    def historical_raw(path):return original_git("show",ACCEPTED_POLICY+":"+path)
+    with patch.dict(globals(),git=historical_git,raw=historical_raw):
+        return _validate_historical_policy(record,schema)
+
 @lru_cache(maxsize=1)
 def policy_successor():
     record_raw, schema_raw = raw(RECORD), raw(SCHEMA)
@@ -127,17 +144,24 @@ def policy_successor():
     return validate_policy_record(record,schema)
 
 def policy_current_binding(path):
+    from test_pe5_execution_roadmap import roadmap_binding
+    bound=roadmap_binding(path)
+    if bound is not None:return bound
     item = next((i for i in policy_successor()["artifacts"] if i["path"] == path),None)
     require(item is not None, "outside policy map")
     value=raw(path)
     require(sha(value) == item["sha256"] and blob(value) == item["git_blob"], "current policy identity mismatch")
     return item
 
-def assert_policy_sequence(text):
+def _assert_historical_policy_sequence(text):
     policy_current_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
     require(section.strip().startswith("### PE-5.1 snapshot-age policy"), "policy next task missing")
     require("CONCISE_INDEPENDENT_CANDIDATE_ACCEPTANCE" in section and "NOT AUTHORIZED" in section, "policy stop gate missing")
+
+def assert_policy_sequence(text):
+    from test_pe5_execution_roadmap import assert_roadmap_sequence
+    return assert_roadmap_sequence(text)
 
 class SnapshotAgePolicyTests(unittest.TestCase):
     def test_exact_current_governance(self): policy_successor()

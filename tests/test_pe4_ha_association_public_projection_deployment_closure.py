@@ -133,7 +133,8 @@ class PublicProjectionClosureTests(unittest.TestCase):
  def test_master_current_lifecycle(self):
   t=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8');current=closure_master_section(t)
   for x in ['PUBLIC_PROJECTION=PASS/CLOSED','PE4=PASS/CLOSED','OPERATOR_SUPPLIED','Phase 7A ACTIVE','PE-5 NOT_STARTED','014a901a56ebc613b2235ad434ae124024ae6e01e8e1960ce98e7df6709e9944']:self.assertIn(x,current)
-  self.assertIn('### PE-5 - MQTT and Passive Service Association',t.split('## Next Planned Task',1)[1])
+  from test_pe5_execution_roadmap import assert_roadmap_sequence
+  assert_roadmap_sequence(t)
   self.assertIn('NO ASSUMPTIONS. NO EXCEPTIONS.',t)
  def test_historical_master_occurrence_cannot_satisfy_current(self):
   text=(ROOT/'docs/HIOC_MASTER_PLAN.md').read_text(encoding='utf8')
