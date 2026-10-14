@@ -1,0 +1,2 @@
+# PE-5.7 only: separately authorized jazofv1 activation. Disabled through PE-5.5.
+# 2,17,32,47 * * * * /usr/bin/python3 /home/jazofv1/hioc/pi4/bin/hioc-compose-service-associations.py

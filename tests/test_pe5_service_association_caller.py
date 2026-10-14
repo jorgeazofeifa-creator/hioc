@@ -126,6 +126,15 @@ def assert_historical_runtime_tree(historical_commit, roots):
     # Original runtime artifacts remain immutable; only exact later additions are permitted.
     caller_current_binding("pi4/bin/hioc-resolve-local-services.py")
     approved={"pi4/lib/hioc/service_association.py","pi4/bin/hioc-resolve-local-services.py"}
+    from test_pe5_configured_association_implementation import implementation_successor, implementation_binding
+    implementation=implementation_successor()
+    additions={i["source"] for i in implementation["payload"] if i["source"].startswith("pi4/")}
+    require(len(additions)==5,"exact PE-5.3 additive payload")
+    for p in additions:
+        require(not git("ls-tree","--name-only",implementation["predecessor_commit"],"--",p),"existing runtime cannot be exempted")
+        implementation_binding(p)
+    approved.update(additions)
+
     changes=set(git("diff","--name-only",historical_commit,"--",*roots).decode().splitlines())
     require(changes<=approved,"historical runtime modified outside exact additive successors")
     for p in approved:

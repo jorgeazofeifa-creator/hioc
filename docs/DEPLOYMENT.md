@@ -1,7 +1,7 @@
 # HIOC Deployment
 
 PE-4 PASS/CLOSED; Public Projection PASS/CLOSED; Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-5.1 accepted; wider PE-5 incomplete.
-Documentation consistency correction PASS/CLOSED. Current planned next checkpoint: PE-5.3 - Remaining Capability Implementation and Comprehensive Validation. See the Master Plan's complete roadmap. Source sync, deployment, execution and activation remain separately authorized stages.
+Documentation consistency correction PASS/CLOSED. Current planned next checkpoint: PE-5.4 - PI3 Release Source Synchronization. See the Master Plan's complete roadmap. Source sync, deployment, execution and activation remain separately authorized stages.
 Current lifecycle: [Master Plan](HIOC_MASTER_PLAN.md#authoritative-current-pe-4-lifecycle).
 
 The following Action G closure status, limitations and next task are historical
@@ -1763,7 +1763,7 @@ recorded in HIOC_MASTER_PLAN.md; these do not establish production execution.
 
 ## Current PE-5.2 complete contract design
 
-Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED PE-5.2 lifecycle snapshot at 72e878f9c0c8f5d3fe6357979e045943f3cf9d34. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
 Current next checkpoint: PE-5.3 - Remaining Capability Implementation and Comprehensive Validation.
 See [PE-5.2 complete contract design](PE5_MAPPING_CONTRACT_DESIGN.md) and
 governance/pe5/pe5-mapping-contract-design.json for source, relationship, schema, privacy,
@@ -1786,3 +1786,16 @@ Classification: CURRENT; contract correction only, PE5_3_STARTED=FALSE.
 Future PE-5.3 implementation and PE-5.5 disabled deployment must apply the corrected persistence contract. mqtt_mappings.durability.json and current.durability.json are bounded private generated metadata, not release payload or mapping configuration. Use the existing approved private 0700 directories, owner jazofv1, regular single-link non-symlink 0600 files, same shared lock and closed metadata schema. Existing primary without matching confirmation is never auto-adopted: explicit bounded bootstrap/recovery is required. Primary ordering remains temp write/fsync -> one replace -> parent fsync; a failed parent sync is INDETERMINATE_DURABILITY, not rollback or guaranteed old-file preservation. This design correction deploys nothing and grants no production authority.
 See [current corrected contract](PE5_MAPPING_CONTRACT_DESIGN.md#atomic-durability-boundary-correction)
 and governance/pe5/pe5-atomic-durability-contract-correction.json.
+
+## Current PE-5.3 repository implementation
+
+Classification: CURRENT. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION; PE5_4_STARTED=FALSE.
+Current next checkpoint: PE-5.4 - PI3 Release Source Synchronization.
+The configured mapping resolver, private POSIX composer/store, explicit source installer
+and bounded durability recovery are implemented in the repository. Activation remains
+disabled; no source provisioning, PI3 synchronization, deployment or production execution
+has occurred. PE-5 remains IN_PROGRESS, PE-5.1 remains accepted/closed, PE-4 and Public
+Projection remain PASS/CLOSED, and Phase 7A remains ACTIVE.
+The PE-5.2 design and its corrected durability contract are unchanged authority.
+See [PE-5.3 repository implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and its exact governance payload.
+Separate authorization is required for PE-5.4 and every later lifecycle checkpoint.

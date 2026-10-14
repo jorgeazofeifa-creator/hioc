@@ -93,13 +93,17 @@ def current_design_contract():
     from test_pe5_atomic_durability_contract_correction import correction
     return correction()["contract"]
 
-def assert_design_sequence(text):
+def _assert_historical_design_sequence(text):
     design_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
     require(section.strip().startswith("### PE-5.3 - Remaining Capability Implementation and Comprehensive Validation"),"next checkpoint")
     require("Separate authorization is required" in section and "PE-5.1 first execution is complete" in section,"later action gate")
     full=raw("docs/HIOC_MASTER_PLAN.md").decode()
     require("PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN" in full and "PE5_3_STARTED=FALSE" in full,"current lifecycle")
+
+def assert_design_sequence(text):
+    from test_pe5_configured_association_implementation import assert_implementation_sequence
+    return assert_implementation_sequence(text)
 
 def check_shape(v,s):
     # Small repository-only evaluator for the explicit declarative schema keywords.

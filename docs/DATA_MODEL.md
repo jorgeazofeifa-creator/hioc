@@ -334,7 +334,7 @@ The [Master Plan](HIOC_MASTER_PLAN.md#complete-pe-5-execution-roadmap) owns ever
 
 ## Current PE-5.2 complete contract design
 
-Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED PE-5.2 lifecycle snapshot at 72e878f9c0c8f5d3fe6357979e045943f3cf9d34. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; PE5_3_STARTED=FALSE.
 Current next checkpoint: PE-5.3 - Remaining Capability Implementation and Comprehensive Validation.
 See [PE-5.2 complete contract design](PE5_MAPPING_CONTRACT_DESIGN.md) and
 governance/pe5/pe5-mapping-contract-design.json for source, relationship, schema, privacy,
@@ -350,3 +350,16 @@ No public payload/topic/subscription/retention, inventory writer, scheduler or p
 change authorized. Separate authorization is required for PE-5.3 and all later checkpoints;
 original eight-stage ordering unchanged. PE-6 classification/role_suggestion/metadata_quality
 and future Discovery remain outside PE-5.
+
+## Current PE-5.3 repository implementation
+
+Classification: CURRENT. PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION; PE5_4_STARTED=FALSE.
+Current next checkpoint: PE-5.4 - PI3 Release Source Synchronization.
+The configured mapping resolver, private POSIX composer/store, explicit source installer
+and bounded durability recovery are implemented in the repository. Activation remains
+disabled; no source provisioning, PI3 synchronization, deployment or production execution
+has occurred. PE-5 remains IN_PROGRESS, PE-5.1 remains accepted/closed, PE-4 and Public
+Projection remain PASS/CLOSED, and Phase 7A remains ACTIVE.
+The PE-5.2 design and its corrected durability contract are unchanged authority.
+See [PE-5.3 repository implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and its exact governance payload.
+Separate authorization is required for PE-5.4 and every later lifecycle checkpoint.

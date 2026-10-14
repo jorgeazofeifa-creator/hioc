@@ -76,12 +76,28 @@ def validate_correction(r,s,identities=True):
         for i in r["protected"]:
             b=git("show",BASE+":"+i["path"]);require(raw(i["path"])==b and (sha(b),blob(b))==(i["sha256"],i["git_blob"]),"immutable artifact: "+i["path"])
     return r
+ACCEPTED_CORRECTION="72e878f9c0c8f5d3fe6357979e045943f3cf9d34"
 @lru_cache(maxsize=1)
 def correction():
-    b,sb=raw(RECORD),raw(SCHEMA);r,s=json.loads(b),json.loads(sb)
-    require(b==canonical(r) and sb==canonical(s),"canonical correction")
-    return validate_correction(r,s)
+    from unittest.mock import patch
+    original_git=git
+    @lru_cache(maxsize=None)
+    def accepted_raw(path):return original_git("show",ACCEPTED_CORRECTION+":"+path)
+    def accepted_git(*args):
+        if args==("diff","--name-only",BASE):return original_git("diff","--name-only",BASE,ACCEPTED_CORRECTION)
+        if args==("ls-files","--others","--exclude-standard"):return b""
+        return original_git(*args)
+    b,sb=accepted_raw(RECORD),accepted_raw(SCHEMA)
+    require(raw(RECORD)==b and raw(SCHEMA)==sb,"historical correction changed")
+    r,s=json.loads(b),json.loads(sb)
+    require(b==canonical(r) and sb==canonical(s),"canonical historical correction")
+    with patch.dict(globals(),raw=accepted_raw,git=accepted_git):
+        return validate_correction(r,s)
+
 def durability_binding(path):
+    from test_pe5_configured_association_implementation import implementation_binding
+    current=implementation_binding(path)
+    if current is not None:return current
     i=next((x for x in correction()["artifacts"] if x["path"]==path),None)
     if i:require((sha(raw(path)),blob(raw(path)))==(i["sha256"],i["git_blob"]),"durability binding")
     return i
