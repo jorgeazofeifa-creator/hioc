@@ -153,9 +153,9 @@ and PE-6 interpretation remain later checkpoints.
 - AT: future Discovery provenance; source_kind const; reject discovered kind/no subscriber.
 
 
-## Current PE-5.6 production-found initial infrastructure correction
+## Historical PE-5.6 production-found initial infrastructure correction
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
 PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
 CURRENT_PE5_CHECKPOINT=PE-5.6.
 PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY.
@@ -215,3 +215,79 @@ from its immutable commit. No new checkpoint or governance hierarchy is introduc
 Windows fixtures simulate POSIX ownership, directory fsync and flock; they are not
 native PI3 crash or permission evidence. Corrected deployment and retry are separate
 operator-controlled actions; no production correction or PE-5.6 closure is claimed.
+
+## Current PE-5.6 final acceptance and closure
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE; RECURRING_EXECUTION_ACTIVE=FALSE.
+Current next checkpoint: PE-5.7 - Conditional Execution Activation.
+PE-4/Public Projection remain PASS/CLOSED; PE-5.1 remains accepted/closed.
+
+OPERATOR_SUPPLIED production evidence establishes corrected one-artifact deployment
+of commit 4990c62afbce22a804229f3cb8329986741067a6, then one separately authorized
+corrected initial installation PASS_PRIVATE_PERSISTENCE / CONFIRMED_DURABLE_CURRENT,
+then exactly one separately authorized bounded composer execution
+PASS_PRIVATE_ASSOCIATIONS / ACCEPTED_COUNT=1 / REJECTED_COUNT=0.
+This is not recurring execution. No second corrected installation or extra composer
+execution is authorized by closure. PE-5.7 has not executed; scheduler remains disabled.
+
+The first initialization WRITE_FAILED / LOCK_UNAVAILABLE remains historical evidence.
+The correction fixed missing-directory bootstrap before the shared lock; no lock
+contention was established. Failed-attempt absence evidence and the intact candidate
+are preserved alongside the accepted correction and separately authorized success.
+
+Configured source revision1 SHA256:
+961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295.
+Configured relationship:
+mqra_01d1d5edfdc1db0fa63b14b5b9b0b9701b4ff183a946fcb63751fb14910fe028.
+Provenance: operator_mqtt_v1 / configured_mqtt / declared_endpoint_device_v1.
+Generated output SHA256:
+f1b219dc413325a557c71e3561804afcc3bdf26f87d2d6fdb71bb3e7c97f5e2c.
+Both durability domains were observed CONFIRMED, candidate=null, bound to revision1;
+exact transaction identities, metadata and source/output observations are recorded in
+the existing implementation governance record's production_validation evidence.
+
+The local branch retained eight existing_service_ownership/high relationships under
+unchanged schema1.0 / 2100-second policy. The receipt is historically bound to consumed
+inventory SHA256 394b5cf4007fccd1aec0beb862f29ed6dfb78a76a2903cb6174b08f0c5d17607,
+updated 2026-10-14T17:00:01.000000Z, evaluated 2026-10-14T17:04:50.224530Z,
+valid_until 2026-10-14T17:24:50.224530Z. Later observed inventory SHA differed;
+its cause is UNKNOWN, the difference alone is not a defect and does not rebind the
+receipt. No present receipt consumability or freshness is asserted.
+
+The bounded public-inventory search for the five reported configured-MQTT terms found
+zero matches: PASS for that check only. No universal privacy/transport claim is made.
+Post-execution operator checks reported clean source at the correction commit,
+unchanged corrected artifact, private0700 directories/0600 single-link files,
+NO_PE5_CRONTAB_MATCH and NO_RELEVANT_PROCESS_MATCH.
+Repository-derived checks separately reproduced the source SHA/size, relationship ID,
+output-sidecar SHA/size and timing bound; full output bytes were not independently received.
+All required committed Windows suites passed before closure; native fault/crash evidence
+and PE-5.8 natural-cycle requirements are not waived. Codex accessed no production system.
+See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
+Separate authorization is required for PE-5.7. Do not activate or implement it here.
+
+### Sanitized operator evidence and exact durability identities
+
+Source witness: CONFIGURED_MAPPING_SOURCE / CONFIRMED / candidate=null,
+confirmed SHA256 961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295,
+source_revision1, transaction_id dur_ae948c45234a43edbb4194d6c2052732.
+Source: 241-byte regular0600 single-link UID/GID1000/1000, exact approved candidate.
+Source-sidecar file SHA was not supplied; no independent byte-hash observation is claimed.
+
+Output witness: GENERATED_RELATIONSHIP_OUTPUT / CONFIRMED / candidate=null,
+confirmed SHA256 f1b219dc413325a557c71e3561804afcc3bdf26f87d2d6fdb71bb3e7c97f5e2c,
+source_revision1, transaction_id dur_fe5cd411ccee4e328326e85d6c30c7ac.
+Output: 4916-byte regular0600 single-link UID/GID1000/1000.
+Output sidecar: 269-byte regular0600 single-link UID/GID1000/1000, SHA256
+00169ad24bfa1bf9ec0619cd447125d5b0f860f425cb88bc80081f2b76498a1d.
+
+Configured association evidence uses opaque IDs: endpoint
+me_f14314f531e241e091b79ccc380323a2, mapping map_b90cf00b53ff4fc584716f2d4b531743,
+existing device dev_703040cb07a3046f, service_id=null, direction endpoint_to_device.
+This evidence is not a committed runtime configuration or generated output file.
+Complete sanitized observation fields and the eight local service identifiers are
+retained in production_validation of the existing governance record.
+The later observed inventory SHA256 was
+885af752b89d840ad8f1265a69bb6dbdc0f7e541e8a2c7b55d1ae87c4625a726,
+updated 2026-10-14T11:00:01-06:00. No cause of its SHA difference is established.

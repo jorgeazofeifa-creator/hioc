@@ -55,6 +55,14 @@ def validate_implementation(r,s,identities=True):
         require(c["baseline_commit"]=="348f9787ae0ab364570a2ba07ada9527fc8db0e2" and c["checkpoint"]=="PE-5.6","correction authority")
         require(c["retry_performed"] is False and c["corrected_production_deployment_established"] is False,"production remains unknown")
         require(c["changed_payload_sources"]==["pi4/lib/hioc/configured_association_store.py"],"bounded payload")
+    if r.get("production_validation"):
+        c=r["production_validation"]
+        require(c["classification"]=="CURRENT" and c["checkpoint"]=="PE-5.6" and c["status"]=="COMPLETE/PASS","closure authority")
+        require(c["evidence_authority"]=="OPERATOR_SUPPLIED" and c["implementation_commit"]=="4990c62afbce22a804229f3cb8329986741067a6","evidence scope")
+        require(c["next_checkpoint"]=="PE-5.7 - Conditional Execution Activation" and c["pe5_7_started"] is False and c["scheduler_active"] is False and c["recurring_execution_accepted"] is False,"closed bounded execution only")
+        require(c["corrected_initialization"]["execution_count"]==1 and c["bounded_composer"]["execution_count"]==1 and c["bounded_composer"]["accepted_count"]==1 and c["bounded_composer"]["rejected_count"]==0,"bounded observations")
+        require(c["configured_branch"]["association"]["relationship_id"]==m.relationship_id(c["configured_branch"]["association"]),"observed relationship identity")
+        require(all(v["failures"]==v["errors"]==0 for v in c["validation"]["results"].values()),"required validation")
     if identities:
         scope=set(r["authorized_paths"])
         require(scope=={i["path"] for i in r["artifacts"]}|{RECORD,SCHEMA},"scope")
@@ -84,6 +92,10 @@ def implementation_binding(path):
 def assert_implementation_sequence(text):
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
+    if implementation_successor().get("production_validation"):
+        require(section.strip().startswith("### PE-5.7 - Conditional Execution Activation"),"next activation checkpoint only")
+        require("PE5_6_STATUS=COMPLETE/PASS" in section and "PE5_7_STARTED=FALSE" in section and "RECURRING_EXECUTION_ACTIVE=FALSE" in section and "Separate authorization is required for PE-5.7" in section,"bounded closure sequence")
+        return
     if implementation_successor().get("defect_correction"):
         require(section.strip().startswith("### PE-5.6 - Bounded Mapping and Storage Production Validation"),"current corrected checkpoint")
         require("PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY" in section and "PE5_7_STARTED=FALSE" in section,"no validation closure or activation")

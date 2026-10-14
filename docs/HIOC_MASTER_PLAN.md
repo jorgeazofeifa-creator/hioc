@@ -7141,9 +7141,62 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-5.7 - Conditional Execution Activation
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE; RECURRING_EXECUTION_ACTIVE=FALSE.
+Current next checkpoint: PE-5.7 - Conditional Execution Activation.
+PE-4/Public Projection remain PASS/CLOSED; PE-5.1 remains accepted/closed.
+
+OPERATOR_SUPPLIED production evidence establishes corrected one-artifact deployment
+of commit 4990c62afbce22a804229f3cb8329986741067a6, then one separately authorized
+corrected initial installation PASS_PRIVATE_PERSISTENCE / CONFIRMED_DURABLE_CURRENT,
+then exactly one separately authorized bounded composer execution
+PASS_PRIVATE_ASSOCIATIONS / ACCEPTED_COUNT=1 / REJECTED_COUNT=0.
+This is not recurring execution. No second corrected installation or extra composer
+execution is authorized by closure. PE-5.7 has not executed; scheduler remains disabled.
+
+The first initialization WRITE_FAILED / LOCK_UNAVAILABLE remains historical evidence.
+The correction fixed missing-directory bootstrap before the shared lock; no lock
+contention was established. Failed-attempt absence evidence and the intact candidate
+are preserved alongside the accepted correction and separately authorized success.
+
+Configured source revision1 SHA256:
+961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295.
+Configured relationship:
+mqra_01d1d5edfdc1db0fa63b14b5b9b0b9701b4ff183a946fcb63751fb14910fe028.
+Provenance: operator_mqtt_v1 / configured_mqtt / declared_endpoint_device_v1.
+Generated output SHA256:
+f1b219dc413325a557c71e3561804afcc3bdf26f87d2d6fdb71bb3e7c97f5e2c.
+Both durability domains were observed CONFIRMED, candidate=null, bound to revision1;
+exact transaction identities, metadata and source/output observations are recorded in
+the existing implementation governance record's production_validation evidence.
+
+The local branch retained eight existing_service_ownership/high relationships under
+unchanged schema1.0 / 2100-second policy. The receipt is historically bound to consumed
+inventory SHA256 394b5cf4007fccd1aec0beb862f29ed6dfb78a76a2903cb6174b08f0c5d17607,
+updated 2026-10-14T17:00:01.000000Z, evaluated 2026-10-14T17:04:50.224530Z,
+valid_until 2026-10-14T17:24:50.224530Z. Later observed inventory SHA differed;
+its cause is UNKNOWN, the difference alone is not a defect and does not rebind the
+receipt. No present receipt consumability or freshness is asserted.
+
+The bounded public-inventory search for the five reported configured-MQTT terms found
+zero matches: PASS for that check only. No universal privacy/transport claim is made.
+Post-execution operator checks reported clean source at the correction commit,
+unchanged corrected artifact, private0700 directories/0600 single-link files,
+NO_PE5_CRONTAB_MATCH and NO_RELEVANT_PROCESS_MATCH.
+Repository-derived checks separately reproduced the source SHA/size, relationship ID,
+output-sidecar SHA/size and timing bound; full output bytes were not independently received.
+All required committed Windows suites passed before closure; native fault/crash evidence
+and PE-5.8 natural-cycle requirements are not waived. Codex accessed no production system.
+See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
+Separate authorization is required for PE-5.7. Do not activate or implement it here.
+
+### Historical PE-5.6 correction pending deployment at 4990c62afbce22a804229f3cb8329986741067a6
+
 ### PE-5.6 - Bounded Mapping and Storage Production Validation
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
 PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
 CURRENT_PE5_CHECKPOINT=PE-5.6.
 PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY.
@@ -7168,6 +7221,7 @@ corrected deployment, then separately authorize the PE-5.6 initialization retry.
 No composer invocation, scheduler activation, recovery, or PE-5.7 is authorized here.
 See [configured association implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
 Separate authorization is required for the retry and every later checkpoint.
+
 
 ### Historical PE-5.3 repository completion at 348f9787ae0ab364570a2ba07ada9527fc8db0e2
 
@@ -7559,9 +7613,62 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-5.7 - Conditional Execution Activation
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE; RECURRING_EXECUTION_ACTIVE=FALSE.
+Current next checkpoint: PE-5.7 - Conditional Execution Activation.
+PE-4/Public Projection remain PASS/CLOSED; PE-5.1 remains accepted/closed.
+
+OPERATOR_SUPPLIED production evidence establishes corrected one-artifact deployment
+of commit 4990c62afbce22a804229f3cb8329986741067a6, then one separately authorized
+corrected initial installation PASS_PRIVATE_PERSISTENCE / CONFIRMED_DURABLE_CURRENT,
+then exactly one separately authorized bounded composer execution
+PASS_PRIVATE_ASSOCIATIONS / ACCEPTED_COUNT=1 / REJECTED_COUNT=0.
+This is not recurring execution. No second corrected installation or extra composer
+execution is authorized by closure. PE-5.7 has not executed; scheduler remains disabled.
+
+The first initialization WRITE_FAILED / LOCK_UNAVAILABLE remains historical evidence.
+The correction fixed missing-directory bootstrap before the shared lock; no lock
+contention was established. Failed-attempt absence evidence and the intact candidate
+are preserved alongside the accepted correction and separately authorized success.
+
+Configured source revision1 SHA256:
+961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295.
+Configured relationship:
+mqra_01d1d5edfdc1db0fa63b14b5b9b0b9701b4ff183a946fcb63751fb14910fe028.
+Provenance: operator_mqtt_v1 / configured_mqtt / declared_endpoint_device_v1.
+Generated output SHA256:
+f1b219dc413325a557c71e3561804afcc3bdf26f87d2d6fdb71bb3e7c97f5e2c.
+Both durability domains were observed CONFIRMED, candidate=null, bound to revision1;
+exact transaction identities, metadata and source/output observations are recorded in
+the existing implementation governance record's production_validation evidence.
+
+The local branch retained eight existing_service_ownership/high relationships under
+unchanged schema1.0 / 2100-second policy. The receipt is historically bound to consumed
+inventory SHA256 394b5cf4007fccd1aec0beb862f29ed6dfb78a76a2903cb6174b08f0c5d17607,
+updated 2026-10-14T17:00:01.000000Z, evaluated 2026-10-14T17:04:50.224530Z,
+valid_until 2026-10-14T17:24:50.224530Z. Later observed inventory SHA differed;
+its cause is UNKNOWN, the difference alone is not a defect and does not rebind the
+receipt. No present receipt consumability or freshness is asserted.
+
+The bounded public-inventory search for the five reported configured-MQTT terms found
+zero matches: PASS for that check only. No universal privacy/transport claim is made.
+Post-execution operator checks reported clean source at the correction commit,
+unchanged corrected artifact, private0700 directories/0600 single-link files,
+NO_PE5_CRONTAB_MATCH and NO_RELEVANT_PROCESS_MATCH.
+Repository-derived checks separately reproduced the source SHA/size, relationship ID,
+output-sidecar SHA/size and timing bound; full output bytes were not independently received.
+All required committed Windows suites passed before closure; native fault/crash evidence
+and PE-5.8 natural-cycle requirements are not waived. Codex accessed no production system.
+See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
+Separate authorization is required for PE-5.7. Do not activate or implement it here.
+
+### Historical PE-5.6 correction pending deployment at 4990c62afbce22a804229f3cb8329986741067a6
+
 ### PE-5.6 - Bounded Mapping and Storage Production Validation
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
 PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
 CURRENT_PE5_CHECKPOINT=PE-5.6.
 PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY.
@@ -7586,6 +7693,7 @@ corrected deployment, then separately authorize the PE-5.6 initialization retry.
 No composer invocation, scheduler activation, recovery, or PE-5.7 is authorized here.
 See [configured association implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
 Separate authorization is required for the retry and every later checkpoint.
+
 
 ### Historical PE-5.3 repository completion at 348f9787ae0ab364570a2ba07ada9527fc8db0e2
 
@@ -9643,9 +9751,9 @@ The PE-5.2 design and its corrected durability contract are unchanged authority.
 See [PE-5.3 repository implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and its exact governance payload.
 Separate authorization is required for PE-5.4 and every later lifecycle checkpoint.
 
-## Current PE-5.6 initial infrastructure defect correction
+## Historical PE-5.6 initial infrastructure defect correction
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS; PE-4 and Public Projection PASS/CLOSED.
 PE5_3_STATUS=COMPLETE_REPOSITORY_IMPLEMENTATION.
 CURRENT_PE5_CHECKPOINT=PE-5.6.
 PE5_6_STATUS=BLOCKED_PENDING_CORRECTED_DEPLOYMENT_AND_SEPARATE_RETRY.
@@ -9670,3 +9778,54 @@ corrected deployment, then separately authorize the PE-5.6 initialization retry.
 No composer invocation, scheduler activation, recovery, or PE-5.7 is authorized here.
 See [configured association implementation](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
 Separate authorization is required for the retry and every later checkpoint.
+
+## Current PE-5.6 final acceptance and closure
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+PE5_6_STATUS=COMPLETE/PASS; PE5_7_STARTED=FALSE; RECURRING_EXECUTION_ACTIVE=FALSE.
+Current next checkpoint: PE-5.7 - Conditional Execution Activation.
+PE-4/Public Projection remain PASS/CLOSED; PE-5.1 remains accepted/closed.
+
+OPERATOR_SUPPLIED production evidence establishes corrected one-artifact deployment
+of commit 4990c62afbce22a804229f3cb8329986741067a6, then one separately authorized
+corrected initial installation PASS_PRIVATE_PERSISTENCE / CONFIRMED_DURABLE_CURRENT,
+then exactly one separately authorized bounded composer execution
+PASS_PRIVATE_ASSOCIATIONS / ACCEPTED_COUNT=1 / REJECTED_COUNT=0.
+This is not recurring execution. No second corrected installation or extra composer
+execution is authorized by closure. PE-5.7 has not executed; scheduler remains disabled.
+
+The first initialization WRITE_FAILED / LOCK_UNAVAILABLE remains historical evidence.
+The correction fixed missing-directory bootstrap before the shared lock; no lock
+contention was established. Failed-attempt absence evidence and the intact candidate
+are preserved alongside the accepted correction and separately authorized success.
+
+Configured source revision1 SHA256:
+961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295.
+Configured relationship:
+mqra_01d1d5edfdc1db0fa63b14b5b9b0b9701b4ff183a946fcb63751fb14910fe028.
+Provenance: operator_mqtt_v1 / configured_mqtt / declared_endpoint_device_v1.
+Generated output SHA256:
+f1b219dc413325a557c71e3561804afcc3bdf26f87d2d6fdb71bb3e7c97f5e2c.
+Both durability domains were observed CONFIRMED, candidate=null, bound to revision1;
+exact transaction identities, metadata and source/output observations are recorded in
+the existing implementation governance record's production_validation evidence.
+
+The local branch retained eight existing_service_ownership/high relationships under
+unchanged schema1.0 / 2100-second policy. The receipt is historically bound to consumed
+inventory SHA256 394b5cf4007fccd1aec0beb862f29ed6dfb78a76a2903cb6174b08f0c5d17607,
+updated 2026-10-14T17:00:01.000000Z, evaluated 2026-10-14T17:04:50.224530Z,
+valid_until 2026-10-14T17:24:50.224530Z. Later observed inventory SHA differed;
+its cause is UNKNOWN, the difference alone is not a defect and does not rebind the
+receipt. No present receipt consumability or freshness is asserted.
+
+The bounded public-inventory search for the five reported configured-MQTT terms found
+zero matches: PASS for that check only. No universal privacy/transport claim is made.
+Post-execution operator checks reported clean source at the correction commit,
+unchanged corrected artifact, private0700 directories/0600 single-link files,
+NO_PE5_CRONTAB_MATCH and NO_RELEVANT_PROCESS_MATCH.
+Repository-derived checks separately reproduced the source SHA/size, relationship ID,
+output-sidecar SHA/size and timing bound; full output bytes were not independently received.
+All required committed Windows suites passed before closure; native fault/crash evidence
+and PE-5.8 natural-cycle requirements are not waived. Codex accessed no production system.
+See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md).
+Separate authorization is required for PE-5.7. Do not activate or implement it here.
