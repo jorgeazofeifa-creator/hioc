@@ -7518,6 +7518,19 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 
 Classification: CURRENT. PE5_2_STATUS=COMPLETE_CONTRACT_DESIGN; CURRENT_PE5_CHECKPOINT=PE-5.3; PE5_3_STARTED=FALSE. Next is PE-5.3 implementation/validation under separate authorization, then unchanged PE-5.4 through PE-5.9 and PE-6. See [complete contract](PE5_MAPPING_CONTRACT_DESIGN.md). Separate authorization is required; PE-5.1 first execution is complete and is not repeated.
 
+
+PE-5.2 atomic durability contract correction is complete in repository design.
+PE-5.3 previously returned STOP_PE5_3_ATOMIC_FAILURE_CONTRACT_CONTRADICTION before
+implementation: a synthetic post-replace parent-fsync fault disproved the broad
+old-file guarantee. Historical STOP evidence is preserved. The corrected contract
+separates pre-replace preservation from INDETERMINATE_DURABILITY, fails closed,
+retains the prior confirmed logical identity and requires explicit recovery without
+automatic rollback. See [corrected persistence contract](PE5_MAPPING_CONTRACT_DESIGN.md#atomic-durability-boundary-correction)
+and governance/pe5/pe5-atomic-durability-contract-correction.json.
+PE5_3_STARTED=FALSE; PE5_4_STARTED=FALSE. This correction implements no runtime,
+provisions no source and authorizes no production action. Resume PE-5.3 only as
+the next separate action after this correction is validated and published.
+
 ### Historical policy-selection next task at ed3a80508d101652bac89e1dcc111167670aaebc
 
 Classification: HISTORICAL_INTENTIONALLY_PRESERVED.

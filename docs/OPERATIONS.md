@@ -3106,3 +3106,10 @@ No public payload/topic/subscription/retention, inventory writer, scheduler or p
 change authorized. Separate authorization is required for PE-5.3 and all later checkpoints;
 original eight-stage ordering unchanged. PE-6 classification/role_suggestion/metadata_quality
 and future Discovery remain outside PE-5.
+
+## PE-5.2 corrected persistence failure and recovery
+
+Classification: CURRENT; contract correction only, PE5_3_STARTED=FALSE.
+Before successful primary replacement, prior bytes remain unchanged when present. After replacement plus parent-fsync failure, replacement may be visible and old physical presence is not guaranteed: INDETERMINATE_DURABILITY / WRITE_FAILED, fail closed. One private durability sidecar per source/output retains the prior confirmed hash/revision in a durable PENDING barrier. Normal invocation cannot consume or overwrite pending state. Explicit separately authorized recovery revalidates recorded bytes and successfully fsyncs primary/parent before CONFIRMED metadata; recertification does not replace primary or refresh application timestamps. Unmatched/missing/corrupt state requires approved fresh producer recovery. No automatic rollback, hidden payload LKG, network/HA/MQTT or production operation is authorized.
+See [current corrected contract](PE5_MAPPING_CONTRACT_DESIGN.md#atomic-durability-boundary-correction)
+and governance/pe5/pe5-atomic-durability-contract-correction.json.

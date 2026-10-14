@@ -1779,3 +1779,10 @@ No public payload/topic/subscription/retention, inventory writer, scheduler or p
 change authorized. Separate authorization is required for PE-5.3 and all later checkpoints;
 original eight-stage ordering unchanged. PE-6 classification/role_suggestion/metadata_quality
 and future Discovery remain outside PE-5.
+
+## PE-5.2 corrected private durability prerequisites
+
+Classification: CURRENT; contract correction only, PE5_3_STARTED=FALSE.
+Future PE-5.3 implementation and PE-5.5 disabled deployment must apply the corrected persistence contract. mqtt_mappings.durability.json and current.durability.json are bounded private generated metadata, not release payload or mapping configuration. Use the existing approved private 0700 directories, owner jazofv1, regular single-link non-symlink 0600 files, same shared lock and closed metadata schema. Existing primary without matching confirmation is never auto-adopted: explicit bounded bootstrap/recovery is required. Primary ordering remains temp write/fsync -> one replace -> parent fsync; a failed parent sync is INDETERMINATE_DURABILITY, not rollback or guaranteed old-file preservation. This design correction deploys nothing and grants no production authority.
+See [current corrected contract](PE5_MAPPING_CONTRACT_DESIGN.md#atomic-durability-boundary-correction)
+and governance/pe5/pe5-atomic-durability-contract-correction.json.

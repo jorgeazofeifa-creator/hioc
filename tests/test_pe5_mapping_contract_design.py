@@ -61,15 +61,38 @@ def validate_design(r,s,identities=True):
             b=git("show",BASE+":"+i["path"])
             require((sha(b),blob(b))==(i["sha256"],i["git_blob"]) and raw(i["path"])==b,"immutable artifact: "+i["path"])
     return r
+ACCEPTED_DESIGN="0c9c40d42c829c280341e73e475aac2ff4abf897"
 @lru_cache(maxsize=1)
 def design_successor():
-    b,bs=raw(RECORD),raw(SCHEMA);r,s=json.loads(b),json.loads(bs)
-    require(b==canonical(r) and bs==canonical(s),"noncanonical successor")
-    return validate_design(r,s)
+    # Replay immutable accepted design bytes; current durability binding is separate.
+    from unittest.mock import patch
+    original_git=git
+    @lru_cache(maxsize=None)
+    def accepted_bytes(path):return original_git("show",ACCEPTED_DESIGN+":"+path)
+    def accepted_git(*args):
+        if args==("diff","--name-only",BASE):
+            return original_git("diff","--name-only",BASE,ACCEPTED_DESIGN)
+        if args==("ls-files","--others","--exclude-standard"):return b""
+        return original_git(*args)
+    b,bs=accepted_bytes(RECORD),accepted_bytes(SCHEMA)
+    require(raw(RECORD)==b and raw(SCHEMA)==bs,"historical design changed")
+    r,s=json.loads(b),json.loads(bs)
+    require(b==canonical(r) and bs==canonical(s),"noncanonical historical design")
+    with patch.dict(globals(),raw=accepted_bytes,git=accepted_git):
+        return validate_design(r,s)
+
 def design_binding(path):
+    from test_pe5_atomic_durability_contract_correction import durability_binding
+    current=durability_binding(path)
+    if current is not None:return current
     i=next((x for x in design_successor()["artifacts"] if x["path"]==path),None)
     if i is not None:require((sha(raw(path)),blob(raw(path)))==(i["sha256"],i["git_blob"]),"successor binding")
     return i
+
+def current_design_contract():
+    from test_pe5_atomic_durability_contract_correction import correction
+    return correction()["contract"]
+
 def assert_design_sequence(text):
     design_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]

@@ -256,6 +256,8 @@ def closure_artifact_bindings():
  bindings.update({item['path']:item for item in roadmap_successor()['artifacts']})
  from test_pe5_mapping_contract_design import design_successor
  bindings.update({item['path']:item for item in design_successor()['artifacts']})
+ from test_pe5_atomic_durability_contract_correction import correction as durability_correction
+ bindings.update({item["path"]:item for item in durability_correction()["artifacts"]})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings

@@ -163,6 +163,8 @@ def current_artifacts():
     bindings.update({item['path']:item for item in roadmap_successor()['artifacts']})
     from test_pe5_mapping_contract_design import design_successor
     bindings.update({item['path']:item for item in design_successor()['artifacts']})
+    from test_pe5_atomic_durability_contract_correction import correction as durability_correction
+    bindings.update({item["path"]:item for item in durability_correction()["artifacts"]})
     return list(bindings.values())
 
 def current_binding(path):
