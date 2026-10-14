@@ -292,9 +292,9 @@ The later observed inventory SHA256 was
 885af752b89d840ad8f1265a69bb6dbdc0f7e541e8a2c7b55d1ae87c4625a726,
 updated 2026-10-14T11:00:01-06:00. No cause of its SHA difference is established.
 
-## Current PE-5.7 final acceptance and closure
+## Historical PE-5.7 final acceptance and closure
 
-Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
 PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS.
 RECURRING_EXECUTION_ACTIVE=TRUE; PE5_8_STARTED=FALSE.
 Current next checkpoint: PE-5.8 - Operational Evidence and Independent Production Acceptance.
@@ -348,3 +348,57 @@ Source/output metadata were reported CONFIRMED, candidate=None, revision1, with
 primary hashes matching the prior accepted PE-5.6 observations. These are
 PRE-ACTIVATION observations, not claims of current post-activation file contents.
 No new scheduler, deployment mechanism, evidence hierarchy or runtime behavior is introduced.
+
+## Current PE-5.8 final acceptance and closure
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-5 IN_PROGRESS.
+PE5_6_STATUS=COMPLETE/PASS; PE5_7_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
+RECURRING_EXECUTION_ACTIVE=TRUE; PE5_9_STARTED=FALSE.
+Current next checkpoint: PE-5.9 - Final PE-5 Closure and PE-6 Handoff.
+Separate authorization is required for PE-5.9. It has not started; PE-5 is not yet closed.
+
+OPERATOR_SUPPLIED read-only observations establish the required minimum of three
+consecutive natural successful scheduler windows (:17, :32, :47 on 2026-10-14).
+No manual producer execution occurred during PE-5.8; PE-5.6's bounded manual run
+is historical and is not counted. PE-5.7 activation remains historical accepted evidence.
+Cycle1 evaluated_at=2026-10-14T20:17:02.619461Z;
+output SHA256 a5bea06825a63b1cd29ac705defe1066cc1f97ac678648d5fd97d9e322ebfe90;
+CONFIRMED transaction dur_104bbbd8cb45467b8a53cc7d88dc497a.
+Cycle2 evaluated_at=2026-10-14T20:32:01.823448Z;
+output SHA256 c28f22d1272031a6586ee1673719c8b1061e06a2c120237df2140e8007082a7a;
+CONFIRMED transaction dur_f70cd9091d5b4536929b329deac70e22.
+Cycle3 evaluated_at=2026-10-14T20:47:02.451624Z;
+output SHA256 aff03e297ae81bc9a9deff52884d2779b6138eb4b2f8592fe05f78272aa98120;
+CONFIRMED transaction dur_e7a270926be543808b7711c5885778d7.
+Second/third sidecar confirmed SHA equals its corresponding observed output SHA;
+candidate=None. First CONFIRMED state/transaction was supplied, but a separate
+confirmed_sha256 field was not supplied and is not fabricated.
+Source revision1 and SHA256
+961b72e8918606caeac565a8d472d03c4784d9a3b43eae6deb4085865330d295
+remained unchanged. Third source sidecar also confirms that SHA/revision.
+The accepted scheduler SHA256 remained
+3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9,
+with one marker and one entry; cadence 2,17,32,47 * * * * and command unchanged.
+
+Second/third outputs report schema2.0 VALID, configured VALID/revision1 with
+one candidate and zero rejections; local eight associations and zero rejections.
+LOCAL_STATE=None is a reported lookup: the closed local envelope has no state
+field. Local schema1.0 is embedded unchanged in combined schema2.0.
+Third valid_until=2026-10-14T21:05:02.000000Z is within the accepted upper bound;
+its earlier deadline is consistent with the inventory expiry cap. Exact third
+inventory.updated was not supplied and is not inferred.
+
+Overlap, missed-cycle/no-catch-up, expiry, failure, restart/corruption and durability
+semantics are supported by committed contract/static implementation and passing
+synthetic Windows fixtures, as PE-5.2 explicitly permits. They are NOT claimed as
+naturally observed faults or native PI3 crash tests. No artificial production
+fault, manual execution or production mutation was performed for this acceptance.
+Full production envelopes/crontab bytes were not independently received; supplied
+production SHA values are operator observations, not independently recomputed hashes.
+Current freshness beyond the supplied observation times is not asserted.
+The earlier two-cycle STOP is preserved as process history; the third observation
+resolved it without waiving any requirement. Existing PE-5.6/7 history remains preserved.
+See [implementation evidence](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md) and
+operational_acceptance in the existing governance record for exact receipts,
+evidence limitations and repository validation. No runtime or authority model changes.
+Codex accessed no PI3, PI5 or production. PE-5.9 requires separate authorization.

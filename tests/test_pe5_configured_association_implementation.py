@@ -65,13 +65,30 @@ def validate_implementation(r,s,identities=True):
         require(all(v["failures"]==v["errors"]==0 for v in c["validation"]["results"].values()),"required validation")
     if r.get("scheduler_activation"):
         a=r["scheduler_activation"]
-        require(a["classification"]=="CURRENT" and a["checkpoint"]=="PE-5.7" and a["status"]=="COMPLETE/PASS","activation closure authority")
+        require(a["classification"]==("HISTORICAL_INTENTIONALLY_PRESERVED" if r.get("operational_acceptance") else "CURRENT") and a["checkpoint"]=="PE-5.7" and a["status"]=="COMPLETE/PASS","activation closure authority")
         require(a["evidence_authority"]=="OPERATOR_SUPPLIED" and a["predecessor_closure_commit"]=="21ca5f676bb96d376b3a6f098decfecfe3c6ea49","activation predecessor")
         require(a["next_checkpoint"]=="PE-5.8 - Operational Evidence and Independent Production Acceptance" and a["recurring_execution_active"] is True and a["pe5_8_started"] is False and a["natural_cycle_evidence_established"] is False and a["recurring_operational_acceptance_established"] is False,"activation versus operational acceptance")
         e=a["activation"];post=a["post_activation"]
         require(e["marker_count"]==e["entry_count"]==post["marker_count"]==post["entry_count"]==1 and post["unexpected_pe5_entry_count"]==0,"single accepted cron entry")
         require(e["schedule"]=="2,17,32,47 * * * *" and e["command"]=="/usr/bin/python3 /home/jazofv1/hioc/pi4/bin/hioc-compose-service-associations.py","frozen execution model")
         require(e["after_sha256"]==post["crontab_sha256"] and e["composer_executed_manually"] is False and e["installer_executed"] is False and e["mqtt_accessed"] is False,"bounded activation evidence")
+    if r.get("operational_acceptance"):
+        a=r["operational_acceptance"]
+        require(a["classification"]=="CURRENT" and a["checkpoint"]=="PE-5.8" and a["status"]=="COMPLETE/PASS","operational closure authority")
+        require(a["evidence_authority"]=="OPERATOR_SUPPLIED" and a["predecessor_closure_commit"]=="de0279fd3667e096fd940b80d20a096f7082e8ac","operational predecessor")
+        require(a["natural_cycle_count_required_minimum"]==3 and a["natural_cycle_count_accepted"]==len(a["cycles"])==3 and a["three_consecutive_natural_cycles"] is True,"three required natural cycles")
+        require([x["scheduler_minute"] for x in a["cycles"]]==[17,32,47] and len({x["output_sha256"] for x in a["cycles"]})==len({x["output_durability"]["transaction_id"] for x in a["cycles"]})==3,"consecutive distinct natural receipts")
+        times=[m.local._time(x["evaluated_at"],"CLOCK_INVALID") for x in a["cycles"]]
+        require(all((b.replace(second=0,microsecond=0)-c.replace(second=0,microsecond=0)).total_seconds()==900 for c,b in zip(times,times[1:])),"consecutive schedule windows")
+        require(all(x["output_schema_version"]=="2.0" and x["output_durability"]["state"]=="CONFIRMED" and x["output_durability"]["candidate"] is None and x["scheduler_sha256"]==a["scheduler"]["sha256"] and x["marker_count"]==x["entry_count"]==1 for x in a["cycles"]),"natural receipt bindings")
+        require(all(x["output_durability"]["confirmed_sha256"]==x["output_sha256"] and x["output_durability"]["source_revision"]==1 for x in a["cycles"][1:]),"observed confirmed output identities")
+        require(a["source"]["revision"]==1 and a["source"]["unchanged_across_all_three"] is True and a["source"]["sha256"]==a["configured_second_and_third"]["source_sha256"]==a["source_durability_third"]["confirmed_sha256"],"stable configured authority")
+        require(a["scheduler"]["sha256"]==r["scheduler_activation"]["activation"]["after_sha256"] and a["scheduler"]["schedule"]=="2,17,32,47 * * * *" and a["scheduler"]["command"]==r["scheduler_activation"]["activation"]["command"],"unchanged execution model")
+        require(a["local_second_and_third"]["schema_result"]=="STATE_FIELD_NOT_DEFINED_ADDITIONAL_PROPERTIES_FALSE" and "state" not in schemas()["output_schema"]["properties"]["local"]["anyOf"][1]["properties"],"local schema authority")
+        require(a["manual_producer_execution_during_pe5_8"] is False and a["pe5_6_manual_execution_counted"] is False and a["production_access_by_codex"] is False and a["production_mutation_by_codex"] is False,"evidence boundary")
+        require(a["next_checkpoint"]=="PE-5.9 - Final PE-5 Closure and PE-6 Handoff" and a["pe5_9_started"] is False and a["pe5_complete"] is False,"next checkpoint only")
+        require(set(a["behavioral_evidence"])=={"overlap","missed_cycle","staleness","failure"} and all("SYNTHETIC" in x["authority"] for x in a["behavioral_evidence"].values()),"fault evidence basis")
+        require(all(x["failures"]==x["errors"]==0 for x in a["validation"]["results"].values()),"operational repository validation")
     if identities:
         scope=set(r["authorized_paths"])
         require(scope=={i["path"] for i in r["artifacts"]}|{RECORD,SCHEMA},"scope")
@@ -101,6 +118,10 @@ def implementation_binding(path):
 def assert_implementation_sequence(text):
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
+    if implementation_successor().get("operational_acceptance"):
+        require(section.strip().startswith("### PE-5.9 - Final PE-5 Closure and PE-6 Handoff"),"next final closure checkpoint")
+        require("PE5_8_STATUS=COMPLETE/PASS" in section and "PE5_9_STARTED=FALSE" in section and "Separate authorization is required for PE-5.9" in section,"operational closure sequence")
+        return
     if implementation_successor().get("scheduler_activation"):
         require(section.strip().startswith("### PE-5.8 - Operational Evidence and Independent Production Acceptance"),"next operational evidence checkpoint")
         require("PE5_7_STATUS=COMPLETE/PASS" in section and "RECURRING_EXECUTION_ACTIVE=TRUE" in section and "PE5_8_STARTED=FALSE" in section and "Separate authorization is required for PE-5.8" in section,"activation closure sequence")

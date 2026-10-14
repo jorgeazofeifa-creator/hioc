@@ -668,7 +668,7 @@ See the authoritative [Master Plan](HIOC_MASTER_PLAN.md) and its linked implemen
 
 ## Current PE-5.7 activation closure
 
-Classification: CURRENT. PE5_7_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED PE-5.7 closure snapshot. PE5_7_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
 OPERATOR_SUPPLIED activation/read-only verification reported one accepted marker
 and one accepted entry, zero unexpected PE-5 entries, and identical post-activation
 crontab SHA256 3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9.
@@ -677,3 +677,17 @@ current output freshness are not established by activation. PE5_8_STARTED=FALSE.
 Next: PE-5.8 - Operational Evidence and Independent Production Acceptance;
 separate authorization required. No runtime or execution-model change.
 See the authoritative [Master Plan](HIOC_MASTER_PLAN.md).
+
+## Current PE-5.8 operational acceptance closure
+
+Classification: CURRENT. PE5_8_STATUS=COMPLETE/PASS; RECURRING_EXECUTION_ACTIVE=TRUE.
+OPERATOR_SUPPLIED observations establish three consecutive natural successful
+windows (:17/:32/:47), distinct outputs and CONFIRMED transactions, unchanged
+source revision1/SHA and accepted scheduler SHA. No manual PE-5.8 producer run.
+Overlap/missed-cycle/expiry/failure/corruption evidence is committed synthetic
+Windows validation and static contract evidence, not naturally observed faults.
+Local envelope has no state field. Production hashes were operator-supplied;
+full production bytes and freshness after observation times are not asserted.
+PE-5 remains IN_PROGRESS. PE5_9_STARTED=FALSE.
+Next: PE-5.9 - Final PE-5 Closure and PE-6 Handoff; separate authorization required.
+See the authoritative [Master Plan](HIOC_MASTER_PLAN.md) for exact receipts and limitations.
