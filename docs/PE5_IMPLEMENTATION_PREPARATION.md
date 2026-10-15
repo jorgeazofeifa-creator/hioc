@@ -393,7 +393,7 @@ See the authoritative [Master Plan](HIOC_MASTER_PLAN.md) for exact receipts and 
 
 ## Current PE-5.9 final closure and private PE-6 handoff
 
-Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED accepted PE-5.9 handoff snapshot. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
 PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
 Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
@@ -412,3 +412,21 @@ waiver or new production observation. No runtime, scheduler, public interface,
 MQTT or production change occurs here. PE-6 may later consume only validated,
 confirmed, unexpired private relationship evidence under the unchanged contract.
 Publication remains gated by exact commit, push and independent GitHub verification.
+
+## Current PE-6 contract design and execution roadmap
+
+Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
+NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
+Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
+This checkpoint authorizes no runtime implementation, production operation or PE-7 work.
+
+The [PE-6 contract design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) inventories actual
+capabilities and preserves the complete original authorization, twenty evidence-backed
+technical decisions, exact private schema proposal and six-checkpoint roadmap.
+Proposed role suggestions and metadata-quality summaries remain private, deterministic
+and separate from operator-owned Asset data and public operational role/health.
+Asset schema1.0 and the accepted PE-5.9 governance/runtime remain unchanged.
+No PE-6 persistence, cron, inventory hook or public projection is selected.
+Actual production inputs/locks/runtime state remain UNKNOWN; only later bounded operator
+gates may establish them. All previous OPERATOR_SUPPLIED evidence limitations remain.

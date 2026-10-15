@@ -2583,14 +2583,14 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 4. **PE-4 - Home Assistant Association** — PASS/CLOSED; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation, deployment, independent production acceptance and Public Projection PASS/CLOSED; scheduler ACTIVE/AUTHORIZED; PE-4 PASS/CLOSED. Production evidence remains OPERATOR_SUPPLIED.
 5. **PE-5 - MQTT and Passive Service Association** — COMPLETE. PE5_9_STATUS=COMPLETE/PASS;
    all 37 requirements and 14 Definition of Done conditions accepted.
-   NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE;
+   NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation; PE6_RUNTIME_IMPLEMENTED=FALSE;
    separate authorization required. The following PE-5.1 planning paragraphs are
    HISTORICAL_INTENTIONALLY_PRESERVED snapshots, not current capability status.
    Historical roadmap status at ed3a80508d101652bac89e1dcc111167670aaebc (HISTORICAL_INTENTIONALLY_PRESERVED):
    **PE-5 - MQTT and Passive Service Association** — not started.
    Current PE-5.1 is an authorized private pure-library implementation candidate; broader runtime integration is NOT_STARTED / NOT AUTHORIZED. The following preparation status is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
    Implementation remains NOT_STARTED. Selected next roadmap checkpoint by executive decision; Implementation Preparation is current and PREPARED_FOR_REVIEW. Runtime/production implementation requires separate authorization.
-6. **PE-6 - Classification & Metadata Quality** — not started.
+6. **PE-6 - Classification & Metadata Quality** — contract design complete; runtime NOT_IMPLEMENTED. Next PE-6.1 requires separate authorization and adoption/revision of proposed contracts.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
    models Asset-layer expected-online intent for wall switches, smart switches,
    smart plugs, Sonoff devices, permanent lighting controls, and other
@@ -6268,9 +6268,27 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
-## Current PE-5 final closure — 2026-10-14
+## Current PE-6 contract design — 2026-10-14
 
-Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
+NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
+Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
+This checkpoint authorizes no runtime implementation, production operation or PE-7 work.
+
+The [PE-6 contract design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) inventories actual
+capabilities and preserves the complete original authorization, twenty evidence-backed
+technical decisions, exact private schema proposal and six-checkpoint roadmap.
+Proposed role suggestions and metadata-quality summaries remain private, deterministic
+and separate from operator-owned Asset data and public operational role/health.
+Asset schema1.0 and the accepted PE-5.9 governance/runtime remain unchanged.
+No PE-6 persistence, cron, inventory hook or public projection is selected.
+Actual production inputs/locks/runtime state remain UNKNOWN; only later bounded operator
+gates may establish them. All previous OPERATOR_SUPPLIED evidence limitations remain.
+
+## Historical PE-5 final closure — 2026-10-14
+
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
 PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
 Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
@@ -6921,7 +6939,7 @@ completion. Historical chronology elsewhere does not override it.
 | First Natural Public Projection MQTT Acceptance | PASS |
 | Public Projection Retained MQTT Topics | 7/7 |
 | Public Projection Retained Payload Equality | PASS |
-| PE-5 | COMPLETE; PE-5.9 COMPLETE/PASS; PE-6 next NOT_STARTED, separate authorization required |
+| PE-5 | COMPLETE; PE-5.9 COMPLETE/PASS; PE-6 contract design complete, runtime NOT_IMPLEMENTED; PE-6.1 next separately authorized |
 | Historical vs Current Lifecycle Test-Binding Correction | PASS/CLOSED |
 | Documentation Consistency Correction | PASS/CLOSED |
 | PE-4 | PASS/CLOSED |
@@ -7164,9 +7182,29 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-6.1 - Private classification implementation and comprehensive repository validation
+
+Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
+NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
+Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
+This checkpoint authorizes no runtime implementation, production operation or PE-7 work.
+
+The [PE-6 contract design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) inventories actual
+capabilities and preserves the complete original authorization, twenty evidence-backed
+technical decisions, exact private schema proposal and six-checkpoint roadmap.
+Proposed role suggestions and metadata-quality summaries remain private, deterministic
+and separate from operator-owned Asset data and public operational role/health.
+Asset schema1.0 and the accepted PE-5.9 governance/runtime remain unchanged.
+No PE-6 persistence, cron, inventory hook or public projection is selected.
+Actual production inputs/locks/runtime state remain UNKNOWN; only later bounded operator
+gates may establish them. All previous OPERATOR_SUPPLIED evidence limitations remain.
+
+### Historical accepted PE-5.9 handoff at d6f9d3c6bd07b16fc515ae531b6aa0a3e9188221
+
 ### PE-6 - Classification & Metadata Quality
 
-Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
 PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
 Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
@@ -7764,9 +7802,29 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-6.1 - Private classification implementation and comprehensive repository validation
+
+Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
+NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
+Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
+This checkpoint authorizes no runtime implementation, production operation or PE-7 work.
+
+The [PE-6 contract design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) inventories actual
+capabilities and preserves the complete original authorization, twenty evidence-backed
+technical decisions, exact private schema proposal and six-checkpoint roadmap.
+Proposed role suggestions and metadata-quality summaries remain private, deterministic
+and separate from operator-owned Asset data and public operational role/health.
+Asset schema1.0 and the accepted PE-5.9 governance/runtime remain unchanged.
+No PE-6 persistence, cron, inventory hook or public projection is selected.
+Actual production inputs/locks/runtime state remain UNKNOWN; only later bounded operator
+gates may establish them. All previous OPERATOR_SUPPLIED evidence limitations remain.
+
+### Historical accepted PE-5.9 handoff at d6f9d3c6bd07b16fc515ae531b6aa0a3e9188221
+
 ### PE-6 - Classification & Metadata Quality
 
-Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
 PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
 Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
@@ -10207,9 +10265,9 @@ operational_acceptance in the existing governance record for exact receipts,
 evidence limitations and repository validation. No runtime or authority model changes.
 Codex accessed no PI3, PI5 or production. PE-5.9 requires separate authorization.
 
-## Current PE-5.9 final closure and private PE-6 handoff
+## Historical PE-5.9 final closure and private PE-6 handoff
 
-Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. Phase 7A ACTIVE; PE5_STATUS=COMPLETE.
 PE5_9_STATUS=COMPLETE/PASS; PE5_8_STATUS=COMPLETE/PASS.
 NEXT_CHECKPOINT=PE-6 - Classification & Metadata Quality; PE6_STARTED=FALSE.
 Separate authorization is required for PE-6. PE-6 implementation is NOT authorized.
@@ -10258,3 +10316,21 @@ Publication remains gated by exact commit, push and independent GitHub verificat
 13. **PASS — Every original requirement COMPLETE or explicit authorized outside-phase/not-required disposition; no unknown completion requirement**. Thirty-seven COMPLETE evidence rows; all eleven UNKNOWN decisions resolved, original assignments and deferrals preserved.
 
 14. **PASS — Only after all gates PE5_STATUS=COMPLETE; PE-6 then becomes next passive-enrichment checkpoint under separate authorization**. Only final accepted PE-5.9 closure marks PE-5 COMPLETE; PE-6 next NOT_STARTED with separate authorization.
+
+## Current PE-6 contract design and execution roadmap
+
+Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
+NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
+Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
+This checkpoint authorizes no runtime implementation, production operation or PE-7 work.
+
+The [PE-6 contract design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) inventories actual
+capabilities and preserves the complete original authorization, twenty evidence-backed
+technical decisions, exact private schema proposal and six-checkpoint roadmap.
+Proposed role suggestions and metadata-quality summaries remain private, deterministic
+and separate from operator-owned Asset data and public operational role/health.
+Asset schema1.0 and the accepted PE-5.9 governance/runtime remain unchanged.
+No PE-6 persistence, cron, inventory hook or public projection is selected.
+Actual production inputs/locks/runtime state remain UNKNOWN; only later bounded operator
+gates may establish them. All previous OPERATOR_SUPPLIED evidence limitations remain.

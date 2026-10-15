@@ -167,6 +167,9 @@ def current_artifacts():
     bindings.update({item["path"]:item for item in durability_correction()["artifacts"]})
     from test_pe5_configured_association_implementation import implementation_successor
     bindings.update({item["path"]:item for item in implementation_successor()["artifacts"]})
+    if (ROOT/"governance/pe6/pe6-classification-contract-design.json").exists():
+        from test_pe6_classification_contract_design import design_successor
+        bindings.update({item["path"]:item for item in design_successor()["artifacts"]})
     return list(bindings.values())
 
 def current_binding(path):

@@ -1,6 +1,26 @@
+## PE-6.0 contract design and execution roadmap — 2026-10-14
+
+Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
+NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
+Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
+This checkpoint authorizes no runtime implementation, production operation or PE-7 work.
+
+The [PE-6 contract design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) inventories actual
+capabilities and preserves the complete original authorization, twenty evidence-backed
+technical decisions, exact private schema proposal and six-checkpoint roadmap.
+Proposed role suggestions and metadata-quality summaries remain private, deterministic
+and separate from operator-owned Asset data and public operational role/health.
+Asset schema1.0 and the accepted PE-5.9 governance/runtime remain unchanged.
+No PE-6 persistence, cron, inventory hook or public projection is selected.
+Actual production inputs/locks/runtime state remain UNKNOWN; only later bounded operator
+gates may establish them. All previous OPERATOR_SUPPLIED evidence limitations remain.
+
+Earlier completed checkpoint entries remain historical acceptance evidence.
+
 ## PE-5.9 final PE-5 closure and private PE-6 handoff — 2026-10-14
 
-Classification: CURRENT. PE5_9_STATUS=COMPLETE/PASS; PE5_STATUS=COMPLETE.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED. PE5_9_STATUS=COMPLETE/PASS; PE5_STATUS=COMPLETE.
 All 37 original requirements, 11 UNKNOWN resolutions and 14 Definition of Done
 conditions reconciled against accepted contracts, implementation and evidence.
 Private handoff documented without runtime/schema/public interface changes.

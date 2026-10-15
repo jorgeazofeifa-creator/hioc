@@ -120,16 +120,26 @@ def validate_implementation(r,s,identities=True):
 
 @lru_cache(maxsize=1)
 def implementation_successor():
+    if (ROOT/"governance/pe6/pe6-classification-contract-design.json").exists():
+        from test_pe6_classification_contract_design import accepted_pe5_implementation
+        return accepted_pe5_implementation()
     b,sb=raw(RECORD),raw(SCHEMA);r,s=json.loads(b),json.loads(sb)
     require(b==m.canonical(r) and sb==m.canonical(s),"canonical implementation")
     return validate_implementation(r,s)
 
 def implementation_binding(path):
+    if (ROOT/"governance/pe6/pe6-classification-contract-design.json").exists():
+        from test_pe6_classification_contract_design import design_binding
+        item=design_binding(path)
+        if item is not None:return item
     item=next((x for x in implementation_successor()["artifacts"] if x["path"]==path),None)
     if item:require((sha(raw(path)),blob(raw(path)))==(item["sha256"],item["git_blob"]),"current implementation binding")
     return item
 
 def assert_implementation_sequence(text):
+    if (ROOT/"governance/pe6/pe6-classification-contract-design.json").exists():
+        from test_pe6_classification_contract_design import assert_pe6_sequence
+        return assert_pe6_sequence(text)
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
     if implementation_successor().get("final_closure"):
