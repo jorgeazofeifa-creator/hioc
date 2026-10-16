@@ -9,8 +9,6 @@ from functools import lru_cache
 from pathlib import Path
 from unittest.mock import patch
 import unittest
-import sys
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"tools"))
 
 ROOT=Path(__file__).resolve().parents[1]
 BASE="ea4a93fba1615af1d6641c7f0683b8e912c03d72"
@@ -98,17 +96,11 @@ def validate_implementation(record,schema,identities=True):
     return record
 
 def implementation_successor():
-    if (ROOT/"governance/continuity/project-handoff.json").exists():
-        from hioc_project_continuity import current_implementation
-        return current_implementation()
     record,schema=json.loads(raw(RECORD)),json.loads(raw(SCHEMA))
     require(raw(RECORD)==canonical(record) and raw(SCHEMA)==canonical(schema),"canonical implementation")
     return validate_implementation(record,schema)
 
 def implementation_binding(path):
-    if (ROOT/"governance/continuity/project-handoff.json").exists():
-        from hioc_project_continuity import current_implementation
-        return next((x for x in current_implementation()["artifacts"] if x["path"]==path),None)
     item=next((x for x in implementation_successor()["artifacts"] if x["path"]==path),None)
     if item:require((sha(raw(path)),blob(raw(path)))==(item["sha256"],item["git_blob"]),"current successor identity")
     return item
@@ -290,11 +282,5 @@ class ImplementationGovernanceTests(unittest.TestCase):
         with patch.object(prior,'git',existing),self.assertRaisesRegex(ValueError,'existing runtime cannot be exempted'):
             prior.assert_historical_runtime_tree('c7db29f795909d7926e36c02f1166034bcebb8b0',['pi4'])
 
-
-def load_tests(loader, tests, pattern):
-    if (ROOT/"governance/continuity/project-handoff.json").exists():
-        from hioc_project_continuity import historical_implementation_tests
-        return historical_implementation_tests(loader)
-    return tests
 
 if __name__=="__main__":unittest.main()

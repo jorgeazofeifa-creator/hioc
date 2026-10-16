@@ -64,8 +64,6 @@ See [docs/INSTALL.md](docs/INSTALL.md) for installation, configuration, upgrade,
 
 ## Documentation
 
-For a fresh assistant session, start with [HIOC project continuity](docs/HIOC_PROJECT_CONTEXT.md) and verify the current repository state.
-
 [docs/HIOC_MASTER_PLAN.md](docs/HIOC_MASTER_PLAN.md) is the authoritative source for project direction, implementation phases, and current development status.
 
 The Master Plan governs project direction. It does not replace the technical documentation below.

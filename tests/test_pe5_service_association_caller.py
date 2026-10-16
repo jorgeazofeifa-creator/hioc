@@ -149,15 +149,6 @@ def assert_historical_runtime_tree(historical_commit, roots):
             pe6_binding(p)
         approved.update(pe6_additions)
 
-    if (ROOT/"governance/continuity/project-handoff.json").exists():
-        from hioc_project_continuity import validate_current as continuity, BASE as continuity_baseline
-        handoff=continuity()
-        continuity_tools={i["path"] for i in handoff["artifacts"] if i["path"].startswith("tools/")}
-        require(continuity_tools=={"tools/hioc-project-context.py","tools/hioc_project_continuity.py"},"exact T1 repository-only tools")
-        for p in continuity_tools:
-            require(not git("ls-tree","--name-only",continuity_baseline,"--",p),"existing runtime cannot be exempted")
-        approved.update(continuity_tools)
-
     changes=set(git("diff","--name-only",historical_commit,"--",*roots).decode().splitlines())
     require(changes<=approved,"historical runtime modified outside exact additive successors")
     for p in approved:
