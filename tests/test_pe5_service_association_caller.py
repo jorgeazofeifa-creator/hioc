@@ -135,6 +135,20 @@ def assert_historical_runtime_tree(historical_commit, roots):
         implementation_binding(p)
     approved.update(additions)
 
+    if (ROOT/"governance/pe6/pe6-classification-implementation.json").exists():
+        from test_pe6_classification_implementation import (
+            implementation_successor as pe6_successor,
+            implementation_binding as pe6_binding, BASE as pe6_baseline)
+        pe6=pe6_successor()
+        pe6_additions={i["path"] for i in pe6["artifacts"] if i["path"].startswith("pi4/")}
+        require(pe6_additions=={"pi4/bin/hioc-classify-metadata.py",
+            "pi4/lib/hioc/classification.py","pi4/lib/hioc/classification_caller.py",
+            "pi4/lib/hioc/classification_contract.py"},"exact PE-6.1 additive sources")
+        for p in pe6_additions:
+            require(not git("ls-tree","--name-only",pe6_baseline,"--",p),"existing runtime cannot be exempted")
+            pe6_binding(p)
+        approved.update(pe6_additions)
+
     changes=set(git("diff","--name-only",historical_commit,"--",*roots).decode().splitlines())
     require(changes<=approved,"historical runtime modified outside exact additive successors")
     for p in approved:

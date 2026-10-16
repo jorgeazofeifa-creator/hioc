@@ -22,8 +22,8 @@ The detailed status and sequencing authority is
 3. PE-3 - Manufacturer Reference Enrichment — PE-3.0 through PE-3.3 and
    production Actions 1-10 complete; deployment and PI3 validation complete.
 4. PE-4 - Home Assistant Association — PASS/CLOSED; Public Projection PASS/CLOSED.
-5. PE-5 - MQTT and Passive Service Association — COMPLETE; PE-5.9 COMPLETE/PASS. PE-6 contract design complete; PE-6.1 implementation/validation next, separately authorized.
-6. PE-6 - Classification & Metadata Quality — contract design COMPLETE; runtime NOT_IMPLEMENTED. Next: PE-6.1 implementation/validation under separate authorization.
+5. PE-5 - MQTT and Passive Service Association — COMPLETE; PE-5.9 COMPLETE/PASS. PE-6.0 and PE-6.1 repository implementation COMPLETE/PASS; PE-6.2 source synchronization next, separately authorized.
+6. PE-6 - Classification & Metadata Quality — IN_PROGRESS; PE-6.0 and PE-6.1 repository implementation COMPLETE/PASS; no production deployment/execution. Next: PE-6.2 source synchronization under separate authorization.
 7. PE-7 - Expected Availability & Permanent IoT Monitoring — planned.
 8. PE-8 - Automation Correlation & Impact Analysis — planned.
 9. PE-9 - Service & Infrastructure Dependency Intelligence — planned.
@@ -135,9 +135,9 @@ MQTT or production change occurs here. PE-6 may later consume only validated,
 confirmed, unexpired private relationship evidence under the unchanged contract.
 Publication remains gated by exact commit, push and independent GitHub verification.
 
-## Current PE-6 contract design and execution roadmap
+## Historical accepted PE-6.0 contract design and execution roadmap
 
-Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED accepted PE-6.0 snapshot. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
 PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
 NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
 Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
@@ -152,3 +152,28 @@ Asset schema1.0 and the accepted PE-5.9 governance/runtime remain unchanged.
 No PE-6 persistence, cron, inventory hook or public projection is selected.
 Actual production inputs/locks/runtime state remain UNKNOWN; only later bounded operator
 gates may establish them. All previous OPERATOR_SUPPLIED evidence limitations remain.
+
+## Current PE-6.1 repository implementation and validation
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS_REPOSITORY_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=FALSE.
+NEXT_CHECKPOINT=PE-6.2 - PI3 Release-Source Synchronization.
+Separate authorization is required for PE-6.2. PE6_2_STARTED=FALSE.
+
+The explicitly adopted [PE-6.0 design](docs/PE6_CLASSIFICATION_CONTRACT_DESIGN.md) is
+preserved byte-for-byte at ea4a93fba1615af1d6641c7f0683b8e912c03d72.
+The [PE-6.1 implementation evidence](docs/PE6_CLASSIFICATION_IMPLEMENTATION.md) records
+the private stateless resolver, explicit offline caller, exact source/provenance
+validation, unchanged Asset schema1.0 and complete PE-5 private handoff.
+Suggestions never confirm operator intent, alter identity/canonical IP, or affect
+public inventory, MQTT, health, liveness, monitoring or incidents.
+No persistent result store, last-known-good result, scheduler, inventory hook,
+producer execution, deployment, PI3/PI5/HA/MQTT/credential or production access
+is authorized or performed. Operational inputs, configured locks and production
+facts remain UNKNOWN until separately authorized operator checkpoints.
+All PE-4/PE-5 production observations retain OPERATOR_SUPPLIED limitations.
+The closure text is an unpublished candidate until all required validation and
+independent acceptance pass; actual final totals are recorded in the accepted
+commit Evidence Report. Failed validation prevents publication.

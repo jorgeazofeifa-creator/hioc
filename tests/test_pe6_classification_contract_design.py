@@ -92,14 +92,24 @@ def validate_design(r,s,identities=True):
     return r
 @lru_cache(maxsize=1)
 def design_successor():
+    if (ROOT/"governance/pe6/pe6-classification-implementation.json").exists():
+        from test_pe6_classification_implementation import accepted_design
+        return accepted_design()
     b,s=raw(RECORD),raw(SCHEMA);r,sc=json.loads(b),json.loads(s)
     require(b==canonical(r) and s==canonical(sc),"canonical PE6 design")
     return validate_design(r,sc)
 def design_binding(path):
+    if (ROOT/"governance/pe6/pe6-classification-implementation.json").exists():
+        from test_pe6_classification_implementation import implementation_binding
+        item=implementation_binding(path)
+        if item is not None:return item
     item=next((x for x in design_successor()["artifacts"] if x["path"]==path),None)
     if item:require((sha(raw(path)),blob(raw(path)))==(item["sha256"],item["git_blob"]),"PE6 current binding")
     return item
 def assert_pe6_sequence(text):
+    if (ROOT/"governance/pe6/pe6-classification-implementation.json").exists():
+        from test_pe6_classification_implementation import assert_implementation_sequence
+        return assert_implementation_sequence(text)
     design_binding("docs/HIOC_MASTER_PLAN.md")
     section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
     require(section.strip().startswith("### PE-6.1 - Private classification implementation and comprehensive repository validation"),"current PE6 next checkpoint")
@@ -159,10 +169,10 @@ class PE6DesignTests(unittest.TestCase):
         from test_pe4_documentation_consistency_correction import current_artifacts,current_binding
         mapping={x["path"]:x for x in current_artifacts()}
         for x in design_successor()["artifacts"]:
-            self.assertEqual(mapping[x["path"]],x);self.assertEqual(current_binding(x["path"]),x)
+            self.assertEqual(mapping[x["path"]],design_binding(x["path"]));self.assertEqual(current_binding(x["path"]),design_binding(x["path"]))
         from test_pe4_ha_association_public_projection_test_binding_correction import closure_artifact_bindings
         closure=closure_artifact_bindings()
-        for x in design_successor()["artifacts"]:self.assertEqual(closure[x["path"]],x)
+        for x in design_successor()["artifacts"]:self.assertEqual(closure[x["path"]],design_binding(x["path"]))
         old=next(x for x in accepted_pe5_implementation()["artifacts"] if x["path"]=="docs/DATA_MODEL.md")
         self.assertNotEqual(old["sha256"],closure["docs/DATA_MODEL.md"]["sha256"])
         self.assertEqual(sha(baseline_bytes("docs/DATA_MODEL.md")),old["sha256"])

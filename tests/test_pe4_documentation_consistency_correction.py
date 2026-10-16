@@ -170,6 +170,9 @@ def current_artifacts():
     if (ROOT/"governance/pe6/pe6-classification-contract-design.json").exists():
         from test_pe6_classification_contract_design import design_successor
         bindings.update({item["path"]:item for item in design_successor()["artifacts"]})
+    if (ROOT/"governance/pe6/pe6-classification-implementation.json").exists():
+        from test_pe6_classification_implementation import implementation_successor as pe6_implementation
+        bindings.update({item["path"]:item for item in pe6_implementation()["artifacts"]})
     return list(bindings.values())
 
 def current_binding(path):

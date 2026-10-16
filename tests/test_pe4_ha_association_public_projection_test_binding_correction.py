@@ -263,6 +263,9 @@ def closure_artifact_bindings():
  if (ROOT/"governance/pe6/pe6-classification-contract-design.json").exists():
   from test_pe6_classification_contract_design import design_successor as pe6_design_successor
   bindings.update({item["path"]:item for item in pe6_design_successor()["artifacts"]})
+ if (ROOT/"governance/pe6/pe6-classification-implementation.json").exists():
+  from test_pe6_classification_implementation import implementation_successor as pe6_implementation
+  bindings.update({item["path"]:item for item in pe6_implementation()["artifacts"]})
  return bindings
 # Existing historical consumers retain the same validated authority entry point.
 current_artifact_bindings = closure_artifact_bindings

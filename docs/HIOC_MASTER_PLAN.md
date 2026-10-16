@@ -2583,14 +2583,14 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
 4. **PE-4 - Home Assistant Association** — PASS/CLOSED; D/E/F/G PASS/CLOSED; E handoff ACCEPTED; PE-4.0B.2a PASS/CLOSED; original 2b preparation complete; first 2b execution historically ATTEMPTED / NOT COMPLETE; Compatibility Resilience audit PASS/CLOSED; corrected preparation and PE-4.0B.2b PASS/CLOSED; PE-4.0C and PE-4.0C.1 PASS/CLOSED; adapter implementation preparation PASS/CLOSED; Runtime Credential Provisioning Preparation PASS/CLOSED; Runtime Credential Provisioning PASS/CLOSED; Operator Installation, Independent Validation and Governance Closure PASS/CLOSED based on operator-supplied PI3 evidence; adapter implementation, deployment, independent production acceptance and Public Projection PASS/CLOSED; scheduler ACTIVE/AUTHORIZED; PE-4 PASS/CLOSED. Production evidence remains OPERATOR_SUPPLIED.
 5. **PE-5 - MQTT and Passive Service Association** — COMPLETE. PE5_9_STATUS=COMPLETE/PASS;
    all 37 requirements and 14 Definition of Done conditions accepted.
-   NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation; PE6_RUNTIME_IMPLEMENTED=FALSE;
-   separate authorization required. The following PE-5.1 planning paragraphs are
+   NEXT_CHECKPOINT=PE-6.2 - PI3 Release-Source Synchronization; PE6_REPOSITORY_IMPLEMENTED=TRUE;
+   separate PE-6.2 authorization required; production deployment/execution remains NOT_AUTHORIZED. The following PE-5.1 planning paragraphs are
    HISTORICAL_INTENTIONALLY_PRESERVED snapshots, not current capability status.
    Historical roadmap status at ed3a80508d101652bac89e1dcc111167670aaebc (HISTORICAL_INTENTIONALLY_PRESERVED):
    **PE-5 - MQTT and Passive Service Association** — not started.
    Current PE-5.1 is an authorized private pure-library implementation candidate; broader runtime integration is NOT_STARTED / NOT AUTHORIZED. The following preparation status is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
    Implementation remains NOT_STARTED. Selected next roadmap checkpoint by executive decision; Implementation Preparation is current and PREPARED_FOR_REVIEW. Runtime/production implementation requires separate authorization.
-6. **PE-6 - Classification & Metadata Quality** — contract design complete; runtime NOT_IMPLEMENTED. Next PE-6.1 requires separate authorization and adoption/revision of proposed contracts.
+6. **PE-6 - Classification & Metadata Quality** — PE-6.0 COMPLETE/PASS; PE-6.1 repository implementation COMPLETE/PASS. PE-6 IN_PROGRESS; no production deployment/execution. Next PE-6.2 requires separate authorization.
 7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
    models Asset-layer expected-online intent for wall switches, smart switches,
    smart plugs, Sonoff devices, permanent lighting controls, and other
@@ -6268,9 +6268,9 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
-## Current PE-6 contract design — 2026-10-14
+## Historical accepted PE-6.0 contract design — 2026-10-14
 
-Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED accepted PE-6.0 snapshot. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
 PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
 NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
 Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
@@ -6939,7 +6939,7 @@ completion. Historical chronology elsewhere does not override it.
 | First Natural Public Projection MQTT Acceptance | PASS |
 | Public Projection Retained MQTT Topics | 7/7 |
 | Public Projection Retained Payload Equality | PASS |
-| PE-5 | COMPLETE; PE-5.9 COMPLETE/PASS; PE-6 contract design complete, runtime NOT_IMPLEMENTED; PE-6.1 next separately authorized |
+| PE-5 | COMPLETE; PE-5.9 COMPLETE/PASS; PE-6.0 COMPLETE/PASS; PE-6.1 repository implementation COMPLETE/PASS; PE-6 IN_PROGRESS; PE-6.2 next separately authorized; no production deployment/execution |
 | Historical vs Current Lifecycle Test-Binding Correction | PASS/CLOSED |
 | Documentation Consistency Correction | PASS/CLOSED |
 | PE-4 | PASS/CLOSED |
@@ -7182,9 +7182,36 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-6.2 - PI3 Release-Source Synchronization
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS_REPOSITORY_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=FALSE.
+NEXT_CHECKPOINT=PE-6.2 - PI3 Release-Source Synchronization.
+Separate authorization is required for PE-6.2. PE6_2_STARTED=FALSE.
+
+The explicitly adopted [PE-6.0 design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) is
+preserved byte-for-byte at ea4a93fba1615af1d6641c7f0683b8e912c03d72.
+The [PE-6.1 implementation evidence](PE6_CLASSIFICATION_IMPLEMENTATION.md) records
+the private stateless resolver, explicit offline caller, exact source/provenance
+validation, unchanged Asset schema1.0 and complete PE-5 private handoff.
+Suggestions never confirm operator intent, alter identity/canonical IP, or affect
+public inventory, MQTT, health, liveness, monitoring or incidents.
+No persistent result store, last-known-good result, scheduler, inventory hook,
+producer execution, deployment, PI3/PI5/HA/MQTT/credential or production access
+is authorized or performed. Operational inputs, configured locks and production
+facts remain UNKNOWN until separately authorized operator checkpoints.
+All PE-4/PE-5 production observations retain OPERATOR_SUPPLIED limitations.
+The closure text is an unpublished candidate until all required validation and
+independent acceptance pass; actual final totals are recorded in the accepted
+commit Evidence Report. Failed validation prevents publication.
+
+### Historical accepted PE-6.0 next-task snapshot at ea4a93fba1615af1d6641c7f0683b8e912c03d72
+
 ### PE-6.1 - Private classification implementation and comprehensive repository validation
 
-Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED accepted PE-6.0 snapshot. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
 PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
 NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
 Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
@@ -7802,9 +7829,36 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-6.2 - PI3 Release-Source Synchronization
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS_REPOSITORY_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=FALSE.
+NEXT_CHECKPOINT=PE-6.2 - PI3 Release-Source Synchronization.
+Separate authorization is required for PE-6.2. PE6_2_STARTED=FALSE.
+
+The explicitly adopted [PE-6.0 design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) is
+preserved byte-for-byte at ea4a93fba1615af1d6641c7f0683b8e912c03d72.
+The [PE-6.1 implementation evidence](PE6_CLASSIFICATION_IMPLEMENTATION.md) records
+the private stateless resolver, explicit offline caller, exact source/provenance
+validation, unchanged Asset schema1.0 and complete PE-5 private handoff.
+Suggestions never confirm operator intent, alter identity/canonical IP, or affect
+public inventory, MQTT, health, liveness, monitoring or incidents.
+No persistent result store, last-known-good result, scheduler, inventory hook,
+producer execution, deployment, PI3/PI5/HA/MQTT/credential or production access
+is authorized or performed. Operational inputs, configured locks and production
+facts remain UNKNOWN until separately authorized operator checkpoints.
+All PE-4/PE-5 production observations retain OPERATOR_SUPPLIED limitations.
+The closure text is an unpublished candidate until all required validation and
+independent acceptance pass; actual final totals are recorded in the accepted
+commit Evidence Report. Failed validation prevents publication.
+
+### Historical accepted PE-6.0 next-task snapshot at ea4a93fba1615af1d6641c7f0683b8e912c03d72
+
 ### PE-6.1 - Private classification implementation and comprehensive repository validation
 
-Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED accepted PE-6.0 snapshot. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
 PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
 NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
 Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
@@ -10317,9 +10371,9 @@ Publication remains gated by exact commit, push and independent GitHub verificat
 
 14. **PASS — Only after all gates PE5_STATUS=COMPLETE; PE-6 then becomes next passive-enrichment checkpoint under separate authorization**. Only final accepted PE-5.9 closure marks PE-5 COMPLETE; PE-6 next NOT_STARTED with separate authorization.
 
-## Current PE-6 contract design and execution roadmap
+## Historical accepted PE-6.0 contract design and execution roadmap
 
-Classification: CURRENT. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
+Classification: HISTORICAL_INTENTIONALLY_PRESERVED accepted PE-6.0 snapshot. PE5_STATUS=COMPLETE; PE6_STATUS=DESIGN_COMPLETE_RUNTIME_NOT_IMPLEMENTED.
 PE6_0_STATUS=COMPLETE_CONTRACT_DESIGN; PE6_RUNTIME_IMPLEMENTED=FALSE.
 NEXT_CHECKPOINT=PE-6.1 - Private classification implementation and comprehensive repository validation.
 Separate authorization is required for PE-6.1, including adoption or revision of the proposed design.
@@ -10334,3 +10388,28 @@ Asset schema1.0 and the accepted PE-5.9 governance/runtime remain unchanged.
 No PE-6 persistence, cron, inventory hook or public projection is selected.
 Actual production inputs/locks/runtime state remain UNKNOWN; only later bounded operator
 gates may establish them. All previous OPERATOR_SUPPLIED evidence limitations remain.
+
+## Current PE-6.1 repository implementation and validation
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS_REPOSITORY_IMPLEMENTED.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=FALSE.
+NEXT_CHECKPOINT=PE-6.2 - PI3 Release-Source Synchronization.
+Separate authorization is required for PE-6.2. PE6_2_STARTED=FALSE.
+
+The explicitly adopted [PE-6.0 design](PE6_CLASSIFICATION_CONTRACT_DESIGN.md) is
+preserved byte-for-byte at ea4a93fba1615af1d6641c7f0683b8e912c03d72.
+The [PE-6.1 implementation evidence](PE6_CLASSIFICATION_IMPLEMENTATION.md) records
+the private stateless resolver, explicit offline caller, exact source/provenance
+validation, unchanged Asset schema1.0 and complete PE-5 private handoff.
+Suggestions never confirm operator intent, alter identity/canonical IP, or affect
+public inventory, MQTT, health, liveness, monitoring or incidents.
+No persistent result store, last-known-good result, scheduler, inventory hook,
+producer execution, deployment, PI3/PI5/HA/MQTT/credential or production access
+is authorized or performed. Operational inputs, configured locks and production
+facts remain UNKNOWN until separately authorized operator checkpoints.
+All PE-4/PE-5 production observations retain OPERATOR_SUPPLIED limitations.
+The closure text is an unpublished candidate until all required validation and
+independent acceptance pass; actual final totals are recorded in the accepted
+commit Evidence Report. Failed validation prevents publication.
