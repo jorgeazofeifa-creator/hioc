@@ -1,0 +1,615 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifacts": {
+      "items": false,
+      "maxItems": 10,
+      "minItems": 10,
+      "prefixItems": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "0dfdb8b5301d56c60b8b06b4529287237438dd65"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "README.md"
+            },
+            "sha256": {
+              "const": "ba03510e559c3e7a62fe7bd60b5c5805450fa80739780667dd983b1d19303cf6"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "e6e59d4a964eddab346e20a53f2f76e0de10c177"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "docs/HIOC_MASTER_PLAN.md"
+            },
+            "sha256": {
+              "const": "898490265967a3ca1fabfcd2966b41186224bbb987d3c7487adc6cbb92f2ff93"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "7b24fe1ee823da0fcd4af38078a03d0d68fd0205"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "docs/HIOC_PROJECT_CONTEXT.md"
+            },
+            "sha256": {
+              "const": "68e4d5696a9951fcd7958d0ffc8a3b005085d84db14b28fb11aa124e098ff58f"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "582da069fccf159e5a9a27891e8098d9d3934f98"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "governance/continuity/engineering-transition-issue-6.md"
+            },
+            "sha256": {
+              "const": "f360b404ce8cd30a508184586de20ef916de1af20d47a2430bf4ef97252e173e"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "daf34f62746725e71733ed9a3e74c244c64685b4"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "governance/continuity/t1-authorization.md"
+            },
+            "sha256": {
+              "const": "921efc47c3cb921a413132c6eca30a49ce721fbe0fd7f548d6818a2b56d1eca7"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "251869df9ee754da75a967290a64a8ff01cf0878"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "tests/test_pe5_service_association_caller.py"
+            },
+            "sha256": {
+              "const": "4ba9c223a622c645c67f05690f4fab9f41bf0c8ad07ff2ba1ae5b79532244ac0"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "d6a49a4b3306ee854aed9bbc7cbe7930aec13cf5"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "tests/test_pe6_classification_implementation.py"
+            },
+            "sha256": {
+              "const": "d2ee35d4e7b589b2296372417ea93fd169ff827e080adfd1f6a5bcd2a11a5ec5"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "a0a0976663dfafe3bde13c368c3eb6d46e85adbc"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "tests/test_project_continuity.py"
+            },
+            "sha256": {
+              "const": "93bc72bc0eda10360b4896cc7622d9a29458505e589d496ef738db20c07997ba"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "a370d2ca3b78f816f8006b47d1f21468c7ee14ea"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "tools/hioc-project-context.py"
+            },
+            "sha256": {
+              "const": "e153685879b817ef7e6f8a0500cfdca99485d1f13346562e377c020a1897ce90"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "git_blob": {
+              "const": "a607d48140c076bbc68aa6abe88292d11bf23ade"
+            },
+            "mode": {
+              "const": "100644"
+            },
+            "path": {
+              "const": "tools/hioc_project_continuity.py"
+            },
+            "sha256": {
+              "const": "f8ec935de077266561457e8cf9c4b4fe9a6192e2ed7268e9882c86f58242ef58"
+            }
+          },
+          "required": [
+            "git_blob",
+            "mode",
+            "path",
+            "sha256"
+          ],
+          "type": "object"
+        }
+      ],
+      "type": "array"
+    },
+    "authorities": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "const": "docs/ARCHITECTURE.md"
+        },
+        "data": {
+          "const": "docs/DATA_MODEL.md"
+        },
+        "deployment": {
+          "const": "docs/DEPLOYMENT.md"
+        },
+        "home_assistant": {
+          "const": "docs/HOME_ASSISTANT.md"
+        },
+        "mqtt": {
+          "const": "docs/MQTT.md"
+        },
+        "overview": {
+          "const": "docs/PROJECT.md"
+        },
+        "pe6_design": {
+          "const": "docs/PE6_CLASSIFICATION_CONTRACT_DESIGN.md"
+        },
+        "pe6_implementation": {
+          "const": "docs/PE6_CLASSIFICATION_IMPLEMENTATION.md"
+        },
+        "product_plan": {
+          "const": "docs/HIOC_MASTER_PLAN.md"
+        },
+        "runtime": {
+          "const": "docs/OPERATIONS.md"
+        },
+        "system": {
+          "const": "docs/SYSTEM_REFERENCE.md"
+        }
+      },
+      "required": [
+        "architecture",
+        "data",
+        "deployment",
+        "home_assistant",
+        "mqtt",
+        "overview",
+        "pe6_design",
+        "pe6_implementation",
+        "product_plan",
+        "runtime",
+        "system"
+      ],
+      "type": "object"
+    },
+    "authorized_paths": {
+      "items": false,
+      "maxItems": 12,
+      "minItems": 12,
+      "prefixItems": [
+        {
+          "const": "README.md"
+        },
+        {
+          "const": "docs/HIOC_MASTER_PLAN.md"
+        },
+        {
+          "const": "docs/HIOC_PROJECT_CONTEXT.md"
+        },
+        {
+          "const": "governance/continuity/engineering-transition-issue-6.md"
+        },
+        {
+          "const": "governance/continuity/project-handoff.json"
+        },
+        {
+          "const": "governance/continuity/project-handoff.schema.json"
+        },
+        {
+          "const": "governance/continuity/t1-authorization.md"
+        },
+        {
+          "const": "tests/test_pe5_service_association_caller.py"
+        },
+        {
+          "const": "tests/test_pe6_classification_implementation.py"
+        },
+        {
+          "const": "tests/test_project_continuity.py"
+        },
+        {
+          "const": "tools/hioc-project-context.py"
+        },
+        {
+          "const": "tools/hioc_project_continuity.py"
+        }
+      ],
+      "type": "array"
+    },
+    "blockers": {
+      "items": false,
+      "maxItems": 0,
+      "minItems": 0,
+      "prefixItems": [],
+      "type": "array"
+    },
+    "boundary": {
+      "additionalProperties": false,
+      "properties": {
+        "codex": {
+          "const": "WINDOWS_REPOSITORY_ONLY"
+        },
+        "credential_access": {
+          "const": false
+        },
+        "ha_access": {
+          "const": false
+        },
+        "mqtt_access": {
+          "const": false
+        },
+        "pi3_access": {
+          "const": false
+        },
+        "pi3_execution": {
+          "const": "OPERATOR_ONLY_SEPARATE_AUTHORIZATION"
+        },
+        "pi5_access": {
+          "const": false
+        },
+        "production_access": {
+          "const": false
+        },
+        "production_current_state": {
+          "const": "UNKNOWN"
+        },
+        "production_mutation": {
+          "const": false
+        }
+      },
+      "required": [
+        "codex",
+        "credential_access",
+        "ha_access",
+        "mqtt_access",
+        "pi3_access",
+        "pi3_execution",
+        "pi5_access",
+        "production_access",
+        "production_current_state",
+        "production_mutation"
+      ],
+      "type": "object"
+    },
+    "last_verified": {
+      "additionalProperties": false,
+      "properties": {
+        "branch": {
+          "const": "main"
+        },
+        "clean": {
+          "const": true
+        },
+        "commit": {
+          "const": "94f014cea1d5216a1deeef9fd1d0a025f1c7083e"
+        },
+        "evidence_class": {
+          "const": "DIRECT_OBSERVATION"
+        },
+        "head_equals_origin_main": {
+          "const": true
+        },
+        "limitation": {
+          "const": "HISTORICAL_OBSERVATION; REVERIFY_LIVE_STATE"
+        },
+        "scope": {
+          "const": "WINDOWS_REPOSITORY_AT_T1_START"
+        }
+      },
+      "required": [
+        "branch",
+        "clean",
+        "commit",
+        "evidence_class",
+        "head_equals_origin_main",
+        "limitation",
+        "scope"
+      ],
+      "type": "object"
+    },
+    "pending_work": {
+      "items": false,
+      "maxItems": 3,
+      "minItems": 3,
+      "prefixItems": [
+        {
+          "const": "T2 through T5: separate authorization"
+        },
+        {
+          "const": "PE-6.2: separate authorization"
+        },
+        {
+          "const": "Phase 7B Active Discovery postponed"
+        }
+      ],
+      "type": "array"
+    },
+    "product": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_checkpoint": {
+          "const": "PE-6.1 COMPLETE/PASS"
+        },
+        "accepted_commit": {
+          "const": "94f014cea1d5216a1deeef9fd1d0a025f1c7083e"
+        },
+        "next_authorized": {
+          "const": false
+        },
+        "next_checkpoint": {
+          "const": "PE-6.2 - PI3 Release-Source Synchronization"
+        },
+        "pe6_production_deployed_at_closure": {
+          "const": false
+        },
+        "phase": {
+          "const": "Phase 7A ACTIVE"
+        }
+      },
+      "required": [
+        "accepted_checkpoint",
+        "accepted_commit",
+        "next_authorized",
+        "next_checkpoint",
+        "pe6_production_deployed_at_closure",
+        "phase"
+      ],
+      "type": "object"
+    },
+    "project": {
+      "const": "HIOC"
+    },
+    "recovery": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_unpublished_candidate": {
+          "const": false
+        },
+        "candidate_state": {
+          "const": "DERIVE_FROM_FRESH_GIT"
+        },
+        "dirty_candidate": {
+          "const": "PRESERVE_AND_COMPARE; NEVER_RESET_OR_OVERWRITE"
+        },
+        "freshness": {
+          "const": "VERIFY_ALL_CURRENT_BYTES_AND_INDEX_EVERY_CALL; HISTORICAL_MODE_IS_SNAPSHOT_ONLY"
+        },
+        "unavailable_repository": {
+          "const": "UNKNOWN_STOP; REQUEST_FILES_OR_VERIFIED_EXPORT"
+        }
+      },
+      "required": [
+        "accepted_unpublished_candidate",
+        "candidate_state",
+        "dirty_candidate",
+        "freshness",
+        "unavailable_repository"
+      ],
+      "type": "object"
+    },
+    "repository": {
+      "const": "https://github.com/jorgeazofeifa-creator/hioc"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "transition": {
+      "additionalProperties": false,
+      "properties": {
+        "immediate_after_acceptance": {
+          "const": "STOP; T2 requires separate authorization"
+        },
+        "implementation": {
+          "const": "COMPLETE_REPOSITORY_IMPLEMENTATION"
+        },
+        "next_stage": {
+          "const": "T2"
+        },
+        "next_stage_authorized": {
+          "const": false
+        },
+        "publication": {
+          "const": "VERIFY_FROM_GIT_NOT_THIS_RECORD"
+        },
+        "sequence": {
+          "items": false,
+          "maxItems": 5,
+          "minItems": 5,
+          "prefixItems": [
+            {
+              "const": "T1 continuity"
+            },
+            {
+              "const": "T2 binding audit"
+            },
+            {
+              "const": "T3 deterministic CI/test environments"
+            },
+            {
+              "const": "T4 bounded capability pilot"
+            },
+            {
+              "const": "T5 evidence-based consolidation"
+            }
+          ],
+          "type": "array"
+        },
+        "stage": {
+          "const": "T1"
+        }
+      },
+      "required": [
+        "immediate_after_acceptance",
+        "implementation",
+        "next_stage",
+        "next_stage_authorized",
+        "publication",
+        "sequence",
+        "stage"
+      ],
+      "type": "object"
+    },
+    "unknowns": {
+      "items": false,
+      "maxItems": 2,
+      "minItems": 2,
+      "prefixItems": [
+        {
+          "const": "Current production state"
+        },
+        {
+          "const": "Future checkpoint authorization"
+        }
+      ],
+      "type": "array"
+    }
+  },
+  "required": [
+    "artifacts",
+    "authorities",
+    "authorized_paths",
+    "blockers",
+    "boundary",
+    "last_verified",
+    "pending_work",
+    "product",
+    "project",
+    "recovery",
+    "repository",
+    "schema_version",
+    "transition",
+    "unknowns"
+  ],
+  "title": "HIOC T1 derived continuity snapshot",
+  "type": "object"
+}

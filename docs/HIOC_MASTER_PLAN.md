@@ -10413,3 +10413,28 @@ All PE-4/PE-5 production observations retain OPERATOR_SUPPLIED limitations.
 The closure text is an unpublished candidate until all required validation and
 independent acceptance pass; actual final totals are recorded in the accepted
 commit Evidence Report. Failed validation prevents publication.
+
+## Engineering Transition T1 - Durable Project Continuity
+
+Engineering transition only; the product roadmap and Next Planned Task remain unchanged.
+Approved tracking record: [GitHub Issue #6](https://github.com/jorgeazofeifa-creator/hioc/issues/6).
+T1 provides the derived [project continuity entry point](HIOC_PROJECT_CONTEXT.md),
+closed machine-readable handoff, read-only validator and fresh-session recovery tests.
+T1 repository implementation is complete; acceptance/publication require validation,
+exact commit and independent GitHub verification. Live state is always reverified.
+The handoff anchors accepted product closure at 94f014cea1d5216a1deeef9fd1d0a025f1c7083e;
+it never claims a future self-referential commit or current production health.
+The existing PROJECT overview and focused technical ownership remain authoritative.
+The current contributor refreshes continuity during each separately authorized change.
+T2 is the next engineering-transition stage and is NOT STARTED or authorized here.
+T3/T4/T5 likewise require separate authorization. PE-6.2 remains NOT STARTED and
+requires separate authorization. No product implementation, source synchronization,
+deployment, PI3/PI5/HA/MQTT/credential or production access/mutation occurs in T1.
+Original T1 authorization and retrieved Issue #6 text are retained verbatim under
+governance/continuity; historical product and governance evidence are unchanged.
+
+T1_STATUS=COMPLETE/PASS; T2_STATUS=NOT_STARTED; PE6_2_STARTED=FALSE.
+Native Windows acceptance: focused: 25 run / 25 passed / 0 individual skips / 0 class skips / 0 failures / 0 errors; affected: 278 run / 277 passed / 1 individual skips / 0 class skips / 0 failures / 0 errors; full: 2999 run / 2955 passed / 44 individual skips / 5 class skips / 0 failures / 0 errors.
+All existing product source and accepted governance artifacts remain unchanged. Publication is established by the exact Git commit and independent GitHub verification, never by a handoff claim.
+Interpreter: 3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]. Established native Windows stdin harness; shell-free PATH; HIOC_TEST_SHELL cleared; tests/pi4/lib/tools imports.
+Skip records by prerequisite (including class skips): Bash unavailable=22, Native Linux/POSIX prerequisite=17, PyYAML unavailable=6, Symlink prerequisite=3, rsync unavailable=1. No native Linux or production execution claim.
