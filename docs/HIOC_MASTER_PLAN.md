@@ -6268,6 +6268,39 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## PE-6.3 disabled runtime installation closure
+
+### PE-6.4 - Bounded Execution and Independent Production Acceptance
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS;
+PE6_2_STATUS=COMPLETE/PASS; PE6_3_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=TRUE.
+DEPLOYMENT_SCOPE=DISABLED_EXACT_FOUR_FILE_INSTALLATION_ONLY.
+PE6_PRODUCTION_EXECUTION_ESTABLISHED=FALSE; PE6_4_STARTED=FALSE.
+NEXT_CHECKPOINT=PE-6.4 - Bounded Execution and Independent Production Acceptance.
+Separate authorization is required for PE-6.4. No scheduler or automatic activation is authorized.
+
+PE-6.3 accepts only OPERATOR_SUPPLIED PI3 disabled-installation evidence from
+source 723c1e71ad2d54e5088c0849ccee59857cbe0794. Four exact new artifacts were
+installed without overwriting existing files; seven observed dependencies were preserved.
+Codex did not access PI3. No caller execution, initialization, cron change,
+service restart, scheduled activation or PE-6.4 execution occurred in this checkpoint.
+The inspected activation locations returned no matches; universal indirect invocation
+absence and current production health are not established.
+Runtime inventory.py differs from source; only KNOWN_FIELDS, OPERATOR_ROLES and
+normalize_mac AST definitions were reported equal. Full runtime compatibility is not established.
+Rollback was NOT PERFORMED and is not claimed tested. No pre-existing dependency may be removed.
+See [PE-6.3 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-63-disabled-runtime-installation-acceptance-and-closure).
+PE-6 remains IN PROGRESS. PE-6.4 is NEXT / NOT STARTED; PE-6.5 closure and PE-7 remain later.
+STOP after PE-6.3. No automatic follow-on action is authorized.
+
+All earlier checkpoint narratives below retain their accepted historical meaning,
+including then-current labels and next-task snapshots. They do not supersede this
+current status or Next Planned Task. Installation is not classification execution.
+
+
 ## PE-6.2 source synchronization closure
 
 ### PE-6.3 - Disabled Exact Runtime Deployment
@@ -7211,27 +7244,31 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
-### PE-6.3 - Disabled Exact Runtime Deployment
+### PE-6.4 - Bounded Execution and Independent Production Acceptance
 
 Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
-PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS_REPOSITORY_IMPLEMENTED.
-PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS; PE6_2_STATUS=COMPLETE/PASS.
-PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=FALSE.
-NEXT_CHECKPOINT=PE-6.3 - Disabled Exact Runtime Deployment.
-Separate authorization is required for PE-6.3. PE6_3_STARTED=FALSE.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS;
+PE6_2_STATUS=COMPLETE/PASS; PE6_3_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=TRUE.
+DEPLOYMENT_SCOPE=DISABLED_EXACT_FOUR_FILE_INSTALLATION_ONLY.
+PE6_PRODUCTION_EXECUTION_ESTABLISHED=FALSE; PE6_4_STARTED=FALSE.
+NEXT_CHECKPOINT=PE-6.4 - Bounded Execution and Independent Production Acceptance.
+Separate authorization is required for PE-6.4. No scheduler or automatic activation is authorized.
 
-PE-6.2 accepted source synchronization only from OPERATOR_SUPPLIED PI3 evidence:
-main fast-forwarded to 238dfae6cef1d4f17a4b1e52a5f636f01a5651c4, clean, tree
-matching accepted PE-6.1. Four PE-6 files were reported absent from runtime;
-source and runtime directories were distinct. Codex did not observe PI3 directly.
-See [PE-6.2 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-62-source-synchronization-acceptance-and-formal-closure).
-Historical PE-6.0/PE-6.1 contracts and acceptance evidence remain unchanged.
-Source synchronization proves no production functionality, health, freshness or
-universal runtime-file preservation. No runtime deployment or caller execution occurred.
-PE-6.3 is disabled exact runtime deployment only, with no caller execution,
-initialization, activation or cron; it is NOT STARTED and not authorized here.
-PE-6.4 remains later bounded execution and independent acceptance under separate authorization.
-No recurring activation, automatic execution, PE-7 work or follow-on action is authorized.
+PE-6.3 accepts only OPERATOR_SUPPLIED PI3 disabled-installation evidence from
+source 723c1e71ad2d54e5088c0849ccee59857cbe0794. Four exact new artifacts were
+installed without overwriting existing files; seven observed dependencies were preserved.
+Codex did not access PI3. No caller execution, initialization, cron change,
+service restart, scheduled activation or PE-6.4 execution occurred in this checkpoint.
+The inspected activation locations returned no matches; universal indirect invocation
+absence and current production health are not established.
+Runtime inventory.py differs from source; only KNOWN_FIELDS, OPERATOR_ROLES and
+normalize_mac AST definitions were reported equal. Full runtime compatibility is not established.
+Rollback was NOT PERFORMED and is not claimed tested. No pre-existing dependency may be removed.
+See [PE-6.3 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-63-disabled-runtime-installation-acceptance-and-closure).
+PE-6 remains IN PROGRESS. PE-6.4 is NEXT / NOT STARTED; PE-6.5 closure and PE-7 remain later.
+STOP after PE-6.3. No automatic follow-on action is authorized.
 
 ### Historical accepted PE-6.0 next-task snapshot at ea4a93fba1615af1d6641c7f0683b8e912c03d72
 
@@ -7855,27 +7892,31 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
-### PE-6.3 - Disabled Exact Runtime Deployment
+### PE-6.4 - Bounded Execution and Independent Production Acceptance
 
 Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
-PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS_REPOSITORY_IMPLEMENTED.
-PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS; PE6_2_STATUS=COMPLETE/PASS.
-PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=FALSE.
-NEXT_CHECKPOINT=PE-6.3 - Disabled Exact Runtime Deployment.
-Separate authorization is required for PE-6.3. PE6_3_STARTED=FALSE.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS;
+PE6_2_STATUS=COMPLETE/PASS; PE6_3_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=TRUE.
+DEPLOYMENT_SCOPE=DISABLED_EXACT_FOUR_FILE_INSTALLATION_ONLY.
+PE6_PRODUCTION_EXECUTION_ESTABLISHED=FALSE; PE6_4_STARTED=FALSE.
+NEXT_CHECKPOINT=PE-6.4 - Bounded Execution and Independent Production Acceptance.
+Separate authorization is required for PE-6.4. No scheduler or automatic activation is authorized.
 
-PE-6.2 accepted source synchronization only from OPERATOR_SUPPLIED PI3 evidence:
-main fast-forwarded to 238dfae6cef1d4f17a4b1e52a5f636f01a5651c4, clean, tree
-matching accepted PE-6.1. Four PE-6 files were reported absent from runtime;
-source and runtime directories were distinct. Codex did not observe PI3 directly.
-See [PE-6.2 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-62-source-synchronization-acceptance-and-formal-closure).
-Historical PE-6.0/PE-6.1 contracts and acceptance evidence remain unchanged.
-Source synchronization proves no production functionality, health, freshness or
-universal runtime-file preservation. No runtime deployment or caller execution occurred.
-PE-6.3 is disabled exact runtime deployment only, with no caller execution,
-initialization, activation or cron; it is NOT STARTED and not authorized here.
-PE-6.4 remains later bounded execution and independent acceptance under separate authorization.
-No recurring activation, automatic execution, PE-7 work or follow-on action is authorized.
+PE-6.3 accepts only OPERATOR_SUPPLIED PI3 disabled-installation evidence from
+source 723c1e71ad2d54e5088c0849ccee59857cbe0794. Four exact new artifacts were
+installed without overwriting existing files; seven observed dependencies were preserved.
+Codex did not access PI3. No caller execution, initialization, cron change,
+service restart, scheduled activation or PE-6.4 execution occurred in this checkpoint.
+The inspected activation locations returned no matches; universal indirect invocation
+absence and current production health are not established.
+Runtime inventory.py differs from source; only KNOWN_FIELDS, OPERATOR_ROLES and
+normalize_mac AST definitions were reported equal. Full runtime compatibility is not established.
+Rollback was NOT PERFORMED and is not claimed tested. No pre-existing dependency may be removed.
+See [PE-6.3 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-63-disabled-runtime-installation-acceptance-and-closure).
+PE-6 remains IN PROGRESS. PE-6.4 is NEXT / NOT STARTED; PE-6.5 closure and PE-7 remain later.
+STOP after PE-6.3. No automatic follow-on action is authorized.
 
 ### Historical accepted PE-6.0 next-task snapshot at ea4a93fba1615af1d6641c7f0683b8e912c03d72
 

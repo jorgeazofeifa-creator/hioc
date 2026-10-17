@@ -334,3 +334,120 @@ the exact freshly bound full document or its exact Implementation Status section
 modified or historical substitutes are still rejected. All PE-4/PE-5 test bodies
 remain unchanged. The complete focused and affected families are rerun after this
 correction; the failed attempt is preserved and is not acceptance evidence.
+
+
+## PE-6.3 disabled runtime installation acceptance and closure
+
+PE6_3_STATUS=COMPLETE/PASS; EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED.
+Acceptance is disabled exact installation only, conditional on repository validation
+and publication gates. All preceding PE-6.1/PE-6.2 document bytes remain an exact
+accepted historical prefix; their deployment/next-task statements refer to those checkpoints.
+PE-6.0 design and PE-6.1 governance records/schemas are unchanged.
+
+### Source identity and operator-reported installation
+
+Every PI3 statement below is OPERATOR_SUPPLIED, including the reported independent
+post-installation verification. Codex did not independently observe PI3.
+Target: PI3 NUT&PIHOLE, hostname nutandpihole; Python 3.11.2.
+Source: /home/jazofv1/hioc-release-source; runtime: /home/jazofv1/hioc.
+Source main HEAD=origin/main=723c1e71ad2d54e5088c0849ccee59857cbe0794,
+clean; source and runtime directories separate. Source Git blobs were reported
+equal to working-file blobs. Each source file was regular, owner jazofv1:jazofv1,
+mode 644, one hard link. Local Git objects independently match the four supplied
+source digests; this repository fact does not independently observe installed bytes.
+PREFLIGHT=PASS; INSTALLATION=PASS; POST_INSTALL_ARTIFACT_VERIFICATION=PASS.
+Exactly four previously absent destination files were installed, with no overwrite.
+
+| Runtime-relative artifact | Accepted source / observed installed SHA-256 |
+|---|---|
+| pi4/bin/hioc-classify-metadata.py | 40d264d44ed9b52baa0abfc911afe98b29e84275e841769952922c66aafe5d03 |
+| pi4/lib/hioc/classification.py | 29b33e0ac6ad06b7b8eb360f10e9403ffb29993830eee16e21ff1b448bfd7f1c |
+| pi4/lib/hioc/classification_caller.py | b9238415e99d935b232481d8cb7a7f70adfbf2f353ed3e07f839810c540c78ca |
+| pi4/lib/hioc/classification_contract.py | 6be0c1cf21b159b74878ab1174e0239dd748f416d5c383ebd14091e45e533561 |
+
+All four installed files were reported regular, one hard link, UID:GID 1000:1000,
+mode 0600. Destination parent directories already existed, were ordinary directories,
+owner jazofv1:jazofv1, mode 755. No additional installation or runtime copy is authorized here.
+
+### Seven existing dependencies preserved in the observed checks
+
+PROTECTED_DEPENDENCY_VERIFICATION=PASS. These before/after runtime identities
+were supplied by the operator; they do not prove preservation of every runtime file.
+No listed dependency was replaced or removed in this checkpoint.
+
+| Existing runtime dependency | Preserved operator-reported SHA-256 |
+|---|---|
+| assets.py | 9079c976e633d6d1f1c11bf051fc24ea5746500267f0fdfaf9ae1c5c8aea35c9 |
+| enrichment.py | ce3a60521bdb5b0d100e45d688b2a5847fbf56db1b87fce3ead0c65840d2804a |
+| manufacturer.py | 30d4ca1305b345442229395ac17b31a9e229ece08abc1f10732cb970c977cd08 |
+| service_association.py | dfdbab8bea085dfa0755e61b1952ee7991d663055c1f58b715997af751260bc5 |
+| configured_association.py | 9bab6fdfb0475a08d30c5d0c51c66ce3b9c841446047d420dccb41aa949357d8 |
+| configured_association_store.py | 1d5aa3d76a948e0f5bb0049f1abf8fd6cf2343be217796728ce66cee633c77b1 |
+| inventory.py | df1dc4e2de7d8d77b54acdcb3f340281ead6cc03d74a73ad59b2864b03564503 |
+
+### Explicit inventory.py discrepancy and compatibility limit
+
+Accepted source SHA-256:
+4dad543d46c62a3335776d239f983082574361979200379990cf6c2ddfa3fb7e
+Existing runtime SHA-256:
+df1dc4e2de7d8d77b54acdcb3f340281ead6cc03d74a73ad59b2864b03564503
+The complete operator-observed diff has two differences: source imports
+from .core.compatibility import lease_observation; source adds
+_compatibility.pihole_leases to inventory output when hostname evidence is included.
+The operator reported exactly equal AST definitions for KNOWN_FIELDS, OPERATOR_ROLES
+and normalize_mac. This establishes only those three definitions, not complete
+runtime compatibility, every dependency behavior, or successful caller execution.
+The differing runtime inventory.py is intentionally preserved. No replacement or
+compatibility repair is authorized by PE-6.3. This remains a production warning
+for separately authorized PE-6.4 input/dependency acceptance.
+
+### Disabled activation: observed scope, not universal absence
+
+Before installation, inspected locations returned no matching classification process,
+scheduler or runtime classification artifact. After installation, the operator inspected:
+user crontab; /etc/crontab; /etc/cron.d; /etc/cron.hourly; /etc/cron.daily;
+/etc/cron.weekly; /etc/cron.monthly; /etc/systemd/system; /run/systemd/system;
+and running processes matching the classification entry point or caller.
+No matching entries or processes were returned. Release-source working tree remained clean.
+No universal absence of indirect invocation mechanisms is claimed. There is no
+classification caller execution, initialization, cron modification, service restart,
+scheduled activation or PE-6.4 execution in this checkpoint's operator receipt.
+No scheduler or automatic activation is authorized. Codex made no PI3/PI5,
+Home Assistant, MQTT, credential or production access or mutation.
+
+### Rollback boundary and remaining operational limitations
+
+ROLLBACK=NOT_PERFORMED; ROLLBACK_TEST=NOT_ESTABLISHED.
+The provenance-bound prior state is absence of precisely the four installed files;
+no pre-existing destination bytes were overwritten or require backup restoration.
+No backup/archive location or completed rollback receipt was supplied or is invented.
+A future rollback requires separate operator authorization. First verify the exact
+four destination paths, installed SHA-256 values, regular-file/owner/mode/link identities,
+and relevant runtime-use conditions; resolve any change or use uncertainty before removal.
+If all authorized preconditions hold, remove only those four specifically installed
+artifacts to restore their prior absence. Preserve every pre-existing dependency,
+parent directory, operator input, existing runtime configuration and historical journal.
+Stop on identity drift or unresolved use; do not replace/delete inventory.py or perform
+unrelated cleanup. Recheck the four-file absence and protected dependencies afterward.
+This documents the bounded procedure; it is not an executed or fully tested rollback,
+a production command authorization, or a universal proof of disabled invocation.
+
+### Repository acceptance and next separate gate
+
+Historical PE-6.1 validates at 94f014cea1d5216a1deeef9fd1d0a025f1c7083e.
+Historical PE-6.2 validates its unchanged original four-path law and full/status
+interfaces at 723c1e71ad2d54e5088c0849ccee59857cbe0794. Fresh current PE-6.3
+owns only this document, HIOC_MASTER_PLAN.md and the implementation-binding test
+module. All other accepted-tree files, product sources and old records/schemas
+remain byte/blob/mode-identical. Full-document and exact Implementation Status
+interfaces are retained; historical/current substitution and altered receipts are rejected.
+Only immutable Git data/replay may be cached; current scope, stage, artifacts,
+closed evidence, lifecycle and protected files are checked afresh.
+Fast static/negative, focused PE-6 and directly affected PE-4/PE-5 tests precede
+publication. Exact observed totals belong to the closure commit and Evidence Report.
+The accepted 2974-test PE-6.1 product suite is historical evidence, not a new test run;
+no product implementation changes occur here. Failed gates prevent publication.
+PE-6 remains IN PROGRESS; PE-6.3 COMPLETE/PASS is disabled installation only.
+PE-6.4 bounded execution and independent acceptance is NEXT / NOT STARTED and
+requires separate authorization. No caller execution, activation or follow-on action
+is authorized by this closure. STOP after PE-6.3.
