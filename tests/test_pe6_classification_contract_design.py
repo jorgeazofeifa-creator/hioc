@@ -90,7 +90,6 @@ def validate_design(r,s,identities=True):
         require(sha(original.encode())==r["authorization"]["normalized_text_sha256"],"verbatim user authorization")
         require(raw(PE5_RECORD)==baseline_bytes(PE5_RECORD) and raw(PE5_SCHEMA)==baseline_bytes(PE5_SCHEMA),"PE5 accepted package byte preservation")
     return r
-@lru_cache(maxsize=1)
 def design_successor():
     if (ROOT/"governance/pe6/pe6-classification-implementation.json").exists():
         from test_pe6_classification_implementation import accepted_design

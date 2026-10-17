@@ -247,3 +247,90 @@ PE-6 remains IN_PROGRESS. PE-6.2 is not started and requires separate authorizat
 No production state, Linux lock/race/crash behavior or current production freshness is
 claimed. Accepted PE-4/PE-5 observations remain OPERATOR_SUPPLIED. No PI3/PI5, HA, MQTT,
 credentials or production access/mutation occurred.
+
+
+## PE-6.2 source synchronization acceptance and formal closure
+
+Classification: CURRENT; repository closure candidate until required validation,
+commit, push and independent publication verification pass.
+PE6_2_STATUS=COMPLETE/PASS; EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED.
+This is source synchronization only, with no production functionality acceptance.
+Accepted PE-6.1 remains 94f014cea1d5216a1deeef9fd1d0a025f1c7083e.
+The PE-6.0 design and PE-6.1 records/schemas and all preceding document bytes
+remain immutable historical evidence; their then-next PE-6.2 statements are historical.
+
+### Exact operator receipt and evidence limitations
+
+Target: PI3 NUT&PIHOLE, hostname nutandpihole; all following PI3 facts are
+OPERATOR_SUPPLIED, not Codex observations or independently recomputed production hashes.
+Source: /home/jazofv1/hioc-release-source; runtime: /home/jazofv1/hioc.
+Initial source main, HEAD=origin/main=4990c62afbce22a804229f3cb8329986741067a6,
+clean working tree, no untracked files; remote=https://github.com/jorgeazofeifa-creator/hioc.git.
+Fetch command git fetch --no-tags origin main returned 0; origin/main became
+238dfae6cef1d4f17a4b1e52a5f636f01a5651c4. Ancestor check returned 0.
+git merge --ff-only origin/main returned 0. Final source HEAD=origin/main=
+238dfae6cef1d4f17a4b1e52a5f636f01a5651c4; final working tree clean.
+Observed source tree=aaf32cd1d0c9ce1dc1e6e00382322226030738d7,
+matching accepted PE-6.1 tree. Local immutable Git history independently verifies
+ancestry and tree equality; it does not independently observe PI3 state.
+
+All four tracked source artifacts were observed ABSENT under the runtime root:
+- pi4/bin/hioc-classify-metadata.py
+- pi4/lib/hioc/classification.py
+- pi4/lib/hioc/classification_caller.py
+- pi4/lib/hioc/classification_contract.py
+
+Observed source directory inode=654548; runtime directory inode=802322;
+both device=45826. They are distinct directories. No runtime deployment, caller
+execution, scheduler activation, cron modification, service restart, MQTT operation
+or PI5 operation was performed during this checkpoint. These observations do not
+prove that every runtime file is unchanged, production health, current freshness,
+input suitability, Linux execution semantics, or classification behavior in production.
+Codex accessed no PI3, PI5, Home Assistant, MQTT, credentials or production system.
+No new observation time, transcript, staging-state field or runtime hash is invented.
+
+### Binding correction and validation boundary
+
+The old current PE-6.1 validator froze exact current artifacts, path scope and next
+checkpoint to PE-6.2. Its original validation body now replays the accepted PE-6.1
+Git snapshot with its exact original index, 27-path delta and protected identities.
+The existing PE-6.0 historical replay remains independent. Fresh PE-6.2 validation
+owns exactly four paths: this document, HIOC_MASTER_PLAN.md and the two existing
+PE-6 design/implementation test modules. It does not inherit PE-6.1 edit authority.
+All other accepted-tree artifacts, including all product/runtime sources and old
+records/schemas, remain byte/blob/mode-identical. Current stage-zero provenance,
+exact document changes, lifecycle, scope, historical evidence and unexpected paths
+are rechecked on every public current entry. Immutable Git bytes alone may be cached.
+PE-4/PE-5 consumers retain their existing delegation and original historical checks.
+Targeted historical/current, tamper, lifecycle, stage, cross-phase and protection
+regressions are required. The prior 2974-test suite remains PE-6.1 product acceptance;
+no runtime source changes occur here. Exact observed counts are recorded in the
+closure commit/report, never substituted by historical totals. A failed gate blocks publication.
+
+### Next separate checkpoint
+
+PE6_1_STATUS=COMPLETE/PASS; PE6_REPOSITORY_IMPLEMENTED=TRUE;
+PE6_PRODUCTION_DEPLOYED=FALSE; PE6_3_STARTED=FALSE.
+NEXT_CHECKPOINT=PE-6.3 - Disabled Exact Runtime Deployment.
+Separate authorization is required for PE-6.3: disabled exact runtime artifact
+installation only; no caller execution, initialization, activation or cron.
+PE-6.4 remains later separately authorized bounded execution and independent acceptance.
+No recurring activation or automatic follow-on action is authorized. STOP after PE-6.2.
+
+### Preserved validation diagnosis
+
+The initial focused correction run completed 50 tests: 49 passed, zero failures,
+one error. A new substitution fixture called the patched raw reader recursively.
+It now captures current bytes before historical replay patching; the unchanged
+historical validator must reject that substituted snapshot. This initial run is
+failed evidence, not acceptance. Caller-visible scope/index values are copied to
+prevent mutation from changing later authority. Final observed validation totals
+are reported separately in the closure commit and Evidence Report.
+
+The first complete affected run was 231 tests: 230 passed, zero failures, one error
+in the existing PE-5 status-section interface. The new current entry had required
+only a full document, overlooking that established caller. It now accepts only
+the exact freshly bound full document or its exact Implementation Status section;
+modified or historical substitutes are still rejected. All PE-4/PE-5 test bodies
+remain unchanged. The complete focused and affected families are rerun after this
+correction; the failed attempt is preserved and is not acceptance evidence.

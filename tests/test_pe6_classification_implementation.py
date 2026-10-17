@@ -95,7 +95,101 @@ def validate_implementation(record,schema,identities=True):
     require(output==design["proposed_output_schema"] and RULES==design["role_suggestion_contract"]["rules"] and DIMENSIONS==design["metadata_quality_contract"]["dimensions"],"adopted runtime constants")
     return record
 
+
+# PE-6.2 owns only this explicit successor scope; PE-6.1 remains immutable authority.
+ACCEPTED_IMPLEMENTATION="94f014cea1d5216a1deeef9fd1d0a025f1c7083e"
+PE62_BASE="238dfae6cef1d4f17a4b1e52a5f636f01a5651c4"
+PE62_PATHS=["docs/HIOC_MASTER_PLAN.md","docs/PE6_CLASSIFICATION_IMPLEMENTATION.md",
+            "tests/test_pe6_classification_contract_design.py","tests/test_pe6_classification_implementation.py"]
+
+@lru_cache(maxsize=None)
+def accepted_bytes(path):
+    return git("--no-replace-objects","show",ACCEPTED_IMPLEMENTATION+":"+path)
+
+@lru_cache(maxsize=1)
+def _accepted_index():
+    rows=git("--no-replace-objects","ls-tree","-r","-z",ACCEPTED_IMPLEMENTATION).split(b"\0")
+    return {path.decode():meta.decode().split()[::2] for row in rows if row for meta,path in [row.split(b"\t",1)]}
+
+def accepted_index():return copy.deepcopy(_accepted_index())
+
+def replay_implementation(record=None,schema=None):
+    """Use the unchanged original PE-6.1 law with exact accepted Git inputs."""
+    original_git=git
+    def snapshot_git(*args):
+        if args in [("diff","--name-only",BASE),("diff","--cached","--name-only",BASE)]:
+            return original_git("--no-replace-objects","diff","--name-only",BASE,ACCEPTED_IMPLEMENTATION)
+        if args==("ls-files","--others","--exclude-standard"):return b""
+        if args==("ls-files","--stage"):
+            return "".join(mode+" "+oid+" 0\t"+p+"\n" for p,(mode,oid) in sorted(accepted_index().items())).encode()
+        return original_git(*args)
+    r=json.loads(accepted_bytes(RECORD)) if record is None else record
+    s=json.loads(accepted_bytes(SCHEMA)) if schema is None else schema
+    require(accepted_bytes(RECORD)==canonical(json.loads(accepted_bytes(RECORD))) and
+            accepted_bytes(SCHEMA)==canonical(json.loads(accepted_bytes(SCHEMA))),"canonical accepted implementation")
+    with patch.dict(globals(),raw=accepted_bytes,git=snapshot_git):
+        return validate_implementation(r,s)
+
+@lru_cache(maxsize=1)
+def _accepted_implementation():return replay_implementation()
+
+def accepted_implementation():
+    # Only immutable replay is cached; today's authority files are always checked.
+    accepted_design()
+    require(all(raw(p)==accepted_bytes(p) for p in [RECORD,SCHEMA]),"exact implementation schema / immutable PE6.1 evidence")
+    return copy.deepcopy(_accepted_implementation())
+
+def expected_master():
+    text=accepted_bytes("docs/HIOC_MASTER_PLAN.md").decode()
+    for heading in ["## Current Objective\n","## Next Planned Task\n"]:
+        start=text.index(heading)+len(heading);end=text.index("### Historical",start)
+        text=text[:start]+PE62_CURRENT+text[end:]
+    text=text.replace("# Implementation Status\n","# Implementation Status\n\n"+PE62_STATUS,1)
+    return text.encode()
+
+def validate_pe62(record=None):
+    old=accepted_implementation();index=accepted_index()
+    require(git("rev-parse",PE62_BASE+"^{tree}")==git("rev-parse",ACCEPTED_IMPLEMENTATION+"^{tree}"),"accepted baseline tree")
+    require(git("merge-base","--is-ancestor","4990c62afbce22a804229f3cb8329986741067a6",PE62_BASE)==b"","operator ancestry repository fact")
+    require(git("branch","--show-current").decode().strip()=="main","current branch")
+    head=git("rev-parse","HEAD").decode().strip()
+    if head!=PE62_BASE:
+        require(git("show","-s","--format=%P",head).decode().strip()==PE62_BASE,"current checkpoint parent")
+        require(set(git("diff-tree","--no-commit-id","--name-only","-r",head).decode().splitlines())==set(PE62_PATHS),"committed successor scope")
+        require(not git("diff","HEAD","--name-only"),"committed successor dirty")
+    origin=git("rev-parse","origin/main").decode().strip()
+    require(origin in [PE62_BASE,head] and git("rev-list","--left-right","--count","HEAD...origin/main").decode().split() in [["0","0"],["1","0"]],"current publication provenance")
+
+    changed=set(git("diff","--name-only",PE62_BASE).decode().splitlines())|set(git("ls-files","--others","--exclude-standard").decode().splitlines())
+    require(changed==set(PE62_PATHS),"unexpected implementation path / PE6.2 scope")
+    require(set(git("diff","--cached","--name-only",PE62_BASE).decode().splitlines())==set(PE62_PATHS),"unexpected staged implementation path / PE6.2 scope")
+    rows=[row.split("\t",1) for row in git("ls-files","--stage").decode().splitlines()]
+    require(all(meta.split()[2]=="0" for meta,p in rows),"unmerged implementation index")
+    current_index={p:meta.split()[:2] for meta,p in rows}
+    require(set(current_index)==set(index),"unexpected index paths")
+    for p,(mode,oid) in index.items():
+        data=raw(p)
+        if p not in PE62_PATHS:
+            reason="current implementation artifact" if p in {i['path'] for i in old['artifacts']} else "protected baseline artifact"
+            require(data==accepted_bytes(p) and blob(data)==oid,reason+": "+p)
+        require(current_index.get(p)==[mode,blob(data)],"current staged artifact: "+p)
+    require(raw("docs/HIOC_MASTER_PLAN.md")==expected_master(),"PE6.2 exact lifecycle / no false authorization")
+    require(raw("docs/PE6_CLASSIFICATION_IMPLEMENTATION.md")==accepted_bytes("docs/PE6_CLASSIFICATION_IMPLEMENTATION.md")+PE62_REPORT.encode(),"PE6.2 exact operator evidence / historical prefix")
+    # Each current artifact is provenance-checked above. Old authority objects are never rewritten.
+    artifacts=[dict(item,sha256=sha(raw(item['path'])),git_blob=blob(raw(item['path']))) for item in old['artifacts']]
+    value=dict(checkpoint="PE-6.2",status="COMPLETE/PASS",authorized_paths=list(PE62_PATHS),
+               evidence_authority="OPERATOR_SUPPLIED",production_deployed=False,pe6_3_started=False,artifacts=artifacts)
+    if record is not None:require(record==value,"exact current PE6.2 successor")
+    return value
+
+PE62_CURRENT='### PE-6.3 - Disabled Exact Runtime Deployment\n\nClassification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.\nPE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS_REPOSITORY_IMPLEMENTED.\nPE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS; PE6_2_STATUS=COMPLETE/PASS.\nPE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=FALSE.\nNEXT_CHECKPOINT=PE-6.3 - Disabled Exact Runtime Deployment.\nSeparate authorization is required for PE-6.3. PE6_3_STARTED=FALSE.\n\nPE-6.2 accepted source synchronization only from OPERATOR_SUPPLIED PI3 evidence:\nmain fast-forwarded to 238dfae6cef1d4f17a4b1e52a5f636f01a5651c4, clean, tree\nmatching accepted PE-6.1. Four PE-6 files were reported absent from runtime;\nsource and runtime directories were distinct. Codex did not observe PI3 directly.\nSee [PE-6.2 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-62-source-synchronization-acceptance-and-formal-closure).\nHistorical PE-6.0/PE-6.1 contracts and acceptance evidence remain unchanged.\nSource synchronization proves no production functionality, health, freshness or\nuniversal runtime-file preservation. No runtime deployment or caller execution occurred.\nPE-6.3 is disabled exact runtime deployment only, with no caller execution,\ninitialization, activation or cron; it is NOT STARTED and not authorized here.\nPE-6.4 remains later bounded execution and independent acceptance under separate authorization.\nNo recurring activation, automatic execution, PE-7 work or follow-on action is authorized.\n\n'
+PE62_REPORT='\n\n## PE-6.2 source synchronization acceptance and formal closure\n\nClassification: CURRENT; repository closure candidate until required validation,\ncommit, push and independent publication verification pass.\nPE6_2_STATUS=COMPLETE/PASS; EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED.\nThis is source synchronization only, with no production functionality acceptance.\nAccepted PE-6.1 remains 94f014cea1d5216a1deeef9fd1d0a025f1c7083e.\nThe PE-6.0 design and PE-6.1 records/schemas and all preceding document bytes\nremain immutable historical evidence; their then-next PE-6.2 statements are historical.\n\n### Exact operator receipt and evidence limitations\n\nTarget: PI3 NUT&PIHOLE, hostname nutandpihole; all following PI3 facts are\nOPERATOR_SUPPLIED, not Codex observations or independently recomputed production hashes.\nSource: /home/jazofv1/hioc-release-source; runtime: /home/jazofv1/hioc.\nInitial source main, HEAD=origin/main=4990c62afbce22a804229f3cb8329986741067a6,\nclean working tree, no untracked files; remote=https://github.com/jorgeazofeifa-creator/hioc.git.\nFetch command git fetch --no-tags origin main returned 0; origin/main became\n238dfae6cef1d4f17a4b1e52a5f636f01a5651c4. Ancestor check returned 0.\ngit merge --ff-only origin/main returned 0. Final source HEAD=origin/main=\n238dfae6cef1d4f17a4b1e52a5f636f01a5651c4; final working tree clean.\nObserved source tree=aaf32cd1d0c9ce1dc1e6e00382322226030738d7,\nmatching accepted PE-6.1 tree. Local immutable Git history independently verifies\nancestry and tree equality; it does not independently observe PI3 state.\n\nAll four tracked source artifacts were observed ABSENT under the runtime root:\n- pi4/bin/hioc-classify-metadata.py\n- pi4/lib/hioc/classification.py\n- pi4/lib/hioc/classification_caller.py\n- pi4/lib/hioc/classification_contract.py\n\nObserved source directory inode=654548; runtime directory inode=802322;\nboth device=45826. They are distinct directories. No runtime deployment, caller\nexecution, scheduler activation, cron modification, service restart, MQTT operation\nor PI5 operation was performed during this checkpoint. These observations do not\nprove that every runtime file is unchanged, production health, current freshness,\ninput suitability, Linux execution semantics, or classification behavior in production.\nCodex accessed no PI3, PI5, Home Assistant, MQTT, credentials or production system.\nNo new observation time, transcript, staging-state field or runtime hash is invented.\n\n### Binding correction and validation boundary\n\nThe old current PE-6.1 validator froze exact current artifacts, path scope and next\ncheckpoint to PE-6.2. Its original validation body now replays the accepted PE-6.1\nGit snapshot with its exact original index, 27-path delta and protected identities.\nThe existing PE-6.0 historical replay remains independent. Fresh PE-6.2 validation\nowns exactly four paths: this document, HIOC_MASTER_PLAN.md and the two existing\nPE-6 design/implementation test modules. It does not inherit PE-6.1 edit authority.\nAll other accepted-tree artifacts, including all product/runtime sources and old\nrecords/schemas, remain byte/blob/mode-identical. Current stage-zero provenance,\nexact document changes, lifecycle, scope, historical evidence and unexpected paths\nare rechecked on every public current entry. Immutable Git bytes alone may be cached.\nPE-4/PE-5 consumers retain their existing delegation and original historical checks.\nTargeted historical/current, tamper, lifecycle, stage, cross-phase and protection\nregressions are required. The prior 2974-test suite remains PE-6.1 product acceptance;\nno runtime source changes occur here. Exact observed counts are recorded in the\nclosure commit/report, never substituted by historical totals. A failed gate blocks publication.\n\n### Next separate checkpoint\n\nPE6_1_STATUS=COMPLETE/PASS; PE6_REPOSITORY_IMPLEMENTED=TRUE;\nPE6_PRODUCTION_DEPLOYED=FALSE; PE6_3_STARTED=FALSE.\nNEXT_CHECKPOINT=PE-6.3 - Disabled Exact Runtime Deployment.\nSeparate authorization is required for PE-6.3: disabled exact runtime artifact\ninstallation only; no caller execution, initialization, activation or cron.\nPE-6.4 remains later separately authorized bounded execution and independent acceptance.\nNo recurring activation or automatic follow-on action is authorized. STOP after PE-6.2.\n\n### Preserved validation diagnosis\n\nThe initial focused correction run completed 50 tests: 49 passed, zero failures,\none error. A new substitution fixture called the patched raw reader recursively.\nIt now captures current bytes before historical replay patching; the unchanged\nhistorical validator must reject that substituted snapshot. This initial run is\nfailed evidence, not acceptance. Caller-visible scope/index values are copied to\nprevent mutation from changing later authority. Final observed validation totals\nare reported separately in the closure commit and Evidence Report.\n\nThe first complete affected run was 231 tests: 230 passed, zero failures, one error\nin the existing PE-5 status-section interface. The new current entry had required\nonly a full document, overlooking that established caller. It now accepts only\nthe exact freshly bound full document or its exact Implementation Status section;\nmodified or historical substitutes are still rejected. All PE-4/PE-5 test bodies\nremain unchanged. The complete focused and affected families are rerun after this\ncorrection; the failed attempt is preserved and is not acceptance evidence.\n'
+PE62_STATUS='## PE-6.2 source synchronization closure\n\n### PE-6.3 - Disabled Exact Runtime Deployment\n\nClassification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.\nPE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS_REPOSITORY_IMPLEMENTED.\nPE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS; PE6_2_STATUS=COMPLETE/PASS.\nPE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=FALSE.\nNEXT_CHECKPOINT=PE-6.3 - Disabled Exact Runtime Deployment.\nSeparate authorization is required for PE-6.3. PE6_3_STARTED=FALSE.\n\nPE-6.2 accepted source synchronization only from OPERATOR_SUPPLIED PI3 evidence:\nmain fast-forwarded to 238dfae6cef1d4f17a4b1e52a5f636f01a5651c4, clean, tree\nmatching accepted PE-6.1. Four PE-6 files were reported absent from runtime;\nsource and runtime directories were distinct. Codex did not observe PI3 directly.\nSee [PE-6.2 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-62-source-synchronization-acceptance-and-formal-closure).\nHistorical PE-6.0/PE-6.1 contracts and acceptance evidence remain unchanged.\nSource synchronization proves no production functionality, health, freshness or\nuniversal runtime-file preservation. No runtime deployment or caller execution occurred.\nPE-6.3 is disabled exact runtime deployment only, with no caller execution,\ninitialization, activation or cron; it is NOT STARTED and not authorized here.\nPE-6.4 remains later bounded execution and independent acceptance under separate authorization.\nNo recurring activation, automatic execution, PE-7 work or follow-on action is authorized.\n\nAll earlier checkpoint narratives below retain their accepted historical meaning,\nincluding then-current labels and next-task snapshots. They do not supersede this\ncurrent status or Next Planned Task. PE-6.2 proves source synchronization only.\n\n'
+
 def implementation_successor():
+    return validate_pe62()
+
+def historical_implementation_candidate():
     record,schema=json.loads(raw(RECORD)),json.loads(raw(SCHEMA))
     require(raw(RECORD)==canonical(record) and raw(SCHEMA)==canonical(schema),"canonical implementation")
     return validate_implementation(record,schema)
@@ -107,13 +201,16 @@ def implementation_binding(path):
 
 def assert_implementation_sequence(text):
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
-    section=text.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
-    require(section.strip().startswith("### PE-6.2 - PI3 Release-Source Synchronization"),"current implementation successor")
-    require(all(x in section for x in ["PE5_STATUS=COMPLETE","PE6_1_STATUS=COMPLETE/PASS","PE6_REPOSITORY_IMPLEMENTED=TRUE","PE6_PRODUCTION_DEPLOYED=FALSE","Separate authorization is required for PE-6.2"]),"repository versus production sequence")
+    full=raw("docs/HIOC_MASTER_PLAN.md").decode()
+    status=full.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
+    require(text in (full,status),"current lifecycle text substitution")
+    section=full.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
+    require(section=="\n"+PE62_CURRENT,"current PE6.2 successor / PE6.3 separate authorization")
 
 class ImplementationGovernanceTests(unittest.TestCase):
     def test_current_implementation_closed_scope_identity_and_protected_objects(self):
-        self.assertEqual(implementation_successor()["authorized_paths"],AUTHORIZED_PATHS)
+        self.assertEqual(implementation_successor()["authorized_paths"],PE62_PATHS)
+        self.assertEqual(accepted_implementation()["authorized_paths"],AUTHORIZED_PATHS)
     def test_historical_design_retains_exact_twenty_one_paths(self):
         record=accepted_design()
         self.assertEqual(len(record["authorized_paths"]),21)
@@ -144,14 +241,14 @@ class ImplementationGovernanceTests(unittest.TestCase):
             return original(*args)
         record=copy.deepcopy(implementation_successor())
         with patch.dict(globals(),git=extra),self.assertRaisesRegex(ValueError,"unexpected implementation path"):
-            validate_implementation(record,schema_for(record))
+            validate_pe62(record)
     def test_protected_runtime_mutation_is_rejected(self):
         original=raw
         path="pi4/lib/hioc/inventory.py"
         def changed(p):return b"unauthorized" if p==path else original(p)
         record=copy.deepcopy(implementation_successor())
         with patch.dict(globals(),raw=changed),self.assertRaisesRegex(ValueError,"protected baseline artifact"):
-            validate_implementation(record,schema_for(record))
+            validate_pe62(record)
     def test_current_and_historical_maps_are_independent(self):
         from test_pe6_classification_contract_design import design_successor,design_binding
         self.assertEqual(design_successor(),accepted_design())
@@ -164,7 +261,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
         for path in [DESIGN_RECORD,DESIGN_SCHEMA,DESIGN_DOCUMENT]:
             self.assertEqual(raw(path),historical(path))
     def test_original_five_file_candidate_and_asset_correction_retained(self):
-        record=implementation_successor()
+        record=accepted_implementation()
         self.assertEqual(len(record["preserved_candidate_paths"]),5)
         self.assertIn("return parsed, dict(kind=kind",raw("pi4/lib/hioc/classification.py").decode())
         self.assertIn("asset_path.write_bytes(serialize_store(asset()))",raw("tests/test_pe6_classification.py").decode())
@@ -173,7 +270,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
             self.assertEqual(sha(raw(item["path"])),item["sha256"])
             self.assertEqual(sha((ROOT/item["path"]).read_bytes()),item["file_sha256"])
     def test_full_suite_and_no_operational_authority(self):
-        record=implementation_successor()
+        record=accepted_implementation()
         self.assertTrue(record["full_native_suite_required"])
         self.assertFalse(record["production_authorized"])
         self.assertFalse(record["pe6_2_started"])
@@ -241,7 +338,7 @@ class ImplementationGovernanceTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'current staged artifact'):entry()
         def extra(*args):
             result=original(*args)
-            return result+b'unauthorized-index.txt\n' if args==('diff','--cached','--name-only',BASE) else result
+            return result+b'unauthorized-index.txt\n' if args==('diff','--cached','--name-only',PE62_BASE) else result
         with patch.dict(globals(),git=extra):
             for entry in self.public_entries():
                 with self.assertRaisesRegex(ValueError,'unexpected staged implementation path'):entry()
@@ -282,5 +379,123 @@ class ImplementationGovernanceTests(unittest.TestCase):
         with patch.object(prior,'git',existing),self.assertRaisesRegex(ValueError,'existing runtime cannot be exempted'):
             prior.assert_historical_runtime_tree('c7db29f795909d7926e36c02f1166034bcebb8b0',['pi4'])
 
+
+
+class PE62SuccessorTests(unittest.TestCase):
+    def test_original_historical_law_and_test_cases_preserved(self):
+        old=ast.parse(accepted_bytes('tests/test_pe6_classification_implementation.py'))
+        new=ast.parse(raw('tests/test_pe6_classification_implementation.py'))
+        funcs=lambda tree:{x.name:ast.dump(x,include_attributes=False) for x in tree.body if isinstance(x,ast.FunctionDef)}
+        for name in ['validate_implementation','validate_historical_design','_accepted_design','accepted_design']:
+            self.assertEqual(funcs(old)[name],funcs(new)[name])
+        names=lambda tree:{n.name for c in tree.body if isinstance(c,ast.ClassDef) for n in c.body if isinstance(n,ast.FunctionDef) and n.name.startswith('test_')}
+        self.assertTrue(names(old)<=names(new))
+
+    def test_pe61_snapshot_retains_original_next_checkpoint_and_identities(self):
+        old=accepted_implementation();current=implementation_successor()
+        self.assertEqual(old['next_checkpoint'],'PE-6.2 - PI3 Release-Source Synchronization')
+        self.assertFalse(old['pe6_2_started']);self.assertFalse(old['runtime_deployment_performed'])
+        self.assertEqual(len(old['authorized_paths']),27)
+        self.assertEqual(current['authorized_paths'],PE62_PATHS)
+        self.assertEqual(current['checkpoint'],'PE-6.2')
+        self.assertEqual(current['evidence_authority'],'OPERATOR_SUPPLIED')
+        self.assertFalse(current['production_deployed']);self.assertFalse(current['pe6_3_started'])
+        self.assertIn('### PE-6.2 - PI3 Release-Source Synchronization',accepted_bytes('docs/HIOC_MASTER_PLAN.md').decode())
+        assert_implementation_sequence(raw('docs/HIOC_MASTER_PLAN.md').decode())
+
+    def test_replayed_historical_artifact_identity_cannot_be_refreshed(self):
+        old=accepted_implementation();old['artifacts'][0]['sha256']='0'*64
+        with self.assertRaisesRegex(ValueError,'current implementation artifact'):
+            replay_implementation(old,schema_for(old))
+        old=accepted_implementation();old['pe6_2_started']=True
+        with self.assertRaisesRegex(ValueError,'implementation-only boundary'):
+            replay_implementation(old,schema_for(old))
+
+    def test_current_document_cannot_replace_historical_git_bytes(self):
+        original=accepted_bytes;current=raw('docs/HIOC_MASTER_PLAN.md')
+        def substituted(path):
+            return current if path=='docs/HIOC_MASTER_PLAN.md' else original(path)
+        with patch.dict(globals(),accepted_bytes=substituted),self.assertRaisesRegex(ValueError,'current implementation artifact'):
+            replay_implementation()
+
+    def reject_rebound_current(self,path,value,reason):
+        original_raw,original_git=raw,git
+        def changed(p):return value if p==path else original_raw(p)
+        def rebound(*args):
+            data=original_git(*args)
+            if args==('ls-files','--stage'):
+                lines=data.decode().splitlines()
+                lines=[line.split(' ')[0]+' '+blob(value)+' 0\t'+path if line.endswith('\t'+path) else line for line in lines]
+                return ('\n'.join(lines)+'\n').encode()
+            return data
+        with patch.dict(globals(),raw=changed,git=rebound),self.assertRaisesRegex(ValueError,reason):
+            implementation_successor()
+
+    def test_false_completion_and_deployment_rejected_even_if_restaged(self):
+        path='docs/HIOC_MASTER_PLAN.md';implementation_successor()
+        for before,after in [('PE6_2_STATUS=COMPLETE/PASS','PE6_2_STATUS=NOT_STARTED'),
+                             ('PE6_PRODUCTION_DEPLOYED=FALSE','PE6_PRODUCTION_DEPLOYED=TRUE'),
+                             ('PE6_3_STARTED=FALSE','PE6_3_STARTED=TRUE'),
+                             ('Separate authorization is required for PE-6.3','PE-6.3 is authorized'),
+                             ('OPERATOR_SUPPLIED','CODEX_VERIFIED')]:
+            with self.subTest(change=after):
+                self.reject_rebound_current(path,raw(path).replace(before.encode(),after.encode()),'PE6.2 exact lifecycle')
+
+    def test_operator_evidence_and_historical_prefix_cannot_be_rewritten(self):
+        path='docs/PE6_CLASSIFICATION_IMPLEMENTATION.md'
+        for before,after in [(b'inode=654548',b'inode=1'),
+                             (b'EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED',b'EVIDENCE_AUTHORITY=DIRECT_OBSERVATION'),
+                             (b'# PE-6.1 Private Classification',b'# Changed historical PE-6.1')]:
+            with self.subTest(change=after):
+                self.reject_rebound_current(path,raw(path).replace(before,after),'PE6.2 exact operator evidence')
+
+    def test_historical_success_does_not_authorize_old_edit_scope(self):
+        accepted_implementation();original=git
+        def extra(*args):
+            data=original(*args)
+            if args==('diff','--name-only',PE62_BASE):return data+b'docs/DATA_MODEL.md\n'
+            return data
+        with patch.dict(globals(),git=extra),self.assertRaisesRegex(ValueError,'unexpected implementation path'):
+            implementation_successor()
+
+    def test_current_success_is_not_cached_through_design_entry(self):
+        import test_pe6_classification_contract_design as design
+        design.design_successor();original=raw
+        with patch.dict(globals(),raw=lambda p:b'altered' if p==DESIGN_RECORD else original(p)):
+            with self.assertRaisesRegex(ValueError,'immutable PE6.0 design authority'):design.design_successor()
+
+    def test_unmerged_and_wrong_mode_index_rejected(self):
+        implementation_successor();original=git
+        for field,value in [(0,'100755'),(2,'1')]:
+            def changed(*args,field=field,value=value):
+                data=original(*args)
+                if args==('ls-files','--stage'):
+                    lines=data.decode().splitlines()
+                    for i,line in enumerate(lines):
+                        meta,path=line.split('\t',1)
+                        if path=='docs/HIOC_MASTER_PLAN.md':
+                            bits=meta.split();bits[field]=value;lines[i]=' '.join(bits)+'\t'+path
+                    return ('\n'.join(lines)+'\n').encode()
+                return data
+            with self.subTest(field=field),patch.dict(globals(),git=changed),self.assertRaises(ValueError):implementation_successor()
+
+    def test_current_lifecycle_text_substitution_rejected(self):
+        with self.assertRaisesRegex(ValueError,'current lifecycle text substitution'):
+            assert_implementation_sequence(accepted_bytes('docs/HIOC_MASTER_PLAN.md').decode())
+
+    def test_returned_scope_and_index_do_not_mutate_authority(self):
+        value=implementation_successor();value['authorized_paths'].append('forged')
+        index=accepted_index();index['forged']=['100644','0'*40]
+        self.assertNotIn('forged',implementation_successor()['authorized_paths'])
+        self.assertNotIn('forged',accepted_index())
+
+    def test_exact_existing_status_section_interface(self):
+        full=raw('docs/HIOC_MASTER_PLAN.md').decode()
+        status=full.split('# Implementation Status',1)[1].split('# Historical Operator Preparation Chronology',1)[0]
+        assert_implementation_sequence(full);assert_implementation_sequence(status)
+        for text in [status.replace('PE6_3_STARTED=FALSE','PE6_3_STARTED=TRUE'),
+                     status.replace('OPERATOR_SUPPLIED','DIRECT_OBSERVATION'),status+'extra']:
+            with self.subTest(text=text[-40:]),self.assertRaisesRegex(ValueError,'current lifecycle text substitution'):
+                assert_implementation_sequence(text)
 
 if __name__=="__main__":unittest.main()
