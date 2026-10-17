@@ -451,3 +451,92 @@ PE-6 remains IN PROGRESS; PE-6.3 COMPLETE/PASS is disabled installation only.
 PE-6.4 bounded execution and independent acceptance is NEXT / NOT STARTED and
 requires separate authorization. No caller execution, activation or follow-on action
 is authorized by this closure. STOP after PE-6.3.
+
+
+## Timestamp compatibility correction prerequisite to PE-6.4
+
+REPOSITORY_TIMESTAMP_CORRECTION=PREPARED_FOR_VALIDATION_AND_PUBLICATION.
+This section records a repository correction, not PE-6.4 production acceptance.
+All preceding PE-6.1/6.2/6.3 Evidence Report bytes are preserved exactly from
+b83f56d19912b2b36b689cf95af8a56a45d02474. Their installation identities describe
+that historical receipt, not deployment of the corrected classifier.
+
+### Cause, timestamp dependency analysis and exact correction
+
+OPERATOR_SUPPLIED: inventory.updated was 2026-10-17T11:00:02-06:00;
+JSON parseable, 198 devices, fresh at inspection; classification not executed.
+These are supplied observations, not Codex production access or current freshness.
+The PE-5 service_association.TIMESTAMP_PATTERN/_time parser already accepts aware
+Z and +/-HH:MM timestamps and normalizes to UTC. PE-6 timestamp() imposed an
+additional Z-only gate before delegating to it, rejecting valid offset inventory.
+The classifier now uses that accepted grammar/parser, with explicit offset-hour
+and minute bounds to reject fromisoformat's normalization of malformed +01:60.
+Naive timestamps, unsupported forms, invalid dates and impossible times fail closed
+with the existing CLOCK_INVALID safe code. No input or inventory file is rewritten.
+
+All timestamp() consumers were traced: evaluation clock; inventory.updated and
+its 2100-second deadline; hostname candidate observed_at comparison; PE-5 handoff
+valid_until cap; result original/current time, deadline and backwards-clock checks.
+External inventory and paired hostname/manufacturer generated_at remain unchanged
+in captured source bytes and SHA-256 provenance. UTC projection is used only in
+output proof timestamps. Caller-generated clocks and deadline output remain UTC.
+Offset evaluation values are projected to canonical UTC; existing Z representation
+is retained. The immutable closed PE-6 output schema, rules and dimensions are
+unchanged. _hostname retains exact generated_at/inventory.updated source pairing;
+equivalent time does not substitute for exact source identity. _handoff continues
+using PE-5's original confirmation, schema, inventory-digest and expiry authority.
+No source-specific validator is weakened. Result validation rederives from current
+inputs, rechecks original fingerprints and temporal validity, and rejects reencoding
+of a bound source even when it denotes the same instant. Caller Reader/fingerprint,
+recheck/lock code and CLI remain byte-identical. Missing/rejected required inventory
+remains UNAVAILABLE with no fabricated devices. Future times, backwards clocks and
+rejection exactly at 2100 seconds remain protected. Identity, canonical IP, health,
+liveness, public inventory, MQTT and every other runtime source remain unchanged.
+
+### Regression and historical authority
+
+Deterministic fixtures cover Z, -06:00, positive offsets, equal instants, fresh
+offset inventory, raw identity, UTC output schema, exclusive 2100-second deadline,
+future/backwards time, naive/malformed offsets, calendar/time errors, exact hostname
+pairing and confirmed PE-5 handoff. Existing privacy/provenance/caller tests remain.
+The accepted design requires a full native suite for product source changes.
+Focused timestamp, PE-6 contract/caller, affected cross-phase and full native tests
+must all pass before publication; exact observed totals are retained in the commit
+and Evidence Report. Environment skips are not passes or Linux production proof.
+
+PE-6.1/6.2/6.3 original validators and authoritative constants remain unchanged.
+Historical PE-6.3 replays its exact accepted Git bytes, original three-path scope,
+installed-source hashes and full/status interfaces. The fresh current correction
+owns exactly five paths: classification.py, its existing product test, the existing
+implementation-binding test and these two documents. Existing PE-4/PE-5 consumers
+continue delegating to the current successor map. Every other accepted artifact,
+old governance record/schema and executable remains byte/blob/mode-identical.
+New current validation checks scope/index/modes, exact correction source/test
+identities, document changes, protected files and publication lineage afresh.
+Only immutable Git snapshots/replays are cached. New negatives protect historical
+identity/authority against current substitution and false production acceptance.
+
+### Required next operator-only action and retained limitations
+
+No PI3/PI5, HA, MQTT, credential or production access/mutation occurred. The accepted
+PE-6.3 installed classification.py SHA-256 remains historically
+29b33e0ac6ad06b7b8eb360f10e9403ffb29993830eee16e21ff1b448bfd7f1c.
+It does not prove current runtime bytes. Corrected artifact deployment and production
+execution are NOT ESTABLISHED. PE-6.4 is NOT CLOSED; PE-6 remains IN_PROGRESS.
+The previously reported runtime/source inventory.py difference and limited three-AST
+comparison remain unresolved full-compatibility warnings. No inventory replacement,
+threshold change, scheduled activation or automatic follow-on is authorized.
+
+Next requires separate operator authorization: fast-forward the clean PI3 release
+source checkout to the published correction commit, verify its exact tree and
+classification.py Git blob/SHA-256, and prepare a guarded one-file replacement of
+/home/jazofv1/hioc/pi4/lib/hioc/classification.py from that source. First establish
+current runtime-use conditions and match the historical installed classifier hash,
+ordinary path/parent identities, UID:GID 1000:1000, mode 0600 and single link; stop
+on drift or unresolved use. Preserve exact old bytes and metadata as a private,
+non-overwriting rollback backup, then replace only this artifact atomically with
+verified corrected bytes, preserving ownership/mode and rechecking destination
+hash/identity and all other PE-6 artifacts/dependencies. Do not execute classification,
+change inventory, scheduling or services. Deployment receipt must be accepted before
+separately authorized bounded PE-6.4 execution. This describes the next gate; it is
+not an operator deployment command or authorization to perform it now. STOP.

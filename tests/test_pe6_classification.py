@@ -584,4 +584,109 @@ class WindowsReaderTests(unittest.TestCase):
         self.assertEqual(one(current)['metadata_quality'],'unknown')
 
 
+class TimestampCompatibilityTests(unittest.TestCase):
+    UTC = "2026-10-17T17:00:02Z"
+    NEGATIVE = "2026-10-17T11:00:02-06:00"
+    POSITIVE = "2026-10-17T22:30:02+05:30"
+
+    def current(self, stamp):
+        inv=inventory();inv["updated"]=stamp
+        return inputs(inv)
+
+    def test_equivalent_aware_instants_normalize_to_utc(self):
+        from datetime import timezone
+        for stamp in [self.UTC,self.NEGATIVE,self.POSITIVE,"2026-10-17T17:00:02+00:00"]:
+            with self.subTest(stamp=stamp):
+                self.assertEqual(m.timestamp(stamp),m.timestamp(self.UTC))
+                self.assertIs(m.timestamp(stamp).tzinfo,timezone.utc)
+
+    def test_fresh_offset_inventory_preserves_raw_identity_and_devices(self):
+        for stamp in [self.UTC,self.NEGATIVE,self.POSITIVE]:
+            current=self.current(stamp);before=copy.deepcopy(current)
+            result=m.resolve_classification(current,self.UTC)
+            self.assertEqual(result["state"],"PARTIAL")
+            self.assertEqual(len(result["devices"]),len(current["inventory"]["value"]["devices"]))
+            proof=next(x for x in result["inputs"] if x["kind"]=="inventory")
+            self.assertEqual(proof["state"],"VALID")
+            self.assertEqual(proof["sha256"],current["inventory"]["sha256"])
+            self.assertEqual(m.timestamp(proof["generated_at"]),m.timestamp(stamp))
+            self.assertTrue(proof["generated_at"].endswith("Z"))
+            self.assertEqual(current,before)
+            pe5.shape(result,m.SCHEMA,"RESULT_INVALID")
+            m.validate_classification_result(result,current,self.UTC)
+
+    def test_offset_evaluation_generates_only_schema_utc_times(self):
+        current=self.current(self.NEGATIVE)
+        result=m.resolve_classification(current,self.POSITIVE)
+        for value in [result["evaluated_at"],result["valid_until"]]:
+            self.assertTrue(value.endswith("Z"));self.assertNotIn("+",value)
+        self.assertEqual(result["evaluated_at"],"2026-10-17T17:00:02.000000Z")
+        pe5.shape(result,m.SCHEMA,"RESULT_INVALID")
+        m.validate_classification_result(result,current,self.NEGATIVE)
+
+    def test_offset_freshness_deadline_is_exclusive(self):
+        current=self.current(self.NEGATIVE)
+        self.assertNotEqual(m.resolve_classification(current,"2026-10-17T17:35:01.999999Z")["state"],"UNAVAILABLE")
+        result=m.resolve_classification(current,self.UTC)
+        for at in ["2026-10-17T17:35:02Z","2026-10-17T11:35:02-06:00"]:
+            with self.subTest(at=at):
+                rejected=m.resolve_classification(current,at)
+                self.assertEqual(rejected["state"],"UNAVAILABLE");self.assertEqual(rejected["devices"],[])
+                with self.assertRaises(m.ClassificationError):m.validate_classification_result(result,current,at)
+
+    def test_offset_future_and_backward_clock_rejected(self):
+        current=self.current(self.NEGATIVE)
+        at="2026-10-17T17:00:01.999999Z"
+        self.assertEqual(m.resolve_classification(current,at)["state"],"UNAVAILABLE")
+        result=m.resolve_classification(current,self.UTC)
+        with self.assertRaises(m.ClassificationError):m.validate_classification_result(result,current,at)
+
+    def test_naive_malformed_offsets_calendar_and_times_fail_closed(self):
+        invalid=["2026-10-17T17:00:02","2026-10-17T17:00:02z","2026-10-17 17:00:02Z",
+                 "2026-10-17T17:00:02-0600","2026-10-17T17:00:02+06","2026-10-17T17:00:02+24:00",
+                 "2026-10-17T17:00:02+01:60","2026-10-17T17:00:02-06:99",
+                 "2026-10-17T17:00:02+01:00:00","2026-02-29T17:00:02Z",
+                 "2026-13-17T17:00:02Z","2026-10-17T24:00:02Z","2026-10-17T17:00:60Z",
+                 "2026-10-17T17:00:02.1234567Z",None,123]
+        for stamp in invalid:
+            with self.subTest(stamp=stamp):
+                with self.assertRaises(m.ClassificationError) as error:m.timestamp(stamp)
+                self.assertEqual(str(error.exception),"CLOCK_INVALID")
+                result=m.resolve_classification(self.current(stamp),self.UTC)
+                self.assertEqual(result["state"],"UNAVAILABLE");self.assertEqual(result["devices"],[])
+
+    def test_equivalent_timestamp_reencoding_changes_source_identity(self):
+        current=self.current(self.NEGATIVE);result=m.resolve_classification(current,self.UTC)
+        changed=self.current(self.POSITIVE)
+        self.assertNotEqual(current["inventory"]["sha256"],changed["inventory"]["sha256"])
+        with self.assertRaises(m.ClassificationError):m.validate_classification_result(result,changed,self.UTC)
+        forged=copy.deepcopy(current);forged["inventory"]["value"]["updated"]=self.POSITIVE
+        self.assertEqual(m.resolve_classification(forged,self.UTC)["state"],"UNAVAILABLE")
+
+    def test_offset_inventory_hostname_pairing_is_exact_not_time_only(self):
+        inv=self.current(self.NEGATIVE)["inventory"]["value"]
+        value=enrichment.build_hostname_envelope(inv["devices"],
+            enrichment.collect_hostname_candidates({OWNER:[dict(hostname="camera",source="integration:synthetic")]},self.NEGATIVE),None,self.NEGATIVE)
+        current=inputs(inv);current["hostname"]=m.snapshot(value)
+        # Existing hostname validator and source pairing remain authoritative;
+        # changing only the paired representation must not bypass exact identity.
+        result=m.resolve_classification(current,self.UTC)
+        proof=next(x for x in result["inputs"] if x["kind"]=="hostname")
+        self.assertEqual(proof["state"],"VALID")
+        self.assertTrue(proof["generated_at"].endswith("Z"))
+        value["generated_at"]=self.UTC;current["hostname"]=m.snapshot(value)
+        result=m.resolve_classification(current,self.UTC)
+        self.assertEqual(next(x for x in result["inputs"] if x["kind"]=="hostname")["state"],"INVALID")
+
+    def test_offset_pe5_handoff_keeps_original_inventory_digest(self):
+        inv=self.current(self.NEGATIVE)["inventory"]["value"]
+        current=inputs(inv)
+        current["pe5_handoff"]=m.snapshot(dict(output=pe5.compose(inv,None,self.UTC),source=None,
+            output_confirmation="CONFIRMED",source_confirmation=None))
+        result=m.resolve_classification(current,self.UTC)
+        self.assertEqual(next(x for x in result["inputs"] if x["kind"]=="pe5_handoff")["state"],"VALID")
+        self.assertEqual(result["valid_until"],"2026-10-17T17:20:02.000000Z")
+        m.validate_classification_result(result,current,self.UTC)
+
+
 if __name__=="__main__":unittest.main()

@@ -48,13 +48,23 @@ def digest(value):
 
 
 def timestamp(value):
-    if type(value) is not str or not re.fullmatch(
-            r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?Z", value):
+    # Match the accepted PE-5 aware-time grammar, without allowing fromisoformat
+    # to carry an invalid offset minute (for example +01:60) into the next hour.
+    if type(value) is not str or not re.fullmatch(local.TIMESTAMP_PATTERN, value):
+        fail("CLOCK_INVALID")
+    if value[-1] != "Z" and (int(value[-5:-3]) >= 24 or int(value[-2:]) >= 60):
         fail("CLOCK_INVALID")
     try:
         return local._time(value, "CLOCK_INVALID")
     except local.ServiceAssociationError:
         fail("CLOCK_INVALID")
+
+
+def _utc_text(value):
+    # Keep existing Z representation; normalize external offsets for the closed
+    # output schema. Original source bytes and their digest remain untouched.
+    parsed = timestamp(value)
+    return value if value.endswith("Z") else local._time_text(parsed)
 
 
 def snapshot(value=None, state=None, raw=None):
@@ -213,15 +223,15 @@ def _validate_source(kind, value, proof, inventory, now, policy):
         _known(value, policy["approved_known_sha256"], proof["sha256"])
     elif kind == "hostname":
         _hostname(value, inventory)
-        proof["generated_at"] = value["generated_at"]
+        proof["generated_at"] = _utc_text(value["generated_at"])
     elif kind == "manufacturer":
         _manufacturer(value, inventory, policy["manufacturer_dataset"])
-        proof["generated_at"] = value["generated_at"]
+        proof["generated_at"] = _utc_text(value["generated_at"])
     elif kind == "home_assistant_summary":
         _ha(value, inventory)
     elif kind == "pe5_handoff":
         _handoff(value, inventory, now)
-        proof["generated_at"] = value["output"]["evaluated_at"]
+        proof["generated_at"] = _utc_text(value["output"]["evaluated_at"])
         proof["revision"] = value["output"]["configured"]["revision"]
 
 
@@ -357,7 +367,7 @@ def resolve_classification(inputs, evaluated_at, policy=None):
             deadline = updated + timedelta(seconds=2100)
             if now < updated or now >= deadline:
                 fail("STALE")
-            proofs["inventory"]["generated_at"] = inv["updated"]
+            proofs["inventory"]["generated_at"] = _utc_text(inv["updated"])
     except (local.ServiceAssociationError, ClassificationError, TypeError, KeyError) as error:
         values["inventory"] = inv = None
         code = "LIMIT_EXCEEDED" if getattr(error,"code",None) == "LIMIT_EXCEEDED" else "STALE" if deadline is not None and now >= deadline else "INVALID"
@@ -387,7 +397,7 @@ def resolve_classification(inputs, evaluated_at, policy=None):
             devices = []
     state = "UNAVAILABLE" if inv is None else "VALID" if all(p["state"] == "VALID" for p in proofs.values()) else "PARTIAL"
     output = dict(schema_version="1.0", rule_version="pe6-role-v1", state=state,
-                  evaluated_at=evaluated_at, valid_until=local._time_text(deadline) if inv is not None else None,
+                  evaluated_at=_utc_text(evaluated_at), valid_until=local._time_text(deadline) if inv is not None else None,
                   inputs=sorted(proofs.values(), key=lambda x: x["kind"]), devices=devices,
                   summary=dict(device_count=len(devices), suggestion_count=sum(len(d["role_suggestion"]) for d in devices),
                                conflicted_count=sum(d["metadata_quality"] == "conflicted" for d in devices),

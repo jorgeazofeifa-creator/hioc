@@ -6268,6 +6268,50 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## Timestamp compatibility repository correction (PE-6.4 prerequisite)
+
+### PE-6.4 - Bounded Execution and Independent Production Acceptance
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS;
+PE6_2_STATUS=COMPLETE/PASS; PE6_3_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=TRUE.
+DEPLOYMENT_SCOPE=DISABLED_EXACT_FOUR_FILE_INSTALLATION_ONLY.
+PE6_PRODUCTION_EXECUTION_ESTABLISHED=FALSE; PE6_4_STARTED=FALSE.
+NEXT_CHECKPOINT=PE-6.4 - Bounded Execution and Independent Production Acceptance.
+Separate authorization is required for PE-6.4. No scheduler or automatic activation is authorized.
+
+PE-6.3 accepts only OPERATOR_SUPPLIED PI3 disabled-installation evidence from
+source 723c1e71ad2d54e5088c0849ccee59857cbe0794. Four exact new artifacts were
+installed without overwriting existing files; seven observed dependencies were preserved.
+Codex did not access PI3. No caller execution, initialization, cron change,
+service restart, scheduled activation or PE-6.4 execution occurred in this checkpoint.
+The inspected activation locations returned no matches; universal indirect invocation
+absence and current production health are not established.
+Runtime inventory.py differs from source; only KNOWN_FIELDS, OPERATOR_ROLES and
+normalize_mac AST definitions were reported equal. Full runtime compatibility is not established.
+Rollback was NOT PERFORMED and is not claimed tested. No pre-existing dependency may be removed.
+See [PE-6.3 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-63-disabled-runtime-installation-acceptance-and-closure).
+PE-6 remains IN PROGRESS. PE-6.4 is NEXT / NOT STARTED; PE-6.5 closure and PE-7 remain later.
+### Timestamp compatibility correction prerequisite
+
+TIMESTAMP_CORRECTION=REPOSITORY_ONLY; CORRECTED_ARTIFACT_DEPLOYED=NOT_ESTABLISHED.
+PE6_4_STARTED=FALSE; PE6_PRODUCTION_EXECUTION_ESTABLISHED=FALSE.
+The operator reported inventory.updated=2026-10-17T11:00:02-06:00,
+198 parseable devices and freshness at inspection only (OPERATOR_SUPPLIED).
+The PE-6.3 installed classifier rejects that accepted PE-5 aware-time form.
+The repository correction accepts aware offsets and emits UTC without rewriting inputs.
+Production still requires separate operator source synchronization, guarded replacement
+of classification.py only, then separately authorized bounded PE-6.4 execution.
+No deployment, caller execution, scheduling, PE-6.4 closure or PE-7 is authorized here.
+See [Timestamp correction evidence](PE6_CLASSIFICATION_IMPLEMENTATION.md#timestamp-compatibility-correction-prerequisite-to-pe-64).
+
+STOP after the repository correction. No automatic follow-on action is authorized.
+
+Earlier checkpoint entries below remain historical evidence.
+
+
 ## PE-6.3 disabled runtime installation closure
 
 ### PE-6.4 - Bounded Execution and Independent Production Acceptance
@@ -7268,7 +7312,20 @@ normalize_mac AST definitions were reported equal. Full runtime compatibility is
 Rollback was NOT PERFORMED and is not claimed tested. No pre-existing dependency may be removed.
 See [PE-6.3 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-63-disabled-runtime-installation-acceptance-and-closure).
 PE-6 remains IN PROGRESS. PE-6.4 is NEXT / NOT STARTED; PE-6.5 closure and PE-7 remain later.
-STOP after PE-6.3. No automatic follow-on action is authorized.
+### Timestamp compatibility correction prerequisite
+
+TIMESTAMP_CORRECTION=REPOSITORY_ONLY; CORRECTED_ARTIFACT_DEPLOYED=NOT_ESTABLISHED.
+PE6_4_STARTED=FALSE; PE6_PRODUCTION_EXECUTION_ESTABLISHED=FALSE.
+The operator reported inventory.updated=2026-10-17T11:00:02-06:00,
+198 parseable devices and freshness at inspection only (OPERATOR_SUPPLIED).
+The PE-6.3 installed classifier rejects that accepted PE-5 aware-time form.
+The repository correction accepts aware offsets and emits UTC without rewriting inputs.
+Production still requires separate operator source synchronization, guarded replacement
+of classification.py only, then separately authorized bounded PE-6.4 execution.
+No deployment, caller execution, scheduling, PE-6.4 closure or PE-7 is authorized here.
+See [Timestamp correction evidence](PE6_CLASSIFICATION_IMPLEMENTATION.md#timestamp-compatibility-correction-prerequisite-to-pe-64).
+
+STOP after the repository correction. No automatic follow-on action is authorized.
 
 ### Historical accepted PE-6.0 next-task snapshot at ea4a93fba1615af1d6641c7f0683b8e912c03d72
 
@@ -7916,7 +7973,20 @@ normalize_mac AST definitions were reported equal. Full runtime compatibility is
 Rollback was NOT PERFORMED and is not claimed tested. No pre-existing dependency may be removed.
 See [PE-6.3 Evidence Report](PE6_CLASSIFICATION_IMPLEMENTATION.md#pe-63-disabled-runtime-installation-acceptance-and-closure).
 PE-6 remains IN PROGRESS. PE-6.4 is NEXT / NOT STARTED; PE-6.5 closure and PE-7 remain later.
-STOP after PE-6.3. No automatic follow-on action is authorized.
+### Timestamp compatibility correction prerequisite
+
+TIMESTAMP_CORRECTION=REPOSITORY_ONLY; CORRECTED_ARTIFACT_DEPLOYED=NOT_ESTABLISHED.
+PE6_4_STARTED=FALSE; PE6_PRODUCTION_EXECUTION_ESTABLISHED=FALSE.
+The operator reported inventory.updated=2026-10-17T11:00:02-06:00,
+198 parseable devices and freshness at inspection only (OPERATOR_SUPPLIED).
+The PE-6.3 installed classifier rejects that accepted PE-5 aware-time form.
+The repository correction accepts aware offsets and emits UTC without rewriting inputs.
+Production still requires separate operator source synchronization, guarded replacement
+of classification.py only, then separately authorized bounded PE-6.4 execution.
+No deployment, caller execution, scheduling, PE-6.4 closure or PE-7 is authorized here.
+See [Timestamp correction evidence](PE6_CLASSIFICATION_IMPLEMENTATION.md#timestamp-compatibility-correction-prerequisite-to-pe-64).
+
+STOP after the repository correction. No automatic follow-on action is authorized.
 
 ### Historical accepted PE-6.0 next-task snapshot at ea4a93fba1615af1d6641c7f0683b8e912c03d72
 
