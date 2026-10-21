@@ -6268,6 +6268,93 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## PE-6.4 accepted bounded production execution and governance closure
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS;
+PE6_2_STATUS=COMPLETE/PASS; PE6_3_STATUS=COMPLETE/PASS; PE6_4_STATUS=COMPLETE/PASS.
+PE6_REPOSITORY_IMPLEMENTED=TRUE; PE6_PRODUCTION_DEPLOYED=TRUE.
+PE6_PRODUCTION_EXECUTION_ESTABLISHED=TRUE; EXECUTION_SCOPE=ONE_BOUNDED_OFFLINE_INVOCATION.
+INDEPENDENT_REPOSITORY_ACCEPTANCE=ACCEPT; RECURRING_CLASSIFICATION_ACTIVATION=FALSE.
+PE6_5_STATUS=NEXT / NOT STARTED; PE7_STARTED=FALSE.
+NEXT_CHECKPOINT=PE-6.5 - Final PE-6 governance closure and PE-7 handoff.
+PE-6.5 requires separate authorization; this closure does not start it or authorize PE-7.
+
+### PE-6.4 concise Evidence Report
+
+Evidence class: OPERATOR_SUPPLIED for all PI3 execution observations, not Codex
+production observation. Repository release identities and local numerical hash
+verification are IMMUTABLE_REPOSITORY_FACT / repository calculations over that
+supplied evidence; public hashes do not independently authenticate production.
+The distinct third execution was independently adjudicated ACCEPT against the
+original [PE-6.4 contract](PE6_CLASSIFICATION_CONTRACT_DESIGN.md#pe-64--bounded-execution-and-concise-independent-production-acceptance)
+and [published acceptance workflow](PE6_INDEPENDENT_ACCEPTANCE_WORKFLOW.md).
+
+- Authorization: `PE64_20261020_THIRD_ACCEPTANCE`.
+- Expiry disposition: `PE64_20261020_FROZEN_PE1_DISPOSITION`.
+- Original sanitized JSON SHA-256 (exact JSON bytes excluding transcript framing):
+  `befcea91d121e137dcd448497eba941e443acec70ff243b1242f863b53330291`.
+- Acceptance-tool release: `1477f672db00e67bc1923a667a8dd5913f183166`.
+- Helper SHA-256: `7155d0f490ebffdc4c94cf2974bda7b9ae4a3e01cb94c3571ae01921a6bb9c4d`.
+- Instrument SHA-256: `a71842ce745590e3dac11ca0b0e60367f6c40d1d89b89b0b30518bb0a12d8c61`.
+- Receipt source object: `9d6ce274a80a578d488d7245ebfa5bca1d5f5a83`, the instrument's
+  pinned runtime source baseline, distinct from its published acceptance-tool release.
+- Runtime identity: `980031f9b1ec934b3c41e7429671a57b4849eb7b225d73ab355b314e8180b282`.
+- Evaluation time: `2026-10-21T05:35:31.882208Z` (operator receipt UTC).
+- Functional verification and positive classification evidence PASS; exactly one
+  authorized invocation; 198 devices and two hostname suggestions; both module-origin
+  checks PASS. Five optional sources intentionally unselected; PARTIAL describes
+  source availability, not execution failure. Process exit code 0; no automatic retry.
+- No private output persistence or recurring classification activation.
+- All eight protected categories: code, configuration, producer_state,
+  historical_journals, runtime_root, locks, schedule and user_crontab.
+- Both protected inspections PASS; before/after captures COMPLETE, ordered,
+  without protected gate failure; zero changed objects, zero reported differences,
+  zero omitted objects, no missing differences and no truncation.
+- Before interval: `2026-10-21T05:35:27.181854Z` to `2026-10-21T05:35:30.381408Z`.
+- After interval: `2026-10-21T05:35:34.628629Z` to `2026-10-21T05:35:37.373914Z`.
+- Identical before/after protected capture SHA-256:
+  `33fa99f76eb105550c32cf0bc1ad1d81955113cea96cc453e733a7e3aebe7a4f`.
+- Canonical public endpoint-evidence SHA-256 independently recomputed and matched:
+  `d3e21e29d737432cfc380aea882c6cb5a0d2a32541f6034abde829fe8d2f8e60`.
+  Each endpoint binds to its own original capture identity and interval.
+- Same-capture PE5_OUTPUT_DIRECTORY: directory, UID/GID 1000:1000, mode 0700,
+  device 45826, inode 825862, link count 2. Both companion files are regular,
+  UID/GID 1000:1000, mode 0600, single-link, device 45826; current.json inode
+  825867 and current.durability.json inode 825864. All recorded fingerprints,
+  sizes and timestamps match between before and after; safety is established by
+  these observations, not a later unbound inspection.
+- Required directory ancestors were PRESENT and unchanged: runtime root inode
+  802322, state root inode 802388, state/enrichment inode 825861, all device 45826.
+- Zero protected changes require no PE-5 mutation-attribution permission. Acceptance
+  applies absence of unauthorized protected changes, not a producer exemption.
+
+### Preserved history, limitations and next gate
+
+The second production acceptance receipt remains INSUFFICIENT_EVIDENCE, unchanged;
+its missing historical directory-safety values are not backfilled or promoted to PASS.
+The separately authorized successful third execution supplies its own complete
+security observations. Earlier PE-6.0/6.1/6.2/6.3 and timestamp-correction narratives,
+original requirements, production evidence and accepted PE-4/PE-5 authority remain historical.
+
+Endpoint observations do not prove universal absence of transient changes or a
+complete event history. Public evidence hashes do not authenticate production
+provenance. Full private capture preimages are not reconstructed. Five optional
+sources remain unselected. The frozen PE-1 candidate has no candidate-specific
+expires_at; its accepted expiration-disposition limitation is unchanged, with no
+new TTL. The preserved runtime inventory variant is not a universal compatibility
+or current health/freshness claim. No recurring activation is authorized.
+
+This governance closure changes documentation only; no Codex PI3/PI5 access,
+deployment, classifier/PE-5 execution, production mutation or historical receipt
+rewrite occurs. PE-6.5 is eligible after PE-6.4, but remains NOT STARTED pending
+separate authorization. It is repository-only final PE-6 closure/handoff, with no
+repeated production action. PE-7 remains later and separately authorized. STOP.
+
+Earlier Implementation Status entries below are historical snapshots; their
+then-current labels do not supersede this accepted PE-6.4 status.
+
 ## Timestamp compatibility repository correction (PE-6.4 prerequisite)
 
 ### PE-6.4 - Bounded Execution and Independent Production Acceptance
@@ -7288,6 +7375,22 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-6.5 - Final PE-6 governance closure and PE-7 handoff
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
+PE6_4_STATUS=COMPLETE/PASS; INDEPENDENT_REPOSITORY_ACCEPTANCE=ACCEPT.
+PE6_5_STATUS=NEXT / NOT STARTED; PE7_STARTED=FALSE.
+NEXT_CHECKPOINT=PE-6.5 - Final PE-6 governance closure and PE-7 handoff.
+The PE-6.4 prerequisite is accepted. Separate authorization is required for PE-6.5:
+repository-only final PE-6 closure and PE-7 handoff after all required evidence,
+without repeated production action. No PE-6.5 work or PE-7 implementation begins here.
+See the current PE-6.4 Evidence Report in Implementation Status and the
+[accepted PE-6.5 roadmap](PE6_CLASSIFICATION_CONTRACT_DESIGN.md#pe-65--final-pe-6-governance-closure-and-pe-7-handoff).
+No production access, classification execution, recurring activation or automatic
+follow-on action is authorized. STOP.
+
+### Historical timestamp-correction objective snapshot before PE-6.4 closure
+
 ### PE-6.4 - Bounded Execution and Independent Production Acceptance
 
 Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
@@ -7949,6 +8052,22 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-6.5 - Final PE-6 governance closure and PE-7 handoff
+
+Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
+PE6_4_STATUS=COMPLETE/PASS; INDEPENDENT_REPOSITORY_ACCEPTANCE=ACCEPT.
+PE6_5_STATUS=NEXT / NOT STARTED; PE7_STARTED=FALSE.
+NEXT_CHECKPOINT=PE-6.5 - Final PE-6 governance closure and PE-7 handoff.
+The PE-6.4 prerequisite is accepted. Separate authorization is required for PE-6.5:
+repository-only final PE-6 closure and PE-7 handoff after all required evidence,
+without repeated production action. No PE-6.5 work or PE-7 implementation begins here.
+See the current PE-6.4 Evidence Report in Implementation Status and the
+[accepted PE-6.5 roadmap](PE6_CLASSIFICATION_CONTRACT_DESIGN.md#pe-65--final-pe-6-governance-closure-and-pe-7-handoff).
+No production access, classification execution, recurring activation or automatic
+follow-on action is authorized. STOP.
+
+### Historical timestamp-correction next-task snapshot before PE-6.4 closure
+
 ### PE-6.4 - Bounded Execution and Independent Production Acceptance
 
 Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
