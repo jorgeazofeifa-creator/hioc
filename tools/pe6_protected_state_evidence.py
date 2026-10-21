@@ -78,6 +78,7 @@ class ReviewedPermission:
     writer_id: str
     authorization_reference: str
     acceptance_reference: str
+    pe5_publication: dict | None = None
 
 
 def _fingerprint(value):
@@ -168,6 +169,7 @@ for _name in ('manufacturer', 'manufacturer_status'):
 for _name in ('current.json', 'current.durability.json'):
     _register('state/enrichment/service_associations/' + _name,
               'PE5_' + _name.replace('.', '_').upper(), 'PE5_COMPOSER', 'PE5_CONFIRMED_OUTPUT_CONTRACT')
+PE5_DIRECTORY = ROOT + '/state/enrichment/service_associations'
 _PARENTS = {ROOT: 'RUNTIME_ROOT', ROOT + '/state': 'STATE_ROOT',
     ROOT + '/state/inventory': 'STATE_INVENTORY_DIRECTORY',
     ROOT + '/state/events': 'STATE_EVENTS_DIRECTORY',
@@ -252,6 +254,72 @@ def _validate_capture(capture):
             _digest(obj.control[1]); _digest(obj.control[2])
 
 
+def _validate_pe5_publication(before, after, permissions):
+    """Validate an EXTERNALLY reviewed native-contract attestation, not production.
+
+    The external reviewer must already have established writer authorization and
+    schema/canonical/domain/descriptor/revision/stable-pair validation using PE-5
+    read_domain()/descriptor() semantics. This helper neither authenticates those
+    assertions nor infers a writer from cron, names, timestamps or CONFIRMED alone.
+    Retain the external evidence separately; only its digest enters the receipt.
+    No historical content digest is manufactured or added to captured observations.
+    """
+    ids = ('PE5_OUTPUT_DIRECTORY', 'PE5_CURRENT_JSON', 'PE5_CURRENT_DURABILITY_JSON')
+    paths = (PE5_DIRECTORY, PE5_DIRECTORY+'/current.json',
+             PE5_DIRECTORY+'/current.durability.json')
+    keys = {('producer_state', path) for path in paths}
+    _need(set(permissions) == set(ids))
+    _need(before.completeness == after.completeness == 'COMPLETE')
+    changed = {k for k in set(before._objects) | set(after._objects)
+               if before._objects.get(k) != after._objects.get(k)}
+    _need(changed == keys)  # No hidden extra creation, deletion or other-category delta.
+    directory = permissions[ids[0]]
+    for identifier in ids:
+        item = permissions[identifier]
+        _need(item.writer_id == 'PE5_COMPOSER')
+        _need(item.authorization_reference == directory.authorization_reference)
+        _need(item.acceptance_reference == directory.acceptance_reference)
+    evidence = directory.pe5_publication
+    fields = {'schema_version', 'validation', 'domain', 'durability_state', 'candidate',
+        'transaction_id', 'evaluated_at', 'output_sha256', 'durability_sha256',
+        'confirmed_sha256', 'output_source_revision', 'confirmed_source_revision',
+        'output_after_fingerprint', 'durability_after_fingerprint'}
+    _need(type(evidence) is dict and set(evidence) == fields)
+    _need(evidence['schema_version'] == '1.0')
+    _need(evidence['validation'] == 'PASS_SCHEMA_CANONICAL_DOMAIN_DESCRIPTOR_DIGEST_REVISION_STABLE_PAIR')
+    _need(evidence['domain'] == 'GENERATED_RELATIONSHIP_OUTPUT')
+    _need(evidence['durability_state'] == 'CONFIRMED' and evidence['candidate'] is None)
+    _need(type(evidence['transaction_id']) is str and
+          re.fullmatch(r'dur_[0-9a-f]{32}', evidence['transaction_id']))
+    _need(_time(evidence['evaluated_at']) <= _time(after.ended_at))
+    _need(_digest(evidence['confirmed_sha256']) == _digest(evidence['output_sha256']))
+    revision = evidence['output_source_revision']
+    _need(revision is None or type(revision) is int and 1 <= revision <= 9007199254740991)
+    _need(type(evidence['confirmed_source_revision']) is type(revision) and
+          evidence['confirmed_source_revision'] == revision)
+    for i, path in enumerate(paths):
+        a, b = before._objects.get(('producer_state', path)), after._objects.get(('producer_state', path))
+        _need(a is not None and b is not None and a.fp is not None and b.fp is not None)
+        # Stable path/type/security/device; only the documented atomic effects qualify.
+        _need(a.fp[0] == b.fp[0] and a.fp[3:6] == b.fp[3:6])
+        _need(a.fp[3] == a.fp[4] == 1000)
+        if i == 0:
+            _need(a.fp[:7] == b.fp[:7] and stat.S_ISDIR(a.fp[2]))
+            _need(stat.S_IMODE(a.fp[2]) == 0o700 and a.sha256 is b.sha256 is None)
+        else:
+            _need(a.fp[1] != b.fp[1])  # This narrow grant covers the observed replacement pattern.
+            _need(stat.S_ISREG(a.fp[2]) and a.fp[2] == b.fp[2] and
+                  stat.S_IMODE(a.fp[2]) == 0o600 and a.fp[5] == 1)
+            maximum = 16777216 if i == 1 else 8192
+            _need(0 < a.fp[6] <= maximum and 0 < b.fp[6] <= maximum)
+            kind = 'output' if i == 1 else 'durability'
+            _need(_fingerprint(evidence[kind+'_after_fingerprint']) == b.fp)
+            sha = _digest(evidence[kind+'_sha256'])
+            if b.sha256 is not None: _need(b.sha256 == sha)
+            _need(permissions[ids[i]].pe5_publication is None)
+    return _sha(_json(evidence))
+
+
 def build_report(before, after, *, primary_outcome, protected_inspection_outcome,
                  reviewed_permissions=(), max_differences=MAX_DIFFERENCES,
                  max_report_bytes=MAX_REPORT_BYTES):
@@ -280,6 +348,11 @@ def build_report(before, after, *, primary_outcome, protected_inspection_outcome
         _need(type(item.writer_id) is str and _REF.fullmatch(item.writer_id))
         _need(item.artifact_id not in permissions)
         permissions[item.artifact_id] = item
+    publication_sha256 = None
+    if 'PE5_OUTPUT_DIRECTORY' in permissions:
+        publication_sha256 = _validate_pe5_publication(before, after, permissions)
+    else:
+        _need(all(item.pe5_publication is None for item in permissions.values()))
     differences = []; prohibited = False; unresolved = False; used = set()
     keys = sorted(set(before._objects) | set(after._objects))
     for ordinal, key in enumerate(keys):
@@ -318,12 +391,17 @@ def build_report(before, after, *, primary_outcome, protected_inspection_outcome
         decision, decision_basis = ('PROHIBITED', 'IMMUTABLE_RUNTIME_CHANGED') if mutable == 'IMMUTABLE' and 'UNKNOWN' not in (pa, pb) else ('UNATTRIBUTED', 'INCOMPLETE_COMPARISON' if 'UNKNOWN' in (pa, pb) else 'SPECIFIC_WRITER_EVIDENCE_MISSING')
         if identifier in permissions:
             item = permissions[identifier]; used.add(identifier)
-            _need(mutable == 'INDEPENDENTLY_MUTABLE' and item.writer_id == writer)
+            pe5_directory = (key == ('producer_state', PE5_DIRECTORY) and
+                             identifier == 'PE5_OUTPUT_DIRECTORY' and publication_sha256 is not None)
+            _need(pe5_directory or mutable == 'INDEPENDENTLY_MUTABLE' and item.writer_id == writer)
             _need(item.difference_sha256 == record['difference_sha256'])
             _need(not set(fields) & {'st_mode', 'st_uid', 'st_gid', 'st_nlink'})
             _need(before.completeness == after.completeness == 'COMPLETE')
-            decision, decision_basis = 'PERMITTED_CONFIRMED', 'EXTERNAL_INDEPENDENT_REVIEW_ATTESTATION'
+            decision, decision_basis = 'PERMITTED_CONFIRMED', ('EXTERNAL_PE5_ATOMIC_PUBLICATION_REVIEW'
+                if pe5_directory else 'EXTERNAL_INDEPENDENT_REVIEW_ATTESTATION')
             record['review_references'] = dict(authorization=item.authorization_reference, acceptance=item.acceptance_reference)
+            if publication_sha256 is not None:
+                record['review_references']['pe5_publication_sha256'] = publication_sha256
         record.update(adjudication=decision, adjudication_basis=decision_basis)
         prohibited |= decision == 'PROHIBITED'; unresolved |= decision == 'UNATTRIBUTED'
         differences.append(record)

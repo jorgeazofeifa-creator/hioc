@@ -203,4 +203,200 @@ class ProtectedEvidenceTests(unittest.TestCase):
         r=report(*captures(a,b));self.assertEqual({d['category'] for d in r['object_differences']},{'locks','schedule','user_crontab'})
         self.assertNotIn('PRIVATE',json.dumps(r));self.assertTrue(any(d['control_differences'] for d in r['object_differences']))
 
+class PE5DirectoryPublicationTests(unittest.TestCase):
+    """Synthetic EXTERNAL review attestations; never production observations."""
+    directory=m.PE5_DIRECTORY
+    output=m.PE5_DIRECTORY+'/current.json'
+    durability=m.PE5_DIRECTORY+'/current.durability.json'
+
+    def fixtures(self, mutate=None):
+        a=observation()
+        a['producer_state']={self.directory:[1,50,stat.S_IFDIR|0o700,1000,1000,2,4096,10,11],
+            self.output:fp(inode=60,size=4915),self.durability:fp(inode=61,size=269)}
+        b=copy.deepcopy(a)
+        b['producer_state'][self.directory][7:]=[12,13]
+        b['producer_state'][self.output]=fp(inode=62,size=4916)
+        b['producer_state'][self.output][7]+=2;b['producer_state'][self.output][8]+=2
+        b['producer_state'][self.durability]=fp(inode=63,size=269)
+        b['producer_state'][self.durability][7]+=2;b['producer_state'][self.durability][8]+=2
+        if mutate:mutate(a,b)
+        self.last_observations=(a,b)
+        x=m.capture_protected(lambda:a,clock=iter(['2026-10-20T03:32:01Z','2026-10-20T03:32:01.1Z']).__next__)
+        y=m.capture_protected(lambda:b,clock=iter(['2026-10-20T03:32:03Z','2026-10-20T03:32:03.1Z']).__next__)
+        e=dict(schema_version='1.0',validation='PASS_SCHEMA_CANONICAL_DOMAIN_DESCRIPTOR_DIGEST_REVISION_STABLE_PAIR',
+            domain='GENERATED_RELATIONSHIP_OUTPUT',durability_state='CONFIRMED',candidate=None,
+            transaction_id='dur_'+'1'*32,evaluated_at='2026-10-20T03:32:02Z',
+            output_sha256='e'*64,durability_sha256='f'*64,confirmed_sha256='e'*64,
+            output_source_revision=1,confirmed_source_revision=1,
+            output_after_fingerprint=copy.deepcopy(b['producer_state'].get(self.output)),
+            durability_after_fingerprint=copy.deepcopy(b['producer_state'].get(self.durability)))
+        for field in ('output_after_fingerprint','durability_after_fingerprint'):
+            if e[field] is not None and len(e[field])==2:e[field]=e[field][0]
+        differences=report(x,y)['object_differences'];by_id={d['artifact_id']:d for d in differences}
+        grants=[m.ReviewedPermission(x.digest,y.digest,identifier,by_id[identifier]['difference_sha256'],
+            'PE5_COMPOSER','SYNTHETIC_PE5_AUTHORIZATION','SYNTHETIC_PE5_ACCEPTANCE',
+            e if identifier=='PE5_OUTPUT_DIRECTORY' else None)
+            for identifier in ('PE5_OUTPUT_DIRECTORY','PE5_CURRENT_JSON','PE5_CURRENT_DURABILITY_JSON')
+            if identifier in by_id]
+        return x,y,e,grants
+
+    def test_exact_three_object_publication_requires_external_review(self):
+        x,y,e,g=self.fixtures()
+        self.assertEqual(report(x,y)['result'],'INSUFFICIENT_EVIDENCE')
+        result=report(x,y,reviewed_permissions=g)
+        self.assertEqual(result['result'],'PASS');self.assertEqual(result['changed_object_count'],3)
+        self.assertTrue(all(d['adjudication']=='PERMITTED_CONFIRMED' for d in result['object_differences']))
+        hashes={d['review_references']['pe5_publication_sha256'] for d in result['object_differences']}
+        self.assertEqual(len(hashes),1)
+        for d in result['object_differences']:
+            self.assertIsNone(d['content_hash_evidence']['before'])
+            self.assertIsNone(d['content_hash_evidence']['after'])
+        # Later supplied digests are referenced, never relabeled captured hashes.
+        self.assertNotIn('dur_111',json.dumps(result))
+
+    def test_published_difference_hashes_remain_unchanged(self):
+        x,y,e,g=self.fixtures()
+        raw=subprocess.check_output(['git','cat-file','blob',
+            'f4248d7ade25058da07abcf77a7c79dd2c6bd5d9:tools/pe6_protected_state_evidence.py'],cwd=ROOT)
+        old=type(sys)('pe64_published_directory_binding');sys.modules[old.__name__]=old
+        self.addCleanup(lambda:sys.modules.pop(old.__name__,None))
+        exec(compile(raw,'published_evidence.py','exec'),old.__dict__)
+        a,b=self.last_observations
+        old_report=json.loads(old.build_report(old.capture_protected(lambda:a),old.capture_protected(lambda:b),
+            primary_outcome=PASS,protected_inspection_outcome=INSPECT))
+        expected={d['artifact_id']:d['difference_sha256'] for d in old_report['object_differences']}
+        current={d['artifact_id']:d['difference_sha256'] for d in report(x,y)['object_differences']}
+        self.assertEqual(current,expected)
+        self.assertEqual(report(x,y,reviewed_permissions=g)['result'],'PASS')
+
+    def test_directory_permission_without_transaction_is_rejected(self):
+        x,y,e,g=self.fixtures();g[0]=replace(g[0],pe5_publication=None)
+        with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_missing_or_incomplete_validation_rejected(self):
+        for field in ('transaction_id','domain','output_after_fingerprint','validation'):
+            x,y,e,g=self.fixtures();del e[field]
+            with self.subTest(field=field):
+                with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+        x,y,e,g=self.fixtures();e['validation']='INCOMPLETE'
+        with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_unconfirmed_durability_or_candidate_rejected(self):
+        for field,value in [('durability_state','PENDING'),('candidate',{'sha256':'e'*64})]:
+            x,y,e,g=self.fixtures();e[field]=value
+            with self.subTest(field=field):
+                with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_descriptor_digest_revision_domain_and_transaction_rejected(self):
+        for field,value in [('confirmed_sha256','0'*64),('confirmed_source_revision',2),
+                ('confirmed_source_revision',True),('output_source_revision',0),
+                ('output_sha256','INVALID'),('durability_sha256','INVALID'),
+                ('domain','CONFIGURED_MAPPING_SOURCE'),('transaction_id','dur_INVALID'),
+                ('evaluated_at','2026-10-20T03:33:00Z')]:
+            x,y,e,g=self.fixtures();e[field]=value
+            with self.subTest(field=field,value=value):
+                with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_wrong_writer_or_review_references_rejected(self):
+        for i in range(3):
+            for field,value in [('writer_id','INVENTORY_ENGINE'),('authorization_reference','OTHER_AUTHORIZATION'),('acceptance_reference','OTHER_ACCEPTANCE')]:
+                x,y,e,g=self.fixtures();g[i]=replace(g[i],**{field:value})
+                with self.subTest(i=i,field=field):
+                    with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_wrong_captures_or_difference_hash_rejected(self):
+        for i in range(3):
+            for field in ('before_capture_sha256','after_capture_sha256','difference_sha256'):
+                x,y,e,g=self.fixtures();g[i]=replace(g[i],**{field:'0'*64})
+                with self.subTest(i=i,field=field):
+                    with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_wrong_after_file_fingerprints_rejected(self):
+        for field in ('output_after_fingerprint','durability_after_fingerprint'):
+            x,y,e,g=self.fixtures();e[field][1]+=1
+            with self.subTest(field=field):
+                with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_extra_object_appearance_or_disappearance_rejected(self):
+        for category in ('producer_state','configuration','code'):
+            for appearing in (True,False):
+                def mutate(a,b): (b if appearing else a)[category][PRIVATE]=fp()
+                x,y,e,g=self.fixtures(mutate)
+                with self.subTest(category=category,appearing=appearing):
+                    with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_missing_companion_files_or_permissions_rejected(self):
+        for path in (self.output,self.durability):
+            for side in (0,1):
+                def mutate(a,b): (a if side==0 else b)['producer_state'].pop(path)
+                x,y,e,g=self.fixtures(mutate)
+                with self.subTest(path=path,side=side):
+                    with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+        x,y,e,g=self.fixtures()
+        with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g[:1])
+
+    def test_unrelated_directory_cannot_use_publication_permission(self):
+        def mutate(a,b):
+            for obs in (a,b):obs['producer_state'][self.directory+'-other']=obs['producer_state'].pop(self.directory)
+        x,y,e,g=self.fixtures(mutate)
+        self.assertEqual(report(x,y,reviewed_permissions=g)['result'],'INSUFFICIENT_EVIDENCE')
+        d=next(d for d in report(x,y)['object_differences'] if d['artifact_id'].startswith('OBJECT_'))
+        g.append(m.ReviewedPermission(x.digest,y.digest,'PE5_OUTPUT_DIRECTORY',d['difference_sha256'],
+            'PE5_COMPOSER','SYNTHETIC_PE5_AUTHORIZATION','SYNTHETIC_PE5_ACCEPTANCE',e))
+        with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_directory_security_identity_size_or_type_change_rejected(self):
+        for field in range(7):
+            def mutate(a,b): b['producer_state'][self.directory][field]+=1
+            x,y,e,g=self.fixtures(mutate)
+            with self.subTest(field=field):
+                with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_file_security_change_or_no_replacement_rejected(self):
+        for path in (self.output,self.durability):
+            for field in (0,1,2,3,4,5):
+                def mutate(a,b):
+                    if field==1:b['producer_state'][path][1]=a['producer_state'][path][1]
+                    else:b['producer_state'][path][field]+=1
+                x,y,e,g=self.fixtures(mutate)
+                with self.subTest(path=path,field=field):
+                    with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_incomplete_capture_cannot_receive_permission(self):
+        x,y,e,g=self.fixtures();y=replace(y,completeness='INCOMPLETE',error='OBSERVATION_ERROR')
+        with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_truncated_report_never_passes(self):
+        x,y,e,g=self.fixtures()
+        for kwargs in (dict(max_differences=1),dict(max_report_bytes=2048)):
+            r=report(x,y,reviewed_permissions=g,**kwargs)
+            self.assertEqual(r['result'],'INSUFFICIENT_EVIDENCE');self.assertTrue(r['differences_truncated'])
+
+    def test_primary_or_protected_failure_preserved(self):
+        x,y,e,g=self.fixtures()
+        r=report(x,y,reviewed_permissions=g,primary_outcome=dict(status='FAIL',stage='SINGLE_EVALUATION'),protected_inspection_outcome=dict(status='FAIL',stage='AFTER_STATE'))
+        self.assertEqual(r['result'],'FAIL');self.assertEqual(r['primary_outcome']['status'],'FAIL');self.assertEqual(r['protected_inspection_outcome']['status'],'FAIL')
+
+    def test_permission_packet_not_allowed_on_unrelated_artifacts(self):
+        x,y=changed(INVENTORY);d=report(x,y)['object_differences'][0]
+        g=m.ReviewedPermission(x.digest,y.digest,d['artifact_id'],d['difference_sha256'],
+            'INVENTORY_ENGINE','SYNTHETIC_AUTHORIZATION','SYNTHETIC_ACCEPTANCE',{})
+        with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=[g])
+
+    def test_file_permissions_alone_never_waive_directory(self):
+        x,y,e,g=self.fixtures()
+        self.assertEqual(report(x,y,reviewed_permissions=g[1:])['result'],'INSUFFICIENT_EVIDENCE')
+
+    def test_external_digest_must_match_hash_if_after_capture_contains_one(self):
+        for path in (self.output,self.durability):
+            def mutate(a,b):b['producer_state'][path]=[b['producer_state'][path],'0'*64]
+            x,y,e,g=self.fixtures(mutate)
+            with self.subTest(path=path):
+                with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+    def test_private_fields_cannot_be_smuggled_into_transaction_packet(self):
+        x,y,e,g=self.fixtures();e['PRIVATE_HOSTNAME']='PRIVATE_DATA'
+        with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
+
+
 if __name__ == '__main__': unittest.main()
