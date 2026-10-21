@@ -36,7 +36,13 @@ def fingerprint(size=10):
 
 
 def observation():
-    return dict(code={CODE:[fingerprint(),'a'*64]},configuration={},producer_state={},
+    directory='/home/jazofv1/hioc/state/enrichment/service_associations'
+    producer={directory:[1,50,stat.S_IFDIR|0o700,1000,1000,2,4096,1,2],
+        directory+'/current.json':fingerprint(4916),
+        directory+'/current.durability.json':fingerprint(269),
+        '/home/jazofv1/hioc/state':[1,4,stat.S_IFDIR|0o700,1000,1000,2,4096,1,2],
+        '/home/jazofv1/hioc/state/enrichment':[1,5,stat.S_IFDIR|0o700,1000,1000,2,4096,1,2]}
+    return dict(code={CODE:[fingerprint(),'a'*64]},configuration={},producer_state=producer,
         historical_journals={},runtime_root=[1,3,stat.S_IFDIR|0o755,1000,1000,1,4096,1,2],
         locks={},schedule={},user_crontab=[0,'b'*64,'c'*64])
 
@@ -66,6 +72,16 @@ class IntegratedAcceptanceTests(unittest.TestCase):
             f=self.root/(k+'.json');f.write_text(json.dumps(v),encoding='utf8');paths[k]=f
         originals={k:f.read_bytes() for k,f in paths.items()}
         a=observation();b=copy.deepcopy(a)
+        pe5='/home/jazofv1/hioc/state/enrichment/service_associations'
+        if before=='pe5_missing':a['producer_state'].pop(pe5)
+        if before=='pe5_unsafe':a['producer_state'][pe5][2]=stat.S_IFDIR|0o755
+        if after=='pe5_unsafe':b['producer_state'][pe5][4]=0
+        if after=='pe5_substituted':b['producer_state'][pe5][1]+=1
+        if after=='pe5_publication':
+            b['producer_state'][pe5][7]+=1;b['producer_state'][pe5][8]+=1
+            for suffix in ('/current.json','/current.durability.json'):
+                b['producer_state'][pe5+suffix][1]+=100
+                b['producer_state'][pe5+suffix][7]+=1;b['producer_state'][pe5+suffix][8]+=1
         if after in ('producer','permitted'):
             a['producer_state'][PRODUCER]=fingerprint()
             b['producer_state'][PRODUCER]=fingerprint(11)
@@ -201,6 +217,55 @@ class IntegratedAcceptanceTests(unittest.TestCase):
         for secret in ('PRIVATE',OWNER,MAC,'192.0.2.1','aa:bb:cc',str(self.root),'/home/jazofv1/hioc/state/'):
             self.assertNotIn(secret.encode(),raw)
         return r,trace
+
+    def test_second_execution_references_cannot_authorize_another_run(self):
+        for authorization,expiry in [('PE64_20261019_SECOND_ACCEPTANCE','SYNTHETIC_EXPIRY_ADOPTION'),
+                ('SYNTHETIC_NEW_APPROVAL','PE64_20261019_FROZEN_PE1_DISPOSITION')]:
+            with patch.object(p,'runtime_preflight',side_effect=AssertionError('must not run')) as preflight:
+                result=json.loads(p.run(authorization,expiry,HELPER_SHA))
+            self.assertEqual(result['RESULT'],'FAIL');self.assertEqual(result['classification_invocations'],0)
+            preflight.assert_not_called()
+
+    def test_required_pe5_security_evidence_emitted_with_one_call(self):
+        r,t=self.case()
+        e=r['protected_evidence']['pe5_endpoint_evidence']
+        self.assertEqual(r['RESULT'],'PASS');self.assertEqual(t.count('evaluate'),1)
+        for label in ('before','after'):
+            endpoint=e['endpoints'][label];directory=endpoint['artifacts'][0]
+            self.assertEqual(directory['mode'],'0700')
+            self.assertEqual(directory['fingerprint']['st_uid'],'1000')
+            self.assertEqual(directory['fingerprint']['st_gid'],'1000')
+            self.assertEqual(endpoint['security_status'],'PASS')
+
+    def test_missing_pe5_baseline_prevents_classification(self):
+        r,t=self.case(before='pe5_missing')
+        self.assertEqual(r['RESULT'],'INSUFFICIENT_EVIDENCE');self.assertNotIn('evaluate',t)
+        self.assertEqual(r['classification_invocations'],0)
+
+    def test_unsafe_pe5_baseline_prevents_classification(self):
+        r,t=self.case(before='pe5_unsafe')
+        self.assertEqual(r['RESULT'],'FAIL');self.assertNotIn('evaluate',t)
+        self.assertEqual(r['protected_evidence']['pe5_endpoint_evidence']['endpoints']['before']['artifacts'][0]['mode'],'0755')
+
+    def test_after_security_failure_preserves_functional_success(self):
+        r,t=self.case(after='pe5_unsafe')
+        self.assertEqual(r['RESULT'],'FAIL');self.assertEqual(t.count('evaluate'),1)
+        self.assertEqual(r['primary_outcome']['status'],'PASS')
+        self.assertEqual(r['protected_inspection_outcome']['status'],'FAIL')
+
+    def test_directory_substitution_synchronizes_independent_outcomes(self):
+        r,t=self.case(after='pe5_substituted')
+        self.assertEqual(r['RESULT'],'FAIL');self.assertEqual(t.count('evaluate'),1)
+        self.assertEqual(r['primary_outcome']['status'],'PASS')
+        self.assertEqual(r['protected_inspection_outcome'],r['protected_evidence']['protected_inspection_outcome'])
+        self.assertEqual(r['protected_inspection_outcome']['status'],'FAIL')
+
+    def test_pe5_publication_retains_endpoints_without_self_permission(self):
+        r,t=self.case(after='pe5_publication')
+        self.assertEqual(r['RESULT'],'INSUFFICIENT_EVIDENCE');self.assertEqual(t.count('evaluate'),1)
+        e=r['protected_evidence'];self.assertEqual(e['changed_object_count'],3)
+        self.assertTrue(all(d['adjudication']=='UNATTRIBUTED' for d in e['object_differences']))
+        self.assertEqual(len(e['pe5_endpoint_evidence']['endpoints']['after']['artifacts']),3)
 
     def test_unchanged_success(self):
         r,t=self.case();self.assertEqual(r['RESULT'],'PASS');self.assertEqual(t.count('protected'),2)

@@ -291,7 +291,8 @@ def run(authorization_reference=None,expiry_disposition_reference=None,
     try:
         for ref in (authorization_reference,expiry_disposition_reference):
             need(type(ref) is str and re.fullmatch('[A-Z][A-Z0-9_]{7,95}',ref))
-            need(ref not in ('CHAT_20261019_PE64_SINGLE_RUN','ARCH_20261019_FROZEN_PE1_SCHEMA'))
+            need(ref not in ('CHAT_20261019_PE64_SINGLE_RUN','ARCH_20261019_FROZEN_PE1_SCHEMA',
+                             'PE64_20261019_SECOND_ACCEPTANCE','PE64_20261019_FROZEN_PE1_DISPOSITION'))
         stage='PREFLIGHT'; pins=runtime_preflight()
         sys.pycache_prefix='/dev/null/hioc-pe64-no-bytecode'
         with contextlib.redirect_stdout(Quiet()),contextlib.redirect_stderr(Quiet()):
@@ -302,7 +303,7 @@ def run(authorization_reference=None,expiry_disposition_reference=None,
                     return protected(pins)
             except (Uncertain,OSError): raise helper.ObservationUnstable() from None
             except BaseException: raise helper.ProtectedInvariantFailure() from None
-        before=helper.capture_protected(observe)
+        before=helper.capture_protected(observe,require_pe5_endpoint_evidence=True)
         if before.completeness=='COMPLETE' and not before.protected_failure:
             try:
                 with contextlib.redirect_stdout(Quiet()),contextlib.redirect_stderr(Quiet()):
@@ -330,7 +331,7 @@ def run(authorization_reference=None,expiry_disposition_reference=None,
                 # An unsuccessful verification must not leak a partially reduced result.
                 functional={}; primary=_outcome('FAIL',stage,'REQUIRED_CHECK_FAILED')
             finally:
-                after=helper.capture_protected(observe)
+                after=helper.capture_protected(observe,require_pe5_endpoint_evidence=True)
                 inspection=_outcome('FAIL' if after.protected_failure else
                     'PASS' if after.completeness=='COMPLETE' else 'INCOMPLETE','AFTER_STATE')
         if primary['status']=='PASS':
@@ -345,7 +346,8 @@ def run(authorization_reference=None,expiry_disposition_reference=None,
         evidence=json.loads(helper.build_report(before,after,primary_outcome=primary,
             protected_inspection_outcome=inspection,
             reviewed_permissions=tuple(helper.ReviewedPermission(**item) for item in reviewed_permissions),
-            max_report_bytes=32768))
+            max_report_bytes=32768,require_pe5_endpoint_evidence=True))
+        inspection=evidence['protected_inspection_outcome']
         verdict=evidence['result']
         positive=bool(functional.get('summary',{}).get('suggestion_count'))
         if verdict=='PASS' and not positive: verdict='INSUFFICIENT_EVIDENCE'

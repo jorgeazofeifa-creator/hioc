@@ -399,4 +399,176 @@ class PE5DirectoryPublicationTests(unittest.TestCase):
         with self.assertRaises(m.EvidenceError):report(x,y,reviewed_permissions=g)
 
 
+
+class BoundEndpointEvidenceTests(unittest.TestCase):
+    def fixtures(self):
+        fixture=PE5DirectoryPublicationTests();fixture.fixtures()
+        a,b=copy.deepcopy(fixture.last_observations)
+        for obs in (a,b):
+            obs['producer_state'][m.ROOT+'/state']=[1,4,stat.S_IFDIR|0o700,1000,1000,2,4096,1,2]
+            obs['producer_state'][m.ROOT+'/state/enrichment']=[1,5,stat.S_IFDIR|0o700,1000,1000,2,4096,1,2]
+        return a,b
+
+    def capture(self,value,start='2026-10-20T03:32:00Z',end='2026-10-20T03:32:01Z'):
+        return m.capture_protected(lambda:value,clock=iter([start,end]).__next__,require_pe5_endpoint_evidence=True)
+
+    def pair(self,a,b):
+        return self.capture(a),self.capture(b,'2026-10-20T03:32:03Z','2026-10-20T03:32:04Z')
+
+    def result(self,a,b,**kwargs):
+        return report(*self.pair(a,b),require_pe5_endpoint_evidence=True,**kwargs)
+
+    def test_projection_is_exact_bound_nonprivate_endpoint_evidence(self):
+        a,b=self.fixtures();x,y=self.pair(a,b)
+        r=report(x,y,require_pe5_endpoint_evidence=True);e=r['pe5_endpoint_evidence']
+        self.assertEqual(r['result'],'INSUFFICIENT_EVIDENCE')
+        digest=e.pop('evidence_sha256');self.assertEqual(digest,hashlib.sha256(m._json(e)).hexdigest())
+        for label,original,capture in [('before',a,x),('after',b,y)]:
+            c=e['endpoints'][label];self.assertEqual(c['capture_sha256'],capture.digest)
+            self.assertEqual(c['capture_sha256'],hashlib.sha256(m._json(original)).hexdigest())
+            self.assertEqual(c['interval'],dict(start=capture.started_at,end=capture.ended_at))
+            self.assertEqual(c['security_status'],'PASS')
+            for item,suffix in zip(c['artifacts'],['','/current.json','/current.durability.json']):
+                self.assertEqual(item['fingerprint'],dict(zip(m.FIELDS,map(str,original['producer_state'][m.PE5_DIRECTORY+suffix]))))
+                self.assertIsNone(item['content_sha256'])
+        self.assertNotIn(m.ROOT,json.dumps(r));self.assertNotIn('PRIVATE',json.dumps(r))
+
+    def test_before_after_identities_remain_distinct(self):
+        a,b=self.fixtures();e=self.result(a,b)['pe5_endpoint_evidence']['endpoints']
+        self.assertNotEqual(e['before']['capture_sha256'],e['after']['capture_sha256'])
+        self.assertNotEqual(e['before']['artifacts'][1]['fingerprint']['st_ino'],e['after']['artifacts'][1]['fingerprint']['st_ino'])
+
+    def test_directory_substitution_is_known_failure(self):
+        a,b=self.fixtures();b['producer_state'][m.PE5_DIRECTORY][1]+=1
+        r=self.result(a,b);self.assertEqual(r['result'],'FAIL')
+        self.assertEqual(r['primary_outcome']['status'],'PASS');self.assertEqual(r['protected_inspection_outcome']['status'],'FAIL')
+
+    def test_parent_substitution_and_symlink_are_known_failures(self):
+        for path in [m.ROOT+'/state',m.ROOT+'/state/enrichment']:
+            for index,value in [(1,99),(2,stat.S_IFLNK|0o777)]:
+                a,b=self.fixtures();b['producer_state'][path][index]=value
+                with self.subTest(path=path,index=index):self.assertEqual(self.result(a,b)['result'],'FAIL')
+
+    def test_owner_group_mode_link_type_and_size_checked(self):
+        for suffix in ['', '/current.json','/current.durability.json']:
+            for field in [2,3,4,5]:
+                a,b=self.fixtures();p=m.PE5_DIRECTORY+suffix
+                b['producer_state'][p][field]=0
+                with self.subTest(path=suffix,field=field):
+                    r=self.result(a,b);self.assertEqual(r['result'],'FAIL')
+                    self.assertIsNotNone(r['pe5_endpoint_evidence']['endpoints']['after']['artifacts'][['','/current.json','/current.durability.json'].index(suffix)]['fingerprint'])
+        a,b=self.fixtures();b['producer_state'][m.PE5_DIRECTORY+'/current.json'][6]=16777217
+        self.assertEqual(self.result(a,b)['result'],'FAIL')
+
+    def test_missing_required_objects_never_classed_as_safe(self):
+        for path in [m.PE5_DIRECTORY,m.PE5_DIRECTORY+'/current.json',m.PE5_DIRECTORY+'/current.durability.json',m.ROOT+'/state/enrichment']:
+            a,b=self.fixtures();del b['producer_state'][path]
+            c=self.capture(b);self.assertEqual(c.completeness,'INCOMPLETE')
+            self.assertFalse(c.protected_failure)
+            self.assertEqual(self.result(a,b)['result'],'INSUFFICIENT_EVIDENCE')
+
+    def test_known_failure_not_lost_when_other_metadata_missing(self):
+        a,b=self.fixtures();b['producer_state'][m.PE5_DIRECTORY][4]=0
+        del b['producer_state'][m.PE5_DIRECTORY+'/current.json']
+        self.assertEqual(self.result(a,b)['result'],'FAIL')
+
+    def test_security_change_even_when_both_endpoints_unsafe_fails(self):
+        a,b=self.fixtures()
+        for obs in (a,b):obs['producer_state'][m.PE5_DIRECTORY][2]=stat.S_IFDIR|0o755
+        self.assertEqual(self.result(a,b)['result'],'FAIL')
+
+    def test_hash_algorithm_and_original_difference_entries_unchanged(self):
+        a,b=self.fixtures();x,y=self.pair(a,b)
+        legacy=report(x,y);new=report(x,y,require_pe5_endpoint_evidence=True)
+        self.assertEqual(legacy['object_differences'],new['object_differences'])
+        self.assertEqual(legacy['capture_intervals'],new['capture_intervals'])
+
+    def test_report_truncation_retains_insufficient_or_fail(self):
+        a,b=self.fixtures()
+        for opts in [dict(max_differences=1),dict(max_report_bytes=2048)]:
+            r=self.result(a,b,**opts);self.assertEqual(r['result'],'INSUFFICIENT_EVIDENCE')
+            self.assertTrue(r['differences_truncated'] or r['endpoint_evidence_truncated'])
+            self.assertLessEqual(len(m._json(r))+1,opts.get('max_report_bytes',m.MAX_REPORT_BYTES))
+
+    def test_primary_and_protected_failure_are_independently_retained(self):
+        a,b=self.fixtures();b['producer_state'][m.PE5_DIRECTORY][3]=0
+        r=self.result(a,b,primary_outcome=dict(status='FAIL',stage='FUNCTIONAL_VERIFICATION'))
+        self.assertEqual(r['result'],'FAIL');self.assertEqual(r['primary_outcome']['status'],'FAIL')
+        self.assertEqual(r['protected_inspection_outcome']['status'],'FAIL')
+
+    def test_fourth_object_remains_unattributed(self):
+        a,b=self.fixtures();b['producer_state'][PRIVATE]=fp()
+        r=self.result(a,b);self.assertEqual(r['result'],'INSUFFICIENT_EVIDENCE')
+        self.assertEqual(r['changed_object_count'],4)
+        self.assertTrue(all(d['adjudication']=='UNATTRIBUTED' for d in r['object_differences']))
+
+    def test_no_projection_io_or_private_persistence(self):
+        a,b=self.fixtures();x,y=self.pair(a,b)
+        with patch('builtins.open',side_effect=AssertionError('IO')),patch.object(os,'open',side_effect=AssertionError('IO')),patch.object(socket,'socket',side_effect=AssertionError('network')),patch.object(subprocess,'run',side_effect=AssertionError('process')):
+            raw=m.build_report(x,y,primary_outcome=PASS,protected_inspection_outcome=INSPECT,require_pe5_endpoint_evidence=True)
+        self.assertNotIn(m.ROOT.encode(),raw);self.assertNotIn(b'PRIVATE',raw)
+        self.assertLessEqual(len(raw),m.MAX_REPORT_BYTES)
+
+    def test_projection_failure_is_incomplete_not_false_success(self):
+        a,b=self.fixtures()
+        with patch.object(m,'_pe5_endpoint_observation',side_effect=ValueError('PRIVATE')):
+            x=self.capture(a)
+        self.assertEqual(x.completeness,'INCOMPLETE');self.assertEqual(x.error,'OBSERVATION_ERROR')
+        self.assertEqual(report(x,self.capture(b),require_pe5_endpoint_evidence=True)['result'],'INSUFFICIENT_EVIDENCE')
+
+    def test_native_validation_binds_using_only_retained_public_fingerprints(self):
+        from hioc import configured_association as native, configured_association_store as store
+        from types import SimpleNamespace
+        # Hand-constructed known-empty fixture. Never execute composer/recovery.
+        value=dict(schema_version='2.0',state='VALID',evaluated_at='2026-10-20T03:32:02Z',
+            valid_until='2026-10-20T03:42:02Z',inventory=dict(sha256='a'*64,updated='2026-10-20T03:32:02Z'),
+            local=None,configured=dict(state='VALID',source_id='operator_mqtt_v1',revision=1,
+            source_sha256='b'*64,candidate_count=0,associations=[],rejections=[],error_code=None),changes=native.no_changes())
+        meta=dict(schema_version='1.0',domain=store.OUTPUT,transaction_id='dur_'+'1'*32,
+            state='CONFIRMED',confirmed=dict(sha256=native.digest(value),source_revision=1),candidate=None)
+        output,witness=native.canonical(value),native.canonical(meta)
+        a,b=self.fixtures();b['producer_state'][m.PE5_DIRECTORY+'/current.json'][6]=len(output)
+        b['producer_state'][m.PE5_DIRECTORY+'/current.durability.json'][6]=len(witness)
+        expected=copy.deepcopy(b['producer_state'])
+        receipt=self.result(a,b);del a,b
+        points=receipt['pe5_endpoint_evidence']['endpoints']['after']['artifacts']
+        class ReadFixture(store.Store):
+            def __init__(self):pass
+            def path(self,p):return p
+            def read(self,path,maximum,absent=True):
+                primary=path==store.DOMAINS[store.OUTPUT][0]
+                data=output if primary else witness
+                suffix='/current.json' if primary else '/current.durability.json'
+                info=SimpleNamespace(**dict(zip(m.FIELDS,expected[m.PE5_DIRECTORY+suffix])))
+                return store.Snapshot(Path(path),data,info)
+        reader=ReadFixture();v,metadata,out,sidecar=reader.read_domain(store.OUTPUT)
+        self.assertEqual(metadata['confirmed'],reader.descriptor(store.OUTPUT,v))
+        self.assertEqual(metadata['state'],'CONFIRMED');self.assertIsNone(metadata['candidate'])
+        # Store.Snapshot.info has a DIFFERENT tuple order: compare named fields.
+        native_fields=('st_dev','st_ino','st_size','st_mtime_ns','st_ctime_ns','st_mode','st_uid','st_gid','st_nlink')
+        for item,snapshot,suffix in zip(points[1:],[out,sidecar],['/current.json','/current.durability.json']):
+            self.assertEqual([int(item['fingerprint'][f]) for f in m.FIELDS],expected[m.PE5_DIRECTORY+suffix])
+            self.assertEqual(item['fingerprint'],dict(zip(native_fields,map(str,snapshot.info))))
+        self.assertEqual(metadata['confirmed']['sha256'],out.sha256)
+        self.assertEqual(metadata['confirmed']['source_revision'],v['configured']['revision'])
+        self.assertIsNone(points[1]['content_sha256']) # Native read hash is not backfilled into capture.
+        self.assertEqual(receipt['result'],'INSUFFICIENT_EVIDENCE') # No self-issued permission.
+        wrong=copy.deepcopy(expected[m.PE5_DIRECTORY+'/current.json']);wrong[1]+=1
+        self.assertNotEqual([int(points[1]['fingerprint'][f]) for f in m.FIELDS],wrong)
+
+    def test_independent_review_works_without_private_capture_reconstruction(self):
+        a,b=self.fixtures();r=self.result(a,b);del a,b
+        e=r['pe5_endpoint_evidence'];bound=dict(e);digest=bound.pop('evidence_sha256')
+        self.assertEqual(digest,hashlib.sha256(m._json(bound)).hexdigest())
+        for label in ['before','after']:
+            point=e['endpoints'][label]
+            self.assertEqual(point['capture_sha256'],r['capture_intervals'][label]['sha256'])
+            self.assertEqual(point['artifacts'][0]['mode'],'0700')
+            for obj in point['artifacts']:
+                self.assertEqual(set(obj['fingerprint']),set(m.FIELDS))
+                self.assertEqual(obj['fingerprint']['st_uid'],obj['fingerprint']['st_gid'])
+                self.assertEqual(obj['fingerprint']['st_uid'],'1000')
+        self.assertEqual(r['result'],'INSUFFICIENT_EVIDENCE') # External native validation/authority still required.
+
+
 if __name__ == '__main__': unittest.main()

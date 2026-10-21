@@ -115,7 +115,7 @@ def _flatten(observations):
     return MappingProxyType(out)
 
 
-def capture_protected(observe, *, clock=_now):
+def capture_protected(observe, *, clock=_now, require_pe5_endpoint_evidence=False):
     """Call observe ONCE; preserve timestamps/completeness, suppress exception text.
 
     Supply the existing protected(pins) function through a zero-argument adapter.
@@ -131,10 +131,15 @@ def capture_protected(observe, *, clock=_now):
         observations = observe()
         objects = _flatten(observations); digest = _sha(_json(observations))
         completeness, error = 'COMPLETE', None
+        if require_pe5_endpoint_evidence:
+            endpoint = _pe5_endpoint_observation(objects)
+            protected_failure = endpoint['security_status'] == 'FAIL'
+            if endpoint['security_status'] == 'INSUFFICIENT_EVIDENCE':
+                completeness, error = 'INCOMPLETE', 'OBSERVATION_ERROR'
     except ProtectedInvariantFailure:
         completeness, error = 'INCOMPLETE', 'PROTECTED_CHECK_FAILED'; protected_failure = True
     except ObservationUnstable: completeness, error = 'UNSTABLE', 'OBSERVATION_UNSTABLE'
-    except Exception: pass
+    except Exception: completeness, error = 'INCOMPLETE', 'OBSERVATION_ERROR'
     try:
         ended = clock(); _time(ended)
         if started is None or _time(ended) < _time(started):
@@ -254,6 +259,76 @@ def _validate_capture(capture):
             _digest(obj.control[1]); _digest(obj.control[2])
 
 
+
+def _pe5_endpoint_observation(objects, complete=True):
+    """Project ONLY fixed nonprivate PE-5 objects from the already hashed observation.
+
+    No new IO, paths, authorization or inferred content hashes. Missing metadata
+    remains missing. The existing metadata traversal uses lstat and checks directory
+    stability; fixed ancestor types must also establish a nonsymlink observed chain.
+    """
+    specs = [('PE5_OUTPUT_DIRECTORY', ('producer_state', PE5_DIRECTORY), True, None),
+             ('PE5_CURRENT_JSON', ('producer_state', PE5_DIRECTORY+'/current.json'), False, 16777216),
+             ('PE5_CURRENT_DURABILITY_JSON', ('producer_state', PE5_DIRECTORY+'/current.durability.json'), False, 8192)]
+    artifacts = []; anchors = []; failed = False; missing = False
+    for identifier, key, directory, maximum in specs:
+        obj = objects.get(key)
+        presence, kind = _kind(obj, complete)
+        fingerprint = dict(zip(FIELDS, map(str, obj.fp))) if obj and obj.fp else None
+        mode = format(stat.S_IMODE(obj.fp[2]), '04o') if fingerprint else None
+        if fingerprint:
+            safe = ((stat.S_ISDIR(obj.fp[2]) if directory else stat.S_ISREG(obj.fp[2]))
+                    and obj.fp[3] == obj.fp[4] == 1000
+                    and stat.S_IMODE(obj.fp[2]) == (0o700 if directory else 0o600)
+                    and (obj.fp[5] >= 1 if directory else obj.fp[5] == 1)
+                    and (directory or 0 < obj.fp[6] <= maximum))
+            failed |= not safe
+        else:
+            missing = True
+        artifacts.append(dict(artifact_id=identifier, observation=presence,
+            object_type=kind, fingerprint=fingerprint, mode=mode,
+            content_sha256=obj.sha256 if obj else None))
+    for identifier, key in [('RUNTIME_ROOT', ('runtime_root', '@runtime_root')),
+            ('STATE_ROOT', ('producer_state', ROOT+'/state')),
+            ('STATE_ENRICHMENT_DIRECTORY', ('producer_state', ROOT+'/state/enrichment'))]:
+        obj = objects.get(key); presence, kind = _kind(obj, complete)
+        if obj and obj.fp:
+            failed |= not stat.S_ISDIR(obj.fp[2])
+        else:
+            missing = True
+        anchors.append(dict(artifact_id=identifier, observation=presence, object_type=kind,
+            device=str(obj.fp[0]) if obj and obj.fp else None,
+            inode=str(obj.fp[1]) if obj and obj.fp else None))
+    return dict(artifacts=artifacts, parent_chain=anchors,
+                security_status='FAIL' if failed else 'INSUFFICIENT_EVIDENCE' if missing else 'PASS')
+
+
+def _pe5_endpoint_evidence(before, after):
+    endpoints = {}
+    for label, capture in (('before', before), ('after', after)):
+        endpoints[label] = dict(capture_sha256=capture.digest,
+            interval=dict(start=capture.started_at, end=capture.ended_at),
+            completeness=capture.completeness, protected_gate_failed=capture.protected_failure,
+            **_pe5_endpoint_observation(capture._objects, capture.completeness == 'COMPLETE'))
+    # This public binding is reproducible without disclosing the private capture
+    # preimage. Its authenticity still depends on the verified executing release
+    # and operator evidence; it is not a Merkle proof or permission attestation.
+    result = dict(schema_version='1.0', scope='REGISTERED_PE5_PUBLICATION_ENDPOINTS',
+                  endpoints=endpoints)
+    result['evidence_sha256'] = _sha(_json(result))
+    return result
+
+
+def _pe5_directory_substituted(evidence):
+    a, b = [evidence['endpoints'][k] for k in ('before', 'after')]
+    # Parent substitution and target-directory replacement are not PE-5 publication.
+    for x, y in zip(a['parent_chain'], b['parent_chain']):
+        if x['device'] is not None and y['device'] is not None:
+            if (x['device'], x['inode']) != (y['device'], y['inode']): return True
+    x, y = a['artifacts'][0]['fingerprint'], b['artifacts'][0]['fingerprint']
+    return bool(x and y and (x['st_dev'], x['st_ino']) != (y['st_dev'], y['st_ino']))
+
+
 def _validate_pe5_publication(before, after, permissions):
     """Validate an EXTERNALLY reviewed native-contract attestation, not production.
 
@@ -322,7 +397,7 @@ def _validate_pe5_publication(before, after, permissions):
 
 def build_report(before, after, *, primary_outcome, protected_inspection_outcome,
                  reviewed_permissions=(), max_differences=MAX_DIFFERENCES,
-                 max_report_bytes=MAX_REPORT_BYTES):
+                 max_report_bytes=MAX_REPORT_BYTES, require_pe5_endpoint_evidence=False):
     """Return ONLY bounded public ASCII JSON bytes; never print or persist data.
 
     Permissions are externally accepted, exact-change review attestations. This
@@ -334,6 +409,16 @@ def build_report(before, after, *, primary_outcome, protected_inspection_outcome
     _need(type(max_differences) is int and 1 <= max_differences <= MAX_DIFFERENCES)
     _need(type(max_report_bytes) is int and 2048 <= max_report_bytes <= MAX_REPORT_BYTES)
     primary, inspection = _outcome(primary_outcome), _outcome(protected_inspection_outcome)
+    endpoint_evidence = _pe5_endpoint_evidence(before, after) if require_pe5_endpoint_evidence else None
+    endpoint_failed = endpoint_incomplete = False
+    if endpoint_evidence is not None:
+        checks = endpoint_evidence['endpoints']
+        endpoint_failed = any(x['security_status'] == 'FAIL' for x in checks.values())
+        substituted = _pe5_directory_substituted(endpoint_evidence)
+        endpoint_failed |= substituted
+        endpoint_incomplete = any(x['security_status'] != 'PASS' for x in checks.values())
+        if checks['after']['security_status'] == 'FAIL' or substituted:
+            inspection = dict(status='FAIL', stage='AFTER_STATE', category='PROTECTED_CHECK_FAILED')
     if after.protected_failure:
         inspection = dict(status='FAIL', stage='AFTER_STATE', category='PROTECTED_CHECK_FAILED')
     elif after.completeness != 'COMPLETE' and inspection['status'] != 'FAIL':
@@ -406,8 +491,8 @@ def build_report(before, after, *, primary_outcome, protected_inspection_outcome
         prohibited |= decision == 'PROHIBITED'; unresolved |= decision == 'UNATTRIBUTED'
         differences.append(record)
     _need(used == set(permissions))
-    failed = prohibited or primary['status'] == 'FAIL' or inspection['status'] == 'FAIL' or before.protected_failure
-    incomplete = before.completeness != 'COMPLETE' or after.completeness != 'COMPLETE'
+    failed = prohibited or primary['status'] == 'FAIL' or inspection['status'] == 'FAIL' or before.protected_failure or endpoint_failed
+    incomplete = before.completeness != 'COMPLETE' or after.completeness != 'COMPLETE' or endpoint_incomplete
     incomplete |= bool(before.ended_at and after.started_at and _time(after.started_at) < _time(before.ended_at))
     insufficient = incomplete or unresolved or primary['status'] != 'PASS' or inspection['status'] != 'PASS'
     result = 'FAIL' if failed else 'INSUFFICIENT_EVIDENCE' if insufficient else 'PASS'
@@ -422,11 +507,20 @@ def build_report(before, after, *, primary_outcome, protected_inspection_outcome
         object_differences=differences[:max_differences],
         limitations=['ENDPOINT_OBSERVATIONS_NOT_EVENT_HISTORY', 'NO_ACTOR_INFERENCE_FROM_FILENAME',
                      'PERMISSIONS_ARE_EXTERNAL_REVIEW_ATTESTATIONS'])
+    if endpoint_evidence is not None:
+        report['pe5_endpoint_evidence'] = endpoint_evidence
+        report['endpoint_evidence_truncated'] = False
     while True:
         n = len(report['object_differences']); omitted = len(differences) - n
         report.update(reported_object_count=n, omitted_object_count=omitted, differences_truncated=bool(omitted))
         if omitted and report['result'] != 'FAIL': report['result'] = 'INSUFFICIENT_EVIDENCE'
         raw = _json(report) + b'\n'
         if len(raw) <= max_report_bytes: return raw
+        if not report['object_differences'] and endpoint_evidence is not None and not report['endpoint_evidence_truncated']:
+            report['pe5_endpoint_evidence'] = dict(schema_version='1.0', omitted=True,
+                evidence_sha256=endpoint_evidence['evidence_sha256'])
+            report['endpoint_evidence_truncated'] = True
+            if report['result'] != 'FAIL': report['result'] = 'INSUFFICIENT_EVIDENCE'
+            continue
         _need(bool(report['object_differences']))
         report['object_differences'].pop()
