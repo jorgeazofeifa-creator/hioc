@@ -6268,6 +6268,37 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## PE-6.5 final PE-6 governance closure and PE-7 handoff
+
+Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
+PE5_STATUS=COMPLETE; PE6_STATUS=COMPLETE/PASS; PE6_5_STATUS=COMPLETE/PASS.
+PE6_0_STATUS=COMPLETE/PASS; PE6_1_STATUS=COMPLETE/PASS; PE6_2_STATUS=COMPLETE/PASS;
+PE6_3_STATUS=COMPLETE/PASS; PE6_4_STATUS=COMPLETE/PASS.
+PE7_STATUS=NOT STARTED / NOT AUTHORIZED; PE7_STARTED=FALSE; PE7_AUTHORIZED=FALSE.
+NEXT_CHECKPOINT=PE-7 - Expected Availability & Permanent IoT Monitoring.
+
+PE-6 is formally closed. PE-6.0 accepted design, PE-6.1 repository implementation,
+PE-6.2 source synchronization and PE-6.3 disabled installation remain accepted;
+see [existing implementation and acceptance records](PE6_CLASSIFICATION_IMPLEMENTATION.md).
+PE-6.4 third-execution independent acceptance ACCEPT and governance closure at
+`8984ce13724b6fb2b4b8c8216b4d396551c137ce` establish the final predecessor.
+Its complete Evidence Report and exact accepted receipt/release/capture/endpoint
+identities below remain unchanged. All production observations retain OPERATOR_SUPPLIED
+status and their documented limitations. The second historical receipt remains
+INSUFFICIENT_EVIDENCE; it is not promoted or rewritten.
+
+This completes the [accepted PE-6.5 roadmap](PE6_CLASSIFICATION_CONTRACT_DESIGN.md#pe-65--final-pe-6-governance-closure-and-pe-7-handoff)
+through Windows repository governance only. No further PE-6 production actions are
+authorized or required by this closure; no production execution or predecessor
+validation is repeated. PE-7 is eligible for separate future authorization only;
+its existing scope, implementation contract, sequencing and all future roadmap
+commitments remain unchanged. No automatic follow-on, implementation, deployment,
+classification, producer execution or recurring activation is authorized. STOP.
+
+All following Implementation Status entries, including the PE-6.4 closure report,
+are preserved historical checkpoint records; their then-current status and next-task
+labels do not supersede this final PE-6 closure and PE-7 handoff.
+
 ## PE-6.4 accepted bounded production execution and governance closure
 
 Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
@@ -7375,6 +7406,17 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-7 - Expected Availability & Permanent IoT Monitoring
+
+Classification: CURRENT. Phase 7A ACTIVE; PE6_STATUS=COMPLETE/PASS; PE6_5_STATUS=COMPLETE/PASS.
+PE7_STATUS=NOT STARTED / NOT AUTHORIZED; PE7_STARTED=FALSE; PE7_AUTHORIZED=FALSE.
+NEXT_CHECKPOINT=PE-7 - Expected Availability & Permanent IoT Monitoring.
+PE-6 closure establishes eligibility only. Separate PE-7 authorization is required;
+existing PE-7 scope and roadmap sequencing remain unchanged. No implementation,
+production action or automatic follow-on is authorized. STOP.
+
+### Historical PE-6.4 closure handoff snapshot before PE-6.5 completion
+
 ### PE-6.5 - Final PE-6 governance closure and PE-7 handoff
 
 Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
@@ -8052,6 +8094,17 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-7 - Expected Availability & Permanent IoT Monitoring
+
+Classification: CURRENT. Phase 7A ACTIVE; PE6_STATUS=COMPLETE/PASS; PE6_5_STATUS=COMPLETE/PASS.
+PE7_STATUS=NOT STARTED / NOT AUTHORIZED; PE7_STARTED=FALSE; PE7_AUTHORIZED=FALSE.
+NEXT_CHECKPOINT=PE-7 - Expected Availability & Permanent IoT Monitoring.
+PE-6 closure establishes eligibility only. Separate PE-7 authorization is required;
+existing PE-7 scope and roadmap sequencing remain unchanged. No implementation,
+production action or automatic follow-on is authorized. STOP.
+
+### Historical PE-6.4 closure handoff snapshot before PE-6.5 completion
+
 ### PE-6.5 - Final PE-6 governance closure and PE-7 handoff
 
 Classification: CURRENT. Phase 7A ACTIVE; PE5_STATUS=COMPLETE; PE6_STATUS=IN_PROGRESS.
