@@ -500,3 +500,9 @@ class LocalServiceImplementationGovernanceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def load_tests(loader, tests, pattern):
+    # Preserve the original assertion; its authority predates the PE-7 successor.
+    from test_pe7_binding import select_historical_checks
+    return select_historical_checks(loader, tests, pattern, globals(), {'test_runtime_consumers_remain_identical_to_authorized_baseline'})

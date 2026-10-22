@@ -12,6 +12,9 @@ sys.path.insert(0, str(HIOC_HOME / "pi4" / "lib"))
 
 from hioc.assets import (AssetError, AssetPrivacyError, AssetService, AssetStore,
                          AssetUsageError, OPERATOR_FIELDS, error_envelope)
+from hioc.asset_policy import PolicyService, PolicyStore
+from hioc.availability_contract import PolicyError
+from hioc.availability_contract import INFRASTRUCTURE_TYPES
 
 
 class AssetArgumentParser(argparse.ArgumentParser):
@@ -42,6 +45,21 @@ class AssetCli:
         remove = sub.add_parser("remove"); remove.add_argument("--device-id", required=True); remove.add_argument("--expected-revision", type=int, required=True)
         sub.add_parser("validate"); sub.add_parser("backup")
         restore = sub.add_parser("restore"); restore.add_argument("--backup", required=True)
+        migrate = sub.add_parser('migrate-policy-schema')
+        migrate.add_argument('--expected-sha256', required=True)
+        migrate.add_argument('--writers-stopped', action='store_true', required=True)
+        rollback = sub.add_parser('restore-policy-schema')
+        rollback.add_argument('--backup', required=True)
+        rollback.add_argument('--writers-stopped', action='store_true', required=True)
+        rollback.add_argument('--retain-later-edits', action='store_true', required=True)
+        policy = sub.add_parser('set-policy')
+        policy.add_argument('--device-id', required=True)
+        policy.add_argument('--store-epoch', required=True)
+        policy.add_argument('--expected-store-revision', type=int, required=True)
+        policy.add_argument('--expected-revision', type=int)
+        policy.add_argument('--expected-availability', choices=('on', 'off', 'unset'))
+        policy.add_argument('--infrastructure-device', choices=('on', 'off', 'unset'))
+        policy.add_argument('--infrastructure-type', choices=(*INFRASTRUCTURE_TYPES, 'unassigned'))
         return parser
 
     def sensitive_allowed(self, args) -> bool:
@@ -56,6 +74,33 @@ class AssetCli:
 
     def execute(self, args):
         command = args.command
+        # Selecting a version-aware service is a read, never migration/initialization.
+        versioned = PolicyStore(self.service.store.home, self.service.store.clock,
+                                self.service.store.lock_path)
+        if command in ('migrate-policy-schema', 'restore-policy-schema'):
+            service = PolicyService(versioned)
+            if command == 'migrate-policy-schema':
+                value = service.migrate(args.expected_sha256, writers_stopped=args.writers_stopped)
+                data = {'asset_count': value['asset_count'], 'store_revision': value['store_revision']}
+            else:
+                data = service.restore_exact(args.backup, writers_stopped=args.writers_stopped,
+                                             retain_later_edits=args.retain_later_edits)
+            return service._result(command, 'completed', 'online', data)
+        if versioned.store_path.exists():
+            value = versioned.load_store()
+            if value['schema_version'] == '2.0':
+                self.service = PolicyService(versioned)
+        if command == 'set-policy':
+            if not isinstance(self.service, PolicyService):
+                raise PolicyError('UNSUPPORTED_SCHEMA')
+            fields = {}
+            for field in ('expected_availability', 'infrastructure_device'):
+                value = getattr(args, field)
+                if value is not None: fields[field] = {'on':True, 'off':False, 'unset':None}[value]
+            if args.infrastructure_type is not None:
+                fields['infrastructure_type'] = None if args.infrastructure_type == 'unassigned' else args.infrastructure_type
+            return self.service.set_policy_local(args.device_id, fields, args.store_epoch,
+                                                  args.expected_store_revision, args.expected_revision)
         if command == "initialize": return self.service.initialize()
         if command == "list": return self.service.list_assets()
         if command == "show": return self.service.show_asset(args.device_id, self.sensitive_allowed(args))
@@ -93,6 +138,12 @@ class AssetCli:
         try:
             args = self.parser().parse_args(argv); command = args.command; json_mode = args.json
             result = self.execute(args)
+        except PolicyError as exc:
+            result = dict(schema_version='1.0', command=command, result='error', status='error',
+                          redacted=True, data={}, error={'code': exc.code, 'message': 'Asset policy command rejected'})
+            print(json.dumps(result, separators=(',', ':')) if json_mode else 'RESULT=ERROR ERROR_CODE='+exc.code,
+                  file=self.stdout if json_mode else self.stderr)
+            return 8 if exc.uncertain else 3
         except AssetError as exc:
             result = error_envelope(command, exc)
             if json_mode: print(json.dumps(result, separators=(",", ":")), file=self.stdout)

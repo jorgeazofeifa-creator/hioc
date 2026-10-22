@@ -443,3 +443,25 @@ TestBindingCorrectionTests.test_closure_reject_fifth_exception=reject_fifth_clos
 TestBindingCorrectionTests.test_closure_reject_historical_section_as_current=reject_historical_section_as_current
 
 if __name__=='__main__':unittest.main()
+
+
+_pe7_original_git = git
+_pre_pe7_closure_validator = validate_closure_successor
+_pre_pe7_closure_bindings = closure_artifact_bindings
+
+def validate_closure_successor(record=None,schema=None,correction=None):
+    import test_pe6_classification_implementation as authority
+    if (ROOT/'governance/pe7/pe7-implementation-candidate.json').exists() and not getattr(authority,'_PE7_HISTORICAL_REPLAY',False):
+        from test_pe7_binding import current_candidate,replay_historical_check
+        current_candidate()
+        return replay_historical_check(lambda:_pre_pe7_closure_validator(record,schema,correction),globals())
+    return _pre_pe7_closure_validator(record,schema,correction)
+
+def closure_artifact_bindings():
+    bindings=_pre_pe7_closure_bindings()
+    import test_pe6_classification_implementation as authority
+    if (ROOT/'governance/pe7/pe7-implementation-candidate.json').exists() and not getattr(authority,'_PE7_HISTORICAL_REPLAY',False):
+        from test_pe7_binding import current_candidate
+        candidate=current_candidate()
+        bindings.update({item['path']:item for item in candidate['artifacts']})
+    return bindings

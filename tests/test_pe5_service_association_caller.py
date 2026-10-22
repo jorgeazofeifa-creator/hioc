@@ -303,3 +303,21 @@ class CallerGovernanceTests(unittest.TestCase):
         self.assertEqual(caller_successor()["private_state_requirement"],"DEFERRED_NOT_REQUIRED_FOR_OFFLINE_CALLER")
 
 if __name__=="__main__":unittest.main()
+
+
+def load_tests(loader, tests, pattern):
+    # Preserve the original assertion; its authority predates the PE-7 successor.
+    from test_pe7_binding import select_historical_checks
+    return select_historical_checks(loader, tests, pattern, globals(), {'test_runtime_producer_and_resolver_unchanged'})
+
+
+_pe7_original_git = git
+_pre_pe7_runtime_tree = assert_historical_runtime_tree
+
+def assert_historical_runtime_tree(historical_commit, roots):
+    import test_pe6_classification_implementation as authority
+    if (ROOT/'governance/pe7/pe7-implementation-candidate.json').exists() and not getattr(authority,'_PE7_HISTORICAL_REPLAY',False):
+        from test_pe7_binding import current_candidate,replay_historical_check
+        current_candidate()
+        return replay_historical_check(lambda:_pre_pe7_runtime_tree(historical_commit,roots),globals())
+    return _pre_pe7_runtime_tree(historical_commit,roots)

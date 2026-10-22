@@ -1,0 +1,16 @@
+get_policy:
+  name: Read Asset policy
+  description: Restricted authenticated operator read; never creates an Asset.
+create_asset_policy:
+  name: Create Asset and save policy
+  description: Explicit strong-identity creation with revision and epoch checks.
+update_asset_policy:
+  name: Save Asset policy
+  description: Revision-checked save of the three approved policy fields only.
+get_operation_result:
+  name: Read saved result
+  description: Read-only reconciliation for the same authorized actor and operation.
+
+get_availability_status:
+  name: Read evaluated availability status
+  description: Restricted read of saved and applied policy, evaluation scope and evidence quality. Never executes evaluation.

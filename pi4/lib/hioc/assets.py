@@ -10,6 +10,7 @@ import re
 import stat
 import tempfile
 import time
+import threading
 import unicodedata
 from contextlib import AbstractContextManager
 from datetime import datetime, timezone
@@ -261,30 +262,74 @@ def calculate_orphans(store: dict, inventory: object) -> set[str]:
 
 
 class AssetLock(AbstractContextManager):
-    _held: set[str] = set()
+    _local = threading.local()
 
-    def __init__(self, path: Path, shared: bool, timeout: float = 5.0):
+    @property
+    def _held(self):
+        if not hasattr(self._local, 'held'):
+            self._local.held = set()
+        return self._local.held
+
+    def _windows_lock(self, acquire):
+        """Native Windows byte-range guard; not a claim about POSIX permissions."""
+        import ctypes
+        from ctypes import wintypes
+        import msvcrt
+        class Overlapped(ctypes.Structure):
+            _fields_ = [('Internal', ctypes.c_size_t), ('InternalHigh', ctypes.c_size_t),
+                        ('Offset', wintypes.DWORD), ('OffsetHigh', wintypes.DWORD), ('hEvent', wintypes.HANDLE)]
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        handle = wintypes.HANDLE(msvcrt.get_osfhandle(self.handle.fileno()))
+        overlap = Overlapped()
+        if acquire:
+            fn = kernel.LockFileEx
+            fn.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.DWORD, wintypes.DWORD,
+                           wintypes.DWORD, ctypes.POINTER(Overlapped)]
+            ok = fn(handle, 1 | (0 if self.shared else 2), 0, 1, 0, ctypes.byref(overlap))
+        else:
+            fn = kernel.UnlockFileEx
+            fn.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.DWORD, wintypes.DWORD,
+                           ctypes.POINTER(Overlapped)]
+            ok = fn(handle, 0, 1, 0, ctypes.byref(overlap))
+        if not ok:
+            error = ctypes.get_last_error()
+            if acquire and error in (33, 997):
+                raise BlockingIOError()
+            raise OSError(error, 'Asset guard unavailable')
+
+    def __init__(self, path: Path, shared: bool, timeout: float = 5.0, *, read_only=False):
         self.path, self.shared, self.timeout, self.handle = Path(path), shared, timeout, None
+        self.read_only = read_only
 
     def __enter__(self):
         key = str(self.path.resolve())
         if key in self._held:
             raise AssetLockTimeout("LOCK_TIMEOUT", "nested Asset lock is prohibited")
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        flags = os.O_RDWR | os.O_CREAT
+        if not self.read_only:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+        if self.read_only and (not self.shared or self.path.is_symlink()):
+            raise AssetError('LOCK_UNAVAILABLE', 'read guard unavailable')
+        flags = os.O_RDONLY if self.read_only else os.O_RDWR | os.O_CREAT
         if hasattr(os, "O_NOFOLLOW"):
             flags |= os.O_NOFOLLOW
         fd = os.open(self.path, flags, 0o600)
-        os.chmod(self.path, 0o600)
-        self.handle = os.fdopen(fd, "a+b", buffering=0)
+        if self.read_only:
+            info = os.fstat(fd)
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or (
+                    os.name == 'posix' and (info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o600)):
+                os.close(fd)
+                raise AssetError('LOCK_UNAVAILABLE', 'read guard unavailable')
+        if not self.read_only:
+            os.chmod(self.path, 0o600)
+        self.handle = os.fdopen(fd, 'rb' if self.read_only else 'a+b', buffering=0)
         start = time.monotonic()
-        if fcntl is None:  # pragma: no cover - repository-host portability
-            self._held.add(key)
-            return self
-        operation = (fcntl.LOCK_SH if self.shared else fcntl.LOCK_EX) | fcntl.LOCK_NB
+        operation = ((fcntl.LOCK_SH if self.shared else fcntl.LOCK_EX) | fcntl.LOCK_NB) if fcntl is not None else None
         while True:
             try:
-                fcntl.flock(self.handle.fileno(), operation)
+                if fcntl is None:
+                    self._windows_lock(True)
+                else:
+                    fcntl.flock(self.handle.fileno(), operation)
                 self._held.add(key)
                 return self
             except BlockingIOError:
@@ -299,6 +344,8 @@ class AssetLock(AbstractContextManager):
         if self.handle is not None:
             if fcntl is not None:
                 fcntl.flock(self.handle.fileno(), fcntl.LOCK_UN)
+            else:
+                self._windows_lock(False)
             self.handle.close()
         self._held.discard(key)
         return False
@@ -698,3 +745,9 @@ def error_envelope(command: str, error: AssetError) -> dict:
     return {"schema_version": SCHEMA_VERSION, "command": command, "result": "error",
             "status": "error", "redacted": True, "data": {},
             "error": {"code": error.code, "message": error.safe_message}}
+
+
+def validate_supported_store(value: object) -> dict:
+    """Explicit PE-7 version dispatch; validate_store remains the strict 1.0 authority."""
+    from .asset_policy import validate_versioned
+    return validate_versioned(value)

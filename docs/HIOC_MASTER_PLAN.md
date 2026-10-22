@@ -6268,6 +6268,47 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## PE-7.1 accepted repository implementation and governance closure
+
+Classification: CURRENT. Phase 7A ACTIVE; PE6_STATUS=COMPLETE/PASS.
+PE70_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS.
+PE71_STATUS=COMPLETE/PASS; PE71_COMPLETE=TRUE.
+PE71_INDEPENDENT_ACCEPTANCE=ACCEPT; PE71_FOCUSED_RECHECK=ACCEPT.
+The original independent REJECT identified the HA unknown/unavailable false-outage
+defect. The authorized correction passed targeted validation; the focused independent
+recheck accepted the corrected candidate with no confirmed blockers remaining.
+This is Windows repository implementation acceptance only, not production acceptance.
+No PE-7 production deployment, Asset migration, monitoring execution or recurring
+activation occurred or is authorized. PE-6 remains COMPLETE/PASS.
+See the [accepted contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md)
+and [implementation Evidence Report](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#final-pe-71-independent-acceptance-and-governance-closure).
+
+Full native validation before the HA correction: 3236 run, 3192 passed, zero
+failures/errors, 44 individual skips and five additional class-level skips.
+The full suite was not repeated after correction. HA/evaluator/incident correction:
+44/44 passed; binding/preservation: 7/7 passed. Exact skip reasons and the four-file
+historical fingerprint limitation remain in the Evidence Report.
+Controlled publication of this exact accepted candidate is authorized by the final
+closure instruction; exact commit/push/remote/clean verification completes that gate.
+
+NEXT_CHECKPOINT=PE-7.2 - Operator-only exact release-source synchronization.
+PE72_STATUS=NOT_STARTED; PE72_AUTHORIZED=FALSE.
+Separate authorization is required. PE-7.2 permits source synchronization only,
+not runtime installation, migration, execution or recurring activation.
+No automatic follow-on action. PE-7 overall remains IN_PROGRESS.
+
+## Historical PE-7.1 implementation candidate before final acceptance
+
+PE71_STATUS=CANDIDATE_READY_FOR_INDEPENDENT_ACCEPTANCE; PE71_IMPLEMENTATION_AUTHORIZED=TRUE.
+PE71_INDEPENDENT_ACCEPTANCE=NOT_PERFORMED; PE71_COMPLETE=FALSE.
+Baseline ad9ddc5ced903f8c922a12c08f843fba6fce907b. The accepted PE-7.0 contract
+remains authoritative with the explicitly authorized section 6.1 T03/T04 status-read
+extension. See [implementation evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md).
+No production access, deployment, monitoring, recurring activation or PE-7.2 is
+authorized. No implementation commit or push is authorized. Current PE-7.1 authorization
+supersedes earlier NOT STARTED snapshots below; it grants no later checkpoint authority.
+
+
 ## PE-7.0 accepted availability contract and governance closure
 
 Classification: CURRENT. Phase 7A ACTIVE; PE6_STATUS=COMPLETE/PASS; PE6_5_STATUS=COMPLETE/PASS.
@@ -7438,15 +7479,34 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
-### PE-7.1 - Repository implementation
+### PE-7.2 - Operator-only exact release-source synchronization
+
+Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.
+PE71_INDEPENDENT_ACCEPTANCE=ACCEPT; PE71_FOCUSED_RECHECK=ACCEPT.
+PE7_STATUS=IN_PROGRESS; PE6_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-7.2 - Operator-only exact release-source synchronization.
+PE72_STATUS=NOT_STARTED; PE72_AUTHORIZED=FALSE.
+Separate authorization is required. No PI3 source synchronization, runtime delivery,
+HA integration installation, Asset migration, monitoring or recurring activation is
+authorized here. PE-7.1 repository implementation acceptance does not establish
+production operation. See the [implementation Evidence Report](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#final-pe-71-independent-acceptance-and-governance-closure)
+and [accepted checkpoint sequence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md#13-bounded-checkpoint-sequence-and-implementation-scope).
+No automatic follow-on action.
+
+### Historical PE-7.1 candidate before independent acceptance
+
+### PE-7.1 - Repository implementation and native validation
 
 Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE70_INDEPENDENT_CONTRACT_ACCEPTANCE=PASS.
 PE7_STATUS=IN_PROGRESS; PE7_DESIGN_STATUS=COMPLETE; PE6_STATUS=COMPLETE/PASS.
-NEXT_CHECKPOINT=PE-7.1 - Repository implementation.
-PE71_STATUS=NEXT / NOT STARTED; PE71_STARTED=FALSE; PE71_IMPLEMENTATION_AUTHORIZED=FALSE.
-Follow [the accepted PE-7 contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md)
-only after separate implementation authorization. Contract acceptance does not
-start PE-7.1 or authorize production deployment, monitoring or recurring activation.
+PE71_STATUS=CANDIDATE_READY_FOR_INDEPENDENT_ACCEPTANCE; PE71_STARTED=TRUE; PE71_IMPLEMENTATION_AUTHORIZED=TRUE.
+The separately authorized Windows-only [implementation candidate](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md)
+follows [the accepted PE-7 contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md).
+Repository native validation PASS: 3236 run, 3192 passed, 44 individual skips, 5 class-level skips, zero failures/errors.
+Unexecuted-test limitations are recorded in implementation evidence. Independent
+implementation acceptance remains NOT_PERFORMED; PE71_COMPLETE=FALSE.
+NEXT_ACTION=INDEPENDENT_PE71_IMPLEMENTATION_CANDIDATE_ACCEPTANCE.
+PE72_STATUS=NOT_STARTED; PE72_AUTHORIZED=FALSE. No commit or push is authorized.
 PE7_PRODUCTION_AUTHORIZED=FALSE; PE7_MONITORING_EXECUTION_AUTHORIZED=FALSE;
 PE7_RECURRING_ACTIVATION_AUTHORIZED=FALSE. No automatic follow-on action.
 
@@ -8140,15 +8200,34 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
-### PE-7.1 - Repository implementation
+### PE-7.2 - Operator-only exact release-source synchronization
+
+Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.
+PE71_INDEPENDENT_ACCEPTANCE=ACCEPT; PE71_FOCUSED_RECHECK=ACCEPT.
+PE7_STATUS=IN_PROGRESS; PE6_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-7.2 - Operator-only exact release-source synchronization.
+PE72_STATUS=NOT_STARTED; PE72_AUTHORIZED=FALSE.
+Separate authorization is required. No PI3 source synchronization, runtime delivery,
+HA integration installation, Asset migration, monitoring or recurring activation is
+authorized here. PE-7.1 repository implementation acceptance does not establish
+production operation. See the [implementation Evidence Report](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#final-pe-71-independent-acceptance-and-governance-closure)
+and [accepted checkpoint sequence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md#13-bounded-checkpoint-sequence-and-implementation-scope).
+No automatic follow-on action.
+
+### Historical PE-7.1 candidate before independent acceptance
+
+### PE-7.1 - Repository implementation and native validation
 
 Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE70_INDEPENDENT_CONTRACT_ACCEPTANCE=PASS.
 PE7_STATUS=IN_PROGRESS; PE7_DESIGN_STATUS=COMPLETE; PE6_STATUS=COMPLETE/PASS.
-NEXT_CHECKPOINT=PE-7.1 - Repository implementation.
-PE71_STATUS=NEXT / NOT STARTED; PE71_STARTED=FALSE; PE71_IMPLEMENTATION_AUTHORIZED=FALSE.
-Follow [the accepted PE-7 contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md)
-only after separate implementation authorization. Contract acceptance does not
-start PE-7.1 or authorize production deployment, monitoring or recurring activation.
+PE71_STATUS=CANDIDATE_READY_FOR_INDEPENDENT_ACCEPTANCE; PE71_STARTED=TRUE; PE71_IMPLEMENTATION_AUTHORIZED=TRUE.
+The separately authorized Windows-only [implementation candidate](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md)
+follows [the accepted PE-7 contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md).
+Repository native validation PASS: 3236 run, 3192 passed, 44 individual skips, 5 class-level skips, zero failures/errors.
+Unexecuted-test limitations are recorded in implementation evidence. Independent
+implementation acceptance remains NOT_PERFORMED; PE71_COMPLETE=FALSE.
+NEXT_ACTION=INDEPENDENT_PE71_IMPLEMENTATION_CANDIDATE_ACCEPTANCE.
+PE72_STATUS=NOT_STARTED; PE72_AUTHORIZED=FALSE. No commit or push is authorized.
 PE7_PRODUCTION_AUTHORIZED=FALSE; PE7_MONITORING_EXECUTION_AUTHORIZED=FALSE;
 PE7_RECURRING_ACTIVATION_AUTHORIZED=FALSE. No automatic follow-on action.
 

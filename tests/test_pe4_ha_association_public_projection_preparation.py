@@ -420,3 +420,9 @@ for key in ['lock_exists','shared_lock_available','regular_file','pinned_no_syml
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def load_tests(loader, tests, pattern):
+    # Preserve this historical byte-equality law; current artifacts are bound separately.
+    from test_pe7_binding import select_historical_checks
+    return select_historical_checks(loader, tests, pattern, globals(), {'test_bound_sources_exact_git_and_immutable_runtime'})

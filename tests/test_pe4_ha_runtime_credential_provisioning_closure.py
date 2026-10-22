@@ -154,3 +154,9 @@ class CredentialClosureTests(unittest.TestCase):
 
 
 if __name__=="__main__":unittest.main()
+
+
+def load_tests(loader, tests, pattern):
+    # Preserve this historical byte-equality law; current artifacts are bound separately.
+    from test_pe7_binding import select_historical_checks
+    return select_historical_checks(loader, tests, pattern, globals(), {'test_protected_sources_no_adapter_and_document_links'})

@@ -145,6 +145,13 @@ automation:
         state: "on"
       - condition: template
         value_template: >-
+          {% set pe7 = state_attr('sensor.hioc_pe7_incident_summary', 'cases') %}
+          {% set deadline = as_timestamp(state_attr('sensor.hioc_pe7_incident_summary', 'valid_until'), 0) %}
+          {% set valid = is_state('sensor.hioc_pe7_incident_summary', 'VALID') and deadline > as_timestamp(now()) %}
+          {{ not (valid and pe7 is iterable and pe7 is not string and
+              state_attr('sensor.hioc_incident_active','id') in (pe7 | map(attribute='incident_id') | list)) }}
+      - condition: template
+        value_template: >-
           {{ state_attr('sensor.hioc_incident_active','id') != states('input_text.hioc_last_notified_incident_id') }}
     action:
       - service: input_text.set_value

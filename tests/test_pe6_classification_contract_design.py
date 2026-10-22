@@ -206,3 +206,9 @@ class PE6DesignTests(unittest.TestCase):
                 bodies=[ast.dump(x,include_attributes=False) for x in new[name].body]
                 self.assertTrue(all(ast.dump(x,include_attributes=False) in bodies for x in fn.body),name)
 if __name__=="__main__":unittest.main()
+
+
+def load_tests(loader, tests, pattern):
+    # Preserve the original assertion; its authority predates the PE-7 successor.
+    from test_pe7_binding import select_historical_checks
+    return select_historical_checks(loader, tests, pattern, globals(), {'test_frozen_pe5_schema_and_runtime_objects_unchanged'})

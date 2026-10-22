@@ -182,3 +182,9 @@ for name,(path,expected) in CHECKS.items():
   with self.assertRaises(ValueError):validate(bad,S)
  setattr(PublicProjectionClosureTests,'test_exact_'+name,test)
 if __name__=='__main__':unittest.main()
+
+
+def load_tests(loader, tests, pattern):
+    # Preserve the original assertion; its authority predates the PE-7 successor.
+    from test_pe7_binding import select_historical_checks
+    return select_historical_checks(loader, tests, pattern, globals(), {'test_historical_sources_and_runtime_immutable'})

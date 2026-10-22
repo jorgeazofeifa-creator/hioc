@@ -214,7 +214,7 @@ def _handoff(value, inventory, evaluated_at):
 
 def _validate_source(kind, value, proof, inventory, now, policy):
     if kind == "assets":
-        assets.validate_store(value)
+        assets.validate_supported_store(value)
         if len(value["assets"]) > MAX_DEVICES:
             fail("LIMIT_EXCEEDED")
         if any(x["revision"] > 2**53-1 for x in value["assets"].values()):

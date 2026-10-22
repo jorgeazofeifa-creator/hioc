@@ -4,7 +4,8 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime
+import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 HIOC_HOME = Path(os.environ.get("HIOC_HOME", "/home/jazofv1/hioc"))
@@ -209,7 +210,7 @@ def publish_all(base, config):
     return completed
 
 
-def main():
+def main(publish=True):
     c = cfg()
     base = c.get("HIOC_BASE_TOPIC", "home/infrastructure/hioc")
     limit = int(c.get("HIOC_HISTORY_LIMIT", "100"))
@@ -225,7 +226,7 @@ def main():
     signals.extend(build_inventory_signals(inventory))
     signals.extend(build_event_signals(events))
     candidate = core_correlate(signals, inventory)
-    active = load_json(ACTIVE_FILE, {"status": "none"})
+    active = legacy_active_for_evaluation()
     history = load_json(HISTORY_FILE, [])
     timestamp = now_iso()
     event_bus = EventBus(StateStore(HIOC_HOME / "state" / "events"), "incident", int(c.get("HIOC_EVENT_RETENTION", "500")))
@@ -306,13 +307,188 @@ def main():
     }
     save_json(SUMMARY_FILE, summary)
     save_json(STATUS_FILE, {"status": "online", "version": "1.2.0", "updated": timestamp})
+    if publish:
+        try:
+            publish_all(base, c)
+        except Exception as exc:
+            print(f"incident MQTT publication failed {exc}", file=sys.stderr)
+            return 1
+    return 0
+
+
+def legacy_active_for_evaluation():
+    """Never feed a derived PE-7 display into the legacy no-candidate recovery path."""
+    path = STATE_DIR/'pe7.json'
+    if not path.exists():
+        return load_json(ACTIVE_FILE, {'status':'none'})
+    from hioc.availability_contract import require, strict_json
+    from hioc.availability_incidents import validate_state
+    state = validate_state(strict_json(path.read_bytes(), limit=16777216, depth=24))
+    displayed_active = strict_json(ACTIVE_FILE.read_bytes(), limit=16777216, depth=16) if ACTIVE_FILE.exists() else {'status':'none'}
+    if displayed_active.get('id') in {case['incident_id'] for case in state['cases'].values()}:
+        require(state['legacy_active'] is not None, 'STORE_UNAVAILABLE')
+        return state['legacy_active']
+    return displayed_active
+
+
+def save_active_projection(value):
+    """Derived active-slot output; authoritative cases/outbox remain in engine state."""
+    temporary = None
     try:
-        publish_all(base, c)
-    except Exception as exc:
-        print(f"incident MQTT publication failed {exc}", file=sys.stderr)
-        return 1
+        fd, name = tempfile.mkstemp(prefix='.active-pe7-', dir=STATE_DIR)
+        temporary = Path(name)
+        raw = (json.dumps(value, allow_nan=False)+'\n').encode('utf-8')
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+        os.chmod(temporary, 0o600)
+        if temporary.read_bytes() != raw:
+            raise ValueError('projection verification failed')
+        os.replace(temporary, ACTIVE_FILE); temporary = None
+        if os.name == 'posix':
+            fd = os.open(STATE_DIR, os.O_RDONLY | os.O_DIRECTORY)
+            try: os.fsync(fd)
+            finally: os.close(fd)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def run_availability_cycle(service, engine, policy_profiles, observations, evaluated_at, *,
+                           operator_enabled, transport=None, publisher=None, clock=None):
+    """PE-7 extension of this engine's transaction; never a second lifecycle writer.
+
+    The normal batch lock MUST be released before entry. Asset snapshot, evaluation,
+    case transaction and guarded dispatch are separate ordered operations. No
+    production configuration/profile/recipient is selected by this function.
+    """
+    from hioc.assets import AssetLock
+    from hioc.availability import evaluate, validate_profile, evaluation_snapshot
+    from hioc.availability_contract import PolicyError, digest, require, timestamp, time_text
+    from hioc.availability_incidents import apply_evaluation, Dispatcher, summary, displayed
+    require(not engine.held, 'FORBIDDEN')
+    with engine.transaction():
+        previous = engine.read()
+    with AssetLock(service.store.lock_path, shared=True):
+        store = service.store.load_store()
+        require(store['schema_version'] == '2.0', 'UNSUPPORTED_SCHEMA')
+        policies = [service._policy(store, key) for key in store['assets']]
+    updated = previous
+    deadlines = []
+    for policy in policies:
+        key = digest(['pe7_expected_availability', policy['asset_id']])
+        case = previous['cases'].get(key)
+        profile = policy_profiles.get(policy['asset_id'])
+        if profile is not None:
+            validate_profile(profile)
+        rows = [row for row in observations if row.get('asset_id') == policy['asset_id']]
+        snapshot = previous['evaluations'].get(policy['asset_id'])
+        result = evaluate(policy, policy['attachment'], profile, rows,
+            snapshot['machine'] if snapshot else None, evaluated_at,
+            case_open=case is not None and case['lifecycle'] != 'resolved')
+        if result['valid_until'] is not None:
+            deadlines.append(result['valid_until'])
+        updated = apply_evaluation(updated, policy, result)
+        updated['evaluations'][policy['asset_id']] = evaluation_snapshot(policy, result, profile, rows)
+    with engine.transaction():
+        require(engine.read() == previous, 'BUSY')
+        engine.write(updated)
+    deadline = min(deadlines) if deadlines else evaluated_at
+    projection = summary(updated, evaluated_at, deadline)
+    if not deadlines:
+        projection['status'] = 'UNAVAILABLE'
+    if publisher is not None:
+        # Publish the validated ownership summary BEFORE any episode notification.
+        publisher(projection)
+    # No case can authorize from an uncertain write. A pending proposal is not a grant.
+    dispatcher = Dispatcher(service, engine, clock or (lambda: datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')),
+                            updated['process_epoch'], operator_enabled)
+    outcomes = {}
+    for event_id, item in updated['outbox'].items():
+        if item['state'] != 'PENDING_AUTHORIZATION' or transport is None:
+            continue
+        try:
+            dispatcher.authorize(event_id)
+            claimed = dispatcher.claim(event_id)
+            outcomes[event_id] = dispatcher.submit(claimed, transport)
+        except PolicyError as error:
+            outcomes[event_id] = error.code
+    return dict(projection=projection, outcomes=outcomes)
+
+
+def pe7_main(initialize=False):
+    """Explicit disabled-by-default entry; replaces, never nests, the old outer flock."""
+    from hioc.asset_policy import PolicyStore, PolicyService
+    from hioc.assets import AssetLock
+    from hioc.availability_contract import PolicyError, keys, require, strict_json
+    from hioc.availability_incidents import EngineState, restart
+    from hioc.mqtt import BoundedNotificationTransport
+    lock = Path('/tmp/hioc-incident-engine.lock')
+    store = PolicyStore(HIOC_HOME)
+    engine = EngineState(STATE_DIR/'pe7.json', lock)
+    # Refuse an inherited/external incident batch lock BEFORE acquiring Asset.
+    # The prospective invocation is this engine's --pe7-cycle without outer flock.
+    with engine.transaction():
+        pass
+    settings = strict_json(store.read_bytes(HIOC_HOME/'config'/'pe7_availability.json'), limit=16777216, depth=16)
+    keys(settings, ('enabled', 'policy_profiles', 'notifications_enabled'))
+    require(settings['enabled'] is True and type(settings['notifications_enabled']) is bool, 'FORBIDDEN')
+    if initialize:
+        with engine.transaction():
+            engine.initialize_explicitly()
+            observation_parent = STATE_DIR/'pe7'
+            require(not observation_parent.is_symlink(), 'STORE_UNAVAILABLE')
+            observation_parent.mkdir(mode=0o700, exist_ok=True)
+            if os.name == 'posix':
+                import stat
+                info = observation_parent.lstat()
+                require(info.st_uid == os.getuid() and stat.S_IMODE(info.st_mode) == 0o700, 'STORE_UNAVAILABLE')
+        return 0
+    with engine.transaction():
+        engine.write(restart(engine.read()))
+        legacy_result = main(publish=False)
+        state = engine.read()
+        state['legacy_active'] = strict_json(ACTIVE_FILE.read_bytes(), limit=16777216, depth=16)
+        engine.write(state)
+    if legacy_result:
+        return legacy_result
+    raw = store.read_bytes(STATE_DIR/'pe7'/'observations.json')
+    observed = strict_json(raw, limit=262144, depth=6)
+    keys(observed, ('schema_version', 'observations'))
+    require(observed['schema_version'] == '1.0' and type(observed['observations']) is list)
+    configuration = cfg()
+    transport = BoundedNotificationTransport(configuration, 'home/infrastructure/hioc/incidents/pe7/transitions') if settings['notifications_enabled'] else None
+    def publish_projection(projection):
+        # No metadata/public-inventory rewrite; bounded operational projection only.
+        with MqttClient(configuration, client_id='hioc-pe7-summary') as mqtt:
+            mqtt.publish('home/infrastructure/hioc/incidents/pe7/summary', projection, retain=True)
+        from hioc.availability_incidents import displayed
+        with engine.transaction():
+            state = engine.read()
+            derived = displayed(state['legacy_active'], projection)
+            # Display is derived; the authoritative legacy object remains in
+            # engine state and cannot be resolved by PE-7/no-candidate logic.
+            save_active_projection(derived)
+            summary_value = strict_json(SUMMARY_FILE.read_bytes(), limit=16777216, depth=16)
+            summary_value.update(active_status=derived.get('status', 'unknown'), active_phase=derived.get('phase', 'unknown'),
+                active_title=derived.get('title', 'Unavailable'), active_severity=derived.get('severity', 'warning'),
+                active_system=derived.get('system', 'HIOC'))
+            save_json(SUMMARY_FILE, summary_value)
+        publish_all(configuration.get('HIOC_BASE_TOPIC', 'home/infrastructure/hioc'), configuration)
+    result = run_availability_cycle(PolicyService(store), engine, settings['policy_profiles'], observed['observations'],
+        datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        operator_enabled=lambda: settings['notifications_enabled'], transport=transport, publisher=publish_projection)
+    print(json.dumps({'result':'evaluated', 'case_count':result['projection']['total_case_count']}, separators=(',', ':')))
     return 0
 
 
 if __name__ == "__main__":
+    if sys.argv[1:] in (['--pe7-cycle'], ['--pe7-initialize']):
+        try:
+            raise SystemExit(pe7_main(initialize=sys.argv[1] == '--pe7-initialize'))
+        except Exception:
+            print('PE7_RESULT=FAIL_CLOSED', file=sys.stderr)
+            raise SystemExit(1)
+    if sys.argv[1:]:
+        print('Unsupported incident-engine invocation', file=sys.stderr)
+        raise SystemExit(2)
     raise SystemExit(main())

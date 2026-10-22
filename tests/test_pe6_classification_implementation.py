@@ -372,6 +372,15 @@ def validate_timestamp_correction(record=None):
 
 
 def implementation_successor():
+    if not globals().get('_PE7_HISTORICAL_REPLAY', False):
+        from test_pe7_binding import current_candidate
+        candidate=current_candidate(read=raw, git_runner=git)
+        # Read-only inherited bindings preserve the established consumer map;
+        # they do not grant edit authority over the protected baseline.
+        inherited={item['path'] for item in accepted_implementation()['artifacts']}
+        merged={item['path']:item for item in candidate['protected'] if item['path'] in inherited}
+        merged.update({item['path']:item for item in candidate['artifacts']})
+        return dict(candidate, artifacts=[merged[path] for path in sorted(merged)])
     return validate_timestamp_correction()
 
 def historical_implementation_candidate():
@@ -380,17 +389,160 @@ def historical_implementation_candidate():
     return validate_implementation(record,schema)
 
 def implementation_binding(path):
-    item=next((x for x in implementation_successor()["artifacts"] if x["path"]==path),None)
-    if item:require((sha(raw(path)),blob(raw(path)))==(item["sha256"],item["git_blob"]),"current successor identity")
+    successor=implementation_successor()
+    item=next((x for x in successor["artifacts"] if x["path"]==path),None)
+    if item:
+        value=raw(path)
+        require(sha(value)==item['sha256'] and (blob(value)==item['git_blob'] or
+            value==git('cat-file','blob',item['git_blob']).replace(b'\r\n',b'\n')),'current successor identity')
     return item
 
 def assert_implementation_sequence(text):
+    if not globals().get('_PE7_HISTORICAL_REPLAY', False):
+        from test_pe7_binding import assert_candidate_sequence
+        return assert_candidate_sequence(text, read=raw, git_runner=git)
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
     full=raw("docs/HIOC_MASTER_PLAN.md").decode()
     status=full.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
     require(text in (full,status),"current lifecycle text substitution")
     section=full.split("## Next Planned Task",1)[1].split("### Historical",1)[0]
     require(section=="\n"+CORRECTION_CURRENT,"current PE6.3 successor / PE6.4 separate authorization")
+
+
+@lru_cache(maxsize=4096)
+def _immutable_replay_command(repository_root, args):
+    return subprocess.check_output(['git', '--no-optional-locks', *args], cwd=repository_root,
+        env=dict(os.environ, GIT_OPTIONAL_LOCKS='0'), stderr=subprocess.PIPE)
+
+def load_tests(loader, tests, pattern, *, namespaces=()):
+    """Replay these historical governance fixtures at their immutable accepted commit.
+
+    Current PE-7 bindings have separate negative fixtures in test_pe7_binding.
+    No historical function/class body, record, schema or identity is refreshed.
+    The synthetic index below describes a Git COMMIT, never the current index.
+    """
+    import io
+    import tempfile
+    import zipfile
+    from contextlib import ExitStack
+    accepted = '9d6ce274a80a578d488d7245ebfa5bca1d5f5a83'
+    repository_root = ROOT
+    namespace_git = {id(namespace): namespace['git'] for namespace in namespaces
+        if 'git' in namespace and namespace.get('_pe7_original_git', namespace['git']) is not namespace['git']}
+    @lru_cache(maxsize=None)
+    def repository_git(*args):
+        # Only explicitly immutable object/ref arguments enter the shared cache.
+        # HEAD/index/current-tree observations are never cached across replays.
+        if any(__import__('re').match(r'^[0-9a-f]{40}(?::|\^|$)', arg) for arg in args) and not any(
+                'HEAD' in arg or 'origin/' in arg or arg.startswith(':') for arg in args):
+            return _immutable_replay_command(repository_root, args)
+        return subprocess.check_output(['git', '--no-optional-locks', *args], cwd=repository_root,
+            env=dict(os.environ, GIT_OPTIONAL_LOCKS='0'), stderr=subprocess.PIPE)
+    class HistoricalSuite(unittest.TestSuite):
+        def run(self, result, debug=False):
+            with tempfile.TemporaryDirectory(prefix='hioc-pe6-historical-') as directory:
+                snapshot = Path(directory)
+                archive = zipfile.ZipFile(io.BytesIO(repository_git('archive', '--format=zip', accepted)))
+                for member in archive.infolist():
+                    path = __import__('pathlib').PurePosixPath(member.filename)
+                    require(not path.is_absolute() and '..' not in path.parts, 'historical archive path')
+                    require((member.external_attr >> 16) & 0o170000 != 0o120000, 'historical archive link')
+                archive.extractall(snapshot)
+                # This selected historical law hashes two unnormalized source
+                # files. Reproduce their recorded Git representation, never a
+                # guessed LF conversion or a refreshed historical identity.
+                if any(namespace.get('__name__', '').endswith('test_pe4_ha_runtime_credential_provisioning_closure') for namespace in namespaces):
+                    correction = json.loads(repository_git('--no-replace-objects', 'show', accepted+':governance/pe4/pe4-ha-association-runtime-validation-correction.json'))
+                    for path in ('pi4/lib/hioc/home_assistant_association.py', 'pi4/bin/hioc-home-assistant-association.py'):
+                        binding = next(item for item in correction['sources'].values() if item['path'] == path)
+                        content = repository_git('--no-replace-objects', 'show', accepted+':'+path)
+                        require((sha(content), blob(content)) == (binding['sha256'], binding['git_blob']), 'historical raw source identity')
+                        (snapshot/path).write_bytes(content)
+                git_directory = repository_git('rev-parse', '--absolute-git-dir').decode().strip()
+                (snapshot/'.git').write_text('gitdir: '+git_directory+'\n', encoding='utf-8')
+                def historical_git(*args):
+                    if args == ('branch', '--show-current'): return b'main\n'
+                    if args in [('rev-parse', 'HEAD'), ('rev-parse', 'origin/main')]: return (accepted+'\n').encode()
+                    if args == ('rev-list', '--left-right', '--count', 'HEAD...origin/main'): return b'0\t0\n'
+                    if args == ('ls-files', '--others', '--exclude-standard'): return b''
+                    if args == ('ls-files', '--stage'):
+                        rows = repository_git('ls-tree', '-r', accepted).decode().splitlines()
+                        return ''.join(f'{meta.split()[0]} {meta.split()[2]} 0\t{path}\n'
+                                       for meta,path in (row.split('\t',1) for row in rows)).encode()
+                    if args == ('diff', 'HEAD', '--name-only'): return b''
+                    if args[:1] == ('diff',):
+                        split = args.index('--') if '--' in args else len(args)
+                        positional = [arg for arg in args[1:split] if not arg.startswith('-')]
+                        if len(positional) == 1:
+                            return repository_git(*[arg for arg in args[:split] if arg != '--cached'], accepted, *args[split:])
+                        if not positional: return b''
+                    return repository_git(*(accepted if arg in ('HEAD', 'origin/main') else accepted+arg
+                        if arg.startswith(':') else arg for arg in args))
+                import test_pe5_service_association_caller as caller
+                snapshot_read = lambda path:(snapshot/path).read_bytes().replace(b'\r\n',b'\n')
+                class OriginalCandidateSuite(unittest.TestSuite):
+                    def run(self, result, debug=False):
+                        nonlocal accepted
+                        later = accepted
+                        accepted = ACCEPTED_IMPLEMENTATION
+                        try:
+                            with tempfile.TemporaryDirectory(prefix='hioc-pe61-candidate-') as original_directory:
+                                original_root = Path(original_directory)
+                                original_archive = zipfile.ZipFile(io.BytesIO(repository_git('archive', '--format=zip', accepted)))
+                                for member in original_archive.infolist():
+                                    candidate_path = __import__('pathlib').PurePosixPath(member.filename)
+                                    require(not candidate_path.is_absolute() and '..' not in candidate_path.parts, 'historical archive path')
+                                    require((member.external_attr >> 16) & 0o170000 != 0o120000, 'historical archive link')
+                                original_archive.extractall(original_root)
+                                # The accepted record distinguishes canonical Git
+                                # bytes from its original Windows checkout bytes.
+                                # Reproduce only an encoding whose exact recorded
+                                # identity is independently verified; no new hash.
+                                original_record = json.loads((original_root/RECORD).read_bytes())
+                                for item in original_record['preserved_candidate_unmodified']:
+                                    fixture = original_root/item['path']
+                                    git_bytes = repository_git('--no-replace-objects', 'show', accepted+':'+item['path'])
+                                    require(sha(git_bytes) == item['sha256'] == item['file_sha256'],
+                                            'historical candidate bytes unavailable')
+                                    fixture.write_bytes(git_bytes)
+                                original_read = lambda path:(original_root/path).read_bytes().replace(b'\r\n',b'\n')
+                                with patch.dict(caller.__dict__, ROOT=original_root, raw=original_read), patch.dict(globals(), ROOT=original_root, raw=original_read):
+                                    return super().run(result, debug)
+                        finally:
+                            accepted = later
+                def bind_original_candidate(suite):
+                    children = []
+                    for test in suite:
+                        if isinstance(test, unittest.TestSuite):
+                            children.append(bind_original_candidate(test))
+                        elif test._testMethodName == 'test_original_five_file_candidate_and_asset_correction_retained':
+                            # This assertion owns the PE-6.1 candidate, not the later
+                            # explicitly authorized timestamp source correction.
+                            children.append(OriginalCandidateSuite([test]))
+                        else:
+                            children.append(test)
+                    return unittest.TestSuite(children)
+                bound_tests = bind_original_candidate(tests)
+                with ExitStack() as stack:
+                    stack.enter_context(patch.dict(os.environ, GIT_OPTIONAL_LOCKS='0',
+                        GIT_DIR=git_directory, GIT_WORK_TREE=str(snapshot)))
+                    stack.enter_context(patch.dict(caller.__dict__, ROOT=snapshot, git=historical_git, raw=snapshot_read))
+                    stack.enter_context(patch.dict(globals(), ROOT=snapshot, git=historical_git,
+                                                   raw=snapshot_read, _PE7_HISTORICAL_REPLAY=True))
+                    # A historical dependency graph must read one historical
+                    # checkout, not current bytes paired with historical hashes.
+                    for name,module in list(__import__('sys').modules.items()):
+                        if name.startswith(('test_pe4_', 'test_pe5_', 'test_pe6_', 'test_pe10_')) and module is not None:
+                            namespace=vars(module)
+                            if namespace.get('ROOT') == repository_root:
+                                stack.enter_context(patch.dict(namespace, ROOT=snapshot))
+                    for namespace in namespaces:
+                        replacement = dict(ROOT=snapshot)
+                        if 'git' in namespace:
+                            replacement['git'] = namespace_git.get(id(namespace), historical_git)
+                        stack.enter_context(patch.dict(namespace, **replacement))
+                    return bound_tests.run(result, debug)
+    return HistoricalSuite([tests])
 
 class ImplementationGovernanceTests(unittest.TestCase):
     def test_current_implementation_closed_scope_identity_and_protected_objects(self):

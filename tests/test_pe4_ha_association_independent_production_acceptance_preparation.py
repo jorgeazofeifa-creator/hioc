@@ -69,3 +69,9 @@ for k,v in R['historical'].items():
  def check(self,k=k,v=v):self.assertEqual(R['historical'][k],v);self.reject(['historical',k],'RECREATED')
  setattr(PreparationTests,'test_historical_'+k,check)
 if __name__=='__main__':unittest.main()
+
+
+def load_tests(loader, tests, pattern):
+    # Preserve the original assertion; its authority predates the PE-7 successor.
+    from test_pe7_binding import select_historical_checks
+    return select_historical_checks(loader, tests, pattern, globals(), {'test_source_implementation_unchanged'})

@@ -1900,6 +1900,11 @@ views:
                 ha-markdown { line-height: 1.24; }
                 strong { color: #bfdbfe; }
 
+          # Deliver /local/hioc-asset-editor.js through supported resource management.
+          # Storage-managed live dashboards require a separately authorized guarded card addition.
+          - type: custom:hioc-asset-editor
+            inventory_entity: sensor.hioc_inventory_devices
+
           - type: markdown
             title: Inventory Explorer - Devices
             content: >-
