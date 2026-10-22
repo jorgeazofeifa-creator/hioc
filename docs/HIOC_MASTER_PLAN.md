@@ -6268,7 +6268,42 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
-## PE-7.1 accepted repository implementation and governance closure
+## PE-7.2 release-source synchronization acceptance and governance closure
+
+Classification: CURRENT. EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED for all PI3 observations.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE7_STATUS=IN_PROGRESS; PE6_STATUS=COMPLETE/PASS.
+ACCEPTED_SOURCE_COMMIT=51398bab4e2293b578b2cdac2d0740c3738cab2f.
+Deployment result: SOURCE_SYNCHRONIZATION_ONLY; no runtime delivery or activation.
+
+The operator synchronized PI3 NUT&PIHOLE (hostname nutandpihole), source checkout
+/home/jazofv1/hioc-release-source, remote
+https://github.com/jorgeazofeifa-creator/hioc.git. Initially main was clean at
+1477f672db00e67bc1923a667a8dd5913f183166, with no stashes and target absent locally.
+After git fetch --prune origin main, origin/main was the accepted source commit;
+local main was 0 ahead / 4 behind and fast-forward eligible.
+git merge --ff-only 51398bab4e2293b578b2cdac2d0740c3738cab2f completed fast-forward:
+40 PE-7.1 paths synchronized, HEAD at the accepted commit, tracking origin/main,
+working tree clean. Local immutable Git history independently confirms ancestry
+and the 40-path change set; Codex did not observe the PI3 checkout.
+
+Operator read-only checks found /home/jazofv1/hioc present and not a Git worktree;
+pi4/lib/hioc/availability.py, availability_server.py and asset_policy.py were
+ABSENT under that runtime. The synchronization targeted only the source checkout.
+This establishes the reported source synchronization and checked module absences,
+not historical byte-for-byte runtime preservation, a comprehensive service audit,
+production health or PE-7 runtime acceptance. No observation time is supplied.
+See the [PE-7.2 Evidence Report](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-72-release-source-synchronization-acceptance-and-governance-closure).
+All accepted PE-7.1 implementation and contract bytes remain unchanged.
+
+NEXT_CHECKPOINT=PE-7.3 - Guarded artifact, integration, UI and trust delivery.
+PE73_STATUS=NOT_STARTED; PE73_AUTHORIZED=FALSE.
+Separate authorization is required. No runtime installation, HA integration delivery,
+credential creation, Asset migration, monitoring or notification activation is
+authorized by this documentation/source-synchronization checkpoint.
+No automatic follow-on action; PE-7 overall remains IN_PROGRESS.
+
+## Historical PE-7.1 accepted repository implementation and governance closure
 
 Classification: CURRENT. Phase 7A ACTIVE; PE6_STATUS=COMPLETE/PASS.
 PE70_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS.
@@ -7479,6 +7514,23 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-7.3 - Guarded artifact, integration, UI and trust delivery
+
+Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.
+PE72_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE6_STATUS=COMPLETE/PASS.
+ACCEPTED_SOURCE_COMMIT=51398bab4e2293b578b2cdac2d0740c3738cab2f.
+NEXT_CHECKPOINT=PE-7.3 - Guarded artifact, integration, UI and trust delivery.
+PE73_STATUS=NOT_STARTED; PE73_AUTHORIZED=FALSE.
+Separate authorization is required. PE-7.2 accepts OPERATOR_SUPPLIED release-source
+synchronization only. No runtime deployment, HA integration installation, service
+change, operational credentials, Asset migration, monitoring or notification
+activation is authorized here.
+See the [PE-7.2 Evidence Report](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-72-release-source-synchronization-acceptance-and-governance-closure)
+and [accepted checkpoint sequence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md#13-bounded-checkpoint-sequence-and-implementation-scope).
+No automatic follow-on action.
+
+### Historical PE-7.2 next-task snapshot before source synchronization acceptance
+
 ### PE-7.2 - Operator-only exact release-source synchronization
 
 Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.
@@ -8200,6 +8252,23 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-7.3 - Guarded artifact, integration, UI and trust delivery
+
+Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.
+PE72_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE6_STATUS=COMPLETE/PASS.
+ACCEPTED_SOURCE_COMMIT=51398bab4e2293b578b2cdac2d0740c3738cab2f.
+NEXT_CHECKPOINT=PE-7.3 - Guarded artifact, integration, UI and trust delivery.
+PE73_STATUS=NOT_STARTED; PE73_AUTHORIZED=FALSE.
+Separate authorization is required. PE-7.2 accepts OPERATOR_SUPPLIED release-source
+synchronization only. No runtime deployment, HA integration installation, service
+change, operational credentials, Asset migration, monitoring or notification
+activation is authorized here.
+See the [PE-7.2 Evidence Report](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-72-release-source-synchronization-acceptance-and-governance-closure)
+and [accepted checkpoint sequence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md#13-bounded-checkpoint-sequence-and-implementation-scope).
+No automatic follow-on action.
+
+### Historical PE-7.2 next-task snapshot before source synchronization acceptance
+
 ### PE-7.2 - Operator-only exact release-source synchronization
 
 Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.

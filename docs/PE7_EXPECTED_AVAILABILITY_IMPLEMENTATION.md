@@ -607,3 +607,72 @@ PE72_STATUS=NOT_STARTED; PE72_AUTHORIZED=FALSE.
 Exactly one next checkpoint requires separate authorization: operator-only exact
 release-source synchronization, without runtime delivery, migration or execution.
 STOP after the authorized repository closure and publication gates.
+
+
+## PE-7.2 release-source synchronization acceptance and governance closure
+
+PE72_STATUS=COMPLETE/PASS; DEPLOYMENT_RESULT=SOURCE_SYNCHRONIZATION_ONLY.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.
+PE7_STATUS=IN_PROGRESS; PE6_STATUS=COMPLETE/PASS.
+All production/source-checkout observations below are OPERATOR_SUPPLIED.
+Codex made no PI3 or PI5 connection. No observation timestamp, process exit code,
+tree hash or historical runtime comparison is invented.
+
+### Exact supplied synchronization evidence
+
+Target PI3 NUT&PIHOLE; hostname nutandpihole.
+Source checkout /home/jazofv1/hioc-release-source; remote
+https://github.com/jorgeazofeifa-creator/hioc.git.
+Before synchronization: branch main, commit
+1477f672db00e67bc1923a667a8dd5913f183166, clean tree, no stashes,
+target commit initially absent locally.
+The operator performed git fetch --prune origin main and verified origin/main
+51398bab4e2293b578b2cdac2d0740c3738cab2f; local branch 0 ahead / 4 behind,
+fast-forward eligible.
+The operator performed
+git merge --ff-only 51398bab4e2293b578b2cdac2d0740c3738cab2f.
+Observed fast-forward completion synchronized exactly 40 PE-7.1 paths;
+final HEAD equals accepted source commit
+51398bab4e2293b578b2cdac2d0740c3738cab2f, branch tracks origin/main,
+and working tree is clean.
+
+IMMUTABLE_REPOSITORY_FACT: Windows Git objects independently establish the
+start as ancestor, exactly four intervening commits, and a 40-path endpoint
+change set. These facts corroborate the supplied sequence; they do not independently
+observe the PI3 filesystem or authenticate the operator transcript.
+
+### Exact isolation observations and limits
+
+OPERATOR_SUPPLIED: /home/jazofv1/hioc exists and is not a Git worktree.
+The following exact runtime paths were observed ABSENT:
+- /home/jazofv1/hioc/pi4/lib/hioc/availability.py
+- /home/jazofv1/hioc/pi4/lib/hioc/availability_server.py
+- /home/jazofv1/hioc/pi4/lib/hioc/asset_policy.py
+
+The synchronization command targeted only /home/jazofv1/hioc-release-source.
+These observations establish successful source synchronization and absence of the
+three checked new modules. They do not establish historical byte-for-byte
+production preservation, absence of every possible runtime artifact, a comprehensive
+production-service audit, current production health or operational PE-7 acceptance.
+No Codex production access, deployment, HA integration installation, services,
+credentials, Assets, monitoring, scheduling or notification action occurred.
+
+### Repository closure and unchanged acceptance authority
+
+Documentation-only closure updates the current Master Plan, this existing evidence
+document and only their directly affected successor artifact identity fields.
+Accepted PE-7.1 source/tests and the corrected contract remain unchanged.
+Original rejection/correction/focused ACCEPT, exact source identities, native/targeted
+test history, all skip reasons and the four-file historical fingerprint limitation
+above remain preserved. No native implementation suite is rerun for this checkpoint.
+Static documentation/reference/lifecycle, exact path, protected-identity and
+git diff --check verification gate publication. Exact commit, normal main push,
+independent remote identity and clean checkout are verified and reported afterward.
+The prior implementation-candidate metadata retains its historical meaning;
+current lifecycle authority is the Master Plan and this PE-7.2 disposition.
+PE-7 remains IN_PROGRESS.
+
+NEXT_CHECKPOINT=PE-7.3 - Guarded artifact, integration, UI and trust delivery.
+PE73_STATUS=NOT_STARTED; PE73_AUTHORIZED=FALSE.
+Separate authorization is required. No PE-7.3 delivery or automatic follow-on
+action begins here. Later migration/execution and activation remain separately gated.
