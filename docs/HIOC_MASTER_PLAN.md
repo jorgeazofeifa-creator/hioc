@@ -6268,6 +6268,38 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+## PE-7.0 accepted availability contract and governance closure
+
+Classification: CURRENT. Phase 7A ACTIVE; PE6_STATUS=COMPLETE/PASS; PE6_5_STATUS=COMPLETE/PASS.
+PE70_STATUS=COMPLETE/PASS; PE70_INDEPENDENT_CONTRACT_ACCEPTANCE=PASS.
+PE70_FOCUSED_RECHECK=ACCEPT; PE7_STATUS=IN_PROGRESS; PE7_DESIGN_STATUS=COMPLETE.
+PE71_STATUS=NEXT / NOT STARTED; PE71_STARTED=FALSE; PE71_IMPLEMENTATION_AUTHORIZED=FALSE.
+PE7_IMPLEMENTATION_AUTHORIZED=FALSE; PE7_PRODUCTION_AUTHORIZED=FALSE.
+PE7_MONITORING_EXECUTION_AUTHORIZED=FALSE; PE7_RECURRING_ACTIVATION_AUTHORIZED=FALSE.
+NEXT_CHECKPOINT=PE-7.1 - Repository implementation.
+
+The [accepted consolidated PE-7 implementation contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md)
+has SHA-256 `57534e84132f4b305608dd1492462b9581e646228bef3bbf0cb47b9b9607f617`.
+The original independent review's two blockers were corrected: version-aware PE-6
+Asset consumption preserves truthful operator_ha provenance and original bytes;
+durable notification authorization serializes with Expected Availability OFF and
+bounds pre-OFF grants without claiming recall of in-flight delivery. The focused
+independent recheck accepted both corrections. Independent contract acceptance is
+PASS; no further contract-review cycle is required for this accepted candidate.
+
+The contract remains byte-identical to its accepted prepared version, including
+its preparation-time lifecycle labels. This current Master Plan records subsequent
+acceptance and formal PE-7.0 closure; it does not change the accepted architecture.
+Mandatory independent Expected Availability and Infrastructure Device Dashboard
+toggles, conditional Infrastructure Type, security/schema decisions, all 14
+operator transitions, 24 acceptance criteria and PE-7.1 through PE-7.6 remain intact.
+
+PE-7.1 is next, NOT STARTED, and requires separate implementation authorization.
+This documentation-only closure performs no implementation, deployment, monitoring,
+recurring activation, migration, HA change or credential provisioning. PE-6 evidence
+remains closed and unchanged; PE-8/9/10 and all other future commitments retain scope
+and order. Following Implementation Status entries are preserved historical records.
+
 ## PE-6.5 final PE-6 governance closure and PE-7 handoff
 
 Classification: CURRENT. Phase 7A ACTIVE; PE-4 PASS/CLOSED; Public Projection PASS/CLOSED.
@@ -7406,6 +7438,20 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-7.1 - Repository implementation
+
+Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE70_INDEPENDENT_CONTRACT_ACCEPTANCE=PASS.
+PE7_STATUS=IN_PROGRESS; PE7_DESIGN_STATUS=COMPLETE; PE6_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-7.1 - Repository implementation.
+PE71_STATUS=NEXT / NOT STARTED; PE71_STARTED=FALSE; PE71_IMPLEMENTATION_AUTHORIZED=FALSE.
+Follow [the accepted PE-7 contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md)
+only after separate implementation authorization. Contract acceptance does not
+start PE-7.1 or authorize production deployment, monitoring or recurring activation.
+PE7_PRODUCTION_AUTHORIZED=FALSE; PE7_MONITORING_EXECUTION_AUTHORIZED=FALSE;
+PE7_RECURRING_ACTIVATION_AUTHORIZED=FALSE. No automatic follow-on action.
+
+### Historical PE-6.5 handoff snapshot before PE-7.0 preparation
+
 ### PE-7 - Expected Availability & Permanent IoT Monitoring
 
 Classification: CURRENT. Phase 7A ACTIVE; PE6_STATUS=COMPLETE/PASS; PE6_5_STATUS=COMPLETE/PASS.
@@ -8094,6 +8140,20 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### PE-7.1 - Repository implementation
+
+Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE70_INDEPENDENT_CONTRACT_ACCEPTANCE=PASS.
+PE7_STATUS=IN_PROGRESS; PE7_DESIGN_STATUS=COMPLETE; PE6_STATUS=COMPLETE/PASS.
+NEXT_CHECKPOINT=PE-7.1 - Repository implementation.
+PE71_STATUS=NEXT / NOT STARTED; PE71_STARTED=FALSE; PE71_IMPLEMENTATION_AUTHORIZED=FALSE.
+Follow [the accepted PE-7 contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md)
+only after separate implementation authorization. Contract acceptance does not
+start PE-7.1 or authorize production deployment, monitoring or recurring activation.
+PE7_PRODUCTION_AUTHORIZED=FALSE; PE7_MONITORING_EXECUTION_AUTHORIZED=FALSE;
+PE7_RECURRING_ACTIVATION_AUTHORIZED=FALSE. No automatic follow-on action.
+
+### Historical PE-6.5 handoff snapshot before PE-7.0 preparation
+
 ### PE-7 - Expected Availability & Permanent IoT Monitoring
 
 Classification: CURRENT. Phase 7A ACTIVE; PE6_STATUS=COMPLETE/PASS; PE6_5_STATUS=COMPLETE/PASS.
