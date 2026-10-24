@@ -676,3 +676,2231 @@ NEXT_CHECKPOINT=PE-7.3 - Guarded artifact, integration, UI and trust delivery.
 PE73_STATUS=NOT_STARTED; PE73_AUTHORIZED=FALSE.
 Separate authorization is required. No PE-7.3 delivery or automatic follow-on
 action begins here. Later migration/execution and activation remain separately gated.
+
+
+## PE-7.3 guarded PI3 delivery transaction repository candidate
+
+PE73_STATUS=IN_PROGRESS_REPOSITORY_PREPARATION.
+PE73_PI3_DELIVERY_CANDIDATE=PARTIAL; NATIVE_LIVE_COMMIT=BLOCKED_CONSUMER_COORDINATION_NOT_ESTABLISHED.
+This is an uncommitted Windows implementation candidate for independent review,
+not production delivery authority or PE-7.3 COMPLETE/PASS. No new phase/checkpoint
+is created. Accepted PE-7.1 runtime source and contract bytes remain unchanged.
+
+### Supplied production baseline and immutable source authority
+
+Release artifacts are pinned to 51398bab4e2293b578b2cdac2d0740c3738cab2f.
+Repository preparation baseline is d64d772f82728a41d920eb64433ee2398645097f.
+PI3 hostname nutandpihole, UID:GID 1000:1000, five existing regular single-link
+replacement files and eight absent targets are OPERATOR_SUPPLIED observations.
+Every target is freshly validated at preparation and again before any synthetic
+publication; prior preflight success never authorizes later publication.
+
+The production MQTT baseline d55a174bec05cf009038bbd15ac911dd18039bddc56da1c9847b67bc81c65ff5
+is exact historical Git blob d185aee1c3a30de72f060c824878224022236c3c. It differs
+from the immediate pre-PE7 source MQTT file; no current-source substitution or
+invented line-ending conversion is used to reconstruct its fixture bytes.
+
+Exact payload below. Runtime modes preserve the five supplied existing policies.
+New modules use private 0600 following PE-6 disabled installation; the new explicit
+operator entry uses 0700 following the observed private Asset CLI precedent.
+These are proposed delivery policies, not claims that new targets exist.
+
+| Runtime-relative path | Accepted source SHA-256 | Accepted Git blob | Delivery mode |
+| --- | --- | --- | --- |
+| pi4/bin/hioc-assets.py | 43d84f837243606ee58fb64f3febbc28f7766d05378045b42213c7adf48127ab | 0b4d8bfdbf432dbed6ef62add9da73c74764c574 | 0700 |
+| pi4/bin/hioc-availability-adapter.py | d53114faf5d3cddf6666716871f3f5b51a3876ea7db68b6ce0ab1379b0334ed7 | d81c5c7add4a682664897c99574ad2fa05d04bfa | 0700 |
+| pi4/bin/hioc-incident-engine-v2.py | 6e9ec9d591ae2e48d19825c095aceb54542405329c842e271a367094475ffffe | f1a2423919edd609a79e8bbf4dfd574c98fee30e | 0755 |
+| pi4/lib/hioc/asset_policy.py | 565e2314c8947a17e31e327b21960db4338e37f514ab7c3df31738006d178a2f | 917f23cc41487da7a68c2427b3af605e885616e2 | 0600 |
+| pi4/lib/hioc/assets.py | 5a06d401c7496871c878337a32ec85a37dae53ba7e74fe97e30446f4d720f3ac | 132c572d875d8b87ae0d89b72eec2c69ddd1b57b | 0600 |
+| pi4/lib/hioc/availability.py | 8b10bf0ced9e280a0d634fe4ec0082d6f267c1a5fd8c8abcae34e5660b2ba54d | c56a2c29fa712609adc9121d48c1639b69b818ba | 0600 |
+| pi4/lib/hioc/availability_contract.py | b27f422e6badd13aefff5f75c1dfd03859f60b927be02721c95e56f18b4eaef3 | 1479d5c553608b6ceafc14e9553c7aa8f8839de1 | 0600 |
+| pi4/lib/hioc/availability_incidents.py | f3d700b10b1de607dd32a36603bd6399a956450fa0a0eb75def4491567a39f5f | d765e77eb9b8442db97c0435f72a0ffe00142584 | 0600 |
+| pi4/lib/hioc/availability_observation.py | 16722847de9d0a44097d82fffa1056a94efefb9b3eeac3e955336574db324ac0 | 6fe80ab1ea94a458db723c7ceabd4355fe07b8f0 | 0600 |
+| pi4/lib/hioc/availability_protocol.py | 3245db6e1e05cd247095031d516d376298dbab8c33e6668548b5e0321350472b | b0398c151bec35671b76cc4f9cd343e59efe9557 | 0600 |
+| pi4/lib/hioc/availability_server.py | 406cb71e787eafee6c1c780f70167449a9196eacdfe8222fa1cce66312952ab2 | efe0aa0da94f8fbce9b62395b28673dbde1dada4 | 0600 |
+| pi4/lib/hioc/classification.py | 003ccb0eaead3476b85b8e2458d39199a84b439006f165f3fec8341c41a6eaa1 | c69c533e46a352dd498813c50fa680cfb57db84f | 0600 |
+| pi4/lib/hioc/mqtt.py | 126cfcc6c6780be79e8ed6c1ce7b27f4088edfde7221794ced62bf31e24095d4 | 369a0efbbebea9d24ed571fe9210562feaddb464 | 0644 |
+
+### Exact interface and safe defaults
+
+Tool: tools/hioc-pe73-pi3-delivery.py. No action is implicit; argparse requires one
+of preflight, inspect, prepare, commit, verify, rollback. These are interface
+specifications, not an authorized operator production command or delivery block:
+
+- preflight: read-only target/source/ancestor/metadata and actual crontab checks;
+  prints the observed baseline and canonical preflight_sha256.
+- inspect: read-only, idempotent secured journal inspection and separate current
+  target matches. Missing journal in an existing transaction is INCOMPLETE, never
+  proof of an untouched runtime.
+- prepare --authorization REFERENCE --evidence-sha256 PREFLIGHT_SHA256:
+  independently declared operator authorization plus exact fresh preflight binding;
+  creates private backups/staging only, not live runtime artifact replacement.
+- commit --authorization REFERENCE --evidence-sha256 JOURNAL_SHA256:
+  independent fresh authorization and bound PREPARED journal; no automatic
+  transition from preflight/prepare. Native CLI currently always refuses before
+  live writes because consumer coordination is not established.
+- verify: static installed-set verification only; never imports/executes payload.
+- rollback --authorization REFERENCE --evidence-sha256 JOURNAL_SHA256:
+  separate authorization, exact proven targets and backup bytes; native CLI
+  currently refuses under the same consumer-coordination gate.
+
+Authorization references are explicit local operator declarations, not authenticated
+permission tokens or substitutes for separate human authorization. There is no
+unsafe override, caller-supplied coverage boolean, receipt-as-permission, automatic
+retry, resume/adoption or automatic rollback. No root/source path CLI override.
+Native execution requires POSIX, hostname nutandpihole and real/effective UID/GID
+1000; no sudo. The source gate uses /usr/bin/git with bounded subprocess calls,
+controlled environment, exact release HEAD, root, remote URL, clean checkout and
+all 13 immutable object SHA/blob identities. No Git network operation is performed.
+
+The controller itself is newly prepared and is not part of the frozen PE-7.1
+release. Its eventual reviewed publication/runner provenance and delivery must be
+separately established before any operator use. No production command is issued here.
+
+### Transaction, backups, metadata and failure states
+
+Proposed private namespace: backups/pe73-pi3-delivery-v1; its actual production
+absence is UNKNOWN and never assumed. Existing namespace/journal stops preparation.
+No historical PE-4/PE-5/PE-6 transaction directory is removed, renamed or adopted.
+
+Descriptor-based no-follow traversal validates absolute ancestors and pins
+directory/name identities. Bounded reads reject non-regular objects, hard links,
+unsafe owner/mode or POSIX ACLs. Original file type, SHA, UID/GID, mode, link count,
+device/inode, timestamps and ancestors are retained in the baseline journal.
+All five replacement bytes are backed up privately before any live mutation;
+13 Git-object payloads are staged and verified. Directory mode 0700, journal,
+backup and stage mode 0600; file and directory fsync barriers precede progress.
+
+The finite journal states are PREPARING, PREPARED, COMMITTING, COMMITTED,
+ROLLING_BACK and ROLLED_BACK. Each pending intent is durable before publication;
+installed identities are recorded after exact verification. Unknown publication
+between rename and journal confirmation remains pending/uncertain and refuses
+automatic adoption or rollback. Evidence remains available for independent review.
+
+The synthetic core installs dependencies first, then shared compatibility/CLI,
+and incident engine LAST. Individual publication is atomic, not the entire set.
+New-name publication uses Linux renameat2 NOREPLACE; replacement preserves approved
+destination UID/GID/mode. Existing engine 0755 is never overwritten with Git 0644.
+Existing target bytes/identity/ancestors are rechecked immediately before replacement.
+
+Separately authorized rollback accepts COMMITTED or a recorded COMMITTING prefix
+with no pending uncertainty. It validates all targets and needed backups before
+any restoration, processes the proven installed subset in reverse, restores exact
+old bytes/UID/GID/modes and removes only proven new targets. Partial rollback or
+unknown pending publication stops for review, without automatic continuation.
+Restoration creates new filesystem identities; original inode, ctime and mtime
+are not claimed restored. Original metadata remains recorded as evidence.
+
+### Consumer coordination: supplied facts and deliberate native block
+
+The following exact commands are OPERATOR_SUPPLIED from PI3 crontab -l, not
+inferred from installer templates:
+
+~~~text
+*/1 * * * * flock -n /tmp/hioc-incident-engine.lock /home/jazofv1/hioc/pi4/bin/hioc-incident-engine-v2.py
+*/30 * * * * flock -n /tmp/hioc-inventory-engine.lock /home/jazofv1/hioc/pi4/bin/hioc-inventory-engine.py
+17 3 * * * flock -n /tmp/hioc-platform-status.lock /home/jazofv1/hioc/pi4/bin/hioc-platform-status.py
+~~~
+
+Native preflight checks each occurs exactly once and binds the whole crontab hash.
+It does not install crontab or assume every caller participates in those locks.
+UNLOCKED_ASSET_OR_CLASSIFICATION_CALLERS=NOT_EXCLUDED.
+NativeConsumers.hold deliberately raises CONSUMER_COORDINATION_NOT_ESTABLISHED;
+matching hashes, three locks or a declared authorization cannot bypass it.
+Neither native commit nor rollback is currently deployable.
+
+Synthetic success/failure/rollback uses an explicitly test-only, externally owned
+consumer fence held independently of controller exceptions. This demonstrates
+transaction behavior under that stated boundary; it does not supply a PI3 fencing
+mechanism, universal caller exclusion or power-loss/process-crash safety evidence.
+The independent partial-transaction exclusion prerequisite remains unresolved.
+A future native coordinator must establish that boundary before publication can be
+enabled; do not replace this gate with an operator boolean or inferred cron absence.
+
+### Validation and remaining delivery prerequisites
+
+Deterministic tests live in tests/test_pe73_pi3_delivery.py. Native Windows
+temporary files, file fsync/replace, hard links and AssetLock contention are used.
+POSIX owner/mode/ACL/ancestor cases and the external fence are explicitly synthetic;
+Linux descriptor traversal, renameat2, directory fsync and native production locks
+are not claimed executed. No fixture touches a production root or runs payload.
+
+The matrix covers exact 13 Git identities/order/modes; all five replacement and
+eight absence mismatches; release/root/remote pinning; symlink/hard-link, ACL,
+owner/mode checks; stale or missing authorization; backup/staging corruption;
+every publication position; interruptions before/after durable installation identity;
+partial-state refusal; separate rollback and drift refusal; native Windows lock
+contention; truthful native consumer refusal; unrelated-file preservation and
+no job/network/cron/configuration side effects. Exact final test counts and tested
+source identities are recorded below after the final unchanged-code run.
+
+Remaining PI3 prerequisites: fresh exact target/parent/backup/staging metadata and
+absence checks, actual native capabilities, verified controller runner provenance,
+and a demonstrated complete consumer/exclusion boundary including independent
+Asset/classification callers and partial-transaction recovery conditions.
+Known cron evidence is retained; no repeat crontab observation is requested just
+to rediscover the supplied commands. Revalidation at actual mutation remains mandatory.
+
+Remaining HA prerequisites are unchanged and outside this PI3-only candidate:
+actual installed API/version/resource/Dashboard support, supported configuration
+and private trust placement, operator/backend ACL and endpoint/certificate facts,
+guarded backup/delivery with editing/observations/notifications disabled.
+No HA artifact delivery, credential creation or service change occurs here.
+
+Accepted PE-7.1 runtime sources, contract and original tests are unchanged. Existing
+evidence/history and the four-file historical fingerprint limitation are preserved.
+No full native product regression is repeated; this is deployment-tool synthetic
+validation, not PE-7.4 behavior acceptance. No production access or mutation,
+deployment/rollback execution, PE-7 activation, staging, commit or push occurs.
+Next action: independent repository review of this candidate and its explicit
+native coordination gate. PE-7.3 remains OPEN / IN_PROGRESS.
+
+
+### Final PE-7.3 native synthetic result
+
+Selection: unittest.defaultTestLoader.loadTestsFromName('test_pe73_pi3_delivery').
+Final unchanged-code run: 31 run, 31 directly counted passes, zero failures,
+zero errors, zero individual skips and zero class-level skips; 42.672 seconds.
+Established harness: bundled Windows Python stdin with -B,
+sys.path[:0]=['tests','pi4/lib'], UTF-8, HIOC_TEST_SHELL cleared and shell-free PATH
+(System32, Windows, WindowsPowerShell/v1.0, Git/cmd). Result counts and pre/post
+tool/test hashes are captured directly in temporary
+hioc-pe73-delivery-native-result.json, independently of console preservation.
+Earlier intermediate 24/24, 30/30 and 31/31 results apply to those earlier tool bytes;
+the final source identities below supersede them for this candidate.
+
+- tests/test_pe73_pi3_delivery.py: SHA256 125e12df439e71f0a20a10c8b1e8de93a33d45b258ff6d5b60cbaf8b63004b0d; Git blob d41c5cc86b8845fae615135873cbf91b46e4b9c8.
+
+- tools/hioc-pe73-pi3-delivery.py: SHA256 a51d4a33904ce455a13b02678ee04113fa37fd38ea56b5c4efb8ee20a4d7cebb; Git blob cbe9efd33bc630b1b200b100a68cff8db574551e.
+
+Native live commit and rollback remain deliberately blocked. Synthetic success
+is not production consumer-coverage evidence, deployment authorization or PE-7.3 closure.
+
+
+### PE-7.3 two-defect correction after independent rejection
+
+The original independent disposition remains REJECT for the pre-correction
+controller a51d4a33904ce455a13b02678ee04113fa37fd38ea56b5c4efb8ee20a4d7cebb
+and tests 125e12df439e71f0a20a10c8b1e8de93a33d45b258ff6d5b60cbaf8b63004b0d.
+The 31/31 receipt above is retained for those original bytes. This correction
+repairs only the two confirmed internal correctness defects; it is not independent
+acceptance, production permission or PE-7.3 closure.
+
+Before controller mutation, three focused regressions reproduced the defects:
+3 run, 3 expected failures, 0 errors. Child validation left an acquired descriptor
+open. Two malformed journal cases failed to reject ROLLED_BACK without restoration
+and COMMITTED containing restoration overrides. These are synthetic failures,
+not observed production transactions.
+
+Descriptor ownership is now recorded immediately after every successful open.
+All owned descriptors receive exactly one close attempt, in reverse acquisition
+order, even after validation/open/body failure. Cleanup continues after close
+failure; a primary rejection is preserved and marked cleanup_failed (with a
+sanitized note where supported). With no primary failure, cleanup failure is
+reported. Close is never retried because its descriptor may already be released;
+a failing OS close is not claimed to prove that the descriptor was released.
+No no-follow, metadata or ancestry guard was weakened.
+
+Recovery inspection now validates closed bounded journal/snapshot fields, exact
+integer/boolean types, authorization syntax and required state relationships,
+consumer-observation structure, installed-prefix identities and parent bindings,
+and reverse installation-order restoration membership. COMMITTED forbids restored
+entries; ROLLED_BACK requires restoration of every recorded installation and
+rollback authorization. Restored replacement hashes are bound both to the original
+accepted baseline and the actual private backup bytes. New targets require recorded
+absence restoration. Duplicate JSON keys, extra entries, conflicting progress and
+invalid pending paths are rejected. Pending intent remains uncertain. Valid partial
+rollback inspection can establish the exact recorded mixed state; it does not
+claim completed rollback, authorize consumers or enable automatic resume.
+These structural checks do not authenticate human authorization or invent missing
+history; authorization references remain explicit local declarations.
+
+Validation: established bundled native Windows Python stdin harness, -B,
+sys.path[:0]=['tests','pi4/lib'], UTF-8, shell-free PATH and HIOC_TEST_SHELL cleared.
+Selection: unittest.defaultTestLoader.loadTestsFromName('test_pe73_pi3_delivery').
+Final run: 47 run, 47 directly counted passes, 0 failures, 0 errors, 0 skips,
+0 class-level skips, 115.355 seconds. All 31 existing tests and 16 new regressions
+executed together. Tool/test bytes were unchanged across the run. Exact counts and
+source identities are also retained in temporary hioc-pe73-correction-result.json.
+No full historical suite was run. New native traversal tests use controlled
+mock descriptors; existing Windows temporary-file, replacement, fsync and lock
+fixtures remain synthetic evidence, not native Linux or production execution.
+
+- tools/hioc-pe73-pi3-delivery.py: SHA256 3b63d84b0f1641561161fa8d8a353418ccfbf731df35ef947236ffea7686f412.
+- tests/test_pe73_pi3_delivery.py: SHA256 ff95bdfd06d55e4f120868e025a161521e551de4d8e93004e99362cd9cc146e7.
+
+Preservation verification: exact 13-file release manifest and installation order
+unchanged; accepted PE-7.1 source/contract preserved; all 39 successor identities
+and 449 protected identities remain valid under existing raw/canonical-byte rules.
+Only the two current documentation identities are refreshed in the existing
+successor record; no historical artifact identity is rewritten. Existing evidence
+and the four-file historical fingerprint limitation are retained. No unrelated
+candidate path is introduced; git diff --check passes.
+
+NativeConsumers and its unconditional commit/rollback refusal are unchanged.
+UNLOCKED_ASSET_OR_CLASSIFICATION_CALLERS=NOT_EXCLUDED; three supplied cron locks
+remain incomplete coverage. Complete consumer exclusion across partial publication
+and controller failure is still NOT_ESTABLISHED. No maintenance coordinator,
+cron/systemd change, automatic rollback or override was implemented.
+
+PE73_TWO_DEFECT_CORRECTION=PASS_REPOSITORY_SYNTHETIC.
+PE73_PI3_DELIVERY_CANDIDATE=PARTIAL; independent focused recheck is pending.
+PE73_COMPLETE=FALSE; production delivery/rollback remain blocked. No PI3/PI5 access,
+deployment, migration, monitoring/notification activation, staging, commit or push
+was performed. PE-7.4 remains NOT_AUTHORIZED. Next action: focused independent
+recheck of these two corrections within the existing candidate.
+
+
+### PE-7.3 bounded consumer-maintenance implementation with production gates
+
+PE73_CONSUMER_MAINTENANCE_IMPLEMENTATION=PASS_REPOSITORY_SYNTHETIC.
+The corrected pre-extension controller/test pair above received
+PE73_PI3_CONTROLLER_FOCUSED_RECHECK=ACCEPT_WITH_EXPLICIT_BLOCKER. That independent
+acceptance is retained for its exact scope; this extension still requires bounded
+independent review. PE-7.0/7.1/7.2 remain COMPLETE/PASS. PE-7.3 remains IN_PROGRESS,
+not COMPLETE/PASS. PE-7.4 remains NOT_AUTHORIZED.
+
+#### Single transaction authority and bounded maintenance progress
+
+The existing delivery journal, under the same pe73-pi3-delivery-v1 transaction,
+can now contain one closed optional maintenance member. No parallel transaction
+journal, checkpoint, service, scheduler framework or automatic recovery loop is
+introduced. Existing journals without that member retain their accepted strict
+validation. The only changes to existing controller methods are the optional
+maintenance validation hook and maintenance-progress synchronization in _save.
+Accepted descriptor cleanup, NativeConsumers, CLI/UID/GID contract, source gate,
+13-item manifest, five backups, eight absence expectations, publication order and
+separate provenance-bound rollback are unchanged. All 47 existing test methods
+and fixtures remain unchanged; 27 maintenance regressions are added.
+
+Maintenance progress is subordinate to the existing installation state:
+
+| Evidence/progress | Recorded phase |
+| --- | --- |
+| No maintenance member | NOT_ESTABLISHED (inspection only) |
+| Preservation intent / verified original scheduler backup | PRESERVATION_UNCERTAIN / SCHEDULER_PRESERVED |
+| Exclusion intent / exact excluded scheduler observed | EXCLUSION_UNCERTAIN / LAUNCHES_EXCLUDED |
+| Restriction intent / exact conditional fence observed | FENCE_UNCERTAIN / FENCE_ESTABLISHED |
+| Drain intent / complete fixture process boundary | DRAIN_UNCERTAIN / CONSUMERS_DRAINED |
+| Scheduler, fence and current drain proof rechecked | ESTABLISHED |
+| Existing COMMITTING / COMMITTED transaction | INSTALLATION_UNCERTAIN / INSTALLATION_VERIFIED |
+| Existing ROLLING_BACK / ROLLED_BACK transaction | ROLLBACK_UNCERTAIN / RESTORATION_VERIFIED |
+| New separately authorized drain after context change | REDRAIN_UNCERTAIN, then reverified previous held phase |
+| Exact verified runtime plus separate release declaration | RELEASE_AUTHORIZED |
+| Scheduler restoration intent / exact original scheduler observed | SCHEDULER_RESTORE_UNCERTAIN / SCHEDULER_RESTORED_FENCED |
+| Final access restoration intent / security metadata observed | ACCESS_RELEASE_UNCERTAIN / ACCESS_RESTORED_VERIFIED |
+
+Each effect has a durable prior intent and a separately observed postcondition.
+Ordered authorization history, unique references, current journal digest, closed
+record fields and transaction/progress relationships are checked. A phase label
+alone supplies neither exclusion nor production permission. Inspection separately
+reports observed scheduler digest and fence/restoration metadata matches.
+
+#### Scheduler, caller inventory and conditional fence
+
+The complete original crontab is retained as exact private crontab-original bytes
+in the same transaction and hash-bound by the journal. Account UID/GID and available
+interface metadata are retained and compared. Unknown cron-spool metadata is not
+invented. No cron spool path or scheduler command is implemented by the new seam.
+Only exact explicitly approved job lines are excluded; all other bytes, including
+comments, blank lines, history and unrelated jobs, are preserved. A complete explicit
+classification of active entries is required; missing, duplicate or inconsistent
+inventory stops. All three previously supplied cron entries remain OPERATOR_SUPPLIED
+facts. Extra PE-4/PE-5/history commands in tests are /fixture examples only, never
+claimed actual production commands or authorization to pause those jobs.
+
+The synthetic scheduler interface checks expected current bytes and reobserves the
+result. This fixture check is not proof of a native crontab compare-and-swap API.
+Native qualification still requires an exclusive scheduler-editor boundary before
+mutation, actual scheduler inventory and separately approved collateral pauses.
+There are no catch-up executions or changes to freshness/snapshot-age policy.
+
+The exact conditional fence target is /home/jazofv1/hioc/pi4/lib/hioc; proposed
+restricted mode is 0000. Original device/inode, directory type, numeric UID/GID,
+mode and ACL disposition are bound. Exact original security metadata, not original
+ctime, is checked on release. Mode 0000 is not claimed universally effective:
+the owner can change permissions, privileged callers can bypass ordinary access,
+open descriptors remain usable and already-imported modules can continue executing.
+Processes under other identities and other package users must be covered explicitly.
+The native ancestor policy is not weakened to accommodate an unqualified fence.
+
+Windows-only MaintenanceConsumers and injected synthetic operations model this
+conditional mechanism. Current process-boundary proof includes enumerated identities,
+drained readers/cached modules/open descriptors, privileged caller exclusion,
+permission-editor exclusion, alternate-launcher exclusion and persistence qualification,
+all explicitly SYNTHETIC_ONLY. An observation session change invalidates the old
+proof; new drain qualification requires a fresh authorization. An interrupted
+requalification remains REDRAIN_UNCERTAIN rather than an established boundary.
+This models restart reconstruction from the retained journal and retained fixture
+effects; it does not execute an OS reboot or prove native process exclusion.
+
+NativeFenceInterface exposes only restrict(reference, binding) and restore(reference,
+binding) for the fixed target. Both unconditionally reject with
+NATIVE_FENCE_NOT_QUALIFIED. No arbitrary path, command, shell, sudo, root execution,
+permission mutation, credential or privileged service is supplied. Maintenance
+integration rejects non-Windows use and the NativeConsumers provider. No matching
+receipt, environment setting or new CLI flag enables native publication.
+
+#### Installation, rollback, release and uncertainty
+
+MaintenanceConsumers rechecks actual fixture scheduler, fence and current process
+proof before the existing controller can publish or roll back. Nothing releases
+the fence on context exit, exceptions, SSH-loss modeling, interruption or successful
+installation. The journal records effects; persistent fixture state supplies the
+simulated exclusion. Recorded partial installations and unknown pending publications
+remain distinct; neither qualifies for consumer release.
+
+After complete installed-set verification or complete separately authorized rollback,
+a fresh release declaration is bound to exact runtime evidence. Scheduler restoration
+is then verified while access remains restricted. Before final access restoration,
+the original scheduler, held fence, current process proof and exact runtime binding
+are rechecked. Final restoration requires another fresh reference/binding. Stale,
+reused, duplicate or premature requests fail. No automatic resume, automatic rollback
+or retry is introduced. Explicit redrain after interrupted requalification is distinct
+from automatic transaction recovery. Other uncertain effect outcomes stop for review.
+
+If final access restoration takes effect but its confirmation fails, the journal
+remains ACCESS_RELEASE_UNCERTAIN; inspection can report matching current metadata
+without claiming verified release. The runtime had already been fully verified and
+release separately declared before that effect. No subsequent automatic file mutation
+or rollback is allowed. A failed scheduler restoration leaves access fenced.
+
+#### Validation evidence and limits
+
+The complete test module was run with the established bundled native Windows Python
+stdin harness, -B, sys.path[:0]=['tests','pi4/lib'], UTF-8, shell-free PATH and
+HIOC_TEST_SHELL cleared. Selection:
+unittest.defaultTestLoader.loadTestsFromName('test_pe73_pi3_delivery').
+Final unchanged-source run: 74 run, 74 passed, 0 failures, 0 errors, 0 skips, 0 class-level skips.
+Unittest elapsed: 189.734 seconds; receipt harness elapsed including selection: 191.25 seconds.
+Directly counted totals and pre/post source hashes are retained in temporary
+hioc-pe73-maintenance-result.json. The original 47 tests and all 27 new tests ran
+together. Both 13-position matrices cover interruption after recorded installation
+and after publication before confirmation; neither produces automatic release.
+Other cases cover scheduler preservation/exclusion/concurrency, restriction uncertainty,
+drain and independent-caller failures, ordered authorization history, restart/redrain,
+interrupted rollback, release authorization and exact restoration, drift/tampering,
+privileged-interface refusal and absence of commands/network/native fence changes.
+The existing Windows AssetLock may set mode 0600 on its exact isolated fixture lock;
+the instrumentation permits only that expected lock operation, not package chmod.
+
+Development evidence is retained: an initial run stopped at 57 tests (56 passes,
+1 failure plus 1 teardown error) because an overbroad chmod mock blocked AssetLock's
+legitimate fixture setup. The mock was narrowed without changing AssetLock or its
+original tests. A later run stopped at 60 tests (59 passes, 1 failure, no errors)
+on a Windows-backslash rendering of the new fixed POSIX target; the contract target
+was made an explicit POSIX literal. Focused checks passed after correction, including
+15 tests covering the remaining native-interface/recovery and descriptor paths.
+The final full-module result above supersedes those intermediate candidate runs.
+No full historical HIOC suite was run.
+
+- tools/hioc-pe73-pi3-delivery.py: SHA256 ac55aa8baa5c0ee26c53cb54b020fd4ca6ec79201b769795781a31868389668e.
+- tests/test_pe73_pi3_delivery.py: SHA256 24f2616e4a0076297724cc75c59e4633a487e2cf112b2d714aedcae9809a080e.
+
+These results prove synthetic state-machine behavior only. They do not prove Linux
+permission semantics, cron atomicity/durability, privilege security, reboot persistence,
+actual caller exclusion or production isolation. Every maintenance inspection marks
+production_qualified=false. NativeConsumers.hold and assert_active remain unchanged
+and unconditional; native commit and rollback remain blocked.
+
+Required native prerequisites remain: verified directory/ancestor metadata and native
+capabilities, a separately reviewed/authorized least-privilege implementation, complete
+actual launcher/identity/process coverage, current scheduler/editor exclusion, safe
+reader draining, owner/privileged access control, persistence qualification, explicit
+PE-4/PE-5/package-consumer pause approval and separately authorized final release.
+No Pi-hole DNS/DHCP, Unbound, NUT or unrelated service/schedule change is authorized.
+
+Final static preservation: accepted PE-7.1 source/contract, exact 13 identities,
+all 39 successor identities and 449 protected identities verified. Only current
+Master Plan and existing implementation-evidence identities are refreshed in the
+existing successor record. Historical evidence, limitations and production provenance
+labels are preserved. git diff --check passes; no new repository path is introduced.
+No staging, commit, push, PI3/PI5 access, production permissions/cron/service changes,
+deployment/rollback execution, credentials, migration, monitoring or notification
+activation occurred. PE-7.3 remains IN_PROGRESS with native delivery prohibited;
+PE-7.4 remains NOT_AUTHORIZED. Next action: bounded independent repository review
+of this maintenance extension and its preserved native gates.
+
+
+### PE-7.3 fresh-provider recovery attachment correction
+
+PE73_MAINTENANCE_INDEPENDENT_REVIEW=REJECT is preserved for controller
+ac55aa8baa5c0ee26c53cb54b020fd4ca6ec79201b769795781a31868389668e and tests
+24f2616e4a0076297724cc75c59e4633a487e2cf112b2d714aedcae9809a080e.
+The confirmed defect was fresh construction treating an already-reduced maintenance
+scheduler as the original scheduler. The previous restart test reused its provider
+and did not establish recovery after losing that provider's memory. The original
+74/74 result above remains historical evidence for its exact tested bytes.
+
+Before controller mutation, OriginalRecoveryRegression instantiated a fresh provider
+against the reduced scheduler. The single regression produced the exact expected
+MAINTENANCE_JOB_INVENTORY error (1 run, 1 expected error, 0 assertion failures).
+Its output is retained in temporary hioc-pe73-recovery/pre-correction-reproduction.txt.
+This is a Windows synthetic reproduction, not a production observation.
+
+#### Strict initial path versus explicit recovery attachment
+
+The original constructor still reads the actual scheduler and enforces the exact
+original inventory using unchanged maintenance_cron rules. It is not relaxed to
+accept a reduced scheduler. A newly created initial maintenance context must bind
+before a transaction exists. Once a transaction exists, a new context must use the
+explicit recovery attachment even if the original scheduler has already been
+restored. This prevents the initial path from inheriting a former process proof.
+
+MaintenanceConsumers.attach(fs, source, ops, reference, binding) is a separate
+Windows-only factory. It returns a new controller with a new provider; no previous
+provider, controller, cached original plan or process-proof object is required.
+It validates the existing strict journal and exact supplied journal digest, source
+manifest, version/release, maintenance scope, retained original scheduler bytes,
+original consumer binding, approved exclusion inventory and scheduler metadata.
+It observes current scheduler bytes, fence metadata and all 13 runtime targets.
+Unknown historical transactions, missing/corrupt backups, conflicting identities,
+unsupported versions, duplicate fields, changed job sets and runtime drift stop.
+
+Current scheduler and fence evidence must match the exact phase-permitted states.
+An interrupted scheduler exclusion/restoration can observe either exact legitimate
+configuration, without advancing its uncertain phase. An interrupted restriction
+or final access release similarly retains uncertainty after observing either exact
+legitimate fence state. A pending publication/restoration may have its exact
+recorded before-state or approved after-content; attachment never adopts that
+content into installed/restored identities or clears pending intent. All other
+runtime bytes and ancestry must match their existing recorded identities.
+
+Attachment never modifies scheduler, permissions, runtime files or progress phase.
+Its only write is a fresh ATTACH authorization in the existing private transaction
+journal, serialized under the existing deployment mutex. Duplicate/stale bindings
+and reused references are rejected. The latest ATTACH event invalidates older
+provider contexts durably. Every fresh provider requires new process qualification,
+even when a backend repeats an old session token. Old process observations remain
+historical evidence, not renewed execution authority.
+
+Authorization-history validation admits ATTACH as a read/requalification event
+without advancing the strict effect sequence. REDRAIN requires explicit fresh
+permission and retains an uncertain intent until its new evidence is verified.
+Requalification can preserve an already verified release/scheduler-restoration
+phase; it does not create a new release declaration or clear unknown effects.
+Completed ACCESS_RESTORED_VERIFIED transactions reject attachment for new maintenance.
+A COMMITTED runtime still under maintenance can be inspected/attached, but cannot
+release or roll back merely because it is COMMITTED: fresh drain evidence and the
+existing separate operation authorizations remain required.
+
+#### Regression evidence and preservation
+
+New tests construct fresh provider/controller/backend objects from the on-disk
+transaction and serialized modeled external scheduler/fence effects. They recover
+original fixture restore metadata only after the persisted originals are validated.
+The old provider/controller are discarded in these reconstruction tests. A separate
+negative test deliberately retains an older context and verifies that the latest
+recorded attachment makes it unusable.
+
+The 30 new regressions cover strict initial construction; reduced scheduler
+reconstruction; prepared maintenance before/after exclusion; same-token stale proof;
+recorded partial publication; unconfirmed publication; interrupted rollback; committed
+held state; release-authorized and scheduler-restored attachment; missing/corrupt/
+mismatched backups; wrong job sets/release/version; duplicate/conflicting fields;
+unexpected scheduler, fence type/identity or artifact drift; completed and unrelated
+transactions; duplicate/stale authorization; uncertain scheduler and access outcomes;
+initial-context misuse; and native attachment refusal.
+
+An intermediate combined run passed 103/103. An additional initial-path regression
+then demonstrated that a new initial context was not refused against an existing
+transaction after scheduler restoration (1 expected assertion failure). The initial
+context guard was added, and that test plus valid fresh preparation/recovery paths
+passed 3/3 before the final combined run. These refinements remain within the single
+initial-preparation versus recovery-attachment correction. Prior intermediate
+results are not presented as final-source validation.
+
+Final selection: unittest.defaultTestLoader.loadTestsFromName('test_pe73_pi3_delivery').
+The established bundled native Windows stdin harness used -B,
+sys.path[:0]=['tests','pi4/lib'], UTF-8, shell-free PATH and HIOC_TEST_SHELL cleared.
+Final result: 104 run, 104 passed, 0 failures, 0 errors, 0 skips, 0 class-level skips.
+Unittest elapsed: 244.898 seconds; receipt harness elapsed: 246.359 seconds.
+All 74 existing tests and fixtures remain unchanged; all 30 new tests ran with them.
+Tool/test hashes were unchanged across the final run. Exact directly counted totals
+and source hashes are retained in temporary hioc-pe73-recovery-result.json.
+No full historical HIOC suite was repeated.
+
+- tools/hioc-pe73-pi3-delivery.py: SHA256 0589cf6363626d14ab9abe08c001ddef634b243326513b27de43a7b93aa4f95f.
+- tests/test_pe73_pi3_delivery.py: SHA256 4fef3799a3bae5733056fa30b3423bca656026103a6ce02e443e14ac639ce281.
+
+The main controller journal validator, source gate, 13-artifact manifest, five original
+replacement identities, eight absence expectations, dependency/engine-last ordering,
+exact backup/rollback code, descriptor lifecycle and unconditional NativeConsumers/
+NativeFenceInterface refusal remain unchanged. Existing scheduler-preservation rules
+and fence limitations are retained. All 39 successor identities and 449 protected
+identities are valid; only the two current documentation identities are refreshed
+in the existing successor record. Historical accepted evidence and the four-file
+fingerprint limitation are preserved. git diff --check passes; no new repository
+path is introduced.
+
+PE73_RECOVERY_ATTACHMENT_CORRECTION=PASS_REPOSITORY_SYNTHETIC, not independent
+acceptance or production qualification. No native backend, CLI switch, environment
+bypass, privileged execution or receipt-as-permission path is added. Synthetic tests
+do not establish Linux permission enforcement, process exclusion, cron atomicity or
+reboot persistence. All existing native qualifications, caller/identity coverage,
+privilege/editor boundaries and explicit production/release authorizations remain
+required. No PI3/PI5 access, production cron/permissions/service changes, deployment,
+rollback, credentials, migration, monitoring or notifications occurred. No staging,
+commit or push. PE-7.3 remains IN_PROGRESS; PE-7.4 remains NOT_AUTHORIZED.
+Next action: focused independent recheck of this recovery-attachment correction.
+
+
+### PE-7.3 bounded native qualification preparation
+
+Classification: CURRENT preparation, not qualification or production permission.
+PE73_RECOVERY_FOCUSED_RECHECK=ACCEPT_WITH_NATIVE_GATES is the separately supplied
+independent decision for controller SHA256
+0589cf6363626d14ab9abe08c001ddef634b243326513b27de43a7b93aa4f95f and tests SHA256
+4fef3799a3bae5733056fa30b3423bca656026103a6ce02e443e14ac639ce281.
+Earlier independent REJECT and then-pending correction narratives remain historical.
+PE73_NATIVE_QUALIFICATION_PREPARATION=PASS; NATIVE_QUALIFICATION=NOT_PERFORMED.
+PE-7.2 COMPLETE/PASS; PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+No implementation, native enablement, staging, commit or push is authorized.
+
+#### Authority and established evidence reused
+
+Authority: [PE-7 contract section 13](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md#13-bounded-checkpoint-sequence-and-implementation-scope),
+current Master Plan and preserved guarded-delivery/maintenance evidence above.
+Accepted artifact release remains 51398bab4e2293b578b2cdac2d0740c3738cab2f.
+The 13-file manifest, five replacement identities/modes, eight absence expectations,
+dependency-first/incident-last ordering and 104/104 Windows receipt are preserved.
+Those are repository/synthetic facts, not native qualification observations.
+
+Reused OPERATOR_SUPPLIED facts: nutandpihole (PI3 NUT&PIHOLE), LAN 192.168.100.252;
+release-source /home/jazofv1/hioc-release-source; non-Git runtime /home/jazofv1/hioc;
+UID/GID 1000:1000; five supplied replacement identities and eight absent new targets.
+Actual supplied jobs:
+
+- */30 * * * * flock -n /tmp/hioc-inventory-engine.lock /home/jazofv1/hioc/pi4/bin/hioc-inventory-engine.py
+- 17 3 * * * flock -n /tmp/hioc-platform-status.lock /home/jazofv1/hioc/pi4/bin/hioc-platform-status.py
+- */1 * * * * flock -n /tmp/hioc-incident-engine.lock /home/jazofv1/hioc/pi4/bin/hioc-incident-engine-v2.py
+
+Existing history, PE-4, PE-5 and monitoring schedules remain acknowledged. Fixture
+examples are not substituted for their actual commands. These three locks do not
+exclude manual Asset/classification, service, privileged or cached-module callers.
+Do not ask to rediscover established facts. Immediately before any future separately
+authorized production mutation, recheck only the mutable bindings that can become
+stale: target/ancestor identities, scheduler/editor boundary, actual affected callers,
+backup readiness and exact operation authorization. Qualification is not that gate.
+
+Precedents govern semantics, not executable reuse:
+
+- tools/hioc-pe4-ha-association-deploy.py: transaction_state validates secured intent,
+  backups and exact committed marker. Durable historical directories alone are not
+  conflicts; never delete or reinterpret historical journals.
+- [PE-5 persistence/recovery](PE5_CONFIGURED_ASSOCIATION_IMPLEMENTATION.md#persistence-and-explicit-recovery):
+  bounded no-follow reads, file/parent fsync, confirmed versus pending effects,
+  explicit recovery and no automatic adoption. Visibility is not durability.
+  Its deployment-readiness section establishes CPython 3.10 as the language floor.
+- release/upgrade.sh broadly copies and calls install_pi4.sh; release/rollback.sh
+  similarly copies and calls the installer. Neither is a bounded PE-7.3 qualifier.
+  Do not run these, an installer, an HIOC entrypoint or the controller here.
+
+#### Action 1: only immediate operator action, read-only capability inventory
+
+Machine: PI3 NUT&PIHOLE; user: jazofv1. Run this complete block from any directory.
+No SSH command is supplied; Codex does not connect. No sudo/root invocation.
+Return its entire sanitized JSON and exit status, then STOP. Do not chain stages.
+
+This does not import HIOC, read credentials/private Asset/HA content, execute engines,
+call fsync/rename/flock/chmod, create files/locks, inspect process arguments/environment,
+change cron or access network. Crontab bytes remain private; only hashes/counts leave
+the command. Read access can update filesystem atime; no application write is requested.
+A capability inventory PASS is neither native behavioral qualification nor permission.
+
+```sh
+/usr/bin/python3 -I -S -B - <<'PY'
+import ctypes
+import datetime
+import errno
+import hashlib
+import json
+import os
+import pathlib
+import platform
+import shutil
+import socket
+import stat
+import subprocess
+import sys
+
+r = {"kind": "READ_ONLY_CAPABILITY_INVENTORY", "target": "PI3 NUT&PIHOLE",
+     "started_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+     "production_authorization": False, "native_qualification_complete": False,
+     "writes_requested": False, "locks_created": False, "engines_executed": False}
+issues = []
+try:
+    if socket.gethostname() != "nutandpihole" or platform.system() != "Linux":
+        raise ValueError("TARGET_MISMATCH")
+    if (os.getuid(), os.geteuid(), os.getgid(), os.getegid()) != (1000, 1000, 1000, 1000):
+        raise ValueError("IDENTITY_MISMATCH")
+    r["environment"] = {"kernel": platform.release(), "machine": platform.machine(),
+        "python": platform.python_version(), "implementation": platform.python_implementation(),
+        "interpreter": sys.executable, "uid": os.getuid(), "gid": os.getgid()}
+    if sys.version_info < (3, 10) or platform.python_implementation() != "CPython":
+        issues.append("REPOSITORY_PYTHON_FLOOR_NOT_MET")
+    r["flags"] = {n: hasattr(os, n) for n in
+        ("O_DIRECTORY", "O_NOFOLLOW", "O_CLOEXEC", "O_NONBLOCK", "O_EXCL")}
+    r["functions"] = {n: hasattr(os, n) for n in
+        ("replace", "fsync", "fchmod", "getxattr", "stat", "unlink")}
+    r["dir_fd"] = {n: getattr(os, n) in os.supports_dir_fd for n in
+        ("open", "stat", "mkdir", "rename", "unlink")}
+    import fcntl
+    r["flock_symbol"] = hasattr(fcntl, "flock")
+    r["renameat2_symbol"] = hasattr(ctypes.CDLL(None, use_errno=True), "renameat2")
+    if not all(r["flags"].values()) or not all(r["functions"].values()) or not all(r["dir_fd"].values()) or not r["flock_symbol"] or not r["renameat2_symbol"]:
+        issues.append("REQUIRED_PRIMITIVE_NOT_EXPOSED")
+    observed = []
+    fd = None
+    try:
+        fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        for part in (None, "home", "jazofv1", "hioc", "pi4", "lib", "hioc"):
+            if part is not None:
+                child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=fd)
+                old = fd
+                fd = child
+                os.close(old)
+            s = os.fstat(fd)
+            entry = {"component": part or "/", "device": s.st_dev, "inode": s.st_ino,
+                "uid": s.st_uid, "gid": s.st_gid, "mode": format(stat.S_IMODE(s.st_mode), "04o"),
+                "type": "DIRECTORY" if stat.S_ISDIR(s.st_mode) else "UNSAFE", "acl": {}}
+            if not stat.S_ISDIR(s.st_mode) or s.st_uid not in (0, 1000) or stat.S_IMODE(s.st_mode) & 0o7022:
+                issues.append("ANCESTOR_POLICY_MISMATCH")
+            for name in ("system.posix_acl_access", "system.posix_acl_default"):
+                try:
+                    os.getxattr(fd, name)
+                except OSError as e:
+                    entry["acl"][name] = "ABSENT" if e.errno == errno.ENODATA else "UNKNOWN"
+                else:
+                    entry["acl"][name] = "PRESENT"
+                if entry["acl"][name] != "ABSENT":
+                    issues.append("ACL_POLICY_NOT_ESTABLISHED")
+            observed.append(entry)
+        if observed[-1]["uid"] != 1000 or observed[-1]["gid"] != 1000:
+            issues.append("FENCE_IDENTITY_MISMATCH")
+    finally:
+        if fd is not None:
+            os.close(fd)
+    r["fixed_path_observations"] = observed
+    known = (
+        b"*/30 * * * * flock -n /tmp/hioc-inventory-engine.lock /home/jazofv1/hioc/pi4/bin/hioc-inventory-engine.py",
+        b"17 3 * * * flock -n /tmp/hioc-platform-status.lock /home/jazofv1/hioc/pi4/bin/hioc-platform-status.py",
+        b"*/1 * * * * flock -n /tmp/hioc-incident-engine.lock /home/jazofv1/hioc/pi4/bin/hioc-incident-engine-v2.py")
+    proc = subprocess.Popen(["/usr/bin/crontab", "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        env={"PATH": "/usr/bin:/bin", "HOME": "/home/jazofv1", "LANG": "C", "LC_ALL": "C"})
+    try:
+        raw, err = proc.communicate(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.communicate()
+        raise ValueError("CRONTAB_READ_TIMEOUT") from None
+    if proc.returncode != 0 or len(raw) > 65536 or len(err) > 65536:
+        raise ValueError("CRONTAB_READ_NOT_ESTABLISHED")
+    counts = [raw.splitlines().count(line) for line in known]
+    r["scheduler"] = {"inspection": "/usr/bin/crontab -l", "returncode": proc.returncode,
+        "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(), "known_entry_counts": counts,
+        "implementation_version": "NOT_ESTABLISHED", "exclusive_editor_boundary": "NOT_ESTABLISHED",
+        "cron_python_resolution": "NOT_ESTABLISHED"}
+    if counts != [1, 1, 1]:
+        issues.append("KNOWN_SCHEDULER_ENTRY_CHANGED_REVIEW_REQUIRED")
+    pids = [p for p in pathlib.Path("/proc").iterdir() if p.name.isdigit()]
+    if len(pids) > 8192:
+        raise ValueError("PROCESS_ENUMERATION_LIMIT")
+    readable = vanished = unresolved = 0
+    for p in pids:
+        try:
+            p.stat()
+            (p / "exe").readlink()
+            readable += 1
+        except FileNotFoundError:
+            vanished += 1
+        except OSError:
+            unresolved += 1
+    r["process_discovery"] = {"numeric_entries": len(pids), "exe_links_readable": readable,
+        "vanished": vanished, "unresolved": unresolved, "complete_caller_coverage": False,
+        "cached_modules_or_open_readers_excluded": False}
+    r["runtime_env_python_on_fixed_search_path"] = shutil.which("python3", path="/usr/bin:/bin")
+    r["RESULT"] = "PASS_READ_ONLY_CAPABILITY_INVENTORY" if not issues else "INSUFFICIENT_EVIDENCE"
+except Exception as e:
+    r["RESULT"] = "INSUFFICIENT_EVIDENCE"
+    r["failure_type"] = type(e).__name__
+    r["failure_code"] = str(e) if type(e) is ValueError and str(e) in {"TARGET_MISMATCH", "IDENTITY_MISMATCH", "CRONTAB_READ_TIMEOUT", "CRONTAB_READ_NOT_ESTABLISHED", "PROCESS_ENUMERATION_LIMIT"} else "CAPABILITY_OR_READ_NOT_ESTABLISHED"
+r["issues"] = sorted(set(issues))
+r["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+r["STOP_REQUIRED"] = True
+print(json.dumps(r, sort_keys=True, separators=(",", ":")))
+raise SystemExit(0 if r["RESULT"] == "PASS_READ_ONLY_CAPABILITY_INVENTORY" else 1)
+PY
+```
+
+Action 1 output is READ_ONLY/OPERATOR_SUPPLIED when returned by the operator, not
+Codex-observed production evidence. It deliberately does not output PIDs, executable
+paths, scheduler contents/errors, private exception text or ACL values. The known
+three-line counts are not a complete active-job inventory or pause authorization.
+Directory observations are sequential, not one atomic snapshot or a future commit
+binding. This command buffers expected small crontab output before its size check;
+it does not claim a streaming memory bound against a compromised executable.
+A process inspection gap is unavailable evidence, not proof of a dangerous process.
+
+#### Action 2: independent capability assessment, then separate isolated authorization
+
+Stop and review Action 1 first. No automatic next command is supplied or authorized.
+All actual native results are currently UNKNOWN/NOT_PERFORMED. A missing required
+capability or a demonstrated invariant violation is FAIL for that operation; missing
+or ambiguous observation is INSUFFICIENT_EVIDENCE. PASS applies only to the exact
+observed/tested operation. Required unresolved rows block the dependent native work.
+
+Every row below requires: Q identifier; UTC interval; machine/kernel/architecture;
+interpreter path/version; UID/GID; device and object identity; exact operation;
+expected invariant; actual result; source class READ_ONLY, ISOLATED_NATIVE or
+OPERATOR_SUPPLIED_PRODUCTION; limitations; PASS/FAIL/INSUFFICIENT_EVIDENCE.
+Never populate actual values from expected configuration.
+
+| Item | Minimum evidence / tested operation | Boundary and blocking result |
+| --- | --- | --- |
+| Q01 Linux/Python | Action 1 Linux, CPython >=3.10, architecture/UID/GID; later same-interpreter behavior. | Unsupported floor FAIL; fixed /usr/bin/python3 does not prove cron interpreter selection. |
+| Q02 primitives | Flags/functions and isolated exclusive create, fd-relative operations, fchmod, flock. | Symbol presence alone insufficient; unsupported behavior blocks relevant write. |
+| Q03 no-follow/descriptors | Anchored directory opens; isolated symlink ELOOP refusal, parent drift rejection and exact-once cleanup with injected failure. | No symlink following or descriptor leak; prior Windows cleanup tests are distinct evidence. |
+| Q04 atomic/no-replace | Isolated replace plus concurrent reader sees whole old/new bytes; renameat2 RENAME_NOREPLACE collision EEXIST preserves destination then success on absent target. | Wrong overwrite or mixed bytes FAIL; ordinary rename is not no-replace. |
+| Q05 fsync | Isolated file flush/fsync, parent fsync, injected pre/post-sync failures. | Unsupported sync FAIL; successful calls do not prove power-loss durability. |
+| Q06 owner/modes | Native ancestor metadata; isolated 1000:1000, private0700/0600, mode0000 new-open denial, owner restoration, already-open fd surviving. | These demonstrate limitations, not universal exclusion; wrong owner/mode FAIL. |
+| Q07 ACL | Exact getxattr(fd, access/default) ENODATA versus present/error. | NativeFS rejects ACLs. Present, unsupported or unreadable blocks use; no ACL install/change here. |
+| Q08 cron | crontab -l hash/counts; installed binary/package implementation identity, supported interface; complete active-line classification and exclusive editor boundary. | No assumed distribution/spool/CAS. Unknown implementation/editor exclusion blocks mutation. |
+| Q09 discovery | /proc visibility; later exact PID+start time+identity/launcher evidence covering independently invoked callers. | Enumeration is not drain; unreadable/unidentified potential callers block proof. |
+| Q10 runtime compatibility | Actual interpreter resolution of env-python jobs/manual launchers; accepted artifacts/dependencies syntax and imports in isolated environment. | Fixed search path is not actual cron PATH. No production HIOC imports; unresolved compatibility blocks delivery. |
+| Q11 fixed fence | Target/ancestor device/inode/type/UID/GID/mode/ACL and all affected consumers/access identities. | Mode0000 alone insufficient: owner, privilege, open fds, cached modules and alternate paths require coverage. |
+| Q12 privilege | Separately reviewed fixed-resource bounded operation and isolated tests; UID1000 delivery contract preserved. | Root-running controller violates TARGET_IDENTITY; UID1000 cannot traverse closed package. No qualified boundary resolves this yet. Blocks dependent production work. |
+| Q13 drain/exclusion | Fresh complete manual/service/cron/identity/editor inventory including Asset/classification, PE-4/5/history/monitoring; collateral-pause authorization and persistence evidence. | Existing three locks insufficient; unknown callers or bypasses = INSUFFICIENT_EVIDENCE, no release/install. |
+| Q14 termination/recovery | Isolated actual-controller kill at intent/effect/confirmation; new process/provider, retained scheduler backup, observed phase-specific scheduler/fence/artifacts, fresh auth/drain. | Stale proof, label-only adoption, automatic rollback/release FAIL. No qualified native maintenance implementation currently exists. |
+| Q15 partial/rollback | Independent secured journal/backups/stages and13 targets; installed-prefix, reverse-restored-prefix, pending uncertainty with isolated failure at boundaries. | Five backups/eight absences/order preserved; missing/corrupt/unconfirmed refuses; release needs separately verified final runtime and fresh authorization. |
+
+The cron implementation/version and actual cron PATH must be observed from installed
+package metadata and the actual launch environment before a scheduler/interpreter
+mutation gate; neither is invented from installer templates or a default OS assumption.
+This does not request another discovery of previously established cron lines.
+
+#### Action 3: isolated behavioral qualification specification, independently gated
+
+NOT AUTHORIZED by this preparation. After Action 1 review, a separate authorization
+must approve an exact reviewed fixture runner/identity and effects before execution.
+There is deliberately no executable mutation command while Q12 feasibility and the
+native runner remain unresolved. The following is the complete allowed test boundary,
+not permission to patch the Windows-only seam into a native production backend.
+
+Location: one new unpredictable /home/jazofv1/.hioc-pe73-native-<random> directory,
+UID/GID1000:1000 mode0700, outside production package, runtime state/backups and
+release-source. Verify no-follow ancestors and same filesystem/device; matching
+st_dev alone does not prove equal mount options/storage guarantees. Never use /tmp
+for claims about a different production filesystem or write experimental production
+package files. Runner must bind its created directory device/inode and exact paths.
+
+Allowed mutations only: private0600 synthetic files and journals; fixed child
+fixture directories; synthetic module bytes (not production modules); scratch-only
+mode0000/restore; scratch symlink/hardlink rejection fixtures; exclusive temp/create,
+replace/no-replace, fsync and scratch flock; owned child test processes and termination
+of those exact child PIDs with start-time binding. No production processes/signals,
+root, sudo, mounts, reboots, power cuts, cron, services, ACL configuration or network.
+No HIOC engines, HA, credentials, Asset metadata or producer execution.
+
+Sequential experiments, each separate receipt and stop on FAIL/unknown:
+
+1. Secure descriptor traversal/no-follow, exclusive create, owned0700/0600 files,
+   exact-once descriptor cleanup after validation/open/close failures. No test closes
+   an unrelated process descriptor or retries a potentially released descriptor.
+2. Same-parent replace with concurrent bounded reader; RENAME_NOREPLACE collision
+   refusal and successful new target; file/parent fsync and injected failures.
+   Distinguish visible content from confirmed durability, never infer power-loss safety.
+3. Scratch-only DAC behavior: mode0000 denies a new ordinary open; owner can restore;
+   an already opened file can still be read and loaded synthetic module remains cached.
+   Privileged bypass is an untested limitation, never silently waived or root-tested.
+4. Simulated complete original scheduler bytes and backup (no crontab installation):
+   exact exclusion/preservation, editor conflict, pending intents and release ordering.
+   This cannot establish native cron atomicity or real editor exclusion.
+5. Once a separately reviewed native-access boundary exists: exact accepted-controller
+   harness, kill only created child at every intent/effect/confirmation boundary; fresh
+   provider reconstructs from retained journal/backup plus actual scratch effects.
+   Preserve pending/unknown writes and failed restoration; never automatically retry,
+   adopt, restore cron, remove fence or release. A child kill is not an OS reboot.
+6. Independent read-only scratch inspection verifies exact installed/restored prefixes,
+   drift rejection, malformed/duplicate/stale authorizations, completed historical
+   versus interrupted transaction, full rollback and separate authorized release.
+
+Cleanup/rollback: no production rollback exists in this test. Record primary outcome
+and cleanup separately. Restore only the created scratch directory's original0700
+through its pinned descriptor; validate identity and complete created-path allowlist,
+then unlink only owned fixture leaves and remove only empty created child/root dirs.
+No recursive deletion, wildcard/prefix cleanup or traversal of an unexpected link.
+On unknown identity/content or interrupted cleanup, retain private fixture, receipt,
+exact device/inode/basename and STOP. A later read-only inspection and separate exact
+cleanup authorization are required. Do not rerun over retained unknown state.
+Cleanup failure cannot hide a primary failure or produce PASS.
+
+Native crash/persistence and real editor/caller coverage remain required even after
+primitive tests pass. An isolated fixture does not prove production-wide exclusion.
+The actual native-maintenance runner is not implemented and no unqualified command
+is offered. This limitation blocks dependent production work, not Action 1.
+
+#### Privilege feasibility, drain and separately authorized later gates
+
+Mode0000 on /home/jazofv1/hioc/pi4/lib/hioc blocks ordinary new traversal, including
+NativeFS.directory in this UID1000 controller. Metadata checks can accept mode zero,
+but OS permissions still deny the open. Owner can chmod back; root/capabilities can
+bypass DAC; cached modules and existing file descriptors remain usable. Other HIOC
+consumers share this package. Pausing them may affect incidents, inventory, platform,
+PE-4/5, history and monitoring; Pi-hole, Unbound and NUT remain outside scope.
+Pauses require explicit bounded collateral/failure disposition, no catch-up or change
+to snapshot-age/freshness policy. No pause is authorized here.
+
+Running the controller as root violates main's TARGET_IDENTITY and1000-owned file/
+transaction contract. Preopening a directory fd does not establish safe access:
+new relative child lookup still requires permissions, and already-open access is
+itself a fence limitation. Restrict/restore alone cannot solve this write-access gap.
+Existing NativeConsumers and NativeFenceInterface refusals stay unconditional.
+No receipt, journal label, CLI flag or environment setting enables native operations.
+
+Minimum separate privilege review: exact fixed target and pinned identity; bounded
+restrict/restore transitions; original security metadata/ACL disposition; authenticated
+fresh transaction/digest/reference; editor/owner/privileged caller exclusion; finite
+invocation lifetime; sanitized independent evidence; failure/crash behavior; preserved
+UID1000 artifact ownership. No arbitrary path/command/chown, privilege inheritance
+into controller, permanent service or JSON-as-permission. No implementation, sudoers
+entry, root command or production enablement is supplied. The design must first
+resolve authorized delivery access versus effective exclusion; otherwise STOP.
+
+Process/drain proof must bind actual identities, PIDs+start times, launchers, manual
+and service callers, readers, imported modules, open descriptors, privileged actors,
+permission/scheduler editors, alternate package paths and persistence. It must be
+fresh at every protected operation and invalid after restart/new attachment. Merely
+finding no matching /proc entries or holding three cron locks is insufficient.
+Unreadable or unknown possible consumers prevent qualification; do not print private
+arguments/environment or claim universal coverage from this inventory.
+
+Later production maintenance, artifact installation, recovery and consumer release
+are distinct explicit authorizations and evidence gates, never one executable action.
+Recovery inspects durable journal/backup and current scheduler/fence/runtime, not old
+process memory. COMMITTED-held is not completed release; unknown pending effects,
+partial rollback or stale drain forbid release. Restore original scheduler only with
+exact backup/editor exclusion while fenced, then separately authorize access release
+following verified installed or restored runtime. No auto resume/rollback/release.
+A reboot/power-loss guarantee cannot be inferred from SIGKILL or successful fsync.
+
+#### Local preparation validation and stop
+
+Only this existing evidence document, current Master Plan and the directly necessary
+two-document identity entries in the existing successor record change. The accepted
+controller/tests, contract and runtime artifacts remain byte-identical. No new file,
+phase, qualification result or privileged backend is created. Static local validation
+checks command syntax and read-only call surface without executing Linux qualification.
+Existing104/104 evidence still binds unchanged code; no implementation tests or full
+historical suite are rerun. All39 successor and449 protected identities remain valid.
+
+Preparation PASS is a complete bounded evidence/test specification, not native readiness:
+Q01-Q15 native results remain UNKNOWN/NOT_PERFORMED and Q12 remains a concrete blocker.
+No PI3/PI5 access, production cron/permission/service change, delivery, HA/MQTT/credential
+access, migration, activation, staging, commit or push occurs. Exactly one next operator
+action: run ONLY Action 1 and return its complete sanitized receipt and exit status.
+
+
+### PE-7.3 Native Qualification Action 1 recorded and next isolated action
+
+Classification: CURRENT. PE73_NATIVE_ACTION1=PASS_OPERATOR_SUPPLIED.
+NATIVE_QUALIFICATION=INCOMPLETE; NATIVE_MAINTENANCE_QUALIFICATION=NOT_ESTABLISHED.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. Native refusal gates are unchanged.
+This supersedes the preparation-time UNKNOWN/NOT_PERFORMED and next-Action-1 statements
+above only for the observations actually supplied here; those narratives are retained.
+
+#### Actual Action 1 evidence and limits
+
+Evidence source: OPERATOR_SUPPLIED summary in the current user instruction, not a
+Codex PI3 observation and not a newly received complete original JSON receipt.
+No full-receipt digest, observation interval, per-ancestor device/inode/ACL details,
+exact symbol booleans or interpreter binary identity were separately supplied.
+Do not manufacture them. This is a recording of the expressly reported Action 1
+capability PASS, not a replacement receipt or a complete native qualification claim.
+
+- RESULT=PASS_READ_ONLY_CAPABILITY_INVENTORY; PE73_ACTION1_EXIT_STATUS=0; issues=[].
+- production_authorization=false; native_qualification_complete=false.
+- Host nutandpihole; UID/GID1000:1000; Linux6.12.47+rpt-rpi-v8; aarch64;
+  CPython3.11.2. Reported symbols, dir_fd support, flock and renameat2 symbol present.
+- Package directory owner/group1000:1000, mode0755, ACLs absent.
+- Known cron entry counts=[1,1,1]. Scheduler SHA256
+  3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9.
+- Process entries202:38 readable executable links,163 unresolved,1 vanished.
+  The counts reconcile:38+163+1=202. complete_caller_coverage=false;
+  cached_modules/open_readers_excluded=false. Unresolved does not mean163 known
+  HIOC callers or163 unsafe processes; it is a discovery/attribution limitation.
+- Operator reports no production changes. Codex performed no PI3/PI5 access.
+
+Disposition: reported read-only capability check PASS with its source limitations.
+Q01 environment floor is supported by the summary; Q02/Q04 symbol exposure and Q07
+package ACL absence are reported capabilities/observations only, not behavioral tests.
+Q08 known scheduler lines/hash are supported; implementation/editor exclusivity and
+actual cron interpreter remain unresolved. Q09 visibility is partial. Q11-Q15 fence,
+privilege, complete drain, persistence, actual native recovery/rollback/release are
+not established. No new production permission, fresh operation authorization or
+closure follows from Action 1 PASS. Do not request a repeat of established observations.
+
+#### Exactly one proposed next action: isolated descriptor/create/no-follow fixture
+
+This is only the smallest first part of the existing isolated experiment1 (Q02/Q03,
+basic Q06/Q07). It is independent of the unresolved production privilege boundary.
+No root helper, mode0000, production fence or Windows seam change is needed.
+It does not qualify error-injected descriptor cleanup, atomic replacement, fsync,
+flock, scheduler editing, process drain, cached modules or actual controller recovery.
+Those remain separately gated; this command does not chain into them.
+
+EXPLICIT SEPARATE AUTHORIZATION REQUIRED BEFORE RUNNING: approve this exact block on
+PI3 NUT&PIHOLE as jazofv1, its runtime-generated single new private
+/home/jazofv1/.hioc-pe73-native-<uuid> directory, one0600 constant-data probe, one
+scratch symlink, descriptor-relative read/write/exclusive-create/no-follow checks,
+and deletion of only its identity-bound created objects/directory. Review requires
+no concurrent manipulation of that private fixture. No chmod/chown, cron, services,
+locks, fsync, rename, subprocesses, signals, production writes, HIOC imports, network,
+credentials or engine execution is permitted. Production target access is limited
+to a no-follow metadata lookup for scratch device comparison. No sudo or root.
+The current user instruction authorizes preparation, not execution of this block.
+
+Location and cleanup follow the prepared qualification boundary. The command creates
+nothing until target/identity/parent checks pass. A primary or cleanup failure cannot
+produce PASS. Unexpected identities/content are retained privately, with exact
+basename/device/inode in the receipt for separate inspection/disposition. No recursive
+or prefix-based deletion, automatic retry or cleanup of a prior fixture occurs.
+Descriptor close is attempted once per acquisition, never retried after close failure.
+If killed externally, retain the scratch fixture and STOP; no cleanup-by-guessing.
+
+Future operator: machine PI3 NUT&PIHOLE, user jazofv1, any working directory.
+DO NOT RUN until the separate isolated-mutation authorization above is granted.
+
+```sh
+/usr/bin/python3 -I -S -B - <<'PY'
+import datetime
+import errno
+import json
+import os
+import platform
+import socket
+import stat
+import sys
+import uuid
+
+r = {"kind": "ISOLATED_DESCRIPTOR_CREATE_NOFOLLOW", "production_modified": False,
+     "native_qualification_complete": False, "STOP_REQUIRED": True,
+     "started_at": datetime.datetime.now(datetime.timezone.utc).isoformat()}
+owned = []
+acquired = attempts = 0
+close_errors = []
+checks = []
+primary = None
+cleanup = "NOT_CREATED"
+home = root = None
+leaf = None
+anchor = None
+created = False
+nodes = {}
+def fail(code):
+    raise ValueError(code)
+def opened(path, flags, mode=0o777, parent=None):
+    global acquired
+    f = os.open(path, flags, mode, dir_fd=parent)
+    owned.append(f)
+    acquired += 1
+    return f
+def close_once(f):
+    global attempts
+    owned.remove(f)
+    attempts += 1
+    try:
+        os.close(f)
+    except OSError:
+        close_errors.append("CLOSE_NOT_CONFIRMED")
+        raise
+def node(s):
+    return (s.st_dev, s.st_ino, s.st_uid, s.st_gid, stat.S_IFMT(s.st_mode))
+def secure_dir(f):
+    s = os.fstat(f)
+    if not stat.S_ISDIR(s.st_mode) or s.st_uid not in (0, 1000) or stat.S_IMODE(s.st_mode) & 0o7022:
+        fail("UNSAFE_DIRECTORY")
+    for name in ("system.posix_acl_access", "system.posix_acl_default"):
+        try:
+            os.getxattr(f, name)
+        except OSError as e:
+            if e.errno != errno.ENODATA:
+                fail("ACL_NOT_ESTABLISHED")
+        else:
+            fail("ACL_PRESENT")
+    return s
+try:
+    if socket.gethostname() != "nutandpihole" or platform.system() != "Linux" or sys.version_info < (3, 10):
+        fail("TARGET_OR_PYTHON_MISMATCH")
+    if (os.getuid(), os.geteuid(), os.getgid(), os.getegid()) != (1000, 1000, 1000, 1000):
+        fail("IDENTITY_MISMATCH")
+    r["environment"] = {"kernel": platform.release(), "architecture": platform.machine(),
+        "python": platform.python_version(), "interpreter": sys.executable, "uid": 1000, "gid": 1000}
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    home = opened("/", flags)
+    secure_dir(home)
+    for part in ("home", "jazofv1"):
+        child = opened(part, flags, parent=home)
+        secure_dir(child)
+        old = home
+        home = child
+        close_once(old)
+    s = secure_dir(home)
+    if (s.st_uid, s.st_gid) != (1000, 1000):
+        fail("HOME_IDENTITY_MISMATCH")
+    runtime = os.stat("hioc", dir_fd=home, follow_symlinks=False)
+    if not stat.S_ISDIR(runtime.st_mode):
+        fail("RUNTIME_DEVICE_NOT_ESTABLISHED")
+    leaf = ".hioc-pe73-native-" + uuid.uuid4().hex
+    os.mkdir(leaf, 0o700, dir_fd=home)
+    created = True
+    root = opened(leaf, flags, parent=home)
+    anchor = secure_dir(root)
+    r["fixture"] = {"basename": leaf, "device": anchor.st_dev, "inode": anchor.st_ino,
+        "uid": anchor.st_uid, "gid": anchor.st_gid, "mode": format(stat.S_IMODE(anchor.st_mode), "04o")}
+    if (anchor.st_uid, anchor.st_gid, stat.S_IMODE(anchor.st_mode)) != (1000, 1000, 0o700) or anchor.st_dev != runtime.st_dev:
+        fail("FIXTURE_IDENTITY_OR_DEVICE_MISMATCH")
+    f = opened("probe", os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600, root)
+    s = os.fstat(f)
+    nodes["probe"] = node(s)
+    if not stat.S_ISREG(s.st_mode) or (s.st_uid, s.st_gid, stat.S_IMODE(s.st_mode), s.st_nlink) != (1000, 1000, 0o600, 1):
+        fail("PROBE_IDENTITY_MISMATCH")
+    raw = b"PE73_ISOLATED_CONSTANT_PROBE\n"
+    if os.write(f, raw) != len(raw):
+        fail("SHORT_WRITE")
+    os.lseek(f, 0, os.SEEK_SET)
+    if os.read(f, len(raw) + 1) != raw:
+        fail("PROBE_READ_MISMATCH")
+    close_once(f)
+    checks.append("ANCHORED_PRIVATE_CREATE_READ")
+    try:
+        f = opened("probe", os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600, root)
+    except FileExistsError:
+        checks.append("EXCLUSIVE_CREATE_COLLISION_REFUSED")
+    else:
+        close_once(f)
+        fail("EXCLUSIVE_CREATE_COLLISION_ACCEPTED")
+    os.symlink("probe", "probe-link", dir_fd=root)
+    nodes["probe-link"] = node(os.stat("probe-link", dir_fd=root, follow_symlinks=False))
+    try:
+        f = opened("probe-link", os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, parent=root)
+    except OSError as e:
+        if e.errno != errno.ELOOP:
+            fail("NOFOLLOW_RESULT_NOT_ESTABLISHED")
+        checks.append("SYMLINK_NOFOLLOW_REFUSED")
+    else:
+        close_once(f)
+        fail("NOFOLLOW_ACCEPTED_SYMLINK")
+except Exception as e:
+    primary = {"type": type(e).__name__, "code": str(e) if type(e) is ValueError else "ISOLATED_OPERATION_FAILED"}
+finally:
+    if created:
+        cleanup = "INCOMPLETE_RETAIN_FIXTURE"
+        r["fixture_basename"] = leaf
+        try:
+            if root is None or anchor is None:
+                fail("CLEANUP_ANCHOR_UNAVAILABLE")
+            if node(os.stat(leaf, dir_fd=home, follow_symlinks=False)) != node(anchor) or node(os.fstat(root)) != node(anchor):
+                fail("CLEANUP_DIRECTORY_DRIFT")
+            names = os.listdir(root)
+            if set(names) != set(nodes) or not set(names) <= {"probe", "probe-link"}:
+                fail("CLEANUP_CONTENT_DRIFT")
+            for name in names:
+                s = os.stat(name, dir_fd=root, follow_symlinks=False)
+                if node(s) != nodes[name] or (s.st_uid, s.st_gid) != (1000, 1000):
+                    fail("CLEANUP_NODE_DRIFT")
+                if not (stat.S_ISREG(s.st_mode) or stat.S_ISLNK(s.st_mode)):
+                    fail("CLEANUP_UNEXPECTED_TYPE")
+            for name in names:
+                os.unlink(name, dir_fd=root)
+            os.rmdir(leaf, dir_fd=home)
+            cleanup = "EXACT_FIXTURE_REMOVED"
+        except Exception:
+            cleanup = "INCOMPLETE_RETAIN_FIXTURE"
+    for f in list(reversed(owned)):
+        try:
+            close_once(f)
+        except OSError:
+            pass
+r["checks"] = checks
+r["primary_failure"] = primary
+r["cleanup"] = cleanup
+r["descriptor_acquisitions"] = acquired
+r["descriptor_close_attempts"] = attempts
+r["descriptor_close_errors"] = close_errors
+ok = primary is None and cleanup == "EXACT_FIXTURE_REMOVED" and acquired == attempts and not close_errors and len(checks) == 3
+r["RESULT"] = "PASS_ISOLATED_DESCRIPTOR_CREATE_NOFOLLOW" if ok else "FAIL_STOP_ISOLATED_DESCRIPTOR_CREATE_NOFOLLOW"
+r["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+print(json.dumps(r, sort_keys=True, separators=(",", ":")))
+raise SystemExit(0 if ok else 1)
+PY
+```
+
+Immediately afterward, before another command, capture the exit status in the shell:
+
+```sh
+pe73_isolated_status=$?
+printf 'PE73_ISOLATED_EXIT_STATUS=%s\n' "$pe73_isolated_status"
+```
+
+Expected format: one sanitized JSON receipt; RESULT=PASS_ISOLATED_DESCRIPTOR_CREATE_NOFOLLOW
+and exit0 only if all three checks, exact cleanup and descriptor close accounting pass.
+Otherwise FAIL_STOP_ISOLATED_DESCRIPTOR_CREATE_NOFOLLOW and exit1. Report primary
+failure and cleanup independently. Receipt contains native environment and scratch
+identity, no Asset/configuration/private scheduler contents. This is scratch-only
+ISOLATED_NATIVE evidence, not proof of the production fence or caller exclusion.
+Actual isolated result is NOT_EXECUTED; no authorization is inferred from this proposal.
+
+The supplied Action 1 summary is retained exactly in meaning and no original receipt
+is rewritten. Only existing PE-7 evidence/current Master Plan and their two necessary
+successor documentation identity bindings change. Accepted controller/tests,13 artifact
+identities,39 successor identities and449 protected identities remain preserved.
+Exactly one next action: obtain separate authorization for the single isolated
+fixture block above. Do not access PI3/PI5, execute it, stage, commit, push or start
+another qualification action as part of this recording/preparation assignment.
+
+Local preparation validation: operator Python AST/compile and restricted call-surface
+checks PASS. Five fully mocked Windows cases PASS: success; operation failure; close
+failure; unexpected symlink-follow success; unexpected scratch content. Expected
+results were one successful receipt and four fail-closed receipts, all descriptors
+receiving one close attempt; unknown fixture content was retained. No Linux command
+or native filesystem test ran. Prepared isolated command SHA256:
+2cca26c2efad5d9394dac8b82e98a17c207582434a8240d07f1abc8fd1686724.
+
+
+### PE-7.3 isolated descriptor/create/no-follow result and fence-access qualification
+
+Classification: CURRENT. PE73_ISOLATED_DESCRIPTOR_CREATE_NOFOLLOW=PASS_OPERATOR_SUPPLIED.
+NATIVE_QUALIFICATION=INCOMPLETE; NATIVE_DEPLOYMENT=BLOCKED;
+PRIVILEGED_MAINTENANCE=BLOCKED; NATIVE_ROLLBACK=BLOCKED.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. No native refusal gate changes.
+This supersedes the prior proposal's NOT_EXECUTED/next-authorization statements
+only for this completed isolated test; the original proposal and command are retained.
+
+#### Operator-supplied actual result, 2026-10-23
+
+Source: the operator's current supplied result summary, not Codex-observed PI3 data.
+No complete original JSON receipt, receipt digest, precise observation interval or
+scratch basename/device/inode was supplied in this message. Do not reconstruct them.
+The prior prepared command identity is retained in its preparation evidence; this
+summary does not independently establish the exact executed command bytes.
+No repeat of the completed test is requested.
+
+- RESULT=PASS_ISOLATED_DESCRIPTOR_CREATE_NOFOLLOW.
+- PE73_ISOLATED_EXIT_STATUS=0; date2026-10-23; host nutandpihole; UID/GID1000:1000.
+- Checks passed: ANCHORED_PRIVATE_CREATE_READ;
+  EXCLUSIVE_CREATE_COLLISION_REFUSED; SYMLINK_NOFOLLOW_REFUSED.
+- Descriptor acquisitions=5; descriptor close attempts=5; descriptor close errors=[].
+- Primary failure=null; cleanup=EXACT_FIXTURE_REMOVED.
+- production_modified=false; native_qualification_complete=false.
+
+Disposition: PASS for the reported isolated descriptor/create/no-follow operations.
+The summary supports successful scratch behavior and close-attempt accounting for
+that execution; it does not establish all descriptor failure paths, native atomic
+replacement/fsync, production permission enforcement, drain or actual recovery.
+It supplies partial native Q02/Q03/Q06 evidence, not complete qualification of those
+rows. Prior Action 1 PASS remains OPERATOR_SUPPLIED with its recorded limitations.
+The163 unresolved process observations remain unresolved; no owner/privileged/cached
+module/open-reader exclusion follows from either PASS. No power-loss, universal
+absence-of-transient-effects or complete production audit claim is made.
+
+#### Exactly one remaining next action: isolated UID1000 mode0000 access feasibility
+
+This is a bounded part of the existing isolated permission experiment3, directly
+addressing Q06/Q11/Q12; it is not a new phase or a repetition of the completed test.
+Separately authorize one operator-executed scratch DAC/access characterization as
+jazofv1 on PI3 NUT&PIHOLE. It must test this exact conflict rather than unrelated
+atomicity/cron/process-discovery questions:
+
+1. In one new private /home/jazofv1/.hioc-pe73-native-<random> fixture (root0700,
+   UID/GID1000:1000, secure no-follow ancestors), create a child package directory
+   matching the reported original0755 and a constant private regular probe. Bind
+   root/child device, inode, owner/group/mode/ACL absence; verify filesystem identity.
+2. Before restriction, retain an ordinary read-only file descriptor to that probe
+   and an open directory descriptor to the child; no production descriptors/imports.
+3. Apply mode0000 ONLY to that created child via its pinned descriptor. Observe,
+   without changing effective identity, whether a new pathname open, a new child open
+   relative to the retained directory descriptor and a new exclusive child create
+   are denied. A directory fd must not be assumed to confer traversal permission.
+4. Observe whether the already-open file descriptor can still read the constant
+   fixture bytes. This tests a known exclusion limitation, not a safe delivery bypass.
+5. As the same owner, restore ONLY that child's recorded original0755 via its pinned
+   descriptor, then verify original identity/mode and new ordinary access. Owner
+   restoration demonstrates why the fence also requires permission-editor exclusion.
+6. Record expected versus actual errno/results, kernel/interpreter/UID/GID, effective
+   capability disposition if needed to explain unexpected access, and exact fixture
+   identities, primary outcome, restoration, descriptor accounting and cleanup.
+   Missing/ambiguous observations are INSUFFICIENT_EVIDENCE, not invented denial.
+
+Expected characterization (NOT an observed result yet): mode0000 denies new lookup/
+creation to the ordinary UID1000 process, even with the retained directory fd, while
+an already-open file can remain readable and the owner can restore permissions.
+Successful characterization documents BOTH the controller-write conflict and the
+insufficiency of this fence alone against retained access/owner edits. Unexpected
+access or failure to verify restoration stops; it never authorizes installation.
+No new privilege or file-descriptor workaround is selected by this experiment.
+
+SEPARATE EXPLICIT AUTHORIZATION REQUIRED before any scratch mutation: one exact
+bounded operator procedure permitting only creation of that unpredictable private
+fixture/probe, pinned child-only0755->0000->0755, the stated access attempts and
+identity-bound cleanup. Allow no root/sudo, new privileged mechanism, permissions on
+production paths, production open/write attempts, controller execution, HIOC imports,
+cron, services, locks, network, credentials, signals or other native tests.
+This recording assignment does not authorize or execute that action.
+
+The procedure must use independent primary/restoration/cleanup outcomes. Restore the
+created child through its retained descriptor in finally, including a failed access
+assertion; preserve the primary failure if restoration or cleanup also fails. Delete
+only explicitly created identity-bound fixture objects, then empty created dirs;
+no recursive or prefix deletion. On unexpected identity/content or incomplete
+restoration/cleanup, retain the exact private fixture and receipt and STOP for
+separate disposition. Do not retry or change production to make the test pass.
+
+Why this is next: it verifies the actual native permission assumptions that determine
+whether an unprivileged writer can operate behind the proposed closed-directory fence.
+The accepted controller requires UID/GID1000 and NativeFS.directory needs traversal.
+Root-running it violates TARGET_IDENTITY; preopening a directory fd is not established
+as sufficient access. Even the expected test outcome does not resolve privilege/
+caller coordination: it bounds the missing capability for a later separately authorized
+solution. No design change or production enablement is inferred. Native deployment,
+privileged maintenance, rollback and release remain blocked; PE-7.4 NOT_AUTHORIZED.
+
+Only existing implementation evidence/current Master Plan and their two necessary
+successor document identities change. Accepted controller/tests and all13 delivery,
+39 successor and449 protected identities are preserved. No completed native tests or
+historical suite rerun; no PI3/PI5 access, production change, stage, commit or push.
+Exactly one next action: separate authorization for the isolated UID1000 mode0000
+access-feasibility experiment specified above. Stop after recording this result.
+
+
+### PE-7.3 mode0000 native result and bounded deployment-access decision
+
+Classification: CURRENT. PE73_MODE0000_ACCESS=PASS_OPERATOR_SUPPLIED.
+NATIVE_QUALIFICATION=INCOMPLETE; DEPLOYMENT_ACCESS_RESOLVED=FALSE.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. Native deployment, privileged maintenance,
+rollback and consumer release remain blocked. Earlier proposals/receipts are preserved;
+this result supersedes only the preceding planned mode0000 experiment's pending status.
+
+#### Actual operator-supplied mode0000 result, 2026-10-23
+
+Source: the user's supplied PI3 summary; not Codex-observed production evidence.
+No original complete JSON, execution digest, exact interval or scratch device/inode
+values were supplied here. Do not reconstruct or invent them. No completed test rerun.
+The exact supplied facts are retained below; expected results are not substituted.
+
+```ini
+EVIDENCE_SOURCE=OPERATOR_SUPPLIED
+DATE=2026-10-23
+RESULT=PASS_ISOLATED_UID1000_MODE0000_ACCESS_CHARACTERIZATION
+PE73_MODE0000_EXIT_STATUS=0
+HOST=nutandpihole
+UID=1000
+GID=1000
+PYTHON=3.11.2
+KERNEL=6.12.47+rpt-rpi-v8
+pathname_directory_open=DENIED
+pathname_directory_open.errno=13
+pathname_file_read=DENIED
+pathname_file_read.errno=13
+pathname_file_create=DENIED
+pathname_file_create.errno=13
+retained_dirfd_file_read=DENIED
+retained_dirfd_file_read.errno=13
+retained_dirfd_file_create=DENIED
+retained_dirfd_file_create.errno=13
+retained_file_descriptor_read=true
+owner_restoration.fd_mode_restored=true
+owner_restoration.named_identity_verified=true
+fresh_path_read_after_restoration=true
+cleanup.status=EXACT_FIXTURE_REMOVED
+cleanup.error=null
+descriptor_acquisitions=8
+descriptor_close_attempts=8
+descriptor_close_errors=[]
+primary_failure=null
+production_modified=false
+complete_consumer_exclusion_established=false
+native_qualification_complete=false
+production_deployment_ready=false
+```
+
+Disposition: reported isolated access characterization PASS. It demonstrates the
+UID1000 fresh-access conflict for the tested environment and that a retained directory
+fd is not a bypass; retained file access survives and the owner can restore permissions.
+Owner restoration and cleanup are reported verified for this fixture. It is not a
+native-controller run, a complete drain certificate, a production security audit,
+power-loss evidence or proof that a privileged publisher/broker works. Prior163
+unresolved process observations remain unresolved; do not infer which are HIOC callers.
+
+#### Bounded design assessment: compatibility evidence and alternatives
+
+Assessment scope: existing Controller, NativeFS, NativeConsumers and maintenance seam,
+not a redesign of PE-7.1 or a production implementation. Repository facts:
+
+- tools/hioc-pe73-pi3-delivery.py Controller.__init__(fs, source, consumers) already
+  injects filesystem/consumer objects; the tests exercise this seam with fixtures.
+  This establishes an extension seam, not a qualified privileged backend.
+- NativeFS.directory reopens secure no-follow ancestors; snapshot/read traverse the
+  package. Controller.commit performs preflight and post-publication observations,
+  then verify snapshots the entire installed set. Recovery and rollback also read
+  and compare exact current snapshots. A publisher-only exception cannot satisfy
+  these reads. Journal, backup/staging and full parent identities must still agree.
+- main fixes real/effective UID/GID1000 and instantiates NativeFS/NativeConsumers
+  directly. No accepted CLI switch selects a broker or bypasses native refusal.
+  NativeFS rejects ACLs and requires exact1000:1000 regular-file ownership/modes.
+- NativeConsumers cannot establish complete independent-caller exclusion. A new
+  access backend would not itself qualify or authorize consumer maintenance.
+
+The Linux manuals corroborate platform semantics only, not PI3 capability observations:
+[capabilities(7)](https://www.man7.org/linux/man-pages/man7/capabilities.7.html)
+describes DAC-bypass capabilities, which are not a13-path application allowlist;
+[mount_namespaces(7)](https://www.man7.org/linux/man-pages/man7/mount_namespaces.7.html)
+describes distinct process mount views, not automatic confinement of all callers.
+The actual denials/restoration/retained-file behavior above remains OPERATOR_SUPPLIED.
+
+Each option is assessed on all requested boundaries. Conditional possibilities below
+are design inferences, not selected/installed mechanisms or proven native viability.
+
+| Option / existing-controller compatibility | Existing consumers and independent callers / retained fds | Privilege and identity | Crash persistence | Partial publication / rollback | Existing services | Complexity / disposition |
+| --- | --- | --- | --- | --- | --- | --- |
+| Temporary publisher restricted to final replace only | Cannot itself drain cached readers, independent callers or retained descriptors; mode0000 still needs owner/editor/privileged exclusion. | Privileged replace may cross DAC, but UID1000 controller cannot perform required pre/post reads and snapshots. Root-created artifacts would violate ownership unless securely prepared as1000:1000. | Helper death must not restore access; retained fence/intent still require qualified recovery. | Existing journal requires observed installed identities, stage/backup validation and rollback reads/removal; publisher alone leaves these blocked. No external publication behind journal's back. | Shared consumers still require explicit bounded maintenance; Pi-hole/Unbound/NUT must remain unaffected. | Small apparent helper, incomplete solution. Not viable as a drop-in. |
+| Temporary fixed-scope filesystem broker at the existing fs seam (expanded publisher candidate) | Separates authorized package access from ordinary new access, but does not exclude retained fds/modules, manual launchers or owner/privileged edits; complete maintenance proof remains mandatory. | Keep Controller/journal orchestration unprivileged UID1000; a distinct narrowly bounded authority would serve only necessary reads/snapshots and publication/restoration operations for pinned artifacts/ancestors. Exact1000:1000 results required. No privileged controller, arbitrary paths, shell or generic filesystem service. | Fence/journal must outlive either process. Lost/uncertain responses must stop, never retry/adopt/release; fresh attachment and authenticated recovery needed. None is implemented. | Must preserve the same intent->effect->observed fingerprint sequence,13 targets, five backups/eight absences, order, parent identities and explicit rollback. Both writes and observations need coverage; no second journal. | Only explicitly approved affected HIOC consumers paused; no unrelated service changes. Backend cannot imply pause or release permission. | Moderate, finite access boundary exploiting an existing seam. Smallest candidate worth a bounded prototype; not yet proven viable. CLI/native integration and contract delta need separate authorization. |
+| Give the whole controller root or transient DAC-bypass capabilities | Still does not drain old readers or constrain other owner/privileged actors. A matching UID or cron hash is not caller exclusion. | Root violates TARGET_IDENTITY. A UID1000 capability-bearing interpreter could retain UID checks but grants broader DAC authority; it is not13-path isolation, and code/requester integrity is unresolved. No capabilities applied here. | Privilege lifetime does not supply durable exclusion or recovery. Process death must leave exact uncertainty/fence evidence. | Full privileged Python/filesystem surface and ownership/rollback behavior need new proof; existing refusal gates still block. | Does not remove need for approved pauses; capability scope could affect unrelated files/services. | Few visible code changes but materially broader authority/security burden. Not recommended as the minimal safe change. |
+| Substitute ACL/group/mode or per-process mount/LSM isolation | Same UID1000 owner rule cannot distinguish ordinary controller from other same-UID callers. Per-process views/policy might separate launches, but existing processes/fds and all entrypoints still require drain/coverage. | ACLs conflict with NativeFS ACL rejection. Changed ownership/modes/views can conflict with exact observed metadata. Namespace/LSM policy is unqualified and not supplied by current controller. | Persistent enforcement, supervisor/namespace lifetime, editor/bypass coverage and restart behavior require a new native enforcement design. | All accesses must refer to the same real targets and retain expected ancestry/identities; view mismatch or global read-only state cannot silently substitute for the journal contract. | Wider launcher/mount/security-policy changes risk more consumers; no assumption that Pi-hole/Unbound/NUT can be stopped. | More surrounding infrastructure than a finite backend. No evidence supports drop-in compatibility; not selected. |
+| Complete enforced HIOC-consumer quiescence while leaving package accessible to UID1000 | Could avoid the DAC writer conflict only if every affected process/launcher/editor is genuinely excluded and cached/open readers drained. Three cron locks/manual assurances do not establish that;163 unresolved observations remain. | Leaves controller/ownership contract intact, but enforcement of same-UID manual/privileged launchers is not implemented. A cooperative lock is not a replacement for accepted external exclusion. | Requires a crash-persistent launch boundary independent of controller/SSH and explicit release; merely stopping jobs is insufficient. | Existing Controller transaction could be reused only under a separately accepted real boundary; no automatic rollback or mixed-version restart. | Requires approved pauses of all affected HIOC consumers; preserve unrelated services and accepted missed-cycle/no-catch-up rules. | Conceptually simple but unbounded until complete enforced coverage is evidenced. Not a currently supported alternative to the persistent fence. |
+
+Decision: none of the options is currently qualified for production, and no mechanism
+in the unchanged accepted CLI resolves this conflict. Merely reopening the package
+between operations, keeping a directory fd, restoring its mode early, using flock,
+or calling chmod under a new label is not an accepted solution. A broker is an access
+solution candidate, not proof that the fence constitutes complete consumer exclusion.
+
+#### Exactly one next bounded action and required separate authorization
+
+Recommend one PE-7.3 repository-only action: prepare an explicit access-contract delta
+and a NONPRIVILEGED, fixture-only prototype of a transaction-bound filesystem broker
+adapter at the existing Controller.fs seam, then validate it with focused synthetic
+fault/negative tests. This is one bounded engineering action inside PE-7.3, not an
+additional review phase, native deployment or implementation of a privileged helper.
+It requires separate authorization for new repository prototype/test/document bytes
+and any proposed accepted-contract change. No authorization is inferred here.
+
+The finite prototype must establish a go/no-go result for precisely:
+
+- Complete required call coverage: ancestor/security observations, bounded read/
+  snapshot, approved staged/temp creation, publication, verification, removal and
+  rollback under held maintenance. Keep ordinary accessible journal/backup operations
+  under existing UID1000 authority where possible. Do not assume replace alone is enough.
+- Fixed manifest paths/identities and canonical bounded data, never arbitrary caller
+  paths, descriptors, commands, credentials/config/state reads or global filesystem APIs.
+  Exact allowed ancestor/temp paths and operation ordering must be enumerated explicitly.
+- Preserve13 artifact pins, UID/GID1000 final ownership, five backups/eight absences,
+  dependency/incident-last ordering, descriptor/no-follow guards, exact fingerprints,
+  fsync/uncertainty semantics and the existing single journal as transaction authority.
+- Authentication/authorization design must not treat UID1000, PID alone, matching
+  JSON/reference or a successful receipt as trusted permission. Actual transport,
+  requester/code integrity and future least-privilege enforcement are unresolved
+  contract requirements, not invented mechanisms. No secret or credential is created.
+- Duplicate/stale/forged/out-of-order/out-of-scope requests, drift and dropped replies
+  must fail closed. Kill/lost-result ambiguity must remain pending rather than being
+  adopted or replayed. Explicit fresh recovery/rollback/release authorization is retained.
+- Do not modify accepted controller/tests or contract in place, enable the real CLI,
+  introduce root/sudo/capabilities, install a helper/service, contact PI3/PI5, change
+  production or turn off existing native refusal. Prototype success proves interface/
+  transaction behavior only; later actual privilege qualification remains separate.
+
+If the prototype cannot preserve unchanged Controller behavior/identities, or needs
+broader authority than this finite scope, STOP with the exact incompatibility instead
+of quietly expanding the helper, changing historical authority or relaxing consumer
+exclusion. This recommendation has not implemented a broker or authorized production.
+
+Only existing PE-7 evidence/current Master Plan and directly necessary two-document
+successor identities are updated by THIS action. No tests rerun; no controller/test
+changes, PI3/PI5 access, production mutation, stage, commit or push. All13 artifact,
+39 successor and449 protected identities remain valid. PE-7.3 remains IN_PROGRESS;
+PE-7.4 NOT_AUTHORIZED. Next action is only the separately authorized fixture prototype
+and explicit access-contract delta described above.
+
+
+### PE-7.3 experimental filesystem-broker feasibility candidate
+
+Classification: CURRENT EXPERIMENTAL, repository-only and nonproduction.
+The accepted controller0589cf6363626d14ab9abe08c001ddef634b243326513b27de43a7b93aa4f95f
+and accepted tests4fef3799a3bae5733056fa30b3423bca656026103a6ce02e443e14ac639ce281
+remain byte-identical. The accepted PE-7 contract is unchanged; the proposed delta
+below is not adopted. Native deployment, maintenance, rollback and release stay blocked.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. No production architecture is approved.
+
+New standalone files (only two): tools/pe73_filesystem_broker_prototype.py and
+ tests/test_pe73_filesystem_broker_prototype.py. The entry is a Windows fixture factory,
+not a command-line utility, service, socket, helper, production root override or installer.
+It creates its own unique Windows temporary root, with real temporary file bytes and
+explicit synthetic POSIX owner/mode metadata. Such metadata is a fixture observation,
+not native Linux permissions. No operational credentials or private production data.
+
+#### Architecture, exact seam and operation coverage
+
+The accepted controller file is locally hash-verified and loaded unchanged into one
+private module instance. Only that instance's identity constants become synthetic:
+identical13 artifact names/order/modes and five replacement roles/eight absence roles,
+synthetic source/baseline bytes, synthetic source SHA/Git blobs/release and fixture cron
+labels. No real release/historical runtime bytes are used as fixture payloads. Accepted
+controller methods themselves are not copied or rewritten; Controller(fs,source,consumers)
+executes preflight, prepare, publication, verification, rollback and inspection.
+This is a feasibility exercise with synthetic constants, not production integration.
+
+Components: Fixture owns the temporary disk; FixtureDisk implements its finite local
+resources; BrokerFS adapts the actual accepted filesystem seam; Broker exposes seven
+artifact operations; FixtureAuthority validates controller-owned journal context and
+issues single-use in-process object grants/replies; FixtureConsumers is a distinct
+externally held SYNTHETIC_ONLY boundary. Broker cannot establish or release that boundary.
+All operations are scoped to exact13 artifact identifiers, their computed stage/backup
+slots and fixed temporary names/ancestors; no user-supplied root, arbitrary path or shell.
+
+| Required operation | Representation / authority |
+| --- | --- |
+| Anchored traversal | No-follow/reparse/regular-single-link checks of real temporary paths and captured parent device/inode; explicit synthetic UID/GID/mode policy. No claim of native POSIX dir_fd enforcement on Windows. |
+| Source identity | Exact synthetic manifest SHA256/Git blob verification through accepted check_sources; no real production payload read. |
+| Five existing/eight absent targets | Broker snapshots expose full current identities or absence; accepted preflight verifies synthetic baselines. |
+| Existing target reads | READ returns only bounded known synthetic baseline/candidate contents, hash-bound to the observed source/target context. |
+| Backup and staging | BACKUP/STAGE map to one computed slot per artifact; original baseline and previous-stage/backup preconditions enforced. No generic write operation. |
+| Publication/verification | PUBLISH follows the accepted pending path/installed prefix, uses verified source/stages/backups and returns the actual installed snapshot. Controller alone records progress; all13 paths verified. |
+| Recovery inspection | Fresh broker/authority/adapter/controller reopen actual retained temporary bytes and synthetic metadata; current snapshots are compared with the original controller journal. No prior reply or grant is trusted. |
+| Rollback | RESTORE uses verified five original backups; REMOVE only applies to authorized newly installed artifacts, in controller-defined reverse order. Controller records restored provenance. |
+| Drift/uncertainty | Exact expected snapshots and current journal context gate mutations; no automatic retry/adoption. Read-only inspection may report drift without authorizing any mutation. |
+
+The adapter must not read protected target metadata locally to construct a broker
+request: that would assume the DAC bypass being investigated. Observation requests
+bind controller-recorded evidence (or explicitly unknown preflight observations),
+then the broker performs protected inspection. Mutation requests bind exact recorded
+preconditions/absence. The prototype tests this access separation explicitly.
+
+The journal and original backups are outside the proposed package fence. To avoid
+recursive broker authorization while the accepted _journal validator reads rollback
+backups, a stateless read-only invocation of that SAME accepted validator uses the
+local evidence view. It never writes phase/progress. A derived validation cache is
+keyed by freshly secured journal bytes AND identity on every use; a changed key is
+revalidated, and a fresh broker starts with no cache. This is not a second authority.
+
+#### Closed interface, authorization and request/reply evidence
+
+Closed request fields: version, operation, artifact, area, transaction, operation_id,
+source_sha256, expected, context, payload_hex. version is exact integer1; transaction
+is the single SYNTHETIC_PE73_BROKER_V1; operation_id is a unique32 lowercase-hex value.
+operation is SNAPSHOT, READ, BACKUP, STAGE, PUBLISH, RESTORE or REMOVE. area is TARGET,
+STAGE or BACKUP with operation-specific restrictions. Artifact is an exact allowlisted
+name, never an absolute/substituted/traversal/backslash path. Payload is bounded and
+allowed only for verified backup/staging bytes. Source identities and expected state
+are bound; context contains current controller journal digest, relevant controller
+prepare/commit/rollback authorization reference and external fixture session.
+Duplicate JSON keys, unknown fields/operations/types and nonfinite/noncanonical input
+are rejected. A transaction string, UID, phase label or receipt alone is not permission.
+
+Closed reply envelope: version, transaction, operation_id, request_sha256, result,
+synthetic_only=true. Results are bounded synthetic read content/hash or snapshots.
+An independently issued in-process object grant binds the exact request digest and
+is consumed once; replies are checked against the actual sealed reply object/digest
+and request identity. Copied/modified/forged replies are not accepted. These object
+identities are fixture capabilities ONLY, not production IPC authentication, credential
+issuance, same-UID isolation, code integrity or cryptographic Linux peer authentication.
+
+The original controller journal remains sole phase/order/provenance/recovery authority.
+The broker never writes it, authorizes rollback/release, changes permissions, activates
+cron, starts processes or executes engines. Its narrowly bounded attempt records are
+NONAUTHORITATIVE_ATTEMPT_ONLY: negative replay evidence binding request/intent IDs.
+They can refuse repeated uncertain mutations, including across a fresh broker, but
+cannot establish installation, completion, recovery authorization or consumer release.
+They carry no competing transaction phases. Fresh read-only inspection does not rely
+on these records as positive evidence. Unknown/corrupt record state cannot grant access.
+
+#### Proposed access-contract delta — NOT APPLIED OR ACCEPTED
+
+This is an explicit experimental proposal, separate from the authoritative contract.
+The actual accepted controller/test/contract files and native refusal gates are unchanged.
+
+1. Replace only the assumption that UID1000 can locally traverse every package target
+   while fenced. A future explicitly selected filesystem adapter would request narrowly
+   bounded observations/effects; unprivileged Controller remains the journal orchestrator.
+   The current CLI hardcodes NativeFS/NativeConsumers and offers no broker entry point.
+   Any new native wrapper/selection/provider is an explicit future contract/authorization
+   change; prototype success cannot enable it.
+2. Enumerate exactly which target/ancestor reads, snapshots, staging/publication and
+   restoration/removal operations cross a future privilege boundary. Ordinary accessible
+   journal/backups remain UID1000 where possible; source pins, modes and final file
+   ownership1000:1000 remain exact. A replace-only helper is insufficient.
+3. Future authority would need actual search/read/write access through mode0000 plus
+   tightly bounded creation/publication/removal and enforcement of1000:1000 final
+   ownership. This does not select root, capabilities, arbitrary chown, ACL exceptions
+   or any implementation. No such privilege is implemented or requested here.
+4. Native requester/code integrity, authenticated request/result transport, replay/crash
+   persistence, least-privilege restrictions and exact snapshot equivalence remain
+   unimplemented. In-process object grants cannot be reinterpreted as native security.
+   No secret, credential, sudoers rule, privileged daemon or permanent service is added.
+5. Preserve a single controller-owned journal, current source/target/parent identities,
+   all13 pins and ordering, five backups/eight absent targets, strict validation and
+   explicit authorization. No broker-record-as-authority, implicit adoption or separate
+   installation history. Lost replies remain unconfirmed effects until independently
+   inspected; inspection is not permission to resume uncertain mutations.
+6. Preserve all consumer-exclusion requirements. Mode0000 does not exclude owner edits,
+   privileged callers, cached modules or retained file descriptors. External qualified
+   drain, editor/launcher coverage and crash-persistent exclusion remain mandatory.
+   Broker success must not reopen that boundary or authorize cron/release/evaluation.
+7. Mandatory future native evidence: bounded real authority/transport and permitted
+   operation proof under the actual fence; actual1000:1000 modes/ownership; secure
+   descriptor/ACL/no-follow behavior; atomic replace/no-replace and file/directory fsync;
+   process-loss/lost-reply and replay durability; independent journal-bound inspection;
+   qualified fresh consumer exclusion and distinct rollback/recovery/release authority.
+   Windows fixture PASS proves none of those native properties.
+
+No irreconcilable controller-seam conflict has been waived. The finite adapter proposal
+must stop if native result authentication, exact metadata semantics or scoped access
+cannot preserve existing invariants. It must not quietly run the controller as root,
+expand arbitrary filesystem authority or weaken maintenance requirements. Native
+feasibility and the demonstrated production access conflict remain unresolved.
+
+
+The proposed change explicitly delegates protected kernel-object observations from
+local NativeFS to a separately trusted peer. Matching JSON fields/digests alone do
+not authenticate that peer or prove its filesystem observations. A future authenticated
+reply must bind the exact request/nonce/operation, transaction/authorization context,
+source identity and observed target/ancestor identity; stale and cross-request replies
+must be rejected. The concrete IPC, code/peer trust anchor and enforcement mechanism
+are unresolved, not selected or claimed secure by this fixture experiment.
+
+Future privilege budget (requirements, NOT granted privileges):
+
+| Resource/operation | Rights that would need controlled provision |
+| --- | --- |
+| Fixed fenced ancestors and existing module files | Search/read access despite mode0000, no-follow anchored open and exact metadata/ACL inspection. No arbitrary directory or config/state/credential reads. |
+| Fixed target-parent temporary creation and publication | Parent search/write despite mode0000; fixed exclusive temporary name; verified bytes, permitted mode and final1000:1000 ownership before acceptance; replace versus no-replace semantics. No generic rename/write API. |
+| Exact installed new-file removal / replacement restoration | Same bounded parent search/write, exact installed identity, verified backup and controller rollback context. No arbitrary deletion or historical-journal cleanup. |
+| Existing accessible journal/backup/source evidence | Ordinary UID1000 access retained where possible; no new privilege merely to control phase. Source/backup hashes and the same single journal remain mandatory. |
+| Consumer fence, editors and privilege inheritance | Not broker authority. No chmod/restore/release, root-running controller or inherited broad capability; those independent gates remain blocked. |
+
+A helper's actual execution identity and any ownership-setting privilege must be
+separately justified; the prototype does not assume root-created files automatically
+meet1000:1000. Broad DAC capabilities are not path restrictions. No root/capability/
+chown grant is requested by this document. Linux directory fsync and no-replace,
+post-crash trace durability and genuine native authority are not established here.
+The accepted controller also refuses continuation of pending or already-restored
+rollback states; this prototype provides inspection, not a new resume/repair API.
+Unknown effects remain blocked for explicit disposition under existing authority.
+
+
+#### Final focused validation, preservation and disposition
+
+PE73_FILESYSTEM_BROKER_PROTOTYPE=PASS within the authorized experimental Windows
+fixture scope. BROKER_ACCESS_CONTRACT_DELTA=PROPOSED_NOT_ADOPTED;
+BROKER_NATIVE_INTEGRATION=NOT_AUTHORIZED. No production architecture/privilege approval.
+
+Selection: unittest.defaultTestLoader.loadTestsFromName('test_pe73_filesystem_broker_prototype').
+Established bundled Windows Python stdin harness, repository root, -B and UTF-8,
+HIOC_TEST_SHELL cleared, shell-free PATH and sys.path[:0]=['tests','pi4/lib'].
+Final result:54 run,54 passed,0 failures,0 errors,0 individual skips,0 class-level skips.
+Unittest elapsed584.825 seconds; harness elapsed585.000 seconds. Direct result counts,
+full failure detail list (empty) and pre/post source hashes are retained in temporary
+hioc-pe73-broker-feasibility/prototype-result.json, independent of console truncation.
+
+Final source identities, unchanged throughout this complete final run:
+
+- tools/pe73_filesystem_broker_prototype.py SHA256 b7db2f55dd99fb1e7161a3afc054695bb5151b3866618dc8e2267afc0da47469.
+- tests/test_pe73_filesystem_broker_prototype.py SHA256 3ee70a530e8b4b9e87ffed1fff4f56948b33e0abdccb22812ba2135b279bc791.
+
+The14 observation tests assert a single actual accepted-controller synthetic full
+prepare/commit/rollback workflow and each of its13 captured artifact outcomes (five
+replacements/eight new). Additional focused cases cover every required mutation fault
+boundary, independent fresh broker/authority/adapter/controller reconstruction, replay
+across reconstruction, protected-access separation, identity/backup corruption, path/
+symlink/reparse/type/hardlink substitution, source/mode/owner drift, closed schemas,
+forged grants/replies, no-replace collision, explicit uncertainty and no consumer release.
+Mocked symlink/reparse identification and synthetic owner/mode metadata are not claimed
+as native Linux enforcement. No root, capabilities, network, engine or privileged backend.
+
+Development-only checks are not final acceptance evidence: initial new smoke tests
+found fixture canonical-framing and recursive journal/backup-validation issues, and a
+new test's assumed rollback-report field was corrected. The final design uses the
+accepted public canonical hashes and a stateless local evidence-validation view.
+The separate broker-message canonicalization is sorted compact ASCII JSON without a
+trailing newline; its context digest binds that canonical validated journal object,
+not a replacement for the controller's public newline-terminated preflight/journal
+hash. A development run was stopped to consolidate redundant full-path transactions
+and add no-replace/result-schema checks; no partial run is reported as a final PASS.
+Five narrow new guard tests passed before the complete54-test run. None of the
+accepted104-test suite or full historical HIOC suite was rerun: their dependencies
+and accepted controller/test bytes were not changed by this standalone prototype.
+
+Only five paths change by this action: the two new prototype/test files above,
+docs/PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md, current docs/HIOC_MASTER_PLAN.md
+and the directly necessary two documentation identities in the existing successor
+record. No new governance record/schema, production contract change or extra framework.
+The accepted controller/test/contract and historical evidence remain unchanged;
+all13 actual delivery identities,39 successor identities and449 protected identities
+are verified. Native refusal, runtime source/modes, five/eight roles and order remain
+unchanged. git diff --check passes; zero staged and unexpected paths; stash unchanged.
+Existing candidate now has three modified tracked files and four authorized untracked
+files, including the two preexisting accepted controller/test files. No stage/commit/push.
+
+Remaining requirements are explicit: native peer/code integrity, authenticated bounded
+transport/results, scoped privilege and exact ownership/descriptor semantics, Linux
+atomicity/durability, crash-persistent exclusion/anti-replay, complete caller/editor/
+retained-reader coverage, fresh recovery/rollback/release authority and approved
+native integration. Prototype PASS does not resolve those requirements or the
+production mode0000 access conflict. No PI3/PI5 access, production files/permissions/
+cron/services change, credentials, monitoring, migration, notifications or deployment.
+PE-7.3 remains IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+Exactly one next bounded action: separately authorized focused independent acceptance
+of this experimental feasibility prototype and its explicit unapplied contract delta,
+inside the existing PE-7.3 checkpoint. No native helper implementation or production
+operation is authorized by that recommendation. STOP_REQUIRED=TRUE.
+
+
+### PE-7.3 guarded maintenance-window amendment proposal — NOT ADOPTED
+
+Classification: PROPOSAL ONLY. PE73_MAINTENANCE_WINDOW_AMENDMENT=PROPOSED_NOT_ADOPTED.
+This is a decision-ready implementation-level amendment, not deployment authority.
+The authoritative PE-7 contract and accepted source files remain unchanged.
+PE-7.1/7.2 COMPLETE/PASS; PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+Native commit, maintenance, privilege and rollback refusal gates remain in force.
+No operator risk acceptance, production installation or consumer release is claimed.
+
+#### 1. Original authority and exact existing implementation requirement
+
+Original contract: [PE-7 consolidated contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md),
+section 13 PE-7.3 row (line1016 in the unchanged accepted document), requires guarded
+artifact/integration/UI/trust delivery with backups/rollback, exact paths/hashes/
+modes/owners/ancestors and observed HA API/resource capability. Adapter/editing/
+evaluator remain disabled except separately specified preflight; no recurring job
+or automatic migration. Section12 C21/C23/C24 retains protected evidence, immutable
+history, no unauthorized changes and independent acceptance. Section13 requires
+separate checkpoint authorization. Sections12/14 retain truthful evidence and
+missing-fact gates; these production validation requirements are not waived.
+
+The original contract does not prescribe mode0000, a filesystem broker, quarantine
+or universal kernel-enforced caller exclusion. Those are later implementation
+mechanisms/assurances. Guarded installation and the original acceptance criteria
+are preserved; no explicit original-contract conflict was identified in proposing
+this limited assurance reduction. Any later discovered conflict stops adoption.
+Explicitly approved maintenance pauses must not become a hidden PE-5 prerequisite
+or an unauthorized producer/policy change (contract section12, lines992-995).
+
+Exact existing wording, preserved above under "Consumer coordination: supplied
+facts and deliberate native block", lines812-818 before this append:
+
+~~~text
+Synthetic success/failure/rollback uses an explicitly test-only, externally owned
+consumer fence held independently of controller exceptions. This demonstrates
+transaction behavior under that stated boundary; it does not supply a PI3 fencing
+mechanism, universal caller exclusion or power-loss/process-crash safety evidence.
+The independent partial-transaction exclusion prerequisite remains unresolved.
+A future native coordinator must establish that boundary before publication can be
+enabled; do not replace this gate with an operator boolean or inferred cron absence.
+~~~
+
+The matching later readiness requirement, lines838-841, and the current native
+CONSUMER_COORDINATION_NOT_ESTABLISHED refusal express the same stronger assurance.
+They remain historical/current implementation authority until explicit adoption;
+this proposal does not silently rewrite them or make the old provider deployable.
+
+#### 2. Complete proposed replacement wording
+
+Proposed normative wording, to take effect ONLY after explicit operator adoption:
+
+~~~text
+During a separately authorized PE-7.3 maintenance window, publication and rollback
+may use the existing UID-1000 controller only after exact approved scheduled
+launches have been excluded and reobserved, known affected processes have been
+identified and verifiably drained, and one named operator has accepted exclusive
+maintenance responsibility and prohibited independent/manual affected commands.
+Scheduled-launch exclusion is a verified technical control over the identified
+scheduler entries. Manual-command restrictions are procedural controls, not
+technically enforced exclusion. Draining covers the identified processes and
+observed evidence only; it does not prove universal absence of cached modules,
+retained descriptors, undiscovered processes or alternate launchers.
+
+The authorization must explicitly acknowledge the residual risk of a
+noncooperating independent caller or an affected process missed during drain.
+This amendment does not claim complete consumer exclusion. It does not authorize
+unexpected writes, mixed-version execution, service impact or acceptance without
+the original mandatory evidence. Unresolved visibility limits and residual risks
+must be stated; documentation alone does not accept them.
+
+Exact scheduler preservation, source/target/security checks, all 13 artifact pins,
+backups, dependency order, durable controller intent and verified progress,
+independent filesystem inspection, and separately authorized rollback remain
+mandatory. Controller failure, SSH loss, window expiry, pending publication or
+interrupted rollback must never trigger automatic retry, adoption, rollback,
+scheduler restoration or consumer release. The operator's no-launch restriction
+continues until explicitly released. Reboot invalidates the maintenance readiness
+assessment and requires fresh scheduler/process/runtime inspection before any
+further mutation; no crash-persistent universal execution boundary is claimed.
+
+Scheduler restoration and procedural consumer release require fully verified
+installation or fully verified authorized rollback, exact current-state checks
+and a fresh explicit release authorization. Unexpected scheduler modification,
+known consumer activity, identity drift or insufficient mandatory evidence stops
+dependent work without overwriting unreviewed state. The controller journal alone
+never proves filesystem success, scheduler enforcement, process drain or safe
+release. All other accepted PE-7 requirements remain unchanged.
+~~~
+
+#### 3. Reason, unchanged safeguards and reduced assurance
+
+The existing-controls NO_GO establishes that cron/data locks do not prevent manual
+imports and that native complete-drain/exclusion is unqualified. OPERATOR_SUPPLIED
+mode0000 evidence establishes the UID1000 access conflict, not deployment readiness.
+The proposed choice is practical maintenance with an explicitly lower assurance,
+not a claim that technical universal exclusion has been solved.
+
+Unchanged: exact accepted release51398bab4e2293b578b2cdac2d0740c3738cab2f, 13 paths,
+five replacements/eight new targets, file ownership/modes/ancestor checks, verified
+private backups/staging, dependency-first/incident-engine-last publication, atomic
+individual operations, descriptor cleanup, source pins, strict journal/provenance,
+fresh-process inspection and separate rollback authority. Preserve original
+functional/protected evidence, no unexpected writes, no activation or migration,
+no automatic recovery/release and all original production acceptance obligations.
+
+Reduced: complete technically enforced independent-caller exclusion across partial
+publication/controller failure becomes exact scheduled-launch exclusion plus
+observed known-process drain and exclusive operator procedure. Cached/retained or
+unidentified consumers and noncooperation remain residual risks. Risk acknowledgement
+must name this reduction explicitly; a generic approval boolean is insufficient.
+No currently unresolved risk is accepted by merely recording this proposal.
+
+#### 4. Residual-risk classification and required response
+
+| Event | Control and limitation | Required disposition |
+| --- | --- | --- |
+| Independent command during maintenance | PROCEDURAL prohibition; no technical manual-launch barrier. May load mixed versions or write protected state. | Stop further publication, retain observations, inspect affected state; no automatic rollback or acceptance. |
+| Already-running process missed during drain | UNRESOLVED residual visibility/identification risk. | Explicit risk acknowledgement required before use; a discovered process invalidates readiness and triggers stop/review. |
+| Cached Python modules | Verified exit of identified holders is TECHNICAL evidence for those processes only; unknown holders UNRESOLVED. | No assertion that FD enumeration alone proves absence of cached code; disclose limitations. |
+| Retained file/directory descriptors | Identified-holder exit and reinspection are TECHNICAL observations; missed holders UNRESOLVED. | No claim that scheduler changes revoke descriptors. Stop on discovered activity. |
+| Controller termination | TECHNICAL durable intent/progress and unchanged scheduler exclusion; manual exclusion remains PROCEDURAL. | Fresh independently observed recovery; no implied success or automatic continuation/release. |
+| SSH disconnection | Same durable transaction/scheduler controls; responsibility continuity PROCEDURAL. | No timeout-based release. If responsibility cannot continue, stop and retain maintenance restrictions. |
+| System reboot | Preserved scheduler bytes/exclusion require actual reinspection; processes/launcher state and operator readiness become UNKNOWN. | Invalidate readiness; stop mutation until fresh review/authorization. No guaranteed prevention of alternate boot launchers is claimed. |
+| Unexpected cron modification | TECHNICAL digest/byte rechecks detect observed drift, not an adversarial compare-and-swap guarantee. Concurrent editor prevention PROCEDURAL. | Stop; preserve changed bytes and do not overwrite them with an assumed baseline. |
+| Partial file publication | TECHNICAL per-file atomicity, recorded prefix/pending intent and exact observation. Entire set is not atomic. | Keep scheduler exclusion/no-launch restriction; pending uncertainty stops automatic adoption/retry/rollback. |
+| Interrupted rollback | TECHNICAL recorded restored identities/pending intent; no supported automatic resume. | Keep maintenance restrictions; independent inspection and explicit disposition required. |
+
+No complete event history or universal absence of transient execution is claimed.
+Any actual unauthorized change remains subject to the original protected-state
+judgment; accepting residual risk never makes that change authorized.
+
+#### 5. One bounded maintenance-window procedure (specification, not commands)
+
+1. Obtain explicit amendment adoption, later validated implementation acceptance,
+   and a separate production authorization naming operator, pause scope, time
+   window, residual risks, abort/recovery responsibility and release authority.
+2. Establish exact source, runtime target/security/ancestor and scheduler baselines.
+   Retain original scheduler bytes and identities privately with the existing
+   transaction evidence; validate exact reconstruction before changing scheduling.
+   No actual new production observation is invented by this specification.
+3. Classify every relevant active scheduler entry as explicitly EXCLUDE or PRESERVE.
+   Reuse the three established OPERATOR_SUPPLIED incident/inventory/platform lines;
+   do not treat installer examples as production facts. Any other affected PE-4/
+   PE-5 job requires exact identification and explicit pause approval. Preserve all
+   unrelated bytes, comments, entries and services. Never stop system cron globally.
+4. Under the named operator's exclusive scheduler-edit procedure, remove only the
+   approved lines, verify exact expected maintenance bytes, and retain the original
+   bytes plus both digests. Expected-state drift stops without overwriting it.
+5. Identify known affected processes, interpreters, manual and persistent launchers;
+   record inspection scope, visibility gaps, PID/start identities and evidence of
+   completion or explicitly authorized stop. Do not kill by broad name/UID patterns.
+   Recheck known processes and lock activity; no identified affected process may
+   remain. Do not count a single empty process snapshot as future launch exclusion.
+6. Establish the operator's no-manual-launch restriction and responsibility through
+   interruption. Record acknowledgement of unknown callers/cached modules/retained
+   descriptors. Unacknowledged risks or gaps preventing known-process validation
+   block readiness. No permissions, identities, mounts or namespaces are changed.
+7. In the adopted/validated future provider, run bounded preflight and prepare
+   using UID/GID1000:1000. Preserve and verify five originals, stage/verify all13
+   accepted source artifacts and retain the existing controller journal. Recheck
+   source/target/ancestors, scheduler and known-consumer readiness before publication.
+8. With separate exact commit authorization, publish dependencies first and incident
+   engine last. Preserve durable intent->effect->verified installed identity and
+   the existing journal. Drift or any failure stops without automatic repair.
+9. Verify all13 actual installed hashes, ownership/modes and ancestor identities,
+   expected untouched content and applicable protected observations. Record actual
+   outcomes; COMMITTED alone does not prove success or authorize activation.
+10. On controller/SSH interruption or reboot, retain scheduler exclusions and manual
+    restriction. Reopen and validate original scheduler evidence, journal, backups,
+    installed/restored prefix and all relevant actual filesystem observations.
+    Re-establish known-process/window readiness. Pending/unconfirmed publication or
+    interrupted rollback remains blocked for explicit disposition; no new resume
+    API or automatic adoption is introduced.
+11. If rollback is needed, obtain distinct authorization and use only a controller-
+    accepted state with exact current identities and verified backups. Reverse the
+    proven installed prefix; remove only proven new files. Verify full restoration.
+12. Only after complete verified installation OR verified authorized rollback and
+    fresh explicit release authorization, require the exact expected maintenance
+    scheduler, restore original bytes and re-read/verify them. A failed restoration
+    does not authorize manual release. Then explicitly end the no-launch restriction.
+    No catch-up execution, monitoring, notifications, migration or PE-7.4 work follows.
+
+A planned end time is a stop/escalation deadline, never permission to reopen an
+uncertain runtime. If responsibility or recovery cannot safely continue, preserve
+restrictions and obtain explicit disposition rather than silently extending authority.
+
+#### 6. Observable production acceptance prerequisites
+
+All must be evidenced before dependent production action; this proposal supplies none:
+
+- Explicit amendment adoption and independent acceptance of the resulting Windows
+  implementation, with unchanged original contract and all existing validation gates.
+- Exact authorized HIOC pause/restore scope and named operator/responsibility transfer;
+  explicit acknowledgement of independent/missed/cached/retained-caller residual risk.
+- Verified original scheduler baseline and exact approved exclusion result; no
+  unreviewed entries, concurrent edits or unrelated service/job changes.
+- Bounded known-consumer inventory and actual drain evidence, including visibility
+  limits; no known affected holder remains and no unsupported universal claim.
+- Exact accepted source and target paths/hashes/modes/owners/ancestors; successful
+  source/runtime preflight; backups/stages verified and actual restore readiness.
+- Durable transaction evidence and an explicit abort/recovery contact/procedure,
+  including pending-publication, interrupted-rollback, SSH-loss and reboot stop rules.
+- No unexpected impact on Pi-hole, Unbound, NUT or unrelated services. Planned HIOC
+  missed cycles/pauses are authorized; snapshot-age/freshness policy remains unchanged.
+- Actual post-install/rollback identities and applicable original protected evidence;
+  no inference from journal labels alone. Independent review and fresh release
+  authority precede restoration. Original HA/UI/trust delivery and later P/A matrix
+  obligations remain separately gated; this 13-file step does not close all PE-7.3.
+
+#### 7. Minimum implementation/test changes ONLY IF subsequently approved
+
+Preserve accepted controller transaction core, filesystem/descriptor handling,
+manifest, journal structural/provenance validation and fresh-process recovery.
+Add a narrowly scoped maintenance-window consumer provider and bounded scheduler/
+process observations. Express the approved mixed technical/procedural assurance
+honestly in the existing maintenance evidence, with exact authorizations, scheduler
+bindings, known-process observations, limitations and residual-risk acknowledgement.
+Necessary closed-schema/provider/recovery validation changes must be explicit,
+phase-specific and confined to that adopted assurance; no blanket gate override,
+operator-boolean bypass or historical test relaxation. Existing mode0000 synthetic
+fixtures remain preserved historical tests, not evidence of the amended mechanism.
+
+Add focused tests for exact scheduler preservation/exclusion/restoration and drift;
+known-process drain failure; missing/expired/window/recovery authorizations;
+unacknowledged risks; controller/SSH interruption and reboot invalidation; partial
+publication and interrupted rollback refusal; no automatic release; fresh recovery;
+UID1000 access and no permission/namespace/broker changes. Assert that procedural
+manual restrictions are never reported as complete technical exclusion. Run the
+appropriate native/source validation only after a separately authorized code change.
+
+No code is changed now. Native refusal gates must remain until explicit adoption,
+authorized implementation/validation and separate production authority. No current
+controller invocation is made deployable by this document.
+
+#### 8. Explicit decision required and relationship to prior proposals
+
+The operator may approve or reject this complete amendment wording and its stated
+assurance reduction. Approval must explicitly accept the independent/missed/cached/
+retained-caller risks for the later specified maintenance scope; it is not implied
+by asking for this proposal. Adoption is distinct from implementation authorization,
+production execution, rollback and consumer release authorization.
+
+Experimental broker remains UNADOPTED. Root-only quarantine/private mount-namespace
+architecture remains UNADOPTED. No new prototype, framework, background service,
+identity, privilege or production mechanism is introduced. Earlier experiments,
+reviews and accepted controller/broker tests are preserved without repetition.
+
+Exactly one next action: operator approval or rejection of this amendment proposal.
+PE73_MAINTENANCE_WINDOW_AMENDMENT=PROPOSED_NOT_ADOPTED.
+PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+STOP_REQUIRED=TRUE.
+
+
+### PE-7.3 approved maintenance-window amendment adoption — 2026-10-23
+
+Classification: CURRENT ADOPTED IMPLEMENTATION-LEVEL DECISION.
+PE73_MAINTENANCE_WINDOW_AMENDMENT=ADOPTED_OPERATOR_APPROVED.
+Authority: explicit operator request "Adopt Approved Maintenance-Window Amendment
+and Implement Guarded Native Coordination", supplied attachment
+8e20e365-1502-4042-99c5-475991d15ae7, 2026-10-23. This authorizes bounded Windows
+implementation/validation and this adoption, NOT native execution or production.
+
+Superseded only for the amended maintenance-window path: the implementation-level
+complete independent-caller exclusion prerequisite quoted at lines812-818 and its
+corresponding later readiness assertions. Their exact historical text and synthetic
+fence tests remain intact. The proposal at line2357 is retained as proposal history;
+its prior NOT_ADOPTED label is superseded by this explicit decision. No historical
+receipt or production fact is rewritten. No original PE-7 contractual requirement
+is superseded, including exact security identities, protected evidence and separate
+installation/activation/rollback/release authority.
+
+The approved reduction is explicit: identified scheduled-launch exclusion is
+technical; known-process draining is observed and limited; manual-command control
+is procedural. A missed/cached/retained/noncooperating independent caller remains
+residual risk. Adoption is not universal exclusion, authenticated native permission,
+acceptance of an unauthorized change, native qualification or production authority.
+The exact wording below matches the previously reported proposal byte-for-byte
+as UTF-8 text (without the surrounding code fences):
+
+~~~text
+During a separately authorized PE-7.3 maintenance window, publication and rollback
+may use the existing UID-1000 controller only after exact approved scheduled
+launches have been excluded and reobserved, known affected processes have been
+identified and verifiably drained, and one named operator has accepted exclusive
+maintenance responsibility and prohibited independent/manual affected commands.
+Scheduled-launch exclusion is a verified technical control over the identified
+scheduler entries. Manual-command restrictions are procedural controls, not
+technically enforced exclusion. Draining covers the identified processes and
+observed evidence only; it does not prove universal absence of cached modules,
+retained descriptors, undiscovered processes or alternate launchers.
+
+The authorization must explicitly acknowledge the residual risk of a
+noncooperating independent caller or an affected process missed during drain.
+This amendment does not claim complete consumer exclusion. It does not authorize
+unexpected writes, mixed-version execution, service impact or acceptance without
+the original mandatory evidence. Unresolved visibility limits and residual risks
+must be stated; documentation alone does not accept them.
+
+Exact scheduler preservation, source/target/security checks, all 13 artifact pins,
+backups, dependency order, durable controller intent and verified progress,
+independent filesystem inspection, and separately authorized rollback remain
+mandatory. Controller failure, SSH loss, window expiry, pending publication or
+interrupted rollback must never trigger automatic retry, adoption, rollback,
+scheduler restoration or consumer release. The operator's no-launch restriction
+continues until explicitly released. Reboot invalidates the maintenance readiness
+assessment and requires fresh scheduler/process/runtime inspection before any
+further mutation; no crash-persistent universal execution boundary is claimed.
+
+Scheduler restoration and procedural consumer release require fully verified
+installation or fully verified authorized rollback, exact current-state checks
+and a fresh explicit release authorization. Unexpected scheduler modification,
+known consumer activity, identity drift or insufficient mandatory evidence stops
+dependent work without overwriting unreviewed state. The controller journal alone
+never proves filesystem success, scheduler enforcement, process drain or safe
+release. All other accepted PE-7 requirements remain unchanged.
+~~~
+
+Broker and root-only quarantine/mount-namespace proposals remain UNADOPTED.
+PE-7.1/7.2 COMPLETE/PASS; PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+Native commit/rollback/scheduler changes remain blocked pending separately
+accepted native qualification and separate production execution authorization.
+
+
+#### Guarded maintenance-window repository provider and validation
+
+PE73_MAINTENANCE_WINDOW_IMPLEMENTATION=PASS_REPOSITORY_SYNTHETIC.
+NATIVE_WINDOW_ACCEPTANCE=NOT_ESTABLISHED; PRODUCTION_AUTHORIZED=FALSE.
+This PASS concerns Windows implementation/validation only. Native qualification,
+production execution, scheduler mutation, rollback and release remain unavailable.
+No PI3/PI5/HA/MQTT/credential/production access or runtime execution occurred.
+
+New bounded files: tools/pe73_maintenance_window.py and
+ tests/test_pe73_maintenance_window.py. No existing controller/test/broker file changed.
+WindowController inherits the accepted prepare/commit/rollback/verify algorithms;
+small wrappers add native preparation and evidence-bound runtime authorization gates.
+Its extended closed journal uses one explicit window member in the SAME journal.json.
+A read-only in-memory projection invokes the unchanged strict Controller._journal
+validator for every core field, installed/restored prefix, source digest, snapshot
+and backup provenance. Projection is validation only: no alternative on-disk journal
+or competing installation authority. The new envelope independently validates its
+closed shape, phase/core relationship, ordered unique authorization references,
+original/reduced scheduler hashes, preserved bytes, observations and release binding.
+Old synthetic maintenance and new window envelopes cannot be mixed. The old CLI
+continues to refuse native consumer coordination and cannot adopt the new envelope.
+
+The accepted artifact algorithms, five backups/eight new targets, ordered atomic
+publication, exact ownership/modes/ancestor checks, descriptor lifecycle and
+pending-effect refusal remain unchanged. Broker still pins the unchanged accepted
+controller. The previously accepted104 controller tests remain byte-identical.
+
+NativeOps implements fixed-argv read-only crontab and bounded /proc observations,
+with PID start identity checked around command reads. Receipts expose command
+hashes and bounded PID/limitation codes, not raw private command arguments. Known
+active consumers or incomplete inspection refuse drain; the provider never kills
+processes or assumes that command/FD inspection proves cached-module absence.
+Unknown processes and cached/retained-reader limits are disclosed as limitations.
+This classifier is not universally complete and has NOT been qualified on PI3.
+
+Scheduler preservation uses private verified window-crontab-original evidence under
+the existing transaction. Exact maintenance_cron inventory rules preserve unrelated
+bytes and exclude only approved lines. Scheduler effects use one fixed crontab
+installation attempt with before/after byte checks; this is not a native CAS or
+proof against an independent scheduler editor. Intent is persisted before each
+scheduler effect, and failed/uncertain effects cannot be retried automatically.
+
+NativeOps.live_gate unconditionally raises NATIVE_WINDOW_ACCEPTANCE_REQUIRED;
+NativeOps.scheduler_gate unconditionally raises NATIVE_SCHEDULER_NOT_QUALIFIED.
+Both guard the native scheduler effect path; live_gate also guards preparation,
+maintenance progression, runtime authorization, publication and rollback. No CLI,
+boolean, receipt or environment setting unlocks native execution. The actual fixed-
+argv mutation seam exists behind those guards for later explicit qualification;
+Windows tests use isolated synthetic Ops, never production operations. No native
+qualification capability or operator deployment command is issued here.
+
+Grants bind exact action/reference, full extended-journal digest, current scheduler
+digest, named operator, instance session, boot identity, bounded expiry, explicit
+exclusive responsibility and exact residual-risk acknowledgement. This is a closed
+procedural authorization input, NOT a claim of cryptographically authenticated
+operator identity or a production permission simply because a dict can be supplied.
+The eventual authorized native runner/operator-evidence provenance remains a native
+acceptance prerequisite. Runtime commit/rollback each need their separate matching
+single-use instance grant; core transaction references remain durable provenance.
+
+No context exit, timeout, exception or successful install restores cron or releases
+manual restrictions. Reopening a provider invalidates its instance readiness. ATTACH
+requires exact original scheduler/scope, secured backup, strict journal and actual
+runtime comparison, then invalidates old drain evidence and records the fresh boot/
+session. A fresh DRAIN and current operator authorization are required before further
+mutation. Reboot invalidates readiness. Pending publication, interrupted rollback,
+uncertain scheduler effects and unexpected drift remain blocked; no resume/adoption
+or repair API has been added. Actual process state is observed separately from
+journal state. The operator identity cannot silently change on attachment.
+
+Release requires complete installed or rolled-back core state with no pending
+operation, actual matching runtime, source identity verification, fresh known-process
+observations, exact scheduler expectation and a separate release authorization.
+Original cron restoration is verified before the procedural restriction is marked
+released. A restore failure stays RESTORE_UNCERTAIN; duplicate restoration/release
+and automatic reopening are refused. Independent/manual exclusion is always
+PROCEDURAL_ONLY; universal_exclusion=false in observations and receipts.
+
+Final Windows validation used the established bundled Python stdin harness at the
+repository root, -B, UTF-8, shell-free PATH, HIOC_TEST_SHELL cleared, and
+sys.path[:0]=['tests','pi4/lib']. Results are recorded directly from unittest:
+
+- Accepted controller regression:104 run,104 passed,0 failures/errors/skips.
+- Final new provider module:35 run,35 passed,0 failures/errors/skips/class-level skips.
+- Earlier combined run:136 run,136 passed (104 existing+32 new),344.125 seconds.
+  Three final new cases and preparation/native-seam guards followed; the final35
+  rerun took61.094 seconds and bound final source hashes. The unchanged controller
+  regression does not import/depend on the new provider, so its104 result remains
+  applicable. Do not count overlapping new cases as additional distinct coverage.
+- Initial development-only run stopped at a test fixture boot ID shorter than the
+  existing authorization-token grammar; the fixture was corrected, not the validator.
+- Native scheduler calls in tests are mocked; process parsing uses a synthetic
+  Windows /proc tree. No native behavior is claimed from these fixtures.
+- Full historical HIOC suite and accepted broker54 tests were not repeated: runtime
+  source, accepted controller/test and broker/test dependencies remain unchanged.
+
+Final source hashes:
+
+- tools/pe73_maintenance_window.py SHA256 cd571ee743894066276227cb7dcf2de46e3699de9ef4eeb7339350b9abab2093.
+- tests/test_pe73_maintenance_window.py SHA256 628de43d2dd13fa0ce91c09547958ff24f57802c0c153e81d275b139f38219a6.
+- tools/hioc-pe73-pi3-delivery.py SHA256 0589cf6363626d14ab9abe08c001ddef634b243326513b27de43a7b93aa4f95f.
+- tests/test_pe73_pi3_delivery.py SHA256 4fef3799a3bae5733056fa30b3423bca656026103a6ce02e443e14ac639ce281.
+
+Direct receipts retained outside the repository: hioc-pe73-window-result.json and
+hioc-pe73-window-final-result.json in the Windows temporary directory. Failure detail
+lists are empty; test source bytes were unchanged during their respective runs.
+
+Focused checks cover inventory, exact preservation/exclusion/restoration, unrelated
+entries, scheduler conflict/uncertainty, active/incomplete process observations,
+authorization/risk/boot/session/expiry checks, stale recovery and mandatory re-drain,
+interrupted publication/rollback, source/target drift, ordered authorization history,
+strict core rejection, explicit release, duplicate operations, truthful manual limits,
+fixed native argv, sanitized process identities and native preparation/mutation gates.
+
+Preservation: all13 accepted delivery identities,39 successor identities and449
+protected identities verified; original contract and accepted PE-7.1/7.2 artifacts
+unchanged. Only the two necessary existing documentation identity entries are
+refreshed. Current candidate adds only the two new window files; no unrelated path,
+staging, commit or push. git diff --check passes; stash unchanged.
+
+Remaining native prerequisites: independently accepted Windows candidate; separately
+authorized fixed scheduler-effect qualification (including drift/uncertainty), actual
+bounded process visibility/classification and PID-race behavior, operator-evidence
+provenance and responsibility, boot/restart readiness, exact pause/restore approval,
+backup/restore readiness, no collateral service impact and independent native
+acceptance. Production commit/rollback remain unavailable until that separate native
+acceptance and separate production execution authorization. No power-loss or
+universal independent-caller exclusion claim is made.
+
+Exactly one next action: concise independent acceptance of this Windows maintenance-
+window provider candidate and its retained native gates, inside PE-7.3.
+PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED; STOP_REQUIRED=TRUE.
+
+
+### PE-7.3 relative-invocation process-detection correction
+
+Classification: CURRENT REPOSITORY CORRECTION, independently accepted for native qualification.
+PE73_RELATIVE_PROCESS_FOCUSED_RECHECK=ACCEPT_FOR_NATIVE_QUALIFICATION.
+The focused review verified the retained55/55 maintenance test evidence and active native refusal gates.
+Native qualification remains incomplete; production delivery and rollback remain blocked.
+PE73_RELATIVE_PROCESS_DETECTION_CORRECTION=PASS_REPOSITORY_SYNTHETIC.
+The prior focused independent review returned PE73_MAINTENANCE_WINDOW_ACCEPTANCE=REJECT.
+This correction resolves its confirmed known-relative-caller detection defect; the correction
+itself did not grant independent acceptance, native qualification or production authority.
+The subsequent focused independent review accepted this correction for native qualification only.
+
+Confirmed original reproduction: cwd=/home/jazofv1/hioc/pi4/bin;
+argv=python3 hioc-assets.py list. The pre-correction scanner produced known_active=[]
+and inspection_complete=true, recorded the PID as unclassified and admitted drain.
+The added test_original_relative_asset_invocation_blocks_actual_drain was executed
+against the unchanged pre-correction provider and failed: expected Failure was not
+raised (1 run,1 failure,0 errors). Thus this is a demonstrated detection correction,
+not a new universal-exclusion requirement or a hypothetical production observation.
+
+Exact correction in tools/pe73_maintenance_window.py:
+
+- Fixed source-observed ENTRY_NAMES/ENTRY_PATHS identify existing HIOC Python CLI
+  entry points. They are an inspection inventory, not claimed active production jobs.
+- invocation parses NUL-delimited argv without shell evaluation. It identifies the
+  script after CPython flags, warning/-X/hash-policy option arguments and '--';
+  distinguishes -c code and -m module invocation; and does not interpret ordinary
+  script arguments as additional launched scripts. Known hioc module invocation
+  remains an affected import. Ambiguous option parsing cannot hide a potential
+  known entry point.
+- Potential known relative invocations require two observed /proc/PID/cwd readlink
+  values. cwd_target uses POSIX pathname rules, never executes a script and never
+  writes a path. Known canonical runtime-bin destinations are classified active.
+  Missing/unreadable/deleted/changed cwd, lexical '..', unresolved aliases and a
+  potential known name outside the verified canonical scope fail closed as incomplete
+  classification rather than proving either affected or unrelated execution.
+- PID directory device/inode and process start ticks bracket command/cwd inspection;
+  command bytes are reread and cwd reread for potential relative invocations. Identity,
+  argv or cwd changes mark inspection incomplete. A potential known process exiting
+  during inspection requires a fresh scan before drain can be established.
+- WindowConsumers._processes admission is unchanged: known_active or incomplete
+  inspection refuses drain. Tests exercise this actual gate, not parser labels only.
+  Unrelated Python commands are not classified affected merely for being Python or
+  mentioning a filename in an ordinary argument. Unknown callers/cached modules and
+  retained descriptors remain explicit limitations; universal_exclusion=false and
+  manual_launch_control=PROCEDURAL_ONLY remain unchanged.
+
+Regression coverage includes original relative invocation, absolute invocation,
+'./hioc-assets.py', classification CLI, direct script argv, interpreter flags and
+option arguments, hioc module invocation, unrelated commands, no shell evaluation,
+missing/unreadable cwd, changed start/cwd/argv, process exit, ambiguous script/option
+resolution and empty valid scans. Every classification outcome that matters to
+readiness is checked through actual _processes drain admission. The native parser
+uses isolated Windows synthetic /proc files and mocked cwd reads, never PI3 evidence.
+
+Validation: established bundled Windows Python stdin harness, repository root, -B,
+UTF-8, shell-free PATH, HIOC_TEST_SHELL cleared, sys.path[:0]=['tests','pi4/lib'].
+Final focused module:55 run,55 passed,0 failures,0 errors,0 skips,0 class-level skips.
+Harness elapsed60.266 seconds; direct result/source hashes and empty failure details
+are retained in temporary hioc-pe73-relative-correction-result.json. The intentional
+pre-correction failing regression remains historical evidence. An intermediate
+source import syntax error was corrected before this complete successful final run.
+Final source bytes were unchanged during validation.
+
+- tools/pe73_maintenance_window.py SHA256 c16e031121ca0cb450e30822f0711c1cc19f4d1757d6664c4d2c383b78b03dc5.
+- tests/test_pe73_maintenance_window.py SHA256 b94fb1fe0740b330929532861209227255ae496d8b8407bac4b2443cdb758541.
+
+The accepted104 controller tests were NOT rerun: their source and dependency/interface
+set are unchanged and they do not import the corrected provider. The prior104/104
+result remains historical accepted evidence. No historical HIOC or broker suite was
+repeated. Original core journal/artifact transaction authority, descriptor handling,
+accepted controller/test files, broker/test files and the original contract remain
+unchanged. No production module or13-artifact manifest was modified.
+
+The adopted amendment remains verbatim SHA256
+b57c6f0a67aa90ff24fd42a454bc2822a7652ba03aff1f72a4c7be336d570127.
+Native live_gate and scheduler_gate still unconditionally raise
+NATIVE_WINDOW_ACCEPTANCE_REQUIRED and NATIVE_SCHEDULER_NOT_QUALIFIED respectively.
+No flag, environment, receipt, journal or privilege bypass was added. No production
+maintenance/delivery or native qualification is authorized by this correction.
+
+Preservation verification:13 delivery identities,39 successor identities and449
+protected identities; accepted controller/broker/contract identities; exact amendment
+text; native refusals; no unexpected path and git diff --check. Only corresponding
+two existing documentation identity entries are refreshed. Candidate still has3
+modified tracked files,6 authorized untracked files,0 staged/unexpected paths and
+unchanged stash. No PI3/PI5/HA/MQTT/credential/production access, cron/permission/
+service/runtime mutation, deployment, rollback, activation, stage, commit or push.
+
+Current progression: controlled publication of the accepted nine-file candidate,
+followed by separately authorized operator-run PI3 release-source synchronization.
+This publication does not authorize native maintenance, delivery, rollback or PE-7.4.
+PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED; STOP_REQUIRED=TRUE.
