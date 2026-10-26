@@ -6270,7 +6270,40 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT. PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.
+Classification: CURRENT — bounded native readiness, 2026-10-26.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_DEPLOYMENT_READINESS=READY_FOR_OPERATOR_AUTHORIZATION; PE73_COMPLETE=FALSE.
+PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+Baseline main/origin/main85c1a4f1f270c48ef9b00efe55eae759265303ab; five-file
+uncommitted candidate. No staging, commit, push or production access is authorized.
+The existing local non-production Ubuntu24.04 WSL environment qualified the actual
+fixed /usr/bin/crontab - install/reduction/restoration and exact readback, without
+mocks, software installation or services. Initially absent user cron was restored
+to exact absence after identity-bound removal of nonexecuting scratch entries.
+Actual controlling-terminal read/write and refusal on the non-PI3 host also PASS.
+These are Codex-observed local qualification facts, not PI3 production observations.
+All previously supplied PI3 source/target/scheduler/process evidence remains
+OPERATOR_SUPPLIED with its original limitations; no new production fact is asserted.
+Native actions now require fresh exact /dev/tty operator confirmation bound to
+action, source/runtime/scheduler/process/journal, boot, session, expiry and accepted
+residual risks. Scheduler changes additionally require matching durable uncertain
+intent, the exact qualified operation hash, and one attempt. No input receipt,
+environment variable, CLI enabling flag or journal label grants native permission.
+Manual caller restrictions remain procedural; universal exclusion is false.
+FOCUSED_VALIDATION=106_RUN_106_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+All13 delivery,39 successor and449 protected identities verified; original contract,
+verbatim approved amendment, core controller and experimental broker unchanged.
+Readiness does not authorize deployment, rollback, restoration, release or PE-7.4.
+PI3 runtime remains untouched. Consequential operations require separate operator
+authorization; ambiguous effects do not trigger retry or automatic recovery.
+Exactly one next action: obtain authorization for controlled publication of this
+validated five-file candidate. PI3 source delivery/execution is not authorized here.
+See [readiness evidence and the deferred operator runbook](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-native-deployment-readiness--2026-10-26).
+
+### Historical repository-preparation snapshot at85c1a4f1
+
+Classification: HISTORICAL SNAPSHOT. PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS.
 PE72_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE6_STATUS=COMPLETE/PASS.
 PE73_STATUS=IN_PROGRESS_REPOSITORY_PREPARATION; PE73_COMPLETE=FALSE.
 PE73_REPOSITORY_IMPLEMENTATION_AUTHORIZED=TRUE; PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE.
@@ -7563,7 +7596,40 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT. PE73_STATUS=IN_PROGRESS_REPOSITORY_PREPARATION.
+Classification: CURRENT — bounded native readiness, 2026-10-26.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_DEPLOYMENT_READINESS=READY_FOR_OPERATOR_AUTHORIZATION; PE73_COMPLETE=FALSE.
+PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+Baseline main/origin/main85c1a4f1f270c48ef9b00efe55eae759265303ab; five-file
+uncommitted candidate. No staging, commit, push or production access is authorized.
+The existing local non-production Ubuntu24.04 WSL environment qualified the actual
+fixed /usr/bin/crontab - install/reduction/restoration and exact readback, without
+mocks, software installation or services. Initially absent user cron was restored
+to exact absence after identity-bound removal of nonexecuting scratch entries.
+Actual controlling-terminal read/write and refusal on the non-PI3 host also PASS.
+These are Codex-observed local qualification facts, not PI3 production observations.
+All previously supplied PI3 source/target/scheduler/process evidence remains
+OPERATOR_SUPPLIED with its original limitations; no new production fact is asserted.
+Native actions now require fresh exact /dev/tty operator confirmation bound to
+action, source/runtime/scheduler/process/journal, boot, session, expiry and accepted
+residual risks. Scheduler changes additionally require matching durable uncertain
+intent, the exact qualified operation hash, and one attempt. No input receipt,
+environment variable, CLI enabling flag or journal label grants native permission.
+Manual caller restrictions remain procedural; universal exclusion is false.
+FOCUSED_VALIDATION=106_RUN_106_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+All13 delivery,39 successor and449 protected identities verified; original contract,
+verbatim approved amendment, core controller and experimental broker unchanged.
+Readiness does not authorize deployment, rollback, restoration, release or PE-7.4.
+PI3 runtime remains untouched. Consequential operations require separate operator
+authorization; ambiguous effects do not trigger retry or automatic recovery.
+Exactly one next action: obtain authorization for controlled publication of this
+validated five-file candidate. PI3 source delivery/execution is not authorized here.
+See [readiness evidence and the deferred operator runbook](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-native-deployment-readiness--2026-10-26).
+
+#### Historical repository-preparation snapshot at85c1a4f1
+
+Classification: HISTORICAL SNAPSHOT. PE73_STATUS=IN_PROGRESS_REPOSITORY_PREPARATION.
 PE73_COMPLETE=FALSE; PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE.
 PE73_PI3_DELIVERY_CANDIDATE=PARTIAL; NATIVE_LIVE_COMMIT=BLOCKED_CONSUMER_COORDINATION_NOT_ESTABLISHED.
 PE73_TWO_DEFECT_CORRECTION=PASS_REPOSITORY_SYNTHETIC; FOCUSED_RECHECK=ACCEPT_WITH_EXPLICIT_BLOCKER.
@@ -8340,7 +8406,40 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT. PE73_STATUS=IN_PROGRESS_REPOSITORY_PREPARATION.
+Classification: CURRENT — bounded native readiness, 2026-10-26.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_DEPLOYMENT_READINESS=READY_FOR_OPERATOR_AUTHORIZATION; PE73_COMPLETE=FALSE.
+PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+Baseline main/origin/main85c1a4f1f270c48ef9b00efe55eae759265303ab; five-file
+uncommitted candidate. No staging, commit, push or production access is authorized.
+The existing local non-production Ubuntu24.04 WSL environment qualified the actual
+fixed /usr/bin/crontab - install/reduction/restoration and exact readback, without
+mocks, software installation or services. Initially absent user cron was restored
+to exact absence after identity-bound removal of nonexecuting scratch entries.
+Actual controlling-terminal read/write and refusal on the non-PI3 host also PASS.
+These are Codex-observed local qualification facts, not PI3 production observations.
+All previously supplied PI3 source/target/scheduler/process evidence remains
+OPERATOR_SUPPLIED with its original limitations; no new production fact is asserted.
+Native actions now require fresh exact /dev/tty operator confirmation bound to
+action, source/runtime/scheduler/process/journal, boot, session, expiry and accepted
+residual risks. Scheduler changes additionally require matching durable uncertain
+intent, the exact qualified operation hash, and one attempt. No input receipt,
+environment variable, CLI enabling flag or journal label grants native permission.
+Manual caller restrictions remain procedural; universal exclusion is false.
+FOCUSED_VALIDATION=106_RUN_106_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+All13 delivery,39 successor and449 protected identities verified; original contract,
+verbatim approved amendment, core controller and experimental broker unchanged.
+Readiness does not authorize deployment, rollback, restoration, release or PE-7.4.
+PI3 runtime remains untouched. Consequential operations require separate operator
+authorization; ambiguous effects do not trigger retry or automatic recovery.
+Exactly one next action: obtain authorization for controlled publication of this
+validated five-file candidate. PI3 source delivery/execution is not authorized here.
+See [readiness evidence and the deferred operator runbook](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-native-deployment-readiness--2026-10-26).
+
+#### Historical repository-preparation snapshot at85c1a4f1
+
+Classification: HISTORICAL SNAPSHOT. PE73_STATUS=IN_PROGRESS_REPOSITORY_PREPARATION.
 PE73_COMPLETE=FALSE; PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE.
 PE73_PI3_DELIVERY_CANDIDATE=PARTIAL; NATIVE_LIVE_COMMIT=BLOCKED_CONSUMER_COORDINATION_NOT_ESTABLISHED.
 PE73_TWO_DEFECT_CORRECTION=PASS_REPOSITORY_SYNTHETIC; FOCUSED_RECHECK=ACCEPT_WITH_EXPLICIT_BLOCKER.

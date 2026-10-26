@@ -1,17 +1,22 @@
-"""Bounded PE-7.3 maintenance-window provider. Native mutation is NOT qualified.
+"""Bounded PE-7.3 maintenance-window provider. Native mutation needs explicit TTY authority.
 
-No CLI, automatic recovery, process killing, service control or universal exclusion.
+Interactive per-operation authority; no automatic recovery, process killing, service control or universal exclusion.
+MaintenanceCoordinator binds explicit decisions to fresh observations; no input receipt unlocks mutation.
 The accepted Controller transaction methods and strict core journal validator are reused.
 """
 import contextlib
 import copy
 import hashlib
 import importlib.util
+import inspect
+import json
 import os
 import posixpath
 from pathlib import Path
 import re
 import socket
+import stat
+import sys
 import subprocess
 import time
 import uuid
@@ -29,6 +34,8 @@ RISKS = ["INDEPENDENT_CALLER", "MISSED_PROCESS", "CACHED_MODULE", "RETAINED_DESC
          "ALTERNATE_LAUNCHER", "CONCURRENT_SCHEDULER_EDITOR"]
 ACTIONS = {"PRESERVE", "EXCLUDE", "DRAIN", "ESTABLISH", "ATTACH", "COMMIT", "ROLLBACK",
            "AUTHORIZE_RELEASE", "RESTORE_SCHEDULER", "RELEASE"}
+SCHEDULER_OPERATION_PIN = "8c7026ba84b748677381ea9adfef9334156795eabb16df059a2e752a90049e66"
+
 PHASES = {"PRESERVATION_UNCERTAIN", "PRESERVED", "EXCLUSION_UNCERTAIN", "EXCLUDED",
           "DRAINED", "ESTABLISHED", "INSTALLATION_UNCERTAIN", "INSTALLATION_VERIFIED",
           "ROLLBACK_UNCERTAIN", "RESTORATION_VERIFIED", "RELEASE_AUTHORIZED",
@@ -123,12 +130,15 @@ def cwd_target(cwd, script):
 
 
 class NativeOps:
-    """Fixed read-only observations; mutating operations remain unconditionally gated."""
+    """Fixed native operations admitted only by a fresh, context-bound TTY decision."""
     def __init__(self):
-        require(os.name == "posix" and socket.gethostname() == "nutandpihole" and
+        self.boot_id = self.target_boot()
+    def target_boot(self):
+        require(os.name == "posix" and sys.platform == "linux" and socket.gethostname() == "nutandpihole" and
             os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 1000, "TARGET_IDENTITY")
-        self.boot_id = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
-        require(d.AUTH.fullmatch(self.boot_id), "BOOT_ID_UNAVAILABLE")
+        boot = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
+        require(d.AUTH.fullmatch(boot), "BOOT_ID_UNAVAILABLE")
+        return boot
     def now(self):
         return int(time.time())
     def scheduler(self):
@@ -140,10 +150,27 @@ class NativeOps:
             "SCHEDULER_OBSERVATION_FAILED")
         return result.stdout
     def live_gate(self):
-        raise d.Failure("NATIVE_WINDOW_ACCEPTANCE_REQUIRED")
+        a = getattr(self, "_admission", None)
+        require(type(a) is _NativeAdmission and a.ops is self and a.pid == os.getpid(),
+                "NATIVE_WINDOW_ACCEPTANCE_REQUIRED")
+        require(self.target_boot() == a.boot_id == self.boot_id and
+            self.now() < a.expires_at and time.monotonic() < a.monotonic_deadline,
+            "NATIVE_WINDOW_CONTEXT_EXPIRED_OR_CHANGED")
     def scheduler_gate(self):
-        # No receipt, boolean, CLI flag or environment variable unlocks this gate.
-        raise d.Failure("NATIVE_SCHEDULER_NOT_QUALIFIED")
+        a = getattr(self, "_admission", None)
+        require(type(a) is _NativeAdmission and a.action in {"EXCLUDE", "RESTORE_SCHEDULER"},
+                "NATIVE_SCHEDULER_NOT_QUALIFIED")
+        self.live_gate()
+        operation = (inspect.getsource(NativeOps.scheduler) + "\n" + inspect.getsource(NativeOps.install_scheduler)).encode()
+        require(d.sha(operation) == SCHEDULER_OPERATION_PIN, "SCHEDULER_QUALIFIED_OPERATION_CHANGED")
+        value = a.coordinator.controller._journal()
+        w = value.get("window")
+        phase = "EXCLUSION_UNCERTAIN" if a.action == "EXCLUDE" else "RESTORE_UNCERTAIN"
+        require(w is not None and w["phase"] == phase and w["session"] == a.coordinator.provider.session and
+            w["boot_id"] == self.boot_id and w["authorizations"][-1]["action"] == a.action and
+            w["authorizations"][-1]["reference"] == a.reference and not a.scheduler_attempted,
+            "SCHEDULER_DURABLE_AUTHORIZATION_REQUIRED")
+        a.scheduler_attempted = True  # Even an uncertain command is never retried.
     def install_scheduler(self, raw, expected_sha):
         self.scheduler_gate()
         self.live_gate()
@@ -387,7 +414,7 @@ class WindowConsumers:
         self.controller._save(value, "WINDOW:" + phase)
     def progress(self, action, grant):
         require(action in ACTIONS - {"COMMIT", "ROLLBACK"}, "WINDOW_ACTION_INVALID")
-        self.ops.live_gate()  # Native mutation/coordination still unavailable pending native acceptance.
+        self.ops.live_gate()  # Native calls need the active interactive operation admission.
         with self.controller.fs.mutex():
             value = self._load()
             event = self._grant(grant, action, value)
@@ -502,7 +529,212 @@ class WindowConsumers:
         self.runtime_permit = True
     def inspect(self):
         value = self._load(); w = value.get("window")
+        native, admitted = isinstance(self.ops, NativeOps), False
+        if native and type(getattr(self.ops, "_admission", None)) is _NativeAdmission:
+            self.ops.live_gate()
+            admitted = True
+        operation = (inspect.getsource(NativeOps.scheduler) + "\n" + inspect.getsource(NativeOps.install_scheduler)).encode()
         return {"phase": w["phase"] if w else "NOT_ESTABLISHED", "journal_sha256": d.sha(d.canonical(value)),
             "scheduler_sha256": d.sha(self.ops.scheduler()), "process_observation": self.ops.processes(),
             "manual_launch_control": "PROCEDURAL_ONLY", "universal_exclusion": False,
-            "native_qualified": False, "production_authorized": False}
+            "native_qualified": native and d.sha(operation) == SCHEDULER_OPERATION_PIN,
+            "native_qualification_scope": "ISOLATED_LINUX_SCHEDULER_OPERATION_ONLY",
+            "production_authorized": admitted, "authorization_scope": "CURRENT_OPERATION_ONLY"}
+
+
+class MaintenanceCoordinator:
+    """One explicitly authorized operation, using the existing transaction/provider.
+
+    Context digests bind decisions, not authenticate them. Native calls additionally
+    require interactive /dev/tty authorization for this exact operation. Manual
+    exclusion remains procedural. No retry or finally-based recovery is performed.
+    """
+    def __init__(self, provider, source_reader):
+        self.provider = provider
+        self.controller = provider.controller
+        require(self.controller is not None and callable(source_reader), "WINDOW_NOT_BOUND")
+        self.source_reader = source_reader
+
+    @classmethod
+    def native(cls, original, inventory):
+        # Construction/inspection is read-only. Original bytes and the full
+        # explicit inventory must be reviewed; do not invent production entries.
+        ops = NativeOps()
+        fs = d.NativeFS()
+        source = d.source_gate()
+        require(d.sha(original) == "3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9",
+                "WINDOW_ORIGINAL_SCHEDULER_MISMATCH")
+        provider = WindowConsumers(ops, original, list(d.CRON), inventory)
+        require(d.sha(provider.reduced) == "443485cfb47920db8d6263e5266eb9f68811e81c06390a983a7006aac581b930",
+                "WINDOW_REDUCED_SCHEDULER_MISMATCH")
+        provider.bind(fs, source)
+        return cls(provider, d.source_gate)
+
+    def context(self, action):
+        require(action == "PREPARE" or action in ACTIONS, "WINDOW_ACTION_INVALID")
+        p, c = self.provider, self.controller
+        fresh = self.source_reader()
+        d.check_sources(fresh)
+        require(fresh == c.source, "SOURCE_IDENTITY_MISMATCH")
+        observed = process_evidence(p.ops.processes())
+        require(observed["boot_id"] == p.ops.boot_id and
+                0 <= p.ops.now() - observed["observed_at"] <= 30, "PROCESS_EVIDENCE_STALE")
+        # The timestamp is checked for freshness, but advancing wall-clock time
+        # alone must not invalidate an otherwise identical decision context.
+        process = {k: v for k, v in observed.items() if k != "observed_at"}
+        scheduler = p.ops.scheduler()
+        require(scheduler in (p.original, p.reduced), "WINDOW_SCHEDULER_DRIFT")
+        runtime = {}
+        for target in d.ORDER:
+            snap = c.fs.snapshot(target)
+            runtime[target] = c.fs.snapshot(target, d.MODES[target]) if snap["exists"] else snap
+        if action == "PREPARE":
+            require(not c.fs.transaction_present(), "TRANSACTION_EXISTS")
+            evidence = d.preflight(c.fs, fresh, p)
+            require(scheduler == p.original, "WINDOW_SCHEDULER_DRIFT")
+            journal_sha, preflight_sha = None, d.sha(d.canonical(evidence))
+        else:
+            value = c._journal()
+            journal_sha, preflight_sha = d.sha(d.canonical(value)), None
+        return {"action": action, "release": d.RELEASE,
+            "manifest_sha256": d.sha(d.canonical({"files": d.MANIFEST})),
+            "controller_sha256": PIN, "runtime_sha256": d.sha(d.canonical(runtime)),
+            "journal_sha256": journal_sha, "preflight_sha256": preflight_sha,
+            "scheduler_sha256": d.sha(scheduler), "original_sha256": d.sha(p.original),
+            "reduced_sha256": d.sha(p.reduced), "inventory_sha256": d.sha(d.canonical(p.inventory)),
+            "approved_jobs": list(p.approved), "process_observation": process,
+            "session": p.session, "boot_id": p.ops.boot_id,
+            "manual_launch_control": "PROCEDURAL_ONLY", "universal_exclusion": False}
+
+    def execute(self, action, authorization):
+        p, c = self.provider, self.controller
+        # A matching input dict alone is never native authority.
+        p.ops.live_gate()
+        if isinstance(p.ops, NativeOps):
+            admission = p.ops._admission
+            require(admission.coordinator is self and admission.action == action and
+                admission.authorization_sha256 == d.sha(d.canonical(authorization)),
+                "NATIVE_OPERATION_AUTHORIZATION_MISMATCH")
+        current = self.context(action)
+        keys = {"action", "context_sha256", "reference", "operator", "expires_at",
+                "exclusive_responsibility", "risks_acknowledged"}
+        a = authorization
+        require(type(a) is dict and set(a) == keys and a["action"] == action and
+            a["context_sha256"] == d.sha(d.canonical(current)) and
+            type(a["reference"]) is str and d.AUTH.fullmatch(a["reference"]) and
+            type(a["operator"]) is str and d.AUTH.fullmatch(a["operator"]) and
+            type(a["expires_at"]) is int and 0 < a["expires_at"] - p.ops.now() <= 3600 and
+            a["exclusive_responsibility"] is True and a["risks_acknowledged"] == RISKS,
+            "COORDINATOR_AUTHORIZATION_INVALID")
+        require(current["process_observation"]["inspection_complete"] and
+                not current["process_observation"]["known_active"], "KNOWN_CONSUMERS_NOT_DRAINED")
+        # Bind the durable authorization reference to the complete decision,
+        # including its original external reference, without extending the journal.
+        reference = "PE73_" + d.sha(d.canonical(a))
+        if action == "PREPARE":
+            return c.prepare(reference, current["preflight_sha256"])
+        grant = {k: a[k] for k in ("operator", "expires_at", "exclusive_responsibility", "risks_acknowledged")}
+        grant.update(action=action, reference=reference, journal_sha256=current["journal_sha256"],
+            scheduler_sha256=current["scheduler_sha256"], session=p.session, boot_id=p.ops.boot_id)
+        if action in {"COMMIT", "ROLLBACK"}:
+            p.authorize_runtime(grant)
+            return getattr(c, action.lower())(reference, current["journal_sha256"])
+        return p.progress(action, grant)
+
+
+    def interactive(self, action, reference):
+        """Native entry: one fresh named operator decision, never a receipt loader."""
+        require(type(self.provider.ops) is NativeOps, "NATIVE_OPS_REQUIRED")
+        require(type(reference) is str and d.AUTH.fullmatch(reference), "WINDOW_AUTHORIZATION_INVALID")
+        ops = self.provider.ops
+        require(getattr(ops, "_admission", None) is None, "NATIVE_OPERATION_ALREADY_ACTIVE")
+        context = self.context(action)
+        authorization = {"action": action, "context_sha256": d.sha(d.canonical(context)),
+            "reference": reference, "operator": "UID1000_jazofv1", "expires_at": ops.now() + 300,
+            "exclusive_responsibility": True, "risks_acknowledged": list(RISKS)}
+        challenge = d.sha(d.canonical(authorization))
+        prompt = {"target": "PI3 NUT&PIHOLE", "operator": "jazofv1", "context": context,
+            "authorization": authorization, "manual_launch_control": "PROCEDURAL_ONLY",
+            "instruction": "Separately authorize this operation only; prohibit all independent/manual affected callers until explicit RELEASE. Acknowledge every listed residual risk."}
+        expected = "AUTHORIZE " + action + " " + challenge
+        response = tty_line(json.dumps(prompt, sort_keys=True) + "\nType exactly: " + expected + "\n")
+        require(response == expected, "NATIVE_OPERATOR_AUTHORIZATION_REFUSED")
+        require(self.context(action) == context and ops.now() < authorization["expires_at"],
+                "NATIVE_AUTHORIZATION_CONTEXT_DRIFT")
+        admission = _NativeAdmission(ops, self, action, authorization)
+        ops._admission = admission
+        try:
+            return self.execute(action, authorization)
+        finally:
+            # Forget authority only. Never restore cron, roll back, or release.
+            ops._admission = None
+
+
+class _NativeAdmission:
+    """Ephemeral internal authority; not serialized or accepted from operator JSON."""
+    def __init__(self, ops, coordinator, action, authorization):
+        self.ops, self.coordinator, self.action = ops, coordinator, action
+        self.pid, self.boot_id = os.getpid(), ops.boot_id
+        self.expires_at = authorization["expires_at"]
+        self.monotonic_deadline = time.monotonic() + max(0, self.expires_at - ops.now())
+        self.authorization_sha256 = d.sha(d.canonical(authorization))
+        self.reference = "PE73_" + self.authorization_sha256
+        self.scheduler_attempted = False
+
+
+def tty_line(prompt):
+    """Bounded controlling-terminal input, never stdin, an env var or input file."""
+    fd = os.open("/dev/tty", os.O_RDWR | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NOCTTY)
+    try:
+        require(stat.S_ISCHR(os.fstat(fd).st_mode) and os.isatty(fd), "NATIVE_TTY_REQUIRED")
+        raw = prompt.encode("utf-8")
+        while raw:
+            written = os.write(fd, raw)
+            require(written > 0, "NATIVE_TTY_WRITE_FAILED")
+            raw = raw[written:]
+        response = os.read(fd, 257)
+        require(len(response) <= 256 and response.endswith(b"\n") and response.count(b"\n") == 1,
+                "NATIVE_TTY_RESPONSE_INVALID")
+        return response[:-1].decode("ascii", "strict")
+    finally:
+        os.close(fd)
+
+
+def native_main():
+    """Interactive session only; each action still needs its own exact confirmation."""
+    ops = NativeOps()
+    fs = d.NativeFS()
+    current = ops.scheduler()
+    original_sha = "3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9"
+    original = current if d.sha(current) == original_sha else fs.read(BACKUP)
+    # This exact hash and the reduced hash bind the full already-reviewed table.
+    lines = original.decode("utf-8", "strict").splitlines()
+    inventory = {line: "EXCLUDE" if line in d.CRON else "PRESERVE"
+        for line in lines if line.strip() and not line.lstrip().startswith("#")}
+    require(len(inventory) == 12 and list(inventory.values()).count("EXCLUDE") == 3,
+            "WINDOW_SCHEDULER_INVENTORY_CHANGED")
+    coordinator = MaintenanceCoordinator.native(original, inventory)
+    for _ in range(64):
+        text = tty_line("PI3 NUT&PIHOLE: enter ACTION EXTERNAL_REFERENCE or STOP. No action is automatic.\n")
+        if text == "STOP":
+            return 0
+        parts = text.split(" ")
+        require(len(parts) == 2, "WINDOW_ACTION_INVALID")
+        result = coordinator.interactive(*parts)
+        print(json.dumps({"result": "PASS_EXPLICIT_OPERATION", "action": parts[0],
+            "evidence": result, "pe7_executed": False, "universal_exclusion": False}, sort_keys=True), flush=True)
+        if parts[0] == "RELEASE":
+            return 0
+    raise d.Failure("NATIVE_SESSION_OPERATION_LIMIT")
+
+
+if __name__ == "__main__":
+    try:
+        status = native_main()
+    except BaseException as error:
+        code = error.code if isinstance(error, d.Failure) else "NATIVE_OPERATION_STOPPED_UNCERTAIN"
+        print(json.dumps({"result": "FAIL_STOP", "failure_code": code,
+            "automatic_recovery": False, "consumer_release_implied": False,
+            "pe7_executed": False, "STOP_REQUIRED": True}, sort_keys=True), flush=True)
+        status = 1
+    raise SystemExit(status)

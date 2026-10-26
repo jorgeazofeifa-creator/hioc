@@ -3090,3 +3090,344 @@ CORRECTION_INDEPENDENT_ACCEPTANCE=NOT_PERFORMED; CORRECTION_PUBLICATION=NOT_PERF
 Exactly one next action: independent acceptance of the exact uncommitted
 publication-stable source-identity correction before separate publication authority.
 STOP_REQUIRED=TRUE.
+
+
+### PE-7.3 bounded native coordinator implementation — 2026-10-26
+
+PE73_NATIVE_EXECUTION_IMPLEMENTATION=PARTIAL.
+Authority: Complete Bounded Native Maintenance-Window Execution, supplied attachment
+d8240a21-9c5a-43a3-b053-3925fe672677. Windows implementation and focused validation
+only; staging, publication and all production operations are unauthorized.
+Baseline: clean main and origin/main at85c1a4f1f270c48ef9b00efe55eae759265303ab.
+
+The operator supplied source-integrity PASS, verified five replacement/eight absent
+new targets, native scheduler/process observation PASS and in-memory cron reduction
+PASS. These are OPERATOR_SUPPLIED, not Codex production observations. Original cron
+SHA2563f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9;
+reduced SHA256443485cfb47920db8d6263e5266eb9f68811e81c06390a983a7006aac581b930.
+Twelve active entries: exactly three excluded, nine preserved. The supplied five
+infrastructure jobs and four additional HIOC-related jobs have no demonstrated
+dependency requiring exclusion. No new dependency is asserted. Storage approximately
+4029 MiB is operator-supplied evidence, not a fresh capacity guarantee.
+The earlier consolidated assessment caught a different dynamically loaded Failure
+class; neither native gate is changed to accommodate that assessment error.
+
+Implementation: MaintenanceCoordinator in tools/pe73_maintenance_window.py binds
+WindowConsumers and its inherited WindowController without duplicating publication,
+rollback, backup, journal or security algorithms. Its native constructor uses the
+existing target identity, NativeFS and exact source_gate; it checks both approved
+cron digests and an explicit complete inventory, with only the known three exclusions.
+The read-only context includes actual13 target snapshots (security and ancestors),
+fresh source/payload validation, exact scheduler, process identities/completeness,
+boot, session, journal, inventory and requested action. Per-action input must name
+the operator, external reference, complete context digest, expiry, exclusive manual
+responsibility and all six accepted residual risks. A context-bound authorization
+digest is retained as the existing durable authorization reference; the window's
+existing grant hash/order/uniqueness rules remain. Hashes bind supplied decisions,
+not authenticate their provenance. They cannot unlock native qualification.
+
+The coordinator supports explicit PREPARE, PRESERVE, EXCLUDE, DRAIN, ESTABLISH,
+COMMIT, ROLLBACK, ATTACH, AUTHORIZE_RELEASE, RESTORE_SCHEDULER and RELEASE through
+the existing methods. Every operation refreshes context; runtime publication still
+rechecks readiness and actual filesystem provenance. Manual launch control stays
+PROCEDURAL_ONLY; universal exclusion is false. No generic enabling CLI, environment
+variable, acceptance receipt loader, privileged mechanism, process killing or
+automatic recovery is introduced. No runtime engine is executed.
+
+The existing scheduler operation compares exact expected bytes, attempts only one
+fixed /usr/bin/crontab - installation with bounded timeout/sanitized environment,
+and rereads exact installed bytes. EXCLUSION_UNCERTAIN/RESTORE_UNCERTAIN is durable
+before the command. Error, timeout, lost acknowledgment or bad readback leaves an
+uncertain phase without retry, restoration or release. Proven interrupted artifact
+prefixes require fresh attachment/drain and separately authorized rollback; pending
+or unverifiable publication/rollback refuses adoption. Restart requires fresh
+session attachment and drain; reboot invalidates old readiness. Release requires
+actual complete installation or verified rollback, then separate release,
+restoration and procedural-release authorizations. Controller/SSH failure and
+window expiry do not restore cron.
+
+Validation:19 new real-controller/provider/coordinator integration tests PASS plus
+69 affected provider/process/parser/identity/real-Git tests PASS:88 run,88 passed,
+zero failures/errors/skips/class-level skips. The new tests use real Windows fixture
+bytes and the actual fixed scheduler read/install functions against a synthetic
+subprocess endpoint; native authority and POSIX metadata are explicit stand-ins.
+They cover complete13-file publication, preserved unrelated entries, five restored
+replacements/eight removed new files, process visibility/active refusal, source and
+runtime drift, invalid/expired authorization, interrupted publication/rollback,
+restart/reboot, scheduler drift, timeout, lost acknowledgment, bad readback and
+native-gate refusal. No live crontab command is launched. Both executable source
+hashes were identical before/after each valid run. The initial sandbox attempt
+stopped at fixture setup/cleanup permissions (one test, two environment errors);
+its report is preserved separately. The same harness then passed with escalation.
+The unchanged controller110 and broker54 historical tests are retained evidence,
+not rerun. No full historical suite was run.
+
+Current provider SHA256:7fe35ddaae5d182e5a23f545253cc7cdcddaadde0127a9b06d76e142f511dba8
+Current provider-test SHA256:6024f29daaec23e9009164473a08c16e571eab06b9c10f3659b0ed011fc84721
+Controller SHA256 remains76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2.
+Static verification:13 immutable delivery identities,39 successor identities and
+449 protected identities PASS; original contract, amendment, core controller,
+experimental broker and all unrelated tracked files unchanged. Only two existing
+document identity entries are refreshed in the successor record. Git diff/check,
+empty index, baseline HEAD/origin/main and unchanged stash are verified.
+
+Remaining native requirement / bounded qualification disposition:
+NATIVE_WINDOW_ACCEPTANCE_REQUIRED and NATIVE_SCHEDULER_NOT_QUALIFIED remain
+unconditional. No matching authorization, publication identity or Windows test can
+bypass either. Consequently this is a PARTIAL implementation, not a completed or
+production-capable native execution claim. The fixed scheduler command installs
+the invoking UID1000 user's live table; no alternate isolated scheduler target is
+established by existing PI3 evidence. A mocked command, read-only inventory or
+syntax check cannot qualify real installation, single-attempt uncertainty handling
+and exact restoration. No safe contained PI3 installation command can therefore
+be supplied under the prohibition on changing that live table merely for testing.
+
+One consolidated qualification requirement, requiring separate authorization:
+provide an isolated non-production Linux scheduler target with no live HIOC jobs;
+exercise the same fixed bounded install/readback operation against an exact saved
+table, a three-entry-reduced table with all unrelated entries preserved, and exact
+restoration; capture return codes/readback/uncertainty without retries or touching
+the PI3 live table. Its target/isolation is currently NOT_ESTABLISHED. This is the
+smallest remaining scheduler evidence requirement, not a new architecture or
+permission to create an account, use sudo, alter scheduling or deploy. No operator
+mutation command is issued in this candidate. Native window acceptance and later
+execution authorization still remain separately necessary.
+
+Exactly one next action: obtain separate authorization and a defined isolated
+non-production Linux scheduler target for that bounded qualification.
+PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED; BROKER=EXPERIMENTAL_UNADOPTED.
+CODEX_PI3_ACCESS=FALSE; CODEX_PI5_ACCESS=FALSE; PRODUCTION_MUTATED=FALSE.
+STAGING_PERFORMED=FALSE; COMMIT_CREATED=FALSE; PUSH_PERFORMED=FALSE.
+
+
+### PE-7.3 native deployment readiness — 2026-10-26
+
+PE73_DEPLOYMENT_READINESS=READY_FOR_OPERATOR_AUTHORIZATION.
+Authority: Finish Native Deployment Readiness, supplied attachment
+e8bd7a64-9d97-478d-86be-bfa437481298. This supersedes the immediately preceding
+PARTIAL readiness disposition only. Earlier unavailable-environment findings,
+unconditional-gate descriptions, test failures and the five-file candidate are
+preserved as historical evidence. No contract/amendment or production record changes.
+Baseline main/origin/main85c1a4f1f270c48ef9b00efe55eae759265303ab, exact prior five
+unstaged paths, empty index, no untracked paths and unchanged stash were verified.
+
+#### Real native qualification (local, non-production)
+
+An already installed Ubuntu24.04 WSL2 environment was discovered on the Windows
+host. It is JorgePC, UID/GID1000:1000 (jazofv1), Python3.12.3, with an existing real
+/usr/bin/crontab. Its current-user crontab was exactly absent: exit1, empty stdout,
+exact C-locale absence message. /home/jazofv1/hioc was absent. No Docker/Podman
+executable was found; no infrastructure, host software or persistent service was
+created. The initial sandbox WSL listing denial was resolved through read-only
+escalation, not treated as proof that Linux was unavailable.
+
+The isolated qualification installed a UUID-bound fixture containing a comment and
+four nonexecuting February31 /usr/bin/true entries, reduced it by exactly three
+entries using the actual provider NativeOps.install_scheduler operation, then
+restored the exact fixture. Each native operation was single-attempt and exact
+readback matched. After successful verification only, the exact fixture was
+removed once and absence was verified. No unrelated schedule was overwritten.
+Only target/qualification admission was specialized to the explicitly identified
+non-production WSL account; scheduler observation/install code and all subprocesses
+were real. There were no mocks, scheduler API substitutions or automatic recovery.
+Three total install attempts: fixture creation, reduction, restoration; one exact
+fixture-removal attempt. The accepted native operation fingerprint is:
+8c7026ba84b748677381ea9adfef9334156795eabb16df059a2e752a90049e66.
+It binds the exact source of NativeOps.scheduler and NativeOps.install_scheduler,
+including fixed argv, timeout, environment, expected-state comparison and readback.
+Native scheduler admission checks that fingerprint; changing those functions
+invalidates qualification. No mutable qualification receipt can unlock the guard.
+
+Exact local scheduler qualification receipt (CODEX_OBSERVED_LOCAL, not PI3):
+```json
+{
+  "after": "EXACTLY_ABSENT",
+  "before": "EXACTLY_ABSENT",
+  "crontab_sha256": "d71b4e26034ec955cae7e7101a4b33f5923b3396a0e1e1893cd1274bbb51c3ec",
+  "fixture_cleanup": "EXACT_FIXTURE_REMOVED",
+  "fixture_remove_attempts": 1,
+  "fixture_sha256": "898ed40da0ba08117894db11b70d8884bfa31ba39cec12f1d370bf0968d6f360",
+  "gid": 1000,
+  "host": "JorgePC",
+  "install_attempts": 3,
+  "kernel": "6.18.54.1-microsoft-standard-WSL2",
+  "mocks": false,
+  "pi3_access": false,
+  "pi5_access": false,
+  "production_access": false,
+  "python": "3.12.3",
+  "qualified_at_unix": 1793042123,
+  "real_subprocesses": true,
+  "reduced_sha256": "b8fb7dc17927e2488a1ef6f14c87a8b60f8b57e7fa6a47db393dc147a9661b2d",
+  "restore_attempts": 1,
+  "result": "PASS_ISOLATED_REAL_LINUX_SCHEDULER",
+  "retry_performed": false,
+  "scheduler_operation_sha256": "8c7026ba84b748677381ea9adfef9334156795eabb16df059a2e752a90049e66",
+  "service_created": false,
+  "software_installed": false,
+  "target": "LOCAL_NON_PRODUCTION_WSL_UBUNTU_24_04",
+  "uid": 1000,
+  "unrelated_table_overwritten": false
+}
+```
+
+A separate contained Linux pseudo-terminal exercised the actual tty_line function
+with /dev/tty, not stdin. Bounded prompt/read and child exit0 PASS. The actual
+NativeOps constructor refused the WSL host with TARGET_IDENTITY. No scheduler or
+repository file changed in that check. Exact receipt:
+```json
+{
+  "child_exit_status": 0,
+  "controlling_tty_read_write": true,
+  "files_modified_in_repository": false,
+  "native_target_refusal_on_wsl": true,
+  "production_access": false,
+  "result": "PASS_REAL_LINUX_CONTROLLING_TTY",
+  "scheduler_modified": false,
+  "target": "LOCAL_NON_PRODUCTION_WSL",
+  "tty_function_sha256": "949f035f2beaaa76b448b96e8e2408ec791fef39251cd94a114df1f15ebafc7f"
+}
+```
+
+These results qualify the fixed Linux operation, not a PI3 execution, universal
+Linux/crontab compatibility, production health or consumer exclusion. PI3's exact
+scheduler and all source/runtime identities are still rechecked before mutation;
+unconfirmed native exit/readback remains uncertain and cannot be retried.
+
+#### Native execution/authorization completed
+
+The existing NativeOps, MaintenanceCoordinator, WindowConsumers and inherited
+WindowController remain the only execution path; the core controller is unchanged.
+NativeOps.live_gate now requires an internal, ephemeral admission created only after
+the controlling-terminal confirmation of an exact operation-specific digest.
+The prompt binds action, external authorization reference, UID1000_jazofv1,
+five-minute expiry, exact context and all six residual risks. The actual target is
+rechecked as Linux nutandpihole with real/effective UID/GID1000, current process and
+boot identity, wall expiry and monotonic deadline. A matching input dict, persisted
+journal, environment variable or command-line flag cannot create admission.
+Authority is forgotten in finally; cron restoration, rollback and release are never
+performed by finally. The manual no-launch commitment is procedural, not technical.
+
+Scheduler admission additionally requires the current action to be EXCLUDE or
+RESTORE_SCHEDULER, the exact qualified operation, the corresponding durable
+EXCLUSION_UNCERTAIN or RESTORE_UNCERTAIN journal phase, matching session/boot,
+latest action/reference and an unused one-attempt admission. Native receipts state
+the isolated Linux scheduler qualification scope explicitly, and distinguish
+CURRENT_OPERATION_ONLY authorization from any standing production permission.
+
+The interactive runner acquires the exact already-reviewed original/reduced cron
+and12-entry inventory (three exclusions/nine preserved), reads immutable13 payload
+objects, validates real targets and presents one action at a time. It does not
+automatically advance, retry, kill processes, alter services, run an engine, deploy
+HA, migrate Assets, or activate PE-7. Every operation needs a new typed exact digest.
+The original legacy controller CLI still refuses unsupported consumer coordination;
+the amended path does not weaken or bypass it. Broker remains experimental/unadopted.
+
+#### Validation and preservation
+
+Final Windows native harness:18 native-admission integration tests PASS plus88
+affected controller/provider/coordinator/real-Git tests PASS:106 run,106 passed,
+zero failures/errors/skips/class-level skips. The native-admission tests exercise
+the real admission/interactive/coordinator guards with explicitly synthetic target,
+process, TTY and scheduler endpoint observations; they are not native production
+evidence. Complete13-artifact installation and separately authorized rollback,
+independent filesystem verification, scheduler restoration/release, invalid identity,
+process activity, stale/mismatched authority, reboot, scheduler drift, interrupted
+publication and failed restoration are covered. Real Linux scheduler and tty checks
+above provide the actual OS-operation evidence separately. No unrelated historical
+suite was rerun. The unchanged controller110 and broker54 evidence remains retained.
+
+Two development attempts are preserved, not counted as passing validation: the
+first stopped at3 run/2 passed/1 error because the literal seven-character username
+did not satisfy the existing eight-character authorization identifier minimum.
+The runner now uses UID1000_jazofv1; the validator is unchanged. The next attempt
+stopped at16 run/15 passed/1 fixture failure: its tty-denial test accidentally called
+the already mocked tty reader. The test now calls the saved real reader with explicit
+Windows substitutes for POSIX open flags. No production gate was weakened for it.
+Final executable hashes were unchanged before/after both successful Windows runs.
+
+Provider SHA256:9f363fb6fbdc1a40ccd0e8d150c18a7340c8f40565647c182d63af68487db920
+Provider tests SHA256:8de66c13e1e0a8ec33c09c92b1784622717d79f2a24aed63fcee9cb641eaffe9
+Controller remains76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2.
+Static checks verify13 immutable delivery identities,39 successor identities and
+449 protected identities; original contract and verbatim amendment unchanged.
+Only the two existing document identity entries are refreshed in the successor
+record. Five total unstaged paths, empty index, zero untracked paths, unchanged
+HEAD/origin/main85c1a4f1 and stash, diff/check PASS. No publication performed.
+
+#### Deferred deployment runbook — PI3 NUT&PIHOLE
+
+This runbook is PREPARED, NOT AUTHORIZED TO EXECUTE. First obtain controlled
+publication authorization and publish these accepted bytes; then separately
+authorize operator-run source synchronization and the bounded production window.
+Codex must not access PI3/PI5. No runtime copy, scheduler mutation or PE-7 execution
+is authorized by this Windows assignment. The command below only applies after
+the corrected, hash-matching candidate is published and synchronized.
+
+Preflight: operate as jazofv1 on nutandpihole. Preserve the approved manual no-launch
+restriction and exclusive operator responsibility. Check that the synchronized
+release-source is clean and contains these exact tool bytes. The runner itself
+rechecks host/UID/GID, root/origin/ancestry/cleanliness,13 immutable source objects,
+target security/provenance, exact original/reduced scheduler and fresh process state.
+Do not resolve a failure by changing schedules, hashes, permissions or scope.
+
+Prepared operator launch command (not authorized now):
+```sh
+/usr/bin/python3 -I -S -B - <<'PY'
+import hashlib, pathlib, runpy, stat
+root = pathlib.Path('/home/jazofv1/hioc-release-source')
+expected = {
+    'tools/hioc-pe73-pi3-delivery.py': '76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2',
+    'tools/pe73_maintenance_window.py': '9f363fb6fbdc1a40ccd0e8d150c18a7340c8f40565647c182d63af68487db920',
+}
+for relative, digest in expected.items():
+    path = root / relative
+    info = path.lstat()
+    if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+        print('RESULT=FAIL_STOP_TOOLING_IDENTITY')
+        raise SystemExit(1)
+runpy.run_path(str(root / 'tools/pe73_maintenance_window.py'), run_name='__main__')
+PY
+```
+Immediately capture the process status in the same SSH shell:
+```sh
+PE73_EXIT_STATUS=$?
+printf 'PE73_EXIT_STATUS=%s\n' "$PE73_EXIT_STATUS"
+```
+
+Execution: enter one action and a unique external authorization reference at each
+prompt. References use8-96 ASCII letters/digits/underscore/hyphen. Inspect the full
+context/risk prompt and type only the exact freshly displayed AUTHORIZE line when
+that operation is separately authorized. Do not prefeed or replay confirmations.
+The intended normal sequence is PREPARE, PRESERVE, EXCLUDE, DRAIN, ESTABLISH, COMMIT,
+AUTHORIZE_RELEASE, RESTORE_SCHEDULER, RELEASE. Each action needs its own reference
+and exact confirmation. PREPARE durably backs up five originals and stages13 payloads;
+PRESERVE saves exact cron before EXCLUDE; COMMIT publishes dependency-first with
+the shared incident executable last. Verification reads actual filesystem state,
+not only journal labels. STOP abandons the session without restoring/releasing.
+
+Verification: preserve each sanitized operation receipt and exit status. Require
+COMMITTED/pending-null and actual installed identity matches for all13 targets;
+then obtain separate release authorization. Require exact original cron readback
+after RESTORE_SCHEDULER and final RELEASED evidence. This delivers inactive artifacts
+only; it does not authorize monitoring, notifications, Asset migration or PE-7.4.
+Existing cron consumers can resume only after verified completion or authorized
+rollback under the accepted manual-window assurance model.
+
+Recovery: any FAIL_STOP, timeout, SSH loss, unexpected process, scheduler edit,
+identity drift or uncertain effect ends dependent work. Preserve journal/backups
+and the manual no-launch restriction. Do not retry, re-run cron installation,
+automatically restore, or infer release from expiry. A fresh runner after restart
+or reboot requires a separately authorized ATTACH and fresh DRAIN before further
+consequential operations; it does not advance/adopt partial state. ROLLBACK requires
+its own authorization and exact installed/baseline provenance. Pending publication,
+interrupted rollback, PRESERVATION_UNCERTAIN, EXCLUSION_UNCERTAIN or RESTORE_UNCERTAIN
+cannot be automatically adopted or retried; stop for explicit evidence disposition.
+Only fully verified installation or verified authorized rollback can authorize
+scheduler restoration and final procedural release. No force/repair override exists.
+
+Exactly one next action: obtain controlled publication authorization for this
+validated five-file candidate. No immediate PI3 action is authorized.
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+CODEX_PI3_ACCESS=FALSE; CODEX_PI5_ACCESS=FALSE; PRODUCTION_DEPLOYMENT_PERFORMED=FALSE.
+STAGING_PERFORMED=FALSE; COMMIT_CREATED=FALSE; PUSH_PERFORMED=FALSE.

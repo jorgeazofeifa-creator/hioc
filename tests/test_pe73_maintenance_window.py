@@ -218,7 +218,7 @@ class WindowTests(unittest.TestCase):
         with patch.object(native,"scheduler_gate"),patch.object(native,"live_gate"),patch.object(w.subprocess,"run",side_effect=install) as call:
             native.install_scheduler(b"# synthetic replacement\n",d.sha(self.raw))
         self.assertEqual(call.call_count,1)
-    def test_native_mutation_gates_unconditionally_refuse(self):
+    def test_native_mutation_gates_refuse_without_admission(self):
         native=w.NativeOps.__new__(w.NativeOps)
         with self.assertRaisesRegex(d.Failure,"NATIVE_WINDOW_ACCEPTANCE_REQUIRED"):native.live_gate()
         with self.assertRaisesRegex(d.Failure,"NATIVE_SCHEDULER_NOT_QUALIFIED"):native.install_scheduler(b"x","0"*64)
@@ -519,7 +519,7 @@ class PublicationStableIntegrationTests(unittest.TestCase):
             self.publish_fixture_tools(root);module,source=self.gate(root,self.provider(root))
             fs=prior.FixtureFS(Path(directory))
             raw=("\n".join(module.d.CRON)+"\n").encode();inventory={x:"EXCLUDE" for x in module.d.CRON}
-            # Exercise actual unconditional native methods on Windows; no gate is
+            # Exercise actual default-deny native methods on Windows; no gate is
             # replaced. __new__ avoids only the Linux target-observation constructor.
             ops=module.NativeOps.__new__(module.NativeOps)
             provider=module.WindowConsumers(ops,raw,list(module.d.CRON),inventory)
@@ -560,3 +560,399 @@ class PublicationStableIntegrationTests(unittest.TestCase):
 
 
 if __name__=="__main__":unittest.main()
+
+
+class CoordinatorIntegrationTests(unittest.TestCase):
+    """Actual coordinator + inherited controller + fixed scheduler operation.
+
+    Only the OS target/qualification authority, filesystem metadata and crontab
+    subprocess endpoint are synthetic. No subprocess is launched by these tests.
+    """
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix="hioc-pe73-coordinator-")
+        self.addCleanup(self.temp.cleanup)
+        self.fs = prior.FixtureFS(Path(self.temp.name))
+        self.original = ("# retained comment\n" + "\n".join(d.CRON) +
+                         "\n7 * * * * unrelated-job\n").encode()
+        self.inventory = {x: "EXCLUDE" for x in d.CRON}
+        self.inventory["7 * * * * unrelated-job"] = "PRESERVE"
+        self.ops = Ops(self.original)
+        self.mode = "PASS"
+        self.commands = []
+        self.ops.scheduler = lambda: w.NativeOps.scheduler(self.ops)
+        self.ops.scheduler_gate = lambda: None  # Synthetic qualification ONLY.
+        self.ops.install_scheduler = lambda raw, expected: w.NativeOps.install_scheduler(self.ops, raw, expected)
+        def transport(argv, **kwargs):
+            self.assertIn(argv, (["/usr/bin/crontab", "-l"], ["/usr/bin/crontab", "-"]))
+            self.assertNotIn("shell", kwargs)
+            self.assertEqual(kwargs["timeout"], 10)
+            self.assertEqual(kwargs["env"], {"PATH": "/usr/bin:/bin", "LANG": "C"})
+            if argv[-1] == "-l":
+                self.assertEqual(kwargs["stdin"], subprocess.DEVNULL)
+                return subprocess.CompletedProcess(argv, 0, self.ops.raw, b"")
+            self.commands.append(kwargs["input"])
+            if self.mode == "TIMEOUT":
+                raise subprocess.TimeoutExpired(argv, 10)
+            if self.mode == "LOST_ACK":
+                self.ops.raw = kwargs["input"]
+                return subprocess.CompletedProcess(argv, 1, b"", b"private synthetic failure")
+            if self.mode == "READBACK_DRIFT":
+                self.ops.raw = kwargs["input"] + b"# concurrent editor\n"
+            elif self.mode != "NONZERO":
+                self.ops.raw = kwargs["input"]
+            return subprocess.CompletedProcess(argv, 1 if self.mode == "NONZERO" else 0, b"", b"")
+        self.patch = patch.object(w.subprocess, "run", side_effect=transport)
+        self.patch.start(); self.addCleanup(self.patch.stop)
+        self.reader = lambda: dict(prior.SOURCE)
+        self.bind()
+        self.sequence = 0
+
+    def bind(self):
+        self.provider = w.WindowConsumers(self.ops, self.original, list(d.CRON), self.inventory)
+        self.c = self.provider.bind(self.fs, dict(prior.SOURCE))
+        self.coordinator = w.MaintenanceCoordinator(self.provider, lambda: self.reader())
+
+    def authorization(self, action):
+        self.sequence += 1
+        return {"action": action, "context_sha256": d.sha(d.canonical(self.coordinator.context(action))),
+            "reference": "EXTERNAL_OPERATION_" + str(self.sequence), "operator": "OPERATOR_JORGE",
+            "expires_at": self.ops.clock + 600, "exclusive_responsibility": True,
+            "risks_acknowledged": list(w.RISKS)}
+
+    def step(self, action):
+        return self.coordinator.execute(action, self.authorization(action))
+
+    def establish(self):
+        for action in ("PREPARE", "PRESERVE", "EXCLUDE", "DRAIN", "ESTABLISH"):
+            self.step(action)
+
+    def install(self):
+        self.establish(); self.step("COMMIT")
+
+    def release(self):
+        for action in ("AUTHORIZE_RELEASE", "RESTORE_SCHEDULER", "RELEASE"):
+            self.step(action)
+
+    def test_complete_actual_transaction_and_scheduler_path(self):
+        self.install()
+        self.assertEqual(self.fs.publications, list(d.ORDER))
+        self.assertEqual(self.c.verify()["installed_count"], 13)
+        self.assertEqual(len(self.c._journal()["baseline"]), 13)
+        self.assertEqual(self.fs.read(w.BACKUP), self.original)
+        self.assertEqual(self.ops.raw, b"# retained comment\n7 * * * * unrelated-job\n")
+        self.release()
+        self.assertEqual(self.provider.inspect()["phase"], "RELEASED")
+        self.assertEqual(self.commands, [self.provider.reduced, self.original])
+        self.fs.assert_unrelated(self)
+
+    def test_separate_rollback_restores_five_and_removes_eight(self):
+        self.install(); self.step("ROLLBACK"); self.release()
+        self.assertEqual(self.c._journal()["state"], "ROLLED_BACK")
+        for target in d.ORDER:
+            if target in prior.BASE:
+                self.assertEqual(self.fs.read(target, d.MODES[target]), prior.BASE[target])
+            else:
+                self.assertFalse(self.fs.snapshot(target)["exists"])
+        self.fs.assert_unrelated(self)
+
+    def test_primary_publication_failure_does_not_restore_scheduler(self):
+        self.establish()
+        self.fs.fail = lambda point: point == "PUBLISH:" + d.ORDER[2]
+        with self.assertRaises(OSError): self.step("COMMIT")
+        self.fs.fail = lambda point: False
+        self.assertEqual(self.c._journal()["pending"], d.ORDER[2])
+        count = len(self.commands)
+        self.bind()
+        for action in ("COMMIT", "ROLLBACK", "AUTHORIZE_RELEASE", "RESTORE_SCHEDULER", "RELEASE", "ATTACH"):
+            with self.subTest(action=action), self.assertRaises(d.Failure): self.step(action)
+        self.assertEqual(len(self.commands), count)
+        self.assertEqual(self.ops.raw, self.provider.reduced)
+
+    def test_recorded_partial_prefix_allows_only_separate_verified_rollback(self):
+        self.establish()
+        self.c.fault = lambda point: (_ for _ in ()).throw(OSError("synthetic interruption")) if point == "INSTALLED:" + d.ORDER[1] else None
+        with self.assertRaises(OSError): self.step("COMMIT")
+        self.c.fault = lambda point: None
+        self.assertIsNone(self.c._journal()["pending"])
+        self.bind(); self.step("ATTACH"); self.step("DRAIN")
+        with self.assertRaises(d.Failure): self.step("COMMIT")
+        self.step("ROLLBACK"); self.release()
+        self.assertEqual(self.c._journal()["state"], "ROLLED_BACK")
+
+    def test_interrupted_rollback_cannot_be_adopted_or_released(self):
+        self.install()
+        self.fs.fail = lambda point: point == "PUBLISH:" + next(reversed(prior.BASE))
+        with self.assertRaises(OSError): self.step("ROLLBACK")
+        self.fs.fail = lambda point: False
+        self.bind()
+        for action in ("ATTACH", "ROLLBACK", "AUTHORIZE_RELEASE", "RESTORE_SCHEDULER", "RELEASE"):
+            with self.subTest(action=action), self.assertRaises(d.Failure): self.step(action)
+        self.assertEqual(len(self.commands), 1)
+
+    def test_restart_requires_attachment_and_new_drain(self):
+        self.install(); self.bind()
+        with self.assertRaises(d.Failure): self.step("AUTHORIZE_RELEASE")
+        self.step("ATTACH")
+        with self.assertRaises(d.Failure): self.step("AUTHORIZE_RELEASE")
+        self.step("DRAIN"); self.release()
+
+    def test_reboot_invalidates_prior_drain_and_authorization(self):
+        self.install(); old = self.authorization("AUTHORIZE_RELEASE")
+        self.ops.boot_id = "BOOT_ID_2"
+        with self.assertRaises(d.Failure): self.coordinator.execute("AUTHORIZE_RELEASE", old)
+        with self.assertRaises(d.Failure): self.step("AUTHORIZE_RELEASE")
+        self.bind(); self.step("ATTACH"); self.step("DRAIN"); self.release()
+
+    def test_unknown_and_extra_authorization_fields_refuse_without_mutation(self):
+        for change in ({"exclusive_responsibility": False}, {"risks_acknowledged": []},
+                       {"expires_at": self.ops.clock}, {"context_sha256": "0"*64},
+                       {"approved": True}, {"action": "COMMIT"}):
+            a = self.authorization("PREPARE"); a.update(change)
+            with self.subTest(change=change), self.assertRaises(d.Failure):
+                self.coordinator.execute("PREPARE", a)
+        self.assertFalse(self.fs.transaction_present()); self.assertEqual(self.commands, [])
+
+    def test_source_changes_between_decision_and_operation_refuse(self):
+        a = self.authorization("PREPARE")
+        self.reader = lambda: {**prior.SOURCE, d.ORDER[0]: b"corrupt"}
+        with self.assertRaises(d.Failure): self.coordinator.execute("PREPARE", a)
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_runtime_changes_between_decision_and_operation_refuse(self):
+        a = self.authorization("PREPARE")
+        self.fs.path(next(iter(prior.BASE))).write_bytes(b"drift")
+        with self.assertRaises(d.Failure): self.coordinator.execute("PREPARE", a)
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_process_change_invalidates_context(self):
+        a = self.authorization("PREPARE")
+        self.ops.active = [{"pid": 1, "start_ticks": 2, "command_sha256": "a"*64}]
+        with self.assertRaises(d.Failure): self.coordinator.execute("PREPARE", a)
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_incomplete_inspection_cannot_admit_operation(self):
+        self.ops.complete = False
+        with self.assertRaises(d.Failure): self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_scheduler_edit_invalidates_decision(self):
+        a = self.authorization("PREPARE"); self.ops.raw += b"# concurrent edit\n"
+        with self.assertRaises(d.Failure): self.coordinator.execute("PREPARE", a)
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_failed_or_ambiguous_restoration_never_retries(self):
+        self.install(); self.step("AUTHORIZE_RELEASE"); self.mode = "LOST_ACK"
+        with self.assertRaisesRegex(d.Failure, "SCHEDULER_INSTALL_UNCONFIRMED"):
+            self.step("RESTORE_SCHEDULER")
+        self.assertEqual(self.ops.raw, self.original)
+        self.assertEqual(self.c._journal()["window"]["phase"], "RESTORE_UNCERTAIN")
+        for action in ("RESTORE_SCHEDULER", "RELEASE", "ATTACH"):
+            with self.subTest(action=action), self.assertRaises(d.Failure): self.step(action)
+        self.assertEqual(len(self.commands), 2)
+
+    def test_timeout_exclusion_is_single_attempt_with_durable_intent(self):
+        self.step("PREPARE"); self.step("PRESERVE"); self.mode = "TIMEOUT"
+        with self.assertRaises(subprocess.TimeoutExpired): self.step("EXCLUDE")
+        self.assertEqual(self.c._journal()["window"]["phase"], "EXCLUSION_UNCERTAIN")
+        with self.assertRaises(d.Failure): self.step("EXCLUDE")
+        self.assertEqual(len(self.commands), 1)
+
+    def test_scheduler_nonzero_and_bad_readback_refuse(self):
+        self.step("PREPARE"); self.step("PRESERVE"); self.mode = "READBACK_DRIFT"
+        with self.assertRaisesRegex(d.Failure, "SCHEDULER_INSTALL_UNCONFIRMED"): self.step("EXCLUDE")
+        self.assertEqual(self.c._journal()["window"]["phase"], "EXCLUSION_UNCERTAIN")
+        self.assertEqual(len(self.commands), 1)
+
+    def test_observation_time_advancement_does_not_reuse_stale_process_evidence(self):
+        a = self.authorization("PREPARE"); self.ops.clock += 1
+        self.coordinator.execute("PREPARE", a)
+        self.assertEqual(self.c._journal()["state"], "PREPARED")
+
+    def test_no_native_gate_can_be_unlocked_by_complete_matching_input(self):
+        a = self.authorization("PREPARE")
+        self.ops.live_gate = lambda: w.NativeOps.live_gate(self.ops)
+        with self.assertRaisesRegex(d.Failure, "NATIVE_WINDOW_ACCEPTANCE_REQUIRED"):
+            self.coordinator.execute("PREPARE", a)
+        self.assertFalse(self.fs.transaction_present()); self.assertEqual(self.commands, [])
+
+    def test_native_scheduler_gate_stops_before_command_even_if_window_is_synthetic(self):
+        self.step("PREPARE"); self.step("PRESERVE")
+        self.ops.scheduler_gate = lambda: w.NativeOps.scheduler_gate(self.ops)
+        with self.assertRaisesRegex(d.Failure, "NATIVE_SCHEDULER_NOT_QUALIFIED"): self.step("EXCLUDE")
+        self.assertEqual(self.commands, [])
+        self.assertEqual(self.c._journal()["window"]["phase"], "EXCLUSION_UNCERTAIN")
+
+
+class NativeAdmissionTests(unittest.TestCase):
+    """Real native admission/TTY/coordinator guards; only OS sensors and IO are fixtures."""
+    bind = CoordinatorIntegrationTests.bind
+    authorization = CoordinatorIntegrationTests.authorization
+
+    def setUp(self):
+        CoordinatorIntegrationTests.setUp(self)
+        native = w.NativeOps.__new__(w.NativeOps)
+        native.__dict__.update(self.ops.__dict__)
+        del native.scheduler_gate, native.install_scheduler
+        native.now = lambda: native.clock
+        native.target_boot = lambda: native.boot_id  # Explicit Windows OS-identity stand-in.
+        native.processes = lambda: Ops.processes(native)
+        self.ops = native
+        self.bind()
+        self.prompt_count = 0
+        def confirmed(prompt):
+            self.prompt_count += 1
+            self.assertIn('"operator": "jazofv1"', prompt)
+            self.assertIn('"manual_launch_control": "PROCEDURAL_ONLY"', prompt)
+            for risk in w.RISKS: self.assertIn(risk, prompt)
+            return prompt.split("Type exactly: ")[-1].strip()
+        self.confirmed = confirmed
+        self.real_tty = w.tty_line
+        self.tty = patch.object(w, "tty_line", side_effect=confirmed)
+        self.tty.start(); self.addCleanup(self.tty.stop)
+
+    def step(self, action):
+        self.sequence += 1
+        result = self.coordinator.interactive(action, "NATIVE_EXTERNAL_" + str(self.sequence))
+        self.assertIsNone(self.ops._admission)
+        return result
+
+    def establish(self):
+        for action in ("PREPARE", "PRESERVE", "EXCLUDE", "DRAIN", "ESTABLISH"): self.step(action)
+
+    def install(self):
+        self.establish(); self.step("COMMIT")
+
+    def release(self):
+        for action in ("AUTHORIZE_RELEASE", "RESTORE_SCHEDULER", "RELEASE"): self.step(action)
+
+    def test_native_admission_complete_integrated_sequence(self):
+        self.install(); self.release()
+        self.assertEqual(self.prompt_count, 9)
+        self.assertEqual(self.fs.publications, list(d.ORDER))
+        self.assertEqual(self.commands, [self.provider.reduced, self.original])
+        self.assertEqual(self.c.verify()["installed_count"], 13)
+        self.assertEqual(self.provider.inspect()["phase"], "RELEASED")
+        self.fs.assert_unrelated(self)
+
+    def test_native_separate_rollback_and_release(self):
+        self.install(); self.step("ROLLBACK"); self.release()
+        self.assertEqual(self.c._journal()["state"], "ROLLED_BACK")
+        self.fs.assert_unrelated(self)
+
+    def test_mutable_receipt_and_matching_dict_are_not_native_permission(self):
+        a = self.authorization("PREPARE")
+        self.ops._admission = {"approved": True, **a}
+        with self.assertRaisesRegex(d.Failure, "NATIVE_WINDOW_ACCEPTANCE_REQUIRED"):
+            self.coordinator.execute("PREPARE", a)
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_wrong_or_missing_tty_confirmation_refuses_without_effect(self):
+        for text in ("", "YES", "AUTHORIZE PREPARE " + "0"*64):
+            with self.subTest(text=text), patch.object(w, "tty_line", return_value=text):
+                with self.assertRaisesRegex(d.Failure, "NATIVE_OPERATOR_AUTHORIZATION_REFUSED"):
+                    self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present()); self.assertEqual(self.commands, [])
+
+    def test_ssh_loss_during_authorization_cannot_create_transaction(self):
+        with patch.object(w, "tty_line", side_effect=EOFError("private tty detail")):
+            with self.assertRaises(EOFError): self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present())
+        self.assertIsNone(getattr(self.ops, "_admission", None))
+
+    def test_runtime_drift_while_prompt_is_open_refuses(self):
+        def changed(prompt):
+            self.fs.path(next(iter(prior.BASE))).write_bytes(b"changed")
+            return self.confirmed(prompt)
+        with patch.object(w, "tty_line", side_effect=changed):
+            with self.assertRaises(d.Failure): self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_source_drift_while_prompt_is_open_refuses(self):
+        def changed(prompt):
+            self.reader = lambda: {**prior.SOURCE, d.ORDER[0]: b"drift"}
+            return self.confirmed(prompt)
+        with patch.object(w, "tty_line", side_effect=changed):
+            with self.assertRaises(d.Failure): self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_authorization_expiry_during_prompt_refuses(self):
+        def expired(prompt):
+            self.ops.clock += 301
+            return self.confirmed(prompt)
+        with patch.object(w, "tty_line", side_effect=expired):
+            with self.assertRaises(d.Failure): self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_reboot_during_operation_refuses_before_first_effect(self):
+        original = self.coordinator.execute
+        def rebooted(action, authorization):
+            self.ops.boot_id = "BOOT_ID_2"
+            return original(action, authorization)
+        with patch.object(self.coordinator, "execute", side_effect=rebooted):
+            with self.assertRaises(d.Failure): self.step("PREPARE")
+        self.assertIsNone(self.ops._admission); self.assertFalse(self.fs.transaction_present())
+
+    def test_wrong_native_identity_refuses_after_correct_confirmation(self):
+        self.ops.target_boot = lambda: (_ for _ in ()).throw(d.Failure("TARGET_IDENTITY"))
+        with self.assertRaisesRegex(d.Failure, "TARGET_IDENTITY"): self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present()); self.assertIsNone(self.ops._admission)
+
+    def test_known_process_and_incomplete_inspection_refuse(self):
+        self.ops.active = [{"pid": 1, "start_ticks": 1, "command_sha256": "a"*64}]
+        with self.assertRaises(d.Failure): self.step("PREPARE")
+        self.ops.active = []; self.ops.complete = False
+        with self.assertRaises(d.Failure): self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_native_scheduler_pin_change_refuses_before_command(self):
+        self.step("PREPARE"); self.step("PRESERVE")
+        with patch.object(w, "SCHEDULER_OPERATION_PIN", "0"*64):
+            with self.assertRaisesRegex(d.Failure, "SCHEDULER_QUALIFIED_OPERATION_CHANGED"): self.step("EXCLUDE")
+        self.assertEqual(self.commands, [])
+        self.assertEqual(self.c._journal()["window"]["phase"], "EXCLUSION_UNCERTAIN")
+
+    def test_interrupted_publication_does_not_restore_or_release(self):
+        self.establish(); self.fs.fail = lambda point: point == "PUBLISH:" + d.ORDER[2]
+        with self.assertRaises(OSError): self.step("COMMIT")
+        self.assertIsNone(self.ops._admission)
+        self.assertEqual(self.ops.raw, self.provider.reduced)
+        self.assertEqual(len(self.commands), 1)
+        with self.assertRaises(d.Failure): self.step("AUTHORIZE_RELEASE")
+
+    def test_failed_scheduler_restoration_has_no_retry(self):
+        self.install(); self.step("AUTHORIZE_RELEASE"); self.mode = "LOST_ACK"
+        with self.assertRaises(d.Failure): self.step("RESTORE_SCHEDULER")
+        self.assertIsNone(self.ops._admission)
+        self.assertEqual(self.c._journal()["window"]["phase"], "RESTORE_UNCERTAIN")
+        for action in ("RESTORE_SCHEDULER", "RELEASE", "ATTACH"):
+            with self.subTest(action=action), self.assertRaises(d.Failure): self.step(action)
+        self.assertEqual(len(self.commands), 2)
+
+    def test_different_operation_cannot_reuse_active_authority(self):
+        original = self.coordinator.execute
+        def switched(action, authorization):
+            a = dict(authorization); a["action"] = "COMMIT"
+            return original("COMMIT", a)
+        with patch.object(self.coordinator, "execute", side_effect=switched):
+            with self.assertRaisesRegex(d.Failure, "NATIVE_OPERATION_AUTHORIZATION_MISMATCH"): self.step("PREPARE")
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_each_action_demands_new_authority_not_a_persisted_journal_value(self):
+        self.step("PREPARE")
+        with self.assertRaisesRegex(d.Failure, "NATIVE_WINDOW_ACCEPTANCE_REQUIRED"):
+            self.coordinator.execute("PRESERVE", self.authorization("PRESERVE"))
+        self.assertNotIn("window", self.c._journal())
+
+    def test_fixed_operation_hash_matches_real_linux_qualification(self):
+        import inspect
+        operation = (inspect.getsource(w.NativeOps.scheduler) + "\n" + inspect.getsource(w.NativeOps.install_scheduler)).encode()
+        self.assertEqual(d.sha(operation), w.SCHEDULER_OPERATION_PIN)
+
+    def test_tty_reader_uses_controlling_terminal_and_closes_on_refusal(self):
+        with patch.multiple(w.os, O_NOFOLLOW=0, O_CLOEXEC=0, O_NOCTTY=0, create=True), \
+             patch.object(w.os, "open", return_value=123) as opened, \
+             patch.object(w.os, "fstat", return_value=type("Info", (), {"st_mode": 0})()), \
+             patch.object(w.os, "close") as closed:
+            with self.assertRaisesRegex(d.Failure, "NATIVE_TTY_REQUIRED"): self.real_tty("prompt")
+        self.assertEqual(opened.call_args.args[0], "/dev/tty")
+        closed.assert_called_once_with(123)
