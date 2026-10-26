@@ -21,6 +21,7 @@ import sys
 import subprocess
 
 RELEASE = "51398bab4e2293b578b2cdac2d0740c3738cab2f"
+# Repository ancestry is source integrity only, never tooling or mutation approval.
 SOURCE = Path("/home/jazofv1/hioc-release-source")
 HOME = Path("/home/jazofv1/hioc")
 TX = "backups/pe73-pi3-delivery-v1"
@@ -158,18 +159,24 @@ def identity(info):
     return anchored(info) | {k: getattr(info, k) for k in ("st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")}
 
 def source_gate(root=SOURCE):
-    def git(*args):
+    def git(*args, error="SOURCE_INVALID"):
         result = subprocess.run(["/usr/bin/git", "--no-optional-locks", "--no-replace-objects", *args],
             cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
             env={"PATH": "/usr/bin:/bin", "HOME": "/home/jazofv1", "LANG": "C.UTF-8",
                  "LC_ALL": "C.UTF-8", "GIT_OPTIONAL_LOCKS": "0"})
-        require(result.returncode == 0, "SOURCE_INVALID")
+        require(result.returncode == 0, error)
         return result.stdout
-    require(git("rev-parse", "HEAD").strip() == RELEASE.encode(), "SOURCE_COMMIT_MISMATCH")
+    head = git("rev-parse", "--verify", "HEAD^{commit}").strip()
+    require(re.fullmatch(rb"[0-9a-f]{40}", head) is not None, "SOURCE_COMMIT_INVALID")
     require(git("rev-parse", "--show-toplevel").strip().decode() == str(root), "SOURCE_ROOT_MISMATCH")
     require(git("remote", "get-url", "origin").strip() ==
         b"https://github.com/jorgeazofeifa-creator/hioc.git", "SOURCE_REMOTE_MISMATCH")
     require(not git("status", "--porcelain=v1", "--untracked-files=all").strip(), "SOURCE_DIRTY")
+    require(git("rev-parse", "--verify", RELEASE + "^{commit}").strip() == RELEASE.encode(),
+            "SOURCE_IDENTITY_MISMATCH")
+    # A later qualification publication needs no predicted HEAD. This proves only
+    # payload lineage; accepted tooling and native mutation authority are separate.
+    git("merge-base", "--is-ancestor", RELEASE, "HEAD", error="SOURCE_HISTORY_MISMATCH")
     result = {}
     for item in MANIFEST:
         path = item["path"]

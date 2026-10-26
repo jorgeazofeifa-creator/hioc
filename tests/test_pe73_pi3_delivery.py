@@ -236,9 +236,9 @@ class DeliveryTests(unittest.TestCase):
         wrong = dict(SOURCE); wrong[d.ORDER[0]] += b"tampered"
         with self.assertRaisesRegex(d.Failure, "SOURCE_IDENTITY"):
             d.preflight(self.fs, wrong, self.fence)
-        answer = subprocess.CompletedProcess([], 0, stdout=b"0"*40+b"\n", stderr=b"")
+        answer = subprocess.CompletedProcess([], 0, stdout=b"invalid-commit\n", stderr=b"")
         with patch.object(d.subprocess, "run", return_value=answer):
-            with self.assertRaisesRegex(d.Failure, "SOURCE_COMMIT_MISMATCH"):
+            with self.assertRaisesRegex(d.Failure, "SOURCE_COMMIT_INVALID"):
                 d.source_gate(ROOT)
 
     def test_source_gate_checks_clean_release_root_remote_and_all_git_objects(self):
@@ -246,7 +246,9 @@ class DeliveryTests(unittest.TestCase):
         def command(argv, **kwargs):
             calls.append((argv, kwargs))
             args = argv[3:]
-            if args == ["rev-parse", "HEAD"]: raw = (d.RELEASE+"\n").encode()
+            if args == ["rev-parse", "--verify", "HEAD^{commit}"]: raw = (d.RELEASE+"\n").encode()
+            elif args == ["rev-parse", "--verify", d.RELEASE+"^{commit}"]: raw = (d.RELEASE+"\n").encode()
+            elif args == ["merge-base", "--is-ancestor", d.RELEASE, "HEAD"]: raw = b""
             elif args == ["rev-parse", "--show-toplevel"]: raw = (str(ROOT)+"\n").encode()
             elif args == ["remote", "get-url", "origin"]: raw = b"https://github.com/jorgeazofeifa-creator/hioc.git\n"
             elif args == ["status", "--porcelain=v1", "--untracked-files=all"]: raw = b""
@@ -1313,6 +1315,75 @@ class RecoveryAttachmentTests(unittest.TestCase):
             d.Maintenance(controller)
         self.assertEqual(self.ops.current["mode"],0)
         self.assertNotIn("restore",self.ops.calls)
+
+
+
+class SourceCheckoutCompatibilityTests(unittest.TestCase):
+    """Source integrity is independent of checkout SHA and mutation authorization."""
+    def run_gate(self, checkout, override=None, related=True):
+        calls = []
+        def command(argv, **kwargs):
+            args = argv[3:]; calls.append(args)
+            if args == ["rev-parse", "--verify", "HEAD^{commit}"]: raw = (checkout+"\n").encode()
+            elif args == ["rev-parse", "--verify", d.RELEASE+"^{commit}"]: raw = (d.RELEASE+"\n").encode()
+            elif args == ["merge-base", "--is-ancestor", d.RELEASE, "HEAD"]:
+                if not related: return subprocess.CompletedProcess(argv, 1, b"", b"")
+                raw = b""
+            elif args == ["rev-parse", "--show-toplevel"]: raw = (str(ROOT)+"\n").encode()
+            elif args == ["remote", "get-url", "origin"]: raw = b"https://github.com/jorgeazofeifa-creator/hioc.git\n"
+            elif args == ["status", "--porcelain=v1", "--untracked-files=all"]: raw = b""
+            elif args[0] == "show":
+                self.assertTrue(args[1].startswith(d.RELEASE+":"))
+                raw = SOURCE[args[1].split(":",1)[1]]
+            elif args[0] == "rev-parse" and ":" in args[1]:
+                self.assertTrue(args[1].startswith(d.RELEASE+":"))
+                raw = (next(x["git_blob"] for x in d.MANIFEST if x["path"] == args[1].split(":",1)[1])+"\n").encode()
+            else: raise AssertionError(args)
+            if override is not None: raw = override(args, raw)
+            return subprocess.CompletedProcess(argv, 0, raw, b"")
+        with patch.object(d.subprocess, "run", side_effect=command):
+            result = d.source_gate(ROOT)
+        return result, calls
+
+    def test_exact_approved_checkout_reads_all_thirteen_immutable_payload_objects(self):
+        self.assertFalse(hasattr(d,"QUALIFICATION_CHECKOUT"))
+        self.assertEqual(d.RELEASE,"51398bab4e2293b578b2cdac2d0740c3738cab2f")
+        result,calls=self.run_gate("302a4e3f34f53fffb8299771d31c115e052b5400")
+        self.assertEqual(result,SOURCE)
+        self.assertEqual(sum(a[0]=="show" for a in calls),13)
+        self.assertEqual(sum(a[0]=="rev-parse" and ":" in a[1] for a in calls),13)
+
+    def test_original_payload_checkout_remains_accepted_for_historical_compatibility(self):
+        self.assertEqual(self.run_gate(d.RELEASE)[0],SOURCE)
+
+    def test_unrelated_history_is_rejected_independently_of_checkout_sha(self):
+        for checkout in ("0"*40,"f"*40,"d64d772f82728a41d920eb64433ee2398645097f",
+                         "302a4e3f34f53fffb8299771d31c115e052b5400"[:-1]+"1"):
+            with self.subTest(checkout=checkout):
+                with self.assertRaisesRegex(d.Failure,"SOURCE_HISTORY_MISMATCH"):
+                    self.run_gate(checkout,related=False)
+
+    def test_approved_checkout_still_rejects_dirty_tracked_and_untracked_trees(self):
+        for dirty in (b" M tracked.py\n",b"?? unexpected.py\n"):
+            with self.subTest(dirty=dirty):
+                with self.assertRaisesRegex(d.Failure,"SOURCE_DIRTY"):
+                    self.run_gate("302a4e3f34f53fffb8299771d31c115e052b5400",lambda a,b:dirty if a[0]=="status" else b)
+
+    def test_approved_checkout_still_rejects_wrong_root_and_origin(self):
+        for target,code in ((["rev-parse","--show-toplevel"],"SOURCE_ROOT_MISMATCH"),
+                            (["remote","get-url","origin"],"SOURCE_REMOTE_MISMATCH")):
+            with self.subTest(code=code):
+                with self.assertRaisesRegex(d.Failure,code):
+                    self.run_gate("302a4e3f34f53fffb8299771d31c115e052b5400",lambda a,b:b"unexpected\n" if a==target else b)
+
+    def test_each_payload_byte_and_git_blob_mismatch_is_rejected(self):
+        for item in d.MANIFEST:
+            for operation in ("show","rev-parse"):
+                with self.subTest(path=item["path"],operation=operation):
+                    target=[operation,d.RELEASE+":"+item["path"]]
+                    with self.assertRaisesRegex(d.Failure,"SOURCE_IDENTITY_MISMATCH"):
+                        self.run_gate("302a4e3f34f53fffb8299771d31c115e052b5400",
+                            lambda a,b:b"tampered" if a==target else b)
 
 
 if __name__ == "__main__":

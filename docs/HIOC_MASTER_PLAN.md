@@ -6286,8 +6286,12 @@ PE73_FILESYSTEM_BROKER_PROTOTYPE=PASS_EXPERIMENTAL_WINDOWS_FIXTURES; 54_RUN_54_P
 BROKER_ACCESS_CONTRACT_DELTA=PROPOSED_NOT_ADOPTED; BROKER_NATIVE_INTEGRATION=NOT_AUTHORIZED.
 PE73_MAINTENANCE_WINDOW_AMENDMENT=ADOPTED_OPERATOR_APPROVED_2026_10_23; ORIGINAL_CONTRACT_UNCHANGED.
 WINDOW_REPOSITORY_IMPLEMENTATION=AUTHORIZED; WINDOW_NATIVE_ACCEPTANCE=NOT_ESTABLISHED; PRODUCTION=NOT_AUTHORIZED.
-PE73_MAINTENANCE_WINDOW_IMPLEMENTATION=PASS_REPOSITORY_SYNTHETIC; EXISTING_CONTROLLER_TESTS=104_PASS; FINAL_WINDOW_TESTS=55_PASS.
+PE73_MAINTENANCE_WINDOW_IMPLEMENTATION=PASS_REPOSITORY_SYNTHETIC; CONTROLLER_TESTS=110_PASS; FINAL_WINDOW_TESTS=69_PASS; PRIOR_ACCEPTED_COUNTS=104_CONTROLLER_55_WINDOW; PRIOR_INTERIM_VALIDATION=110_CONTROLLER_57_WINDOW.
 PE73_RELATIVE_PROCESS_DETECTION_CORRECTION=PASS_REPOSITORY_SYNTHETIC; PE73_RELATIVE_PROCESS_FOCUSED_RECHECK=ACCEPT_FOR_NATIVE_QUALIFICATION; NATIVE_QUALIFICATION=INCOMPLETE.
+PE73_PUBLICATION_STABLE_SOURCE_IDENTITY=PASS_REPOSITORY_SYNTHETIC; CONTROLLER_TESTS=110_PASS; WINDOW_TESTS=69_PASS; BROKER_TESTS=54_PASS; REAL_GIT_INTEGRATION=12_PASS.
+PUBLICATION_STABLE_CORRECTION_INDEPENDENT_ACCEPTANCE=NOT_PERFORMED; CORRECTION_PUBLICATION=NOT_AUTHORIZED_BY_THIS_ACTION.
+Payload release remains `51398bab4e2293b578b2cdac2d0740c3738cab2f`. A clean checkout containing that immutable release in its commit ancestry can pass source integrity without a hardcoded HEAD; this does not approve tooling or authorize mutation.
+See [the publication-stable identity evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-publication-stable-source-integrity-correction).
 MANUAL_CALLER_CONTROL=PROCEDURAL_ONLY; UNIVERSAL_EXCLUSION=FALSE; NATIVE_MUTATION_GATES=RETAINED.
 See [the verbatim approved maintenance-window amendment](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-approved-maintenance-window-amendment-adoption--2026-10-23).
 HISTORICAL_MAINTENANCE_REVIEW=REJECT_FRESH_PROVIDER_RECOVERY; NATIVE_MAINTENANCE_QUALIFICATION=NOT_ESTABLISHED.
@@ -6303,10 +6307,10 @@ explicitly fixture-only external fence, not invented production maintenance.
 See the [existing implementation evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-guarded-pi3-delivery-transaction-repository-candidate).
 No accepted PE-7.1 runtime source/contract or historical authority is changed.
 No PI3/PI5 access, deployment, HA delivery, credentials, Asset migration,
-monitoring or notification activation is authorized here. Controlled publication of
-the accepted nine-path candidate is authorized; PI3 release-source synchronization
-requires separate authorization after publication.
-NEXT_ACTION=CONTROLLED_NINE_FILE_CANDIDATE_PUBLICATION_THEN_SEPARATELY_AUTHORIZED_PI3_RELEASE_SOURCE_SYNCHRONIZATION.
+monitoring or notification activation is authorized here. The prior nine-path candidate
+was published at302a4e3f34f53fffb8299771d31c115e052b5400. This compatibility correction
+remains uncommitted; staging, commit, push and further PI3 operations are not authorized here.
+NEXT_ACTION=INDEPENDENT_ACCEPTANCE_OF_UNCOMMITTED_PUBLICATION_STABLE_SOURCE_IDENTITY_CORRECTION_BEFORE_PUBLICATION.
 See the [experimental broker evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-experimental-filesystem-broker-feasibility-candidate).
 The reported process inventory has163 unresolved observations; cached modules/open readers are not excluded.
 PE-7.3 remains open; PE-7.4 execution is not authorized.
@@ -7573,19 +7577,23 @@ PE73_FILESYSTEM_BROKER_PROTOTYPE=PASS_EXPERIMENTAL_WINDOWS_FIXTURES; 54_RUN_54_P
 BROKER_ACCESS_CONTRACT_DELTA=PROPOSED_NOT_ADOPTED; BROKER_NATIVE_INTEGRATION=NOT_AUTHORIZED.
 PE73_MAINTENANCE_WINDOW_AMENDMENT=ADOPTED_OPERATOR_APPROVED_2026_10_23; ORIGINAL_CONTRACT_UNCHANGED.
 WINDOW_REPOSITORY_IMPLEMENTATION=AUTHORIZED; WINDOW_NATIVE_ACCEPTANCE=NOT_ESTABLISHED; PRODUCTION=NOT_AUTHORIZED.
-PE73_MAINTENANCE_WINDOW_IMPLEMENTATION=PASS_REPOSITORY_SYNTHETIC; EXISTING_CONTROLLER_TESTS=104_PASS; FINAL_WINDOW_TESTS=55_PASS.
+PE73_MAINTENANCE_WINDOW_IMPLEMENTATION=PASS_REPOSITORY_SYNTHETIC; CONTROLLER_TESTS=110_PASS; FINAL_WINDOW_TESTS=69_PASS; PRIOR_ACCEPTED_COUNTS=104_CONTROLLER_55_WINDOW; PRIOR_INTERIM_VALIDATION=110_CONTROLLER_57_WINDOW.
 PE73_RELATIVE_PROCESS_DETECTION_CORRECTION=PASS_REPOSITORY_SYNTHETIC; PE73_RELATIVE_PROCESS_FOCUSED_RECHECK=ACCEPT_FOR_NATIVE_QUALIFICATION; NATIVE_QUALIFICATION=INCOMPLETE.
+PE73_PUBLICATION_STABLE_SOURCE_IDENTITY=PASS_REPOSITORY_SYNTHETIC; CONTROLLER_TESTS=110_PASS; WINDOW_TESTS=69_PASS; BROKER_TESTS=54_PASS; REAL_GIT_INTEGRATION=12_PASS.
+PUBLICATION_STABLE_CORRECTION_INDEPENDENT_ACCEPTANCE=NOT_PERFORMED; CORRECTION_PUBLICATION=NOT_AUTHORIZED_BY_THIS_ACTION.
+Payload release remains `51398bab4e2293b578b2cdac2d0740c3738cab2f`. A clean checkout containing that immutable release in its commit ancestry can pass source integrity without a hardcoded HEAD; this does not approve tooling or authorize mutation.
+See [the publication-stable identity evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-publication-stable-source-integrity-correction).
 MANUAL_CALLER_CONTROL=PROCEDURAL_ONLY; UNIVERSAL_EXCLUSION=FALSE; NATIVE_MUTATION_GATES=RETAINED.
 See [the verbatim approved maintenance-window amendment](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-approved-maintenance-window-amendment-adoption--2026-10-23).
 HISTORICAL_MAINTENANCE_REVIEW=REJECT_FRESH_PROVIDER_RECOVERY; NATIVE_MAINTENANCE_QUALIFICATION=NOT_ESTABLISHED.
-Windows repository candidate publication is authorized; production operations
-remain unauthorized and native qualification remains incomplete. Action 1 capability PASS is OPERATOR_SUPPLIED; native qualification remains incomplete.
+The prior nine-path repository candidate is published at302a4e3f34f53fffb8299771d31c115e052b5400; this compatibility correction remains uncommitted.
+Staging/publication and production operations are not authorized by this action; native qualification remains incomplete. Action 1 capability PASS is OPERATOR_SUPPLIED; native qualification remains incomplete.
 The isolated descriptor/create/no-follow test is PASS_OPERATOR_SUPPLIED; native qualification remains incomplete.
 The mode0000 characterization is PASS_OPERATOR_SUPPLIED; deployment access remains unresolved.
 The standalone nonprivileged filesystem-broker feasibility prototype passed54 focused tests.
 Its proposed access-contract delta is not adopted; native privilege/integration remain unauthorized.
-Next action is controlled nine-file candidate publication, followed by separately
-authorized operator-run PI3 release-source synchronization. The broker remains experimental and unadopted.
+Next action is independent acceptance of this exact uncommitted publication-stable
+source-integrity correction before separate publication authorization. The broker remains experimental and unadopted.
 See the [experimental broker evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-experimental-filesystem-broker-feasibility-candidate).
 No native enablement, production operation or isolated-test execution is authorized here.
 See [delivery preparation evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-guarded-pi3-delivery-transaction-repository-candidate).
@@ -8346,19 +8354,23 @@ PE73_FILESYSTEM_BROKER_PROTOTYPE=PASS_EXPERIMENTAL_WINDOWS_FIXTURES; 54_RUN_54_P
 BROKER_ACCESS_CONTRACT_DELTA=PROPOSED_NOT_ADOPTED; BROKER_NATIVE_INTEGRATION=NOT_AUTHORIZED.
 PE73_MAINTENANCE_WINDOW_AMENDMENT=ADOPTED_OPERATOR_APPROVED_2026_10_23; ORIGINAL_CONTRACT_UNCHANGED.
 WINDOW_REPOSITORY_IMPLEMENTATION=AUTHORIZED; WINDOW_NATIVE_ACCEPTANCE=NOT_ESTABLISHED; PRODUCTION=NOT_AUTHORIZED.
-PE73_MAINTENANCE_WINDOW_IMPLEMENTATION=PASS_REPOSITORY_SYNTHETIC; EXISTING_CONTROLLER_TESTS=104_PASS; FINAL_WINDOW_TESTS=55_PASS.
+PE73_MAINTENANCE_WINDOW_IMPLEMENTATION=PASS_REPOSITORY_SYNTHETIC; CONTROLLER_TESTS=110_PASS; FINAL_WINDOW_TESTS=69_PASS; PRIOR_ACCEPTED_COUNTS=104_CONTROLLER_55_WINDOW; PRIOR_INTERIM_VALIDATION=110_CONTROLLER_57_WINDOW.
 PE73_RELATIVE_PROCESS_DETECTION_CORRECTION=PASS_REPOSITORY_SYNTHETIC; PE73_RELATIVE_PROCESS_FOCUSED_RECHECK=ACCEPT_FOR_NATIVE_QUALIFICATION; NATIVE_QUALIFICATION=INCOMPLETE.
+PE73_PUBLICATION_STABLE_SOURCE_IDENTITY=PASS_REPOSITORY_SYNTHETIC; CONTROLLER_TESTS=110_PASS; WINDOW_TESTS=69_PASS; BROKER_TESTS=54_PASS; REAL_GIT_INTEGRATION=12_PASS.
+PUBLICATION_STABLE_CORRECTION_INDEPENDENT_ACCEPTANCE=NOT_PERFORMED; CORRECTION_PUBLICATION=NOT_AUTHORIZED_BY_THIS_ACTION.
+Payload release remains `51398bab4e2293b578b2cdac2d0740c3738cab2f`. A clean checkout containing that immutable release in its commit ancestry can pass source integrity without a hardcoded HEAD; this does not approve tooling or authorize mutation.
+See [the publication-stable identity evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-publication-stable-source-integrity-correction).
 MANUAL_CALLER_CONTROL=PROCEDURAL_ONLY; UNIVERSAL_EXCLUSION=FALSE; NATIVE_MUTATION_GATES=RETAINED.
 See [the verbatim approved maintenance-window amendment](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-approved-maintenance-window-amendment-adoption--2026-10-23).
 HISTORICAL_MAINTENANCE_REVIEW=REJECT_FRESH_PROVIDER_RECOVERY; NATIVE_MAINTENANCE_QUALIFICATION=NOT_ESTABLISHED.
-Windows repository candidate publication is authorized; production operations
-remain unauthorized and native qualification remains incomplete. Action 1 capability PASS is OPERATOR_SUPPLIED; native qualification remains incomplete.
+The prior nine-path repository candidate is published at302a4e3f34f53fffb8299771d31c115e052b5400; this compatibility correction remains uncommitted.
+Staging/publication and production operations are not authorized by this action; native qualification remains incomplete. Action 1 capability PASS is OPERATOR_SUPPLIED; native qualification remains incomplete.
 The isolated descriptor/create/no-follow test is PASS_OPERATOR_SUPPLIED; native qualification remains incomplete.
 The mode0000 characterization is PASS_OPERATOR_SUPPLIED; deployment access remains unresolved.
 The standalone nonprivileged filesystem-broker feasibility prototype passed54 focused tests.
 Its proposed access-contract delta is not adopted; native privilege/integration remain unauthorized.
-Next action is controlled nine-file candidate publication, followed by separately
-authorized operator-run PI3 release-source synchronization. The broker remains experimental and unadopted.
+Next action is independent acceptance of this exact uncommitted publication-stable
+source-integrity correction before separate publication authorization. The broker remains experimental and unadopted.
 See the [experimental broker evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-experimental-filesystem-broker-feasibility-candidate).
 No native enablement, production operation or isolated-test execution is authorized here.
 See [delivery preparation evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-guarded-pi3-delivery-transaction-repository-candidate).

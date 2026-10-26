@@ -2813,7 +2813,8 @@ PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED; STOP_REQUIRED=TRUE.
 
 ### PE-7.3 relative-invocation process-detection correction
 
-Classification: CURRENT REPOSITORY CORRECTION, independently accepted for native qualification.
+Classification: HISTORICAL ACCEPTED REPOSITORY CORRECTION, published in302a4e3f34f53fffb8299771d31c115e052b5400.
+The current uncommitted checkout-compatibility correction is recorded below.
 PE73_RELATIVE_PROCESS_FOCUSED_RECHECK=ACCEPT_FOR_NATIVE_QUALIFICATION.
 The focused review verified the retained55/55 maintenance test evidence and active native refusal gates.
 Native qualification remains incomplete; production delivery and rollback remain blocked.
@@ -2900,7 +2901,192 @@ modified tracked files,6 authorized untracked files,0 staged/unexpected paths an
 unchanged stash. No PI3/PI5/HA/MQTT/credential/production access, cron/permission/
 service/runtime mutation, deployment, rollback, activation, stage, commit or push.
 
-Current progression: controlled publication of the accepted nine-file candidate,
+Historical progression before publication: controlled publication of the accepted nine-file candidate,
 followed by separately authorized operator-run PI3 release-source synchronization.
 This publication does not authorize native maintenance, delivery, rollback or PE-7.4.
 PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED; STOP_REQUIRED=TRUE.
+
+
+### PE-7.3 exact release-source checkout compatibility correction
+
+Classification: HISTORICAL VALIDATED INTERIM CORRECTION, 2026-10-23.
+Superseded by the publication-stable identity correction below. The two-HEAD model
+and its 221-test result are retained as historical evidence, not current authority.
+PE73_SOURCE_CHECKOUT_COMPATIBILITY=PASS_REPOSITORY_SYNTHETIC.
+The prior nine-path qualification candidate was published at
+302a4e3f34f53fffb8299771d31c115e052b5400. OPERATOR_SUPPLIED PI3 evidence reports
+release-source HEAD at that exact commit, controller RELEASE at
+51398bab4e2293b578b2cdac2d0740c3738cab2f, SOURCE_GATE_MATCH=False and no production
+mutation. These are supplied observations, not Codex production access or proof of
+native qualification. The previous gate equated checkout HEAD with payload release.
+
+RELEASE remains the immutable 13-artifact payload revision 51398bab4e2293b578b2cdac2d0740c3738cab2f.
+QUALIFICATION_CHECKOUT names exactly 302a4e3f34f53fffb8299771d31c115e052b5400.
+source_gate accepts only those two exact HEAD identities: the original payload
+checkout retains existing historical test compatibility; the qualification checkout
+is explicitly authorized. No ancestor, branch-name or arbitrary-newer-commit rule
+was introduced. A future correction publication commit is NOT implicitly admitted.
+All 13 payload reads and Git-blob checks still use RELEASE:path, never checkout HEAD.
+Expected origin, clean tracked/untracked tree, exact repository root, subprocess
+isolation and filesystem security requirements are unchanged. SOURCE is unchanged.
+MANIFEST, PRIOR, ORDER, MODES and transaction payload release fields are unchanged.
+
+The maintenance provider's PIN is refreshed to the corrected controller's exact
+SHA-256: . The experimental broker also had an exact controller dependency pin; ONLY
+that constant is refreshed so its synthetic fixture loader does not reject this
+authorized source correction. Its architecture, limitations, experimental/unadopted
+status and lack of native privilege/integration authority are unchanged.
+
+Focused regressions accept the exact qualification checkout and original payload
+checkout; reject unauthorized/random/intermediate revisions, dirty tracked and
+untracked trees, wrong root/origin and each of 13 payload byte/blob mismatches;
+verify 13 immutable object reads and 13 immutable blob checks; and verify the
+provider's exact pin and pre-import refusal of a mismatched controller.
+
+Validation used the established bundled native Windows Python stdin harness,
+repository root, -B, UTF-8, shell-free PATH including WindowsPowerShell/v1.0,
+HIOC_TEST_SHELL cleared and sys.path[:0]=['tests','pi4/lib']. Complete affected
+controller module: 110 run, 110 passed. Maintenance-window module: 57 run, 57 passed.
+Affected experimental broker module: 54 run, 54 passed. Total: 221 run, 221 passed,
+0 failures,0 errors,0 skipped,0 class-level skips. All six source/test identities
+were unchanged during validation. Earlier 104/55/54 accepted results and historical
+correction evidence remain preserved; no unrelated historical suite was rerun.
+
+Controller old SHA-256: 0589cf6363626d14ab9abe08c001ddef634b243326513b27de43a7b93aa4f95f.
+Controller new SHA-256: b1a33af96e894df1400d8dec715abba1e5f6265ea8c27f83eb92b07ef81b10d8.
+Maintenance provider old SHA-256: c16e031121ca0cb450e30822f0711c1cc19f4d1757d6664c4d2c383b78b03dc5.
+Maintenance provider new SHA-256: 183e06c75299ea32414b85bed29b23a8a6c35c800250de25f38cf4a469e26fe6.
+Experimental broker old SHA-256: b7db2f55dd99fb1e7161a3afc054695bb5151b3866618dc8e2267afc0da47469.
+Experimental broker new SHA-256: 632c70d6f97b64a42d14ffde2901a6c8d8ebf49e5593db27bd32367b13a6e214.
+Controller tests SHA-256: 4a40901f3a262c6302dcffca76ba74a69e3c22fe16c3fc0fc0beed72d9519bb7.
+Maintenance tests SHA-256: e48da1831398f8a9ce76a3fa175068f6504b7c94d51190460bc7d9dfa7455508.
+Broker tests unchanged SHA-256: 3ee70a530e8b4b9e87ffed1fff4f56948b33e0abdccb22812ba2135b279bc791.
+
+Static verification: 13 delivery identities, 39 successor identities and 449 protected
+identities PASS; original PE-7 contract and approved amendment verbatim unchanged.
+Only the two documentation entries in the existing successor record are refreshed.
+Native live_gate and scheduler_gate retain unconditional
+NATIVE_WINDOW_ACCEPTANCE_REQUIRED and NATIVE_SCHEDULER_NOT_QUALIFIED refusals.
+Native commit/scheduler modification/rollback/release remain blocked. No deployment,
+maintenance, production execution, runtime modification, staging, commit or push
+was performed; Codex accessed neither PI3 nor PI5. The operator evidence was not
+recast as native qualification completion or comprehensive consumer exclusion.
+
+PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED; NATIVE_QUALIFICATION=INCOMPLETE.
+CORRECTION_INDEPENDENT_ACCEPTANCE=NOT_PERFORMED; CORRECTION_PUBLICATION=NOT_PERFORMED.
+Exactly one next action: independent acceptance of the exact uncommitted correction
+and its identities before separate publication authorization. STOP_REQUIRED=TRUE.
+
+
+### PE-7.3 publication-stable source-integrity correction
+
+Classification: CURRENT UNCOMMITTED WINDOWS REPOSITORY CORRECTION, 2026-10-26.
+PE73_PUBLICATION_STABLE_SOURCE_IDENTITY=PASS_REPOSITORY_SYNTHETIC.
+The initial Windows baseline was main at 302a4e3f34f53fffb8299771d31c115e052b5400,
+equal to origin/main, with the expected eight modified tracked paths, empty staging,
+zero untracked paths and unchanged stash. The complete existing candidate was
+preserved. No HIOC repository reset, stash, staging, commit or push was performed.
+
+Root cause: the original gate equated checkout HEAD with payload release. The first
+uncommitted correction allowed only the payload and one qualification HEAD. Its
+221 passing tests established those cases but did not solve publication: publishing
+the corrected tool necessarily creates another HEAD that the finite list rejects.
+That interim model and validation remain historical above; they are superseded here.
+
+The three identities and their authority are now separate:
+
+- PAYLOAD: RELEASE remains 51398bab4e2293b578b2cdac2d0740c3738cab2f. All 13 artifacts
+  are read from RELEASE:path and checked against the unchanged accepted SHA-256 and
+  Git blob pins. MANIFEST, SOURCE, PRIOR, ORDER, MODES, destination layout, journal
+  payload release, publication order and rollback contract are unchanged.
+- TOOLING: the provider still compares the controller's exact source SHA-256 before
+  importing it. That one-way consistency pin is refreshed only because source_gate
+  changed. The broker's dependent constant is also refreshed; the broker remains
+  experimental and unadopted. Final controller and provider hashes below are identity
+  measurements for independent acceptance, NOT independent approval. A mutable
+  repository hash, matching internal pin, receipt, branch or boolean cannot itself
+  authenticate operator approval or authorize production mutation. Native tooling
+  qualification still requires separately accepted external operator authorization
+  and evidence; this task implements no automatic approval/trust mechanism.
+- REPOSITORY: source_gate verifies an actual HEAD commit object, exact source root,
+  exact expected origin URL and clean tracked/untracked status. It verifies the
+  immutable payload commit, then requires RELEASE to be an ancestor of HEAD using
+  Git with --no-replace-objects. This relationship preserves the accepted payload
+  foundation while allowing qualification publications on its history. It is source
+  integrity only, not approval of the intervening commits or of their tooling. A
+  missing payload, unrelated history, dirty tree, wrong root/origin or wrong payload
+  digest/blob is refused. Fixed Git argv/environment, read-only commands and all
+  filesystem-security checks are preserved. No current or future qualification HEAD
+  is hardcoded or predicted, and no HEAD-relative payload file read was introduced.
+
+Publishing another tooling/evidence commit on that history does not require a code
+edit to recognize its SHA. Its tooling still needs independent source-identity
+acceptance. Repository integrity may pass for an unapproved controller revision;
+the unchanged provider pin detects unexpected controller bytes, and integrity does
+not unlock either native gate. No claim is made that the same mutable repository can
+authenticate its own approval or that arbitrary unapproved Python is safe to execute.
+
+Integration validation used isolated temporary local clones with --no-hardlinks;
+no shared object-store corruption or production/network operation was performed.
+Git computed commit objects, roots, status, ancestry and payload object reads. The
+test transport only adapts the fixed Linux Git executable/environment to Windows.
+It does not fabricate Git answers. Tests covered the original payload checkout,
+the published qualification checkout, and two successive real disposable commits
+containing the corrected controller/provider without another source or allowlist
+edit. They rejected dirty tracked/untracked state, wrong root/origin, missing payload
+commit, corrupted fixture blob, unrelated HEAD even with payload objects present,
+wrong payload SHA/blob pins and unexpected controller bytes in a clean descendant.
+The actual provider and controller were loaded together; valid source integrity
+still refused native prepare/commit/rollback, maintenance progression/release,
+runtime authorization and scheduler installation. No NativeOps gate was overridden.
+Separate explicitly synthetic state also verified journal payload/closed-field and
+maintenance-window authorization boundaries. Existing relative-process detection,
+recovery, partial-failure, rollback and release tests remain in effect.
+
+The initial focused attempt ran 9 tests: 8 passed and 1 failed at the exact root gate
+because a temporary Windows short-path alias differed from Git's canonical root.
+The fixture now obtains Git's canonical path and proves samefile identity before
+using it. No production path check was normalized, relaxed or bypassed. The failed
+run is retained separately; it was not rewritten as success. After that fixture-only
+correction the focused 20 tests passed, including all 12 real-Git integration cases.
+
+Final validation used the established bundled native Windows Python stdin/runner
+harness, repository-root cwd, -B, UTF-8, shell-free PATH including WindowsPowerShell,
+HIOC_TEST_SHELL cleared and sys.path[:0]=['tests','pi4/lib']. Focused20 passed, then
+the remaining 159 controller/provider and 54 affected broker tests passed. The final
+accepted run set has 233 distinct test IDs with no duplicated cases across phases:
+controller 110/110, maintenance-window 69/69, experimental broker 54/54; 0 failures,
+0 errors,0 skips,0 class-level skips. All six validated source/test byte identities
+were unchanged during these runs. No full historical HIOC suite was rerun.
+
+Final measured SHA-256 identities (not independent authorization):
+
+- tests/test_pe73_filesystem_broker_prototype.py: `3ee70a530e8b4b9e87ffed1fff4f56948b33e0abdccb22812ba2135b279bc791`.
+- tests/test_pe73_maintenance_window.py: `1750da615fe13f7c337db54e5b4459e2eb32989a0123bb952ff0ad57bd4ebc66`.
+- tests/test_pe73_pi3_delivery.py: `eab315647b37ec45f9ee1ca65766f7f0e96535db0bfaffdd6e64e01fdea0e63b`.
+- tools/hioc-pe73-pi3-delivery.py: `76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2`.
+- tools/pe73_filesystem_broker_prototype.py: `baed2cf58feaf683ba9530b517600ff9b97faf25ba25920662bf0f2840565d3a`.
+- tools/pe73_maintenance_window.py: `beb11380bd0aef0aaa465521731e315c0e8d1621261b1c2caea1d14efb31dc6f`.
+
+Static preservation: all 13 immutable delivery identities, 39 successor identities
+and 449 protected identities PASS. The authoritative original PE-7 contract and the
+approved maintenance-window amendment remain byte-for-byte unchanged. Only the two
+necessary documentation SHA/Git-blob entries in the existing successor record are
+refreshed; unrelated governance identities and acceptance history remain unchanged.
+The controller delta is confined to source integrity, and the provider/broker code
+deltas are their exact controller pins. No transaction or maintenance architecture
+was rewritten. CRLF-aware Git whitespace checks and documentation references pass.
+
+NATIVE_WINDOW_ACCEPTANCE_REQUIRED and NATIVE_SCHEDULER_NOT_QUALIFIED remain
+unconditional. No configuration, environment, JSON receipt, approval boolean,
+checkout or test override can bypass these actual native gates. Native qualification
+is incomplete; no production delivery, scheduler change, rollback or release is
+enabled. No PI3/PI5 access, production observation/mutation, deployment, classification,
+producer execution, runtime/cron/permission/service change or PE-7 activation occurred.
+Temporary test Git commits are disposable fixture evidence only, not HIOC publication.
+
+PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED; NATIVE_QUALIFICATION=INCOMPLETE.
+CORRECTION_INDEPENDENT_ACCEPTANCE=NOT_PERFORMED; CORRECTION_PUBLICATION=NOT_PERFORMED.
+Exactly one next action: independent acceptance of the exact uncommitted
+publication-stable source-identity correction before separate publication authority.
+STOP_REQUIRED=TRUE.

@@ -1,5 +1,9 @@
 """Focused maintenance-window tests, real Windows temporary fixture bytes only."""
 import copy
+import contextlib
+import os
+import shutil
+import subprocess
 import importlib.util
 import json
 from pathlib import Path
@@ -324,5 +328,235 @@ class RelativeInvocationTests(unittest.TestCase):
         self.assertFalse(evidence["universal_exclusion"])
     def test_known_inventory_names_are_existing_hioc_entry_points(self):
         for name in w.ENTRY_NAMES:self.assertTrue((ROOT/"pi4/bin"/name).is_file(),name)
+
+
+class ControllerIdentityBindingTests(unittest.TestCase):
+    def test_provider_pin_matches_corrected_controller_bytes(self):
+        self.assertEqual(w.PIN,d.sha((ROOT/"tools/hioc-pe73-pi3-delivery.py").read_bytes()))
+        self.assertFalse(hasattr(w.d,"QUALIFICATION_CHECKOUT"))
+        self.assertEqual(w.d.RELEASE,"51398bab4e2293b578b2cdac2d0740c3738cab2f")
+
+    def test_provider_refuses_mismatched_controller_before_import(self):
+        spec=importlib.util.spec_from_file_location("pe73_wrong_controller_pin",ROOT/"tools/pe73_maintenance_window.py")
+        module=importlib.util.module_from_spec(spec)
+        with patch.object(Path,"read_bytes",return_value=b"tampered controller"):
+            with self.assertRaisesRegex(RuntimeError,"ACCEPTED_CONTROLLER_CHANGED"):
+                spec.loader.exec_module(module)
+
+
+
+class PublicationStableIntegrationTests(unittest.TestCase):
+    """Real isolated Git objects and actual provider/controller coupling; no PI3."""
+    PAYLOAD = "51398bab4e2293b578b2cdac2d0740c3738cab2f"
+    PUBLISHED = "302a4e3f34f53fffb8299771d31c115e052b5400"
+    ORIGIN = "https://github.com/jorgeazofeifa-creator/hioc.git"
+    TOOL_PATHS = ("tools/hioc-pe73-pi3-delivery.py", "tools/pe73_maintenance_window.py")
+    real_run = staticmethod(subprocess.run)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.git_executable = shutil.which("git")
+        if cls.git_executable is None:
+            raise RuntimeError("Git required for repository-integrity integration tests")
+        cls.cache_temp = tempfile.TemporaryDirectory(prefix="hioc-pe73-object-cache-")
+        cls.addClassCleanup(cls.cache_temp.cleanup)
+        cls.cache = Path(cls.cache_temp.name)/"cache.git"
+        cls.run_git(ROOT, "clone", "--bare", "--local", "--no-hardlinks", "--quiet", str(ROOT), str(cls.cache))
+
+    @classmethod
+    def environment(cls):
+        # Windows transport only: do not inherit Git directory/object overrides or
+        # user/system hooks, signing, credential helpers or global configuration.
+        env = {k:v for k,v in os.environ.items() if not k.startswith("GIT_")}
+        env.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull,
+                   GIT_TERMINAL_PROMPT="0")
+        return env
+
+    @classmethod
+    def run_git(cls, root, *args, data=None):
+        result = cls.real_run([cls.git_executable, "--no-optional-locks", "--no-replace-objects", *args],
+            cwd=root, input=data, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            timeout=40, env=cls.environment())
+        if result.returncode:
+            raise AssertionError("Isolated fixture Git operation failed: "+repr(args))
+        return result.stdout
+
+    @classmethod
+    def configure(cls, root):
+        cls.run_git(root,"config","core.autocrlf","false")
+        cls.run_git(root,"config","user.name","HIOC Synthetic Fixture")
+        cls.run_git(root,"config","user.email","fixture@example.invalid")
+        cls.run_git(root,"config","commit.gpgsign","false")
+        hooks=root/".git"/"fixture-empty-hooks";hooks.mkdir()
+        cls.run_git(root,"config","core.hooksPath",str(hooks))
+
+    @contextlib.contextmanager
+    def repository(self, revision=PUBLISHED, empty=False):
+        with tempfile.TemporaryDirectory(prefix="hioc-pe73-repository-") as directory:
+            root=Path(directory)/"source"
+            if empty:
+                root.mkdir();self.run_git(root,"init","--quiet")
+                self.configure(root)
+                self.run_git(root,"remote","add","origin",self.ORIGIN)
+                self.run_git(root,"commit","--allow-empty","--quiet","-m","Isolated unrelated fixture")
+            else:
+                self.run_git(Path(directory),"clone","--local","--no-hardlinks","--no-checkout","--quiet",str(self.cache),str(root))
+                self.configure(root)
+                self.run_git(root,"remote","set-url","origin",self.ORIGIN)
+                self.run_git(root,"checkout","--quiet","--detach",revision)
+            canonical=Path(self.run_git(root,"rev-parse","--show-toplevel").decode().strip())
+            self.assertTrue(canonical.samefile(root))  # Resolve Windows short-path aliases in this fixture only.
+            root=canonical
+            self.assertNotEqual(root.resolve(),ROOT.resolve())
+            yield root
+
+    def provider(self, root=ROOT):
+        spec=importlib.util.spec_from_file_location("pe73_isolated_provider",root/"tools/pe73_maintenance_window.py")
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        return module
+
+    def gate(self, root, module=None, cwd=None):
+        module=module or self.provider()
+        calls=[]
+        def transport(argv,**kwargs):
+            # Only adapt the Linux fixed executable/environment to Windows. Git
+            # computes every HEAD, root, status, ancestry and object result itself.
+            self.assertEqual(argv[0],"/usr/bin/git")
+            self.assertEqual(argv[1:3],["--no-optional-locks","--no-replace-objects"])
+            calls.append(argv[3:]);kwargs["env"]=self.environment()
+            return self.real_run([self.git_executable,*argv[1:]],**kwargs)
+        with patch.object(module.d.subprocess,"run",side_effect=transport):
+            source=module.d.source_gate((cwd or root).as_posix())
+        self.assertEqual(source,prior.SOURCE)
+        reads=[a[1] for a in calls if a[0]=="show"]
+        self.assertEqual(sorted(reads),sorted(self.PAYLOAD+":"+p for p in prior.SOURCE))
+        self.assertEqual(module.PIN,module.d.sha((Path(module.__file__).parent/"hioc-pe73-pi3-delivery.py").read_bytes()))
+        return module,source
+
+    def publish_fixture_tools(self, root):
+        before={p:(ROOT/p).read_bytes() for p in self.TOOL_PATHS}
+        for p,raw in before.items():(root/p).write_bytes(raw)
+        self.run_git(root,"add","--",*self.TOOL_PATHS)
+        self.run_git(root,"commit","--quiet","-m","Synthetic qualification tooling publication")
+        return before
+
+    def test_original_payload_checkout_uses_original_objects_with_corrected_provider(self):
+        with self.repository(self.PAYLOAD) as root:self.gate(root)
+
+    def test_current_published_qualification_checkout_uses_original_objects(self):
+        with self.repository() as root:self.gate(root)
+
+    def test_successive_real_publications_need_no_source_or_allowlist_edit(self):
+        with self.repository() as root:
+            before=self.publish_fixture_tools(root)
+            module=self.provider(root)
+            self.assertFalse(hasattr(module.d,"QUALIFICATION_CHECKOUT"))
+            for step in range(2):
+                head=self.run_git(root,"rev-parse","HEAD").decode().strip()
+                self.assertNotIn(head,(self.PUBLISHED,self.PAYLOAD))
+                self.assertNotIn(head,before[self.TOOL_PATHS[0]].decode())
+                self.gate(root,module)
+                self.assertEqual({p:(root/p).read_bytes() for p in before},before)
+                if step==0:self.run_git(root,"commit","--allow-empty","--quiet","-m","Synthetic later qualification evidence")
+
+    def test_dirty_tracked_and_untracked_repositories_are_rejected(self):
+        module=self.provider()
+        with self.repository() as root:
+            tracked=root/".gitattributes";saved=tracked.read_bytes();tracked.write_bytes(saved+b"\n# fixture dirt\n")
+            with self.assertRaisesRegex(module.d.Failure,"SOURCE_DIRTY"):self.gate(root,module)
+            tracked.write_bytes(saved)
+            (root/"unexpected-fixture.txt").write_bytes(b"untracked fixture")
+            with self.assertRaisesRegex(module.d.Failure,"SOURCE_DIRTY"):self.gate(root,module)
+
+    def test_wrong_source_location_and_origin_are_rejected(self):
+        module=self.provider()
+        with self.repository() as root:
+            with self.assertRaisesRegex(module.d.Failure,"SOURCE_ROOT_MISMATCH"):self.gate(root,module,cwd=root/"tools")
+            self.run_git(root,"remote","set-url","origin","https://example.invalid/unapproved.git")
+            with self.assertRaisesRegex(module.d.Failure,"SOURCE_REMOTE_MISMATCH"):self.gate(root,module)
+
+    def test_missing_payload_commit_is_rejected(self):
+        module=self.provider()
+        with self.repository(empty=True) as root:
+            with self.assertRaisesRegex(module.d.Failure,"SOURCE_INVALID"):self.gate(root,module)
+
+    def test_unrelated_commit_is_rejected_even_when_payload_objects_are_present(self):
+        module=self.provider()
+        with self.repository() as root:
+            tree=self.run_git(root,"mktree",data=b"").decode().strip()
+            unrelated=self.run_git(root,"commit-tree",tree,data=b"Unrelated fixture history\n").decode().strip()
+            self.run_git(root,"checkout","--quiet","--detach",unrelated)
+            with self.assertRaisesRegex(module.d.Failure,"SOURCE_HISTORY_MISMATCH"):self.gate(root,module)
+
+    def test_corrupted_payload_blob_is_rejected_in_unshared_fixture_object_store(self):
+        module=self.provider()
+        with self.repository() as root:
+            oid=module.d.MANIFEST[0]["git_blob"]
+            obj=root/".git"/"objects"/oid[:2]/oid[2:];obj.parent.mkdir(exist_ok=True)
+            if obj.exists():self.assertEqual(obj.stat().st_nlink,1)
+            obj.write_bytes(b"corrupt synthetic loose Git object")
+            with self.assertRaisesRegex(module.d.Failure,"SOURCE_INVALID"):self.gate(root,module)
+
+    def test_wrong_payload_sha_or_blob_pin_rejects_real_git_objects(self):
+        module=self.provider()
+        with self.repository() as root:
+            for field,value in (("sha256","0"*64),("git_blob","0"*40)):
+                manifest=copy.deepcopy(module.d.MANIFEST);manifest[0][field]=value
+                with self.subTest(field=field),patch.object(module.d,"MANIFEST",manifest):
+                    with self.assertRaisesRegex(module.d.Failure,"SOURCE_IDENTITY_MISMATCH"):self.gate(root,module)
+
+    def test_provider_detects_changed_controller_in_otherwise_valid_published_repository(self):
+        trusted=self.provider()
+        with self.repository() as root:
+            self.publish_fixture_tools(root)
+            target=root/self.TOOL_PATHS[0];target.write_bytes(target.read_bytes()+b"\n# unapproved tooling change\n")
+            self.run_git(root,"add","--",self.TOOL_PATHS[0]);self.run_git(root,"commit","--quiet","-m","Unapproved synthetic controller change")
+            self.gate(root,trusted)  # Repository integrity is deliberately NOT code approval.
+            with self.assertRaisesRegex(RuntimeError,"ACCEPTED_CONTROLLER_CHANGED"):self.provider(root)
+
+    def test_valid_published_repository_never_authorizes_native_mutation(self):
+        with self.repository() as root,tempfile.TemporaryDirectory(prefix="hioc-pe73-blocked-runtime-") as directory:
+            self.publish_fixture_tools(root);module,source=self.gate(root,self.provider(root))
+            fs=prior.FixtureFS(Path(directory))
+            raw=("\n".join(module.d.CRON)+"\n").encode();inventory={x:"EXCLUDE" for x in module.d.CRON}
+            # Exercise actual unconditional native methods on Windows; no gate is
+            # replaced. __new__ avoids only the Linux target-observation constructor.
+            ops=module.NativeOps.__new__(module.NativeOps)
+            provider=module.WindowConsumers(ops,raw,list(module.d.CRON),inventory)
+            controller=provider.bind(fs,source)
+            before={p.relative_to(fs.root).as_posix():p.read_bytes() for p in fs.root.rglob("*") if p.is_file()}
+            with patch.object(module.subprocess,"run",side_effect=AssertionError("Unexpected native command")):
+                for action in ("prepare","commit","rollback"):
+                    with self.subTest(action=action),self.assertRaisesRegex(module.d.Failure,"NATIVE_WINDOW_ACCEPTANCE_REQUIRED"):
+                        getattr(controller,action)("SYNTHETIC_NOT_NATIVE_APPROVAL","0"*64)
+                for action in ("PRESERVE","RELEASE"):
+                    with self.subTest(action=action),self.assertRaisesRegex(module.d.Failure,"NATIVE_WINDOW_ACCEPTANCE_REQUIRED"):
+                        provider.progress(action,{"approved":True})
+                with self.assertRaisesRegex(module.d.Failure,"NATIVE_WINDOW_ACCEPTANCE_REQUIRED"):
+                    provider.authorize_runtime({"action":"COMMIT","approved":True})
+                with self.assertRaisesRegex(module.d.Failure,"NATIVE_SCHEDULER_NOT_QUALIFIED"):
+                    ops.install_scheduler(raw,"0"*64)
+            self.assertEqual(before,{p.relative_to(fs.root).as_posix():p.read_bytes() for p in fs.root.rglob("*") if p.is_file()})
+            self.assertFalse(fs.publications)
+
+    def test_real_repository_source_keeps_journal_and_window_authorization_boundaries(self):
+        with self.repository() as root,tempfile.TemporaryDirectory(prefix="hioc-pe73-journal-integration-") as directory:
+            module,source=self.gate(root)
+            fs=prior.FixtureFS(Path(directory));raw=("\n".join(module.d.CRON)+"\n").encode()
+            # Explicit synthetic Ops, as in the existing transaction tests. This
+            # does not qualify or override the actual NativeOps gates tested above.
+            ops=Ops(raw);provider=module.WindowConsumers(ops,raw,list(module.d.CRON),{x:"EXCLUDE" for x in module.d.CRON})
+            controller=provider.bind(fs,source);before=module.d.preflight(fs,source,provider)
+            controller.prepare("PREPARE_GIT_INTEGRATION_FIXTURE",module.d.sha(module.d.canonical(before)))
+            journal=controller._journal();self.assertEqual(journal["release"],self.PAYLOAD)
+            with self.assertRaisesRegex(module.d.Failure,"WINDOW_AUTHORIZATION_INVALID"):
+                provider.authorize_runtime({"action":"COMMIT"})
+            for field,value in (("release",self.PUBLISHED),("checkout_authorized",True)):
+                bad=copy.deepcopy(journal);bad[field]=value;fs.journal(bad)
+                with self.assertRaises(module.d.Failure):controller._journal()
+                fs.journal(journal)
+            self.assertEqual(controller._journal()["release"],self.PAYLOAD)
+            self.assertFalse(fs.publications)
+
 
 if __name__=="__main__":unittest.main()

@@ -16,7 +16,7 @@ import subprocess
 import time
 import uuid
 
-PIN = "0589cf6363626d14ab9abe08c001ddef634b243326513b27de43a7b93aa4f95f"
+PIN = "76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2"
 path = Path(__file__).with_name("hioc-pe73-pi3-delivery.py")
 if hashlib.sha256(path.read_bytes()).hexdigest() != PIN:
     raise RuntimeError("ACCEPTED_CONTROLLER_CHANGED")
