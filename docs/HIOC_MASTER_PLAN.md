@@ -6270,7 +6270,43 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — approved-process recovery correction, 2026-10-27.
+Classification: CURRENT — PI3 runtime delivery evidence; full PE-7.3 closure blocked.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED. Source release1c07932bd43aab1eac693ea07e195a74150fe550.
+The owner reports successful interrupted-window recovery and installation: all13
+artifact SHA256 identities PASS; transactionCOMMITTED/pendingNone; windowRELEASED;
+original12-entry crontab restored exactly; all3 affected HIOC jobs scheduled.
+cron,pihole-FTL,unbound,nut-server are reported active. Incident-engine invocation
+and recent status output observed; invocation alone does not prove engine completion.
+Inventory last observed at09:30 before release; no post-release inventory execution
+is established. Daily platform-status at03:17 was not expected in the observed
+post-release window; no post-release platform execution is claimed. No HIOC error
+matches in inspected cron logs; independent assessment reports zero failed invariants.
+These are supplied observations, not a Codex production inspection or universal
+service-health/event-history proof. No original receipt bytes or new production
+security metadata are manufactured from the owner's summary.
+Runtime deployment evidence is recorded as PASS for the supplied bounded facts.
+Full PE-7.3 COMPLETE/PASS is not established: the unchanged contract section13
+requires guarded artifact/integration/UI/trust delivery and observed HA API/resource
+capability; section7 requires supported live Dashboard/resource delivery with backup,
+not repository YAML copying. Evidence for these remaining delivery obligations is
+not supplied. The approved maintenance-window evidence explicitly states that the
+13-file runtime step alone does not close all PE-7.3. No new acceptance gate is added.
+Next action: separately authorize completion/evidence of the existing PE-7.3 HA
+integration/UI/trust delivery and capability prerequisites, keeping editing/evaluator
+disabled except authorized preflight. PE-7.4 bounded functional acceptance remains
+later and NOT_AUTHORIZED; no monitoring, migration or notifications are authorized.
+Manual-caller restrictions remain procedural; missed/cached/retained/noncooperating
+callers remain residual risks, not universally excluded. Executive instruction and
+fixed-process authority remain verbatim in the unchanged successor authorization
+record. Unexpected recovery, rollback or material scope changes require new authority.
+See [the production evidence and closure determination](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-pi3-runtime-deployment-evidence-and-governance-closure-determination).
+
+### Historical approved-process recovery correction snapshot
+
+Classification: HISTORICAL SNAPSHOT — approved-process recovery correction, 2026-10-27.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -7602,7 +7638,43 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — approved-process recovery correction, 2026-10-27.
+Classification: CURRENT — PI3 runtime delivery evidence; full PE-7.3 closure blocked.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED. Source release1c07932bd43aab1eac693ea07e195a74150fe550.
+The owner reports successful interrupted-window recovery and installation: all13
+artifact SHA256 identities PASS; transactionCOMMITTED/pendingNone; windowRELEASED;
+original12-entry crontab restored exactly; all3 affected HIOC jobs scheduled.
+cron,pihole-FTL,unbound,nut-server are reported active. Incident-engine invocation
+and recent status output observed; invocation alone does not prove engine completion.
+Inventory last observed at09:30 before release; no post-release inventory execution
+is established. Daily platform-status at03:17 was not expected in the observed
+post-release window; no post-release platform execution is claimed. No HIOC error
+matches in inspected cron logs; independent assessment reports zero failed invariants.
+These are supplied observations, not a Codex production inspection or universal
+service-health/event-history proof. No original receipt bytes or new production
+security metadata are manufactured from the owner's summary.
+Runtime deployment evidence is recorded as PASS for the supplied bounded facts.
+Full PE-7.3 COMPLETE/PASS is not established: the unchanged contract section13
+requires guarded artifact/integration/UI/trust delivery and observed HA API/resource
+capability; section7 requires supported live Dashboard/resource delivery with backup,
+not repository YAML copying. Evidence for these remaining delivery obligations is
+not supplied. The approved maintenance-window evidence explicitly states that the
+13-file runtime step alone does not close all PE-7.3. No new acceptance gate is added.
+Next action: separately authorize completion/evidence of the existing PE-7.3 HA
+integration/UI/trust delivery and capability prerequisites, keeping editing/evaluator
+disabled except authorized preflight. PE-7.4 bounded functional acceptance remains
+later and NOT_AUTHORIZED; no monitoring, migration or notifications are authorized.
+Manual-caller restrictions remain procedural; missed/cached/retained/noncooperating
+callers remain residual risks, not universally excluded. Executive instruction and
+fixed-process authority remain verbatim in the unchanged successor authorization
+record. Unexpected recovery, rollback or material scope changes require new authority.
+See [the production evidence and closure determination](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-pi3-runtime-deployment-evidence-and-governance-closure-determination).
+
+### Historical approved-process recovery correction snapshot
+
+Classification: HISTORICAL SNAPSHOT — approved-process recovery correction, 2026-10-27.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8418,7 +8490,43 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — approved-process recovery correction, 2026-10-27.
+Classification: CURRENT — PI3 runtime delivery evidence; full PE-7.3 closure blocked.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED. Source release1c07932bd43aab1eac693ea07e195a74150fe550.
+The owner reports successful interrupted-window recovery and installation: all13
+artifact SHA256 identities PASS; transactionCOMMITTED/pendingNone; windowRELEASED;
+original12-entry crontab restored exactly; all3 affected HIOC jobs scheduled.
+cron,pihole-FTL,unbound,nut-server are reported active. Incident-engine invocation
+and recent status output observed; invocation alone does not prove engine completion.
+Inventory last observed at09:30 before release; no post-release inventory execution
+is established. Daily platform-status at03:17 was not expected in the observed
+post-release window; no post-release platform execution is claimed. No HIOC error
+matches in inspected cron logs; independent assessment reports zero failed invariants.
+These are supplied observations, not a Codex production inspection or universal
+service-health/event-history proof. No original receipt bytes or new production
+security metadata are manufactured from the owner's summary.
+Runtime deployment evidence is recorded as PASS for the supplied bounded facts.
+Full PE-7.3 COMPLETE/PASS is not established: the unchanged contract section13
+requires guarded artifact/integration/UI/trust delivery and observed HA API/resource
+capability; section7 requires supported live Dashboard/resource delivery with backup,
+not repository YAML copying. Evidence for these remaining delivery obligations is
+not supplied. The approved maintenance-window evidence explicitly states that the
+13-file runtime step alone does not close all PE-7.3. No new acceptance gate is added.
+Next action: separately authorize completion/evidence of the existing PE-7.3 HA
+integration/UI/trust delivery and capability prerequisites, keeping editing/evaluator
+disabled except authorized preflight. PE-7.4 bounded functional acceptance remains
+later and NOT_AUTHORIZED; no monitoring, migration or notifications are authorized.
+Manual-caller restrictions remain procedural; missed/cached/retained/noncooperating
+callers remain residual risks, not universally excluded. Executive instruction and
+fixed-process authority remain verbatim in the unchanged successor authorization
+record. Unexpected recovery, rollback or material scope changes require new authority.
+See [the production evidence and closure determination](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-pi3-runtime-deployment-evidence-and-governance-closure-determination).
+
+### Historical approved-process recovery correction snapshot
+
+Classification: HISTORICAL SNAPSHOT — approved-process recovery correction, 2026-10-27.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
