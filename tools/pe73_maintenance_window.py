@@ -152,7 +152,7 @@ def cwd_target(cwd, script):
 
 
 class NativeOps:
-    """Fixed native operations admitted only by a fresh, context-bound TTY decision."""
+    """Fixed native operations admitted only by a fresh, context-bound technical grant."""
     def __init__(self):
         self.boot_id = self.target_boot()
     def target_boot(self):
@@ -436,7 +436,7 @@ class WindowConsumers:
         self.controller._save(value, "WINDOW:" + phase)
     def progress(self, action, grant):
         require(action in ACTIONS - {"COMMIT", "ROLLBACK"}, "WINDOW_ACTION_INVALID")
-        self.ops.live_gate()  # Native calls need the active interactive operation admission.
+        self.ops.live_gate()  # Native calls need the active scoped operation admission.
         with self.controller.fs.mutex():
             value = self._load()
             event = self._grant(grant, action, value)
@@ -567,9 +567,10 @@ class WindowConsumers:
 class MaintenanceCoordinator:
     """One explicitly authorized operation, using the existing transaction/provider.
 
-    Context digests bind decisions, not authenticate them. Native calls additionally
-    require interactive /dev/tty authorization for this exact operation. Manual
-    exclusion remains procedural. No retry or finally-based recovery is performed.
+    Context digests bind decisions, not authenticate them. Native calls require
+    an exact scoped admission, generated internally by the approved fixed process
+    or by separately authorized out-of-scope intervention. Manual exclusion stays
+    procedural. No retry or finally-based recovery is performed.
     """
     def __init__(self, provider, source_reader):
         self.provider = provider
@@ -603,7 +604,13 @@ class MaintenanceCoordinator:
                 0 <= p.ops.now() - observed["observed_at"] <= 30, "PROCESS_EVIDENCE_STALE")
         # The timestamp is checked for freshness, but advancing wall-clock time
         # alone must not invalidate an otherwise identical decision context.
-        process = {k: v for k, v in observed.items() if k != "observed_at"}
+        # Diagnostic unrelated PID churn is not authorization authority. Keep
+        # freshness above, completeness, boot and exact affected-consumer evidence.
+        # Incomplete/ambiguous classification still refuses; it is never excused
+        # merely by calling a process unrelated.
+        process = {k: observed[k] for k in ("boot_id", "inspection_complete", "universal_exclusion")}
+        process["known_active"] = sorted(observed["known_active"],
+            key=lambda item: (item["pid"], item["start_ticks"], item["command_sha256"]))
         scheduler = p.ops.scheduler()
         require(scheduler in (p.original, p.reduced), "WINDOW_SCHEDULER_DRIFT")
         runtime = {}
@@ -723,7 +730,7 @@ def tty_line(prompt):
 
 
 def native_main():
-    """Interactive session only; each action still needs its own exact confirmation."""
+    """Owner-approved fixed normal sequence; every technical operation guard remains."""
     ops = NativeOps()
     fs = d.NativeFS()
     current = ops.scheduler()
@@ -740,15 +747,166 @@ def native_main():
     return 0
 
 
-def run_deployment_sequence(coordinator):
-    """Fixed normal path only. No automatic recovery or repeated operation."""
-    for number, action in enumerate(DEPLOYMENT_SEQUENCE, 1):
-        print("Step " + str(number) + " of 9: " + OPERATION_IMPACTS[action], flush=True)
-        result = coordinator.interactive(action)
-        print("Step " + str(number) + " completed. Save the technical receipt below; no interpretation is needed to answer the next prompt.", flush=True)
-        print(json.dumps({"result": "PASS_EXPLICIT_OPERATION", "action": action,
+OWNER_SEQUENCE_AUTHORITY = "PE73_OWNER_SEQUENCE_AUTHORIZATION_20261027"
+EXCLUDED_RECOVERY_JOURNAL_SHA256 = "b899a8fa79bde3c6619d6abd8217d88833c414823e7888358ed7a043b766600f"
+RESUME_SEQUENCE = ("ATTACH", "DRAIN", "ESTABLISH", "COMMIT", "AUTHORIZE_RELEASE",
+                   "RESTORE_SCHEDULER", "RELEASE")
+
+
+def validate_excluded_resume(coordinator):
+    """Read-only exact owner-supplied anchor; never adopt a label or edited receipt."""
+    c, p = coordinator.controller, coordinator.provider
+    raw = c.fs.read(d.TX + "/journal.json")
+    require(d.sha(raw) == EXCLUDED_RECOVERY_JOURNAL_SHA256, "RECOVERY_JOURNAL_ANCHOR_MISMATCH")
+    value = c._journal()
+    w = value.get("window")
+    require(value["state"] == "PREPARED" and value["pending"] is None and
+        not value["installed"] and not value["restored"] and value["commit_authorization"] is None and
+        value["rollback_authorization"] is None and w is not None and w["phase"] == "EXCLUDED" and
+        w["drain"] is None and w["release_runtime_sha256"] is None and
+        w["operator"] == "UID1000_jazofv1" and w["original_sha256"] == d.sha(p.original) and
+        w["reduced_sha256"] == d.sha(p.reduced) and w["approved_jobs"] == p.approved and
+        w["inventory"] == p.inventory, "RECOVERY_SCOPE_OR_PHASE_MISMATCH")
+    p._cron()
+    context = coordinator.context("ATTACH")
+    require(context["process_observation"]["inspection_complete"] and
+        not context["process_observation"]["known_active"], "KNOWN_CONSUMERS_NOT_DRAINED")
+    require(c.inspect()["live_state_established"], "RECOVERY_RUNTIME_MISMATCH")
+    # Existing secure reads validate owner/type/mode/ancestors. Verify all backup
+    # and stage bytes BEFORE ATTACH writes its new session into the old journal.
+    for index, target in enumerate(d.ORDER):
+        require(c.fs.read(d.TX + "/stage-" + str(index)) == c.source[target], "STAGING_DRIFT")
+        if target in d.PRIOR:
+            require(d.sha(c.fs.read(d.TX + "/backup-" + str(index))) == value["baseline"][target]["sha256"],
+                    "BACKUP_DRIFT")
+    require(c.fs.read(d.TX + "/journal.json") == raw, "RECOVERY_JOURNAL_DRIFT")
+    return d.sha(raw)
+
+
+class _ApprovedSequence:
+    """Owner-approved fixed process, not authority reconstructed from journal values.
+
+    Never accepts a sequence, grant, approval flag or permission receipt as input.
+    Only the normal fixed process or this exact separately approved EXCLUDED resume
+    can enter. Every operation still creates a fresh technical grant and admission.
+    """
+    def __init__(self, coordinator, resume=False):
+        require(type(resume) is bool, "SEQUENCE_ENTRY_INVALID")
+        self.coordinator, self.resume = coordinator, resume
+        self.actions = RESUME_SEQUENCE if resume else DEPLOYMENT_SEQUENCE
+        self.index, self.stopped = 0, False
+        self.pid = os.getpid()
+        p = coordinator.provider
+        self.boot_id, self.session = p.ops.boot_id, p.session
+        self.expires_at = p.ops.now() + 3600
+        self.monotonic_deadline = time.monotonic() + 3600
+        if resume:
+            self.expected_journal = validate_excluded_resume(coordinator)
+        else:
+            require(not coordinator.controller.fs.transaction_present(),
+                    "EXISTING_TRANSACTION_REQUIRES_SEPARATE_RECOVERY")
+            self.expected_journal = None
+        initial = coordinator.context(self.actions[0])
+        self.scope = {k: initial[k] for k in ("release", "manifest_sha256", "controller_sha256",
+            "original_sha256", "reduced_sha256", "inventory_sha256", "approved_jobs")}
+        self.reference = d.sha(d.canonical({"owner_authority": OWNER_SEQUENCE_AUTHORITY,
+            "entry": "VERIFIED_EXCLUDED_RESUME" if resume else "NEW_NORMAL_DEPLOYMENT",
+            "actions": list(self.actions), "initial_context": initial, "scope": self.scope,
+            "journal_anchor": self.expected_journal, "nonce": uuid.uuid4().hex}))
+
+    def perform_next(self):
+        require(not self.stopped and self.index < len(self.actions), "SEQUENCE_STOPPED_OR_COMPLETE")
+        p, c = self.coordinator.provider, self.coordinator.controller
+        try:
+            require(self.actions == (RESUME_SEQUENCE if self.resume else DEPLOYMENT_SEQUENCE),
+                    "SEQUENCE_ACTION_SCOPE_DRIFT")
+            require(os.getpid() == self.pid and p.session == self.session and p.ops.boot_id == self.boot_id and
+                p.ops.now() < self.expires_at and time.monotonic() < self.monotonic_deadline,
+                "SEQUENCE_FRESH_SESSION_REQUIRED")
+            if self.expected_journal is None:
+                require(not c.fs.transaction_present(), "TRANSACTION_EXISTS")
+            else:
+                require(d.sha(c.fs.read(d.TX + "/journal.json")) == self.expected_journal,
+                        "SEQUENCE_JOURNAL_DRIFT")
+                require(c.inspect()["live_state_established"], "SEQUENCE_RUNTIME_DRIFT")
+            action = self.actions[self.index]
+            context = self.coordinator.context(action)
+            require({k: context[k] for k in self.scope} == self.scope, "SEQUENCE_SCOPE_DRIFT")
+            if self.expected_journal is not None:
+                value = c._journal(); window = value.get("window")
+                original = window is None or window["phase"] in {"PRESERVED", "SCHEDULER_RESTORED"}
+                p._cron(original=original)
+                require(d.sha(c.fs.read(d.TX + "/journal.json")) == self.expected_journal,
+                        "SEQUENCE_JOURNAL_DRIFT")
+                require(c.inspect()["live_state_established"], "SEQUENCE_RUNTIME_DRIFT")
+            else:
+                p._cron(original=True)
+            authorization = {"action": action, "context_sha256": d.sha(d.canonical(context)),
+                "reference": "SEQ_" + d.sha(d.canonical({"sequence": self.reference, "action": action,
+                    "ordinal": self.index, "nonce": uuid.uuid4().hex})),
+                "operator": "UID1000_jazofv1", "expires_at": min(self.expires_at, p.ops.now() + 300),
+                "exclusive_responsibility": True, "risks_acknowledged": list(RISKS)}
+            require(getattr(p.ops, "_admission", None) is None, "NATIVE_OPERATION_ALREADY_ACTIVE")
+            admission = _NativeAdmission(p.ops, self.coordinator, action, authorization)
+            admission.monotonic_deadline = min(admission.monotonic_deadline, self.monotonic_deadline)
+            p.ops._admission = admission
+            try:
+                result = self.coordinator.execute(action, authorization)
+            finally:
+                p.ops._admission = None  # Forget authority; NEVER perform recovery here.
+            raw = c.fs.read(d.TX + "/journal.json"); value = c._journal()
+            require(result.get("journal_sha256") == d.sha(d.canonical(value)), "SEQUENCE_RESULT_JOURNAL_DRIFT")
+            expected = {"PREPARE": ("PREPARED", None), "PRESERVE": ("PREPARED", "PRESERVED"),
+                "EXCLUDE": ("PREPARED", "EXCLUDED"), "ATTACH": ("PREPARED", "EXCLUDED"),
+                "DRAIN": ("PREPARED", "DRAINED"), "ESTABLISH": ("PREPARED", "ESTABLISHED"),
+                "COMMIT": ("COMMITTED", "INSTALLATION_VERIFIED"),
+                "AUTHORIZE_RELEASE": ("COMMITTED", "RELEASE_AUTHORIZED"),
+                "RESTORE_SCHEDULER": ("COMMITTED", "SCHEDULER_RESTORED"),
+                "RELEASE": ("COMMITTED", "RELEASED")}[action]
+            require((value["state"], value.get("window", {}).get("phase")) == expected and
+                value["pending"] is None and c.inspect()["live_state_established"], "SEQUENCE_RESULT_UNCERTAIN")
+            self.expected_journal = d.sha(raw)
+            self.index += 1
+            return action, result
+        except BaseException:
+            self.stopped = True
+            raise  # No retry, rollback, cron restoration, release or adoption.
+
+
+def _run_owner_approved_sequence(coordinator, resume=False):
+    sequence = _ApprovedSequence(coordinator, resume=resume)
+    print("Running the owner's approved fixed deployment process. No separate step approvals are requested.", flush=True)
+    print("Keep exclusive responsibility: no independent/manual affected commands until verified release. Residual risks remain procedural; universal exclusion is not claimed.", flush=True)
+    print(json.dumps({"sequence_authority": OWNER_SEQUENCE_AUTHORITY,
+        "sequence_reference": sequence.reference, "resume": resume,
+        "actions": list(sequence.actions), "manual_launch_control": "PROCEDURAL_ONLY"}, sort_keys=True), flush=True)
+    for number in range(len(sequence.actions)):
+        action, result = sequence.perform_next()
+        print("Completed step " + str(number + 1) + " of " + str(len(sequence.actions)) + ": " + OPERATION_IMPACTS[action], flush=True)
+        print(json.dumps({"result": "PASS_APPROVED_PROCESS_OPERATION", "action": action,
+            "sequence_authority": OWNER_SEQUENCE_AUTHORITY, "sequence_reference": sequence.reference,
             "evidence": result, "pe7_executed": False, "universal_exclusion": False}, sort_keys=True), flush=True)
-    print("Deployment window completed and explicitly released. PE-7.4 is not authorized.", flush=True)
+    print("Approved process completed and consumers explicitly released. PE-7.4 remains unauthorized.", flush=True)
+    return 0
+
+
+def run_deployment_sequence(coordinator):
+    """Already owner-approved normal process; technical grants remain per operation."""
+    return _run_owner_approved_sequence(coordinator)
+
+
+def resume_native_main():
+    """Only the precisely anchored PREPARED/EXCLUDED recovery approved on2026-10-27."""
+    ops = NativeOps()
+    fs = d.NativeFS()
+    original = fs.read(BACKUP)
+    lines = original.decode("utf-8", "strict").splitlines()
+    inventory = {line: "EXCLUDE" if line in d.CRON else "PRESERVE"
+        for line in lines if line.strip() and not line.lstrip().startswith("#")}
+    require(len(inventory) == 12 and list(inventory.values()).count("EXCLUDE") == 3,
+            "WINDOW_SCHEDULER_INVENTORY_CHANGED")
+    coordinator = MaintenanceCoordinator.native(original, inventory)
+    return _run_owner_approved_sequence(coordinator, resume=True)
 
 
 

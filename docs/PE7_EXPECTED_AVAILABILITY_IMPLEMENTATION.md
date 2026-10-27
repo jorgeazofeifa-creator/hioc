@@ -3597,3 +3597,222 @@ authorized recovery disposition. The source/production and PE-7.4 boundaries rem
 STAGING_PERFORMED=FALSE; COMMIT_CREATED=FALSE; PUSH_PERFORMED=FALSE.
 CODEX_PI3_ACCESS=FALSE; CODEX_PI5_ACCESS=FALSE; PRODUCTION_DEPLOYMENT_PERFORMED=FALSE.
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+
+
+### PE-7.3 approved-process resume and material-context correction — 2026-10-27
+
+PE73_APPROVED_PROCESS_RESUME_IMPLEMENTATION=PASS_REPOSITORY_VALIDATION.
+Production remains unobserved/unmodified by Codex. PE-7.3 IN_PROGRESS; PE-7.4
+NOT_AUTHORIZED. This is the existing deployment correction, not another checkpoint.
+Baseline main/origin/main1452534a23528af96e69b9ec030f050b61bed859 was verified clean.
+
+#### Operator-supplied interrupted production state
+
+EVIDENCE_AUTHORITY=OPERATOR_SUPPLIED, not a Codex PI3 observation. The owner reports
+source1452534a23528af96e69b9ec030f050b61bed859; transactionPREPARED, pendingNone,
+windowEXCLUDED; scheduler443485cfb47920db8d6263e5266eb9f68811e81c06390a983a7006aac581b930;
+original scheduler3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9;
+journal file SHA256b899a8fa79bde3c6619d6abd8217d88833c414823e7888358ed7a043b766600f.
+Three HIOC entries are excluded and nine unrelated entries preserved. No artifact
+installation or rollback occurred. Last failure NATIVE_AUTHORIZATION_CONTEXT_DRIFT
+during DRAIN is preserved; no claim of successful deployment/health is made.
+
+#### Confirmed code defect and evidence limitation
+
+MaintenanceCoordinator.context previously retained the entire process observation
+except observed_at. Its limitations list contains UNCLASSIFIED_PID_* and
+VANISHED_PID_* diagnostic entries. Exact before/after context equality therefore
+treated unrelated process-list churn as an authorization change. Controlled tests
+reproduce that false-drift mechanism while source/runtime/scheduler/journal/boot
+and affected-process/completeness evidence remain unchanged.
+The original production before/after context pair was not supplied; the exact
+historical differing field/PID and sole runtime trigger remain UNKNOWN. Do not
+reinterpret this code reproduction as a captured PI3 context diff.
+
+The new process authority projection retains fresh observed_at validation, boot_id,
+inspection_complete, universal_exclusion=false, and sorted exact pid/start_ticks/
+command_sha256 for every known affected process. Diagnostic unrelated PID lists
+remain in inspection receipts but are outside the equality binding. Incomplete,
+unreadable or ambiguous classification still refuses; it is not silently declared
+unrelated. Known activity, changed known identities, scheduler/journal/runtime/source
+drift, scope changes and reboot still stop consequential work.
+
+#### Explicit successor authorization decision
+
+The project owner's executive instruction is preserved verbatim in the new focused
+governance record governance/pe7/pe73-sequence-authorization.json:
+
+> NEVER request separate authorization for consequential operations on a process that has been previous approved as a whole. Regardless of the reasoning, and no matter how you frame it. it is illogical and inefficient.
+
+This is an explicit successor operational-authorization rule, not a claim that the
+older per-step human approval contract already permitted unattended execution.
+It supersedes only repeated human approval within an already approved fixed process,
+including its conditional installation, restoration and release. Fresh internal
+technical authorization/grants remain separately bound for each operation.
+Original PE-7 contract bytes, the verbatim maintenance-window amendment, historical
+approval records/receipts and their original meanings are unchanged. The closed
+PE-7.1 candidate record/schema is not expanded or repurposed; its two current doc
+identities are refreshed as before. The new record is evidence, never a runtime
+permission receipt, environment switch or mutable authority input.
+
+Whole-process authority is PE73_OWNER_SEQUENCE_AUTHORIZATION_20261027. Execution of
+the previously approved normal process or this specifically approved known-state
+resume needs no new Y/N prompt, operation name, reference, JSON interpretation or
+cryptographic copying. One named UID1000_jazofv1 retains exclusive maintenance
+responsibility and the manual no-launch commitment through verified release.
+All six residual risks and the procedural-only exclusion limit remain. Unexpected
+recovery, rollback or material scope change is OUTSIDE this process authority and
+requires a new authorization; there is no automatic request/fallback to recovery.
+
+#### Bounded implementation and recovery
+
+The existing normal entry now uses the fixed nine-step process. A dedicated
+resume_native_main entry permits only the exact approved PREPARED/EXCLUDED anchor.
+It validates secure raw journal SHA256, strict old journal/history, pendingNone,
+empty installed/restored maps, no commit/rollback authority, windowEXCLUDED/drainNone,
+original/reduced cron hashes and inventory/operator, current actual13 baseline
+target identities, all13 staged bytes and all five preserved backup bytes, and fresh
+source/process evidence BEFORE ATTACH writes a new session into the old journal.
+No second transaction, repeated PREPARE/PRESERVE/EXCLUDE, backup replacement, cron
+re-exclusion, reset or cleanup is performed.
+
+The fixed approved resume is ATTACH -> DRAIN -> ESTABLISH -> COMMIT ->
+AUTHORIZE_RELEASE -> RESTORE_SCHEDULER -> RELEASE. ATTACH is the accepted provider's
+existing mechanism, not a new journal interpretation. It revalidates actual state,
+updates session/boot and clears drain readiness. Fresh-session/reboot recovery from
+the exact supplied anchor uses new observations; a reboot mid-sequence invalidates
+the existing scope. Once ATTACH changes the anchor, another invocation cannot
+silently adopt a later phase under this known-state entry.
+
+_ApprovedSequence is a bounded orchestration layer over the existing coordinator,
+not a new transaction/deployment framework. It accepts no caller-provided action
+list, grant, approval flag or permission receipt. Its entry, action list, payload/
+controller/cron/inventory scope, session/boot, process ID and one-hour maximum scope
+are fixed internally. Per-operation grants receive unique references, fresh context
+and at most five minutes bounded by the overall scope deadline. Authorization is
+not silently extended, and each native operation still uses _NativeAdmission and
+the unchanged NativeOps guards. Normal process authority never includes rollback.
+
+Before every operation, the last verified raw journal hash must match; actual
+runtime state must still match the strict journal; source/scope/scheduler/process
+checks run fresh. Context is revalidated by the unchanged execute technical gate.
+After each operation, its reported canonical journal identity, actual state,
+pendingNone, expected state/phase and filesystem inspection must match before the
+next operation is admitted. Scope drift or any exception permanently stops that
+in-memory sequence. Finally only forgets admission. It never retries, rolls back,
+restores cron, releases callers or adopts uncertain evidence.
+
+Existing dependency-ordered13-artifact publication, five-file backups, eight-new-file
+provenance, fsync/readback, single-attempt scheduler installation with prior durable
+uncertain intent, static verification and rollback algorithms remain byte/AST
+identical. Legacy explicit-intervention tooling remains outside the approved normal
+path; the normal/resume process never calls it or requests per-operation approval.
+
+#### Focused validation and preservation
+
+66 tests run,66 passed, zero failures/errors/skips/class-level skips:21 new approved
+resume tests,26 adapted authorization/interface integration tests and19 existing
+affected context/controller integration tests. The complete normal nine-step process
+and exact fresh-session seven-step resume run without TTY calls. Real Windows
+fixture bytes and actual provider/controller algorithms are used with explicit
+synthetic native identity/process/scheduler sensors; this is not production evidence.
+Tests cover exact anchor/phase, stages/backups before ATTACH, unchanged backup/stage
+identities after completion, unrelated PID churn, known process appearance/identity,
+incomplete observations, journal/runtime/source/scheduler drift, scope changes,
+fresh reboot attachment, mid-sequence reboot, interrupted publication, one-attempt
+restoration failure and refusal to replay/expand a stopped process. No actual PI3
+journal or production fingerprints are reconstructed from assumptions.
+
+The first attempt stopped at1 run/0 passed/1 fixture error because a helper named
+sequence collided with an existing integer fixture counter. Its report is retained;
+only the helper name was corrected. It is not counted as passing validation.
+Executable hashes match before/after every successful run. Unaffected historical
+controller/provider/source/broker suites were not rerun without source changes.
+Native scheduler and tty functions are unchanged and retain their recorded real
+Linux qualification. No new OS mechanism, broker, privilege or service is introduced.
+
+Provider SHA256:756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741
+Provider tests SHA256:a54a0ebaa4680ebf138ea76bd1bae8cab1a401782faee3ec8e4d14a96584c962
+All13 immutable delivery,39 successor and449 protected identities verify; only two
+current doc bindings change in the existing record. Original contract/amendment,
+core controller, accepted window journal/publication/rollback algorithms, experimental
+broker and unrelated files remain unchanged. Five tracked modifications plus the
+one intended new successor record; empty index, unchanged stash, no other untracked
+paths, main/origin/main1452534a, ahead/behind0/0. No staging/commit/push performed.
+
+#### One prepared operator-run recovery command — PI3 NUT&PIHOLE
+
+The code is an uncommitted Windows candidate. Corrected, hash-matching tooling must
+first be available in the clean release-source checkout; the old1452534a provider
+will refuse the new hash. No publication, source sync or production execution was
+performed by Codex in this task. This is a code-availability prerequisite, not a
+request for fresh approval of consequential operations inside the approved process.
+The wrapper also requires the interrupted source1452534a in the corrected checkout's
+ancestry. The immutable13 payload objects remain51398bab4e2293b578b2cdac2d0740c3738cab2f;
+no circular future checkout hash or unrestricted release allowlist is introduced.
+
+Copy this complete command only with corrected tooling available. It validates
+the actual on-host state and either completes the exact approved continuation or
+stops without inferring authority for a different recovery. It asks no Y/N questions.
+Keep independent/manual affected commands prohibited until verified RELEASE.
+
+```sh
+/usr/bin/python3 -I -S -B - <<'PY'
+import hashlib, importlib.util, json, os, pathlib, socket, stat, subprocess, sys
+if (sys.platform != 'linux' or socket.gethostname() != 'nutandpihole'
+        or not os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 1000):
+    print('RESULT=FAIL_STOP_TARGET_IDENTITY')
+    raise SystemExit(1)
+root = pathlib.Path('/home/jazofv1/hioc-release-source')
+expected = {
+    'tools/hioc-pe73-pi3-delivery.py': '76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2',
+    'tools/pe73_maintenance_window.py': '756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741',
+}
+for relative, digest in expected.items():
+    path = root / relative
+    info = path.lstat()
+    if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+            or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
+        print('RESULT=FAIL_STOP_CORRECTED_TOOLING_NOT_AVAILABLE')
+        raise SystemExit(1)
+result = subprocess.run(
+    ['/usr/bin/git', '--no-optional-locks', '--no-replace-objects',
+     'merge-base', '--is-ancestor', '1452534a23528af96e69b9ec030f050b61bed859', 'HEAD'],
+    cwd=root, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    timeout=20, env={'PATH': '/usr/bin:/bin', 'HOME': '/home/jazofv1',
+                     'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8', 'GIT_OPTIONAL_LOCKS': '0'})
+if result.returncode != 0:
+    print('RESULT=FAIL_STOP_INTERRUPTED_SOURCE_ANCESTRY')
+    raise SystemExit(1)
+spec = importlib.util.spec_from_file_location('pe73_approved_resume', root / 'tools/pe73_maintenance_window.py')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+print('PI3 NUT&PIHOLE: validating the exact approved interrupted window. No per-operation approvals will be requested.', flush=True)
+try:
+    status = module.resume_native_main()
+except BaseException as error:
+    code = error.code if isinstance(error, module.d.Failure) else 'RECOVERY_STOPPED_UNCERTAIN'
+    print(json.dumps({'RESULT': 'FAIL_STOP', 'failure_code': code,
+                      'automatic_recovery': False, 'consumer_release_implied': False,
+                      'STOP_REQUIRED': True}, sort_keys=True), flush=True)
+    raise SystemExit(1)
+print('RESULT=PASS_APPROVED_EXCLUDED_RESUME')
+print('PE73_STATUS=IN_PROGRESS')
+print('PE74_STATUS=NOT_AUTHORIZED')
+print('STOP_REQUIRED=TRUE')
+raise SystemExit(status)
+PY
+PE73_RECOVERY_EXIT_STATUS=$?
+printf 'PE73_RECOVERY_EXIT_STATUS=%s\n' "$PE73_RECOVERY_EXIT_STATUS"
+```
+
+Expected success: seven PASS_APPROVED_PROCESS_OPERATION receipts beginning ATTACH,
+ending RELEASE, final PASS_APPROVED_EXCLUDED_RESUME and exit0. Capture all output.
+Any mismatch/uncertainty produces FAIL_STOP/nonzero; do not rerun blindly, restore
+cron, overwrite backups or choose another recovery automatically. Unexpected state,
+rollback or changed scope requires the separate owner authorization already stated
+above. This delivery process does not execute/activate PE-7 or authorize PE-7.4,
+and successful installation alone does not close PE-7.3 governance acceptance.
+
+CODEX_PI3_ACCESS=FALSE; CODEX_PI5_ACCESS=FALSE; CODEX_PRODUCTION_MUTATION=FALSE.
+COMMIT_CREATED=FALSE; PUSH_PERFORMED=FALSE; PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED.

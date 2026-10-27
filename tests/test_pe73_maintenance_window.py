@@ -973,7 +973,7 @@ class SimpleOperatorInterfaceTests(unittest.TestCase):
             w.run_deployment_sequence(self.coordinator)
         return stream.getvalue()
 
-    def test_fixed_sequence_has_nine_independently_bound_y_approvals(self):
+    def test_fixed_sequence_has_nine_bound_technical_grants_without_reapproval(self):
         captured = []
         execute = self.coordinator.execute
         def recorded(action, authorization):
@@ -986,12 +986,12 @@ class SimpleOperatorInterfaceTests(unittest.TestCase):
         self.assertEqual(w.DEPLOYMENT_SEQUENCE, expected)
         self.assertEqual(len({a["reference"] for a in captured}), 9)
         self.assertEqual(len({a["context_sha256"] for a in captured}), 9)
-        self.assertTrue(all(a["reference"].startswith("AUTO_" + a["action"] + "_") for a in captured))
-        self.assertEqual(self.prompt_count, 9)
+        self.assertTrue(all(a["reference"].startswith("SEQ_") for a in captured))
+        self.assertEqual(self.prompt_count, 0)
         self.assertEqual(self.fs.publications, list(d.ORDER))
         self.assertEqual(self.ops.raw, self.original)
         self.assertEqual(self.c._journal()["window"]["phase"], "RELEASED")
-        self.assertIn("Deployment window completed", output)
+        self.assertIn("Approved process completed", output)
         self.assertIsNone(self.ops._admission)
         self.fs.assert_unrelated(self)
 
@@ -1019,7 +1019,10 @@ class SimpleOperatorInterfaceTests(unittest.TestCase):
         def accepted(prompt):
             prompts.append(prompt)
             return "Y"
-        with patch.object(w, "tty_line", side_effect=accepted): self.run_sequence()
+        # Legacy explicit intervention remains available outside the approved
+        # process; the normal sequence never asks for this per-operation input.
+        with patch.object(w, "tty_line", side_effect=accepted): self.coordinator.interactive("PREPARE")
+        self.assertEqual(len(prompts), 1)
         for prompt in prompts:
             self.assertNotRegex(prompt, r"[a-f0-9]{64}")
             self.assertNotIn("EXTERNAL_REFERENCE", prompt)
@@ -1031,7 +1034,9 @@ class SimpleOperatorInterfaceTests(unittest.TestCase):
     def test_refusal_after_exclusion_preserves_recoverable_excluded_state(self):
         responses = iter(["Y", "Y", "Y", "N"])
         with patch.object(w, "tty_line", side_effect=lambda prompt: next(responses)):
-            with self.assertRaisesRegex(d.Failure, "NATIVE_OPERATOR_AUTHORIZATION_REFUSED"): self.run_sequence()
+            with self.assertRaisesRegex(d.Failure, "NATIVE_OPERATOR_AUTHORIZATION_REFUSED"):
+                for action in ("PREPARE", "PRESERVE", "EXCLUDE", "DRAIN"):
+                    self.coordinator.interactive(action)
         self.assertEqual(self.c._journal()["window"]["phase"], "EXCLUDED")
         self.assertEqual(self.ops.raw, self.provider.reduced)
         self.assertEqual(self.commands, [self.provider.reduced])
@@ -1044,13 +1049,15 @@ class SimpleOperatorInterfaceTests(unittest.TestCase):
             if responses: return responses.pop(0)
             raise EOFError("synthetic private interruption")
         with patch.object(w, "tty_line", side_effect=interrupted):
-            with self.assertRaises(EOFError): self.run_sequence()
+            with self.assertRaises(EOFError):
+                for action in ("PREPARE", "PRESERVE", "EXCLUDE", "DRAIN"):
+                    self.coordinator.interactive(action)
         self.assertEqual(self.c._journal()["window"]["phase"], "EXCLUDED")
         self.assertEqual(self.commands, [self.provider.reduced]); self.assertFalse(self.fs.publications)
 
     def test_existing_transaction_is_not_automatically_resumed_by_sequence(self):
         self.step("PREPARE"); before = self.fs.read(d.TX + "/journal.json")
-        with self.assertRaisesRegex(d.Failure, "TRANSACTION_EXISTS"): self.run_sequence()
+        with self.assertRaisesRegex(d.Failure, "EXISTING_TRANSACTION_REQUIRES_SEPARATE_RECOVERY"): self.run_sequence()
         self.assertEqual(before, self.fs.read(d.TX + "/journal.json"))
         self.assertEqual(self.prompt_count, 1); self.assertEqual(self.commands, [])
 
@@ -1072,3 +1079,180 @@ class SimpleOperatorInterfaceTests(unittest.TestCase):
         self.assertEqual(response.strip().upper(), "Y")
         self.assertEqual(events[0], ("flush", 123, 99)); self.assertEqual(events[1][0], "write")
         closed.assert_called_once_with(123)
+
+
+class ApprovedResumeTests(unittest.TestCase):
+    setUp = NativeAdmissionTests.setUp
+    bind = NativeAdmissionTests.bind
+    authorization = NativeAdmissionTests.authorization
+    step = NativeAdmissionTests.step
+
+    def excluded(self, reboot=False):
+        for action in ("PREPARE", "PRESERVE", "EXCLUDE"): self.step(action)
+        self.anchor = d.sha(self.fs.read(d.TX + "/journal.json"))
+        self.anchor_patch = patch.object(w, "EXCLUDED_RECOVERY_JOURNAL_SHA256", self.anchor)
+        self.anchor_patch.start(); self.addCleanup(self.anchor_patch.stop)
+        if reboot: self.ops.boot_id = "BOOT_ID_2"
+        self.bind()  # New coordinator/session, original journal/session preserved.
+
+    def approved_sequence(self): return w._ApprovedSequence(self.coordinator, resume=True)
+    def run_resume(self):
+        import io
+        with contextlib.redirect_stdout(io.StringIO()):
+            return w._run_owner_approved_sequence(self.coordinator, resume=True)
+
+    def test_complete_exact_excluded_resume_uses_attach_and_never_reprepares(self):
+        self.excluded(); before_count = self.prompt_count
+        paths = [w.BACKUP] + [d.TX + "/stage-" + str(i) for i in range(13)] + [
+            d.TX + "/backup-" + str(i) for i,p in enumerate(d.ORDER) if p in d.PRIOR]
+        before = {p:self.fs.snapshot(p,0o600) for p in paths}
+        actions = []; execute = self.coordinator.execute
+        def tracked(action, authorization):
+            actions.append(action); return execute(action, authorization)
+        with patch.object(w, "tty_line", side_effect=AssertionError("Unexpected reapproval")), \
+             patch.object(self.coordinator, "execute", side_effect=tracked): self.assertEqual(self.run_resume(),0)
+        self.assertEqual(tuple(actions), w.RESUME_SEQUENCE)
+        self.assertEqual(actions[0], "ATTACH")
+        self.assertFalse(set(actions) & {"PREPARE","PRESERVE","EXCLUDE","ROLLBACK"})
+        self.assertEqual(self.prompt_count, before_count)
+        self.assertEqual(self.commands,[self.provider.reduced,self.original])
+        self.assertEqual(self.c._journal()["window"]["phase"],"RELEASED")
+        self.assertEqual(self.c.verify()["installed_count"],13)
+        self.assertEqual({p:self.fs.snapshot(p,0o600) for p in paths},before)
+        self.assertIsNone(self.ops._admission);self.fs.assert_unrelated(self)
+
+    def test_unrelated_process_diagnostics_do_not_invalidate_material_context(self):
+        self.excluded();real=self.ops.processes;counter=[0]
+        def churn():
+            counter[0]+=1
+            return {**real(),"limitations":["UNCLASSIFIED_PID_"+str(counter[0]),
+                "VANISHED_PID_"+str(counter[0]),"CACHED_MODULES_UNKNOWN"]}
+        self.ops.processes=churn
+        first=self.coordinator.context("ATTACH"); second=self.coordinator.context("ATTACH")
+        self.assertEqual(first,second)
+        with patch.object(w,"tty_line",side_effect=AssertionError("Unexpected reapproval")):
+            self.run_resume()
+        self.assertEqual(self.c._journal()["window"]["phase"],"RELEASED")
+
+    def test_wrong_historical_journal_anchor_refuses_before_attach(self):
+        self.excluded();raw=self.fs.read(d.TX+"/journal.json")
+        with patch.object(w,"EXCLUDED_RECOVERY_JOURNAL_SHA256","0"*64):
+            with self.assertRaisesRegex(d.Failure,"RECOVERY_JOURNAL_ANCHOR_MISMATCH"):self.approved_sequence()
+        self.assertEqual(self.fs.read(d.TX+"/journal.json"),raw);self.assertEqual(len(self.commands),1)
+
+    def test_other_phase_cannot_be_adopted_even_with_matching_hash(self):
+        self.excluded();self.step("ATTACH");self.step("DRAIN")
+        raw=self.fs.read(d.TX+"/journal.json")
+        with patch.object(w,"EXCLUDED_RECOVERY_JOURNAL_SHA256",d.sha(raw)):
+            with self.assertRaisesRegex(d.Failure,"RECOVERY_SCOPE_OR_PHASE_MISMATCH"):self.approved_sequence()
+        self.assertEqual(self.fs.read(d.TX+"/journal.json"),raw)
+
+    def test_all_stages_and_backups_are_verified_before_attach(self):
+        self.excluded();raw=self.fs.read(d.TX+"/journal.json")
+        index=next(i for i,p in enumerate(d.ORDER) if p in d.PRIOR)
+        for target,code in [(d.TX+"/stage-0","STAGING_DRIFT"),(d.TX+"/backup-"+str(index),"BACKUP_DRIFT")]:
+            saved=self.fs.read(target);self.fs.path(target).write_bytes(b"corrupt fixture")
+            with self.subTest(target=target),self.assertRaisesRegex(d.Failure,code):self.approved_sequence()
+            self.assertEqual(self.fs.read(d.TX+"/journal.json"),raw)
+            self.fs.path(target).write_bytes(saved)
+
+    def test_external_journal_change_between_steps_is_not_adopted(self):
+        self.excluded();sequence=self.approved_sequence();sequence.perform_next()
+        value=self.c._journal();value["window"]["session"]="EXTERNAL_SESSION_1";self.fs.journal(value)
+        with self.assertRaisesRegex(d.Failure,"SEQUENCE_JOURNAL_DRIFT"):sequence.perform_next()
+        self.assertTrue(sequence.stopped);self.assertFalse(self.fs.publications)
+
+    def test_unexpected_runtime_change_blocks_resume_progress(self):
+        self.excluded();sequence=self.approved_sequence();sequence.perform_next()
+        self.fs.path(next(iter(prior.BASE))).write_bytes(b"external runtime change")
+        with self.assertRaisesRegex(d.Failure,"SEQUENCE_RUNTIME_DRIFT"):sequence.perform_next()
+        self.assertFalse(self.fs.publications);self.assertEqual(len(self.commands),1)
+
+    def test_unexpected_scheduler_change_is_never_overwritten(self):
+        self.excluded();sequence=self.approved_sequence();sequence.perform_next()
+        self.ops.raw+=b"# unrelated concurrent editor\n";changed=self.ops.raw
+        with self.assertRaises(d.Failure):sequence.perform_next()
+        self.assertEqual(self.ops.raw,changed);self.assertEqual(len(self.commands),1)
+
+    def test_source_identity_change_refuses_without_publication(self):
+        self.excluded();sequence=self.approved_sequence();sequence.perform_next()
+        self.reader=lambda:{**prior.SOURCE,d.ORDER[0]:b"wrong source"}
+        with self.assertRaises(d.Failure):sequence.perform_next()
+        self.assertFalse(self.fs.publications)
+
+    def test_affected_process_appearance_stops_before_drain_mutation(self):
+        self.excluded();sequence=self.approved_sequence();sequence.perform_next();raw=self.fs.read(d.TX+"/journal.json")
+        self.ops.active=[{"pid":44,"start_ticks":55,"command_sha256":"a"*64}]
+        with self.assertRaisesRegex(d.Failure,"KNOWN_CONSUMERS_NOT_DRAINED"):sequence.perform_next()
+        self.assertEqual(self.fs.read(d.TX+"/journal.json"),raw);self.assertFalse(self.fs.publications)
+
+    def test_incomplete_process_inspection_is_not_excused_as_churn(self):
+        self.excluded();sequence=self.approved_sequence();sequence.perform_next();self.ops.complete=False
+        with self.assertRaises(d.Failure):sequence.perform_next()
+        self.assertTrue(sequence.stopped);self.assertFalse(self.fs.publications)
+
+    def test_reboot_before_fresh_attach_requires_and_uses_new_boot_evidence(self):
+        self.excluded(reboot=True)
+        self.run_resume()
+        self.assertEqual(self.c._journal()["window"]["boot_id"],"BOOT_ID_2")
+        self.assertEqual(self.c._journal()["window"]["phase"],"RELEASED")
+
+    def test_reboot_during_sequence_invalidates_existing_authority(self):
+        self.excluded();sequence=self.approved_sequence();sequence.perform_next();self.ops.boot_id="BOOT_ID_2"
+        with self.assertRaisesRegex(d.Failure,"SEQUENCE_FRESH_SESSION_REQUIRED"):sequence.perform_next()
+        self.assertEqual(len(self.commands),1);self.assertFalse(self.fs.publications)
+
+    def test_new_session_cannot_implicitly_continue_a_partially_advanced_resume(self):
+        self.excluded();sequence=self.approved_sequence();sequence.perform_next();self.bind()
+        with self.assertRaisesRegex(d.Failure,"RECOVERY_JOURNAL_ANCHOR_MISMATCH"):self.approved_sequence()
+        self.assertEqual(len(self.commands),1)
+
+    def test_interrupted_publication_stops_process_without_any_recovery(self):
+        self.excluded();sequence=self.approved_sequence()
+        for _ in range(3):sequence.perform_next()
+        self.fs.fail=lambda point:point=="PUBLISH:"+d.ORDER[2]
+        with self.assertRaises(OSError):sequence.perform_next()
+        self.assertEqual(self.c._journal()["pending"],d.ORDER[2]);self.assertIsNone(self.ops._admission)
+        with self.assertRaisesRegex(d.Failure,"SEQUENCE_STOPPED_OR_COMPLETE"):sequence.perform_next()
+        self.assertEqual(self.ops.raw,self.provider.reduced);self.assertEqual(len(self.commands),1)
+
+    def test_restoration_failure_never_automatically_retries_or_releases(self):
+        self.excluded();sequence=self.approved_sequence()
+        for _ in range(5):sequence.perform_next()
+        self.mode="LOST_ACK"
+        with self.assertRaises(d.Failure):sequence.perform_next()
+        self.assertEqual(self.c._journal()["window"]["phase"],"RESTORE_UNCERTAIN")
+        with self.assertRaisesRegex(d.Failure,"SEQUENCE_STOPPED_OR_COMPLETE"):sequence.perform_next()
+        self.assertEqual(len(self.commands),2);self.assertIsNone(self.ops._admission)
+
+    def test_process_scope_change_cannot_add_rollback_to_the_approved_actions(self):
+        self.excluded();sequence=self.approved_sequence();sequence.actions=(*sequence.actions,"ROLLBACK")
+        with self.assertRaisesRegex(d.Failure,"SEQUENCE_ACTION_SCOPE_DRIFT"):sequence.perform_next()
+        self.assertFalse(self.fs.publications)
+
+    def test_changed_inventory_does_not_get_fresh_implied_scope_authority(self):
+        self.excluded();sequence=self.approved_sequence();self.provider.inventory["new unapproved job"]="PRESERVE"
+        with self.assertRaisesRegex(d.Failure,"SEQUENCE_SCOPE_DRIFT"):sequence.perform_next()
+        self.assertEqual(len(self.commands),1)
+
+    def test_expired_process_scope_cannot_be_silently_renewed(self):
+        self.excluded();sequence=self.approved_sequence();self.ops.clock+=3601
+        with self.assertRaisesRegex(d.Failure,"SEQUENCE_FRESH_SESSION_REQUIRED"):sequence.perform_next()
+        self.assertEqual(self.c._journal()["window"]["phase"],"EXCLUDED")
+
+    def test_affected_process_order_is_normalized_but_identities_remain_bound(self):
+        self.excluded()
+        one={"pid":1,"start_ticks":2,"command_sha256":"a"*64};two={"pid":2,"start_ticks":3,"command_sha256":"b"*64}
+        self.ops.active=[one,two];first=self.coordinator.context("ATTACH")
+        self.ops.active=[two,one];self.assertEqual(first,self.coordinator.context("ATTACH"))
+        self.ops.active=[{**one,"start_ticks":999},two]
+        self.assertNotEqual(first,self.coordinator.context("ATTACH"))
+
+    def test_governance_preserves_executive_instruction_verbatim(self):
+        value=json.loads((ROOT/"governance/pe7/pe73-sequence-authorization.json").read_bytes())
+        self.assertEqual(value["executive_instruction_verbatim"],
+            "NEVER request separate authorization for consequential operations on a process that has been previous approved as a whole. Regardless of the reasoning, and no matter how you frame it. it is illogical and inefficient.")
+        self.assertEqual(value["authority_reference"],w.OWNER_SEQUENCE_AUTHORITY)
+        self.assertEqual(value["approved_normal_sequence"],list(w.DEPLOYMENT_SEQUENCE))
+        self.assertEqual(value["approved_known_resume_sequence"],list(w.RESUME_SEQUENCE))
+        self.assertTrue(value["unexpected_recovery_requires_new_authorization"])

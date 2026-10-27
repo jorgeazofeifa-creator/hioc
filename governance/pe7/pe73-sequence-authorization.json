@@ -1,0 +1,74 @@
+{
+  "approved_known_resume_sequence": [
+    "ATTACH",
+    "DRAIN",
+    "ESTABLISH",
+    "COMMIT",
+    "AUTHORIZE_RELEASE",
+    "RESTORE_SCHEDULER",
+    "RELEASE"
+  ],
+  "approved_normal_sequence": [
+    "PREPARE",
+    "PRESERVE",
+    "EXCLUDE",
+    "DRAIN",
+    "ESTABLISH",
+    "COMMIT",
+    "AUTHORIZE_RELEASE",
+    "RESTORE_SCHEDULER",
+    "RELEASE"
+  ],
+  "authority": "EXPLICIT_PROJECT_OWNER_EXECUTIVE_DECISION",
+  "authority_reference": "PE73_OWNER_SEQUENCE_AUTHORIZATION_20261027",
+  "checkpoint": "PE-7.3",
+  "codex_production_access": false,
+  "decision_date": "2026-10-27",
+  "decision_kind": "SUCCESSOR_PROCESS_AUTHORIZATION_RULE",
+  "executive_instruction_verbatim": "NEVER request separate authorization for consequential operations on a process that has been previous approved as a whole. Regardless of the reasoning, and no matter how you frame it. it is illogical and inefficient.",
+  "historical_amendment_text_changed": false,
+  "historical_contract_text_changed": false,
+  "historical_failure_field_limitation": "The original before/after context pair was not supplied. Code and fixtures establish unrelated PID diagnostic overbinding; the exact historical changed field/PID is not asserted.",
+  "implementation_artifacts": [
+    {
+      "path": "tools/pe73_maintenance_window.py",
+      "sha256": "756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741"
+    },
+    {
+      "path": "tests/test_pe73_maintenance_window.py",
+      "sha256": "a54a0ebaa4680ebf138ea76bd1bae8cab1a401782faee3ec8e4d14a96584c962"
+    }
+  ],
+  "material_scope_change_requires_new_authorization": true,
+  "operator_supplied_interrupted_state": {
+    "evidence_authority": "OPERATOR_SUPPLIED",
+    "installed_count": 0,
+    "journal_file_sha256": "b899a8fa79bde3c6619d6abd8217d88833c414823e7888358ed7a043b766600f",
+    "last_failure": "NATIVE_AUTHORIZATION_CONTEXT_DRIFT",
+    "original_scheduler_sha256": "3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9",
+    "pending": null,
+    "release_source_commit": "1452534a23528af96e69b9ec030f050b61bed859",
+    "rollback_performed": false,
+    "scheduler_sha256": "443485cfb47920db8d6263e5266eb9f68811e81c06390a983a7006aac581b930",
+    "transaction_state": "PREPARED",
+    "window_phase": "EXCLUDED"
+  },
+  "pe73_status": "IN_PROGRESS",
+  "pe74_status": "NOT_AUTHORIZED",
+  "rollback_requires_new_authorization": true,
+  "runtime_permission_source": "Existing explicit owner approval and exact fixed code-defined sequence/anchor; this JSON is NOT a permission input or runtime bypass.",
+  "schema_version": "1.0",
+  "supersedes": "Independent human approval for each operation within an already approved fixed process only; technical per-operation grants and all transaction safeguards remain mandatory.",
+  "unexpected_recovery_requires_new_authorization": true,
+  "validation": {
+    "affected_context_tests": 19,
+    "authorization_tests": 26,
+    "errors": 0,
+    "failures": 0,
+    "passed": 66,
+    "production_execution": false,
+    "resume_tests": 21,
+    "skipped": 0,
+    "total_run": 66
+  }
+}

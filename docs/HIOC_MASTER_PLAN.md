@@ -6270,38 +6270,42 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — operator-interface correction, 2026-10-26.
+Classification: CURRENT — approved-process recovery correction, 2026-10-27.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
-PE73_SIMPLE_OPERATOR_INTERFACE=PASS; UNATTENDED_DEPLOYMENT_SUPPORTED=FALSE.
-PE73_DEPLOYMENT_READINESS=READY_FOR_OPERATOR_AUTHORIZATION; PE73_COMPLETE=FALSE.
-PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE; PE74_STATUS=NOT_AUTHORIZED.
-Published baseline43b3084948831e45ccfb0e4bac2f2394d97ea631. This five-file
-operator-interface correction is uncommitted; no staging, commit or push authorized.
-The normal runner follows the fixed nine-step sequence automatically, but each
-operation still requires a separate plain-language Y/N decision on /dev/tty.
-References/context digests are generated internally; no operation names, external
-references, JSON interpretation or cryptographic copying are requested from the operator.
-Whitespace/case around Y/N is normalized. Blank/invalid input refuses permission.
-Queued terminal input is discarded before each new prompt, preventing answer reuse.
-Fresh technical context, boot/session/expiry/risk binding, durable intent, exact
-artifact/security validation, single-attempt scheduler mutation and readback remain.
-Read-only/internal checks advance automatically; journaled readiness and consequential
-steps retain their individual authorizations. No unattended sequence is established
-by the accepted contract/amendment. All nine approvals remain mandatory; rollback
-and recovery remain separately authorized and are never part of the automatic path.
-Manual caller restrictions stay procedural. N/interruption never retries, restores
-cron, rolls back or releases callers. Reboot/restart/uncertain effects stop as before.
-FOCUSED_UI_VALIDATION=26_RUN_26_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
-Real Linux controlling-terminal whitespace and queued-answer isolation PASS.
-Prior106-test evidence remains historical; unchanged transaction/provider algorithms
-retain their accepted88-test evidence. No unrelated historical suite was repeated.
-All13 delivery,39 successor and449 protected identities verify. Core controller,
-contract, approved amendment, transaction algorithms and experimental broker unchanged.
-All prior PI3 facts remain OPERATOR_SUPPLIED. No PI3/PI5 access or deployment occurred.
-Exactly one next action: separate controlled publication authorization for this
-validated operator-interface correction; no production execution is authorized here.
-See [the corrected operator procedure and prompts](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-simple-operator-interface--2026-10-26).
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Published baseline1452534a23528af96e69b9ec030f050b61bed859. Current Windows
+correction is uncommitted: five existing modified paths and one focused PE-7.3
+successor authorization record. No staging, commit, push or PI3/PI5 access performed.
+Owner executive decision PE73_OWNER_SEQUENCE_AUTHORIZATION_20261027 is recorded
+verbatim in governance/pe7/pe73-sequence-authorization.json. It explicitly supersedes
+repeated human authorization inside a previously approved fixed process. Original
+contract/amendment text and historical nine-prompt decisions remain preserved.
+Normal deployment and the specifically approved EXCLUDED resume now run without
+per-operation prompts. Fresh technical grants, material context checks, durable
+intent and all transaction/recovery safeguards remain mandatory. Unexpected
+recovery, rollback or materially changed scope requires new owner authorization.
+The last PI3 report is OPERATOR_SUPPLIED: source1452534a, PREPARED/pendingNone,
+windowEXCLUDED, three jobs excluded/nine preserved, no installed artifacts/rollback,
+journal SHA256b899a8fa79bde3c6619d6abd8217d88833c414823e7888358ed7a043b766600f.
+Failure NATIVE_AUTHORIZATION_CONTEXT_DRIFT is retained. Diagnostic unrelated PID
+lists were incorrectly part of context equality; the code defect is reproduced.
+The exact historical changed field/PID is unknown because the context pair was not supplied.
+The corrected binding retains fresh completeness, boot and exact affected-process
+identities while keeping unrelated PID diagnostic churn outside authority.
+The bounded resume verifies the exact raw journal anchor, PREPARED/EXCLUDED phase,
+all13 current target identities, all13 stages/five backups, source and scheduler
+before ATTACH. It never repeats PREPARE/PRESERVE/EXCLUDE or overwrites backups.
+Approved continuation: ATTACH,DRAIN,ESTABLISH,COMMIT,AUTHORIZE_RELEASE,
+RESTORE_SCHEDULER,RELEASE, with automated fresh per-operation technical validation.
+FOCUSED_VALIDATION=66_RUN_66_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+All13 delivery,39 successor and449 protected identities verify; original controller,
+contract, verbatim amendment and transaction algorithms unchanged. No automatic
+retry, rollback, cron restoration, release or uncertain-state adoption is introduced.
+The corrected command needs these exact corrected tool bytes in release-source;
+the old1452534a runner fails its hash check. Publication/source delivery has not
+been performed in this assignment. No production resume/closure is claimed.
+See [the recovery evidence and exact operator command](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-approved-process-resume-and-material-context-correction--2026-10-27).
 
 ### Historical repository-preparation snapshot at85c1a4f1
 
@@ -7598,38 +7602,42 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — operator-interface correction, 2026-10-26.
+Classification: CURRENT — approved-process recovery correction, 2026-10-27.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
-PE73_SIMPLE_OPERATOR_INTERFACE=PASS; UNATTENDED_DEPLOYMENT_SUPPORTED=FALSE.
-PE73_DEPLOYMENT_READINESS=READY_FOR_OPERATOR_AUTHORIZATION; PE73_COMPLETE=FALSE.
-PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE; PE74_STATUS=NOT_AUTHORIZED.
-Published baseline43b3084948831e45ccfb0e4bac2f2394d97ea631. This five-file
-operator-interface correction is uncommitted; no staging, commit or push authorized.
-The normal runner follows the fixed nine-step sequence automatically, but each
-operation still requires a separate plain-language Y/N decision on /dev/tty.
-References/context digests are generated internally; no operation names, external
-references, JSON interpretation or cryptographic copying are requested from the operator.
-Whitespace/case around Y/N is normalized. Blank/invalid input refuses permission.
-Queued terminal input is discarded before each new prompt, preventing answer reuse.
-Fresh technical context, boot/session/expiry/risk binding, durable intent, exact
-artifact/security validation, single-attempt scheduler mutation and readback remain.
-Read-only/internal checks advance automatically; journaled readiness and consequential
-steps retain their individual authorizations. No unattended sequence is established
-by the accepted contract/amendment. All nine approvals remain mandatory; rollback
-and recovery remain separately authorized and are never part of the automatic path.
-Manual caller restrictions stay procedural. N/interruption never retries, restores
-cron, rolls back or releases callers. Reboot/restart/uncertain effects stop as before.
-FOCUSED_UI_VALIDATION=26_RUN_26_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
-Real Linux controlling-terminal whitespace and queued-answer isolation PASS.
-Prior106-test evidence remains historical; unchanged transaction/provider algorithms
-retain their accepted88-test evidence. No unrelated historical suite was repeated.
-All13 delivery,39 successor and449 protected identities verify. Core controller,
-contract, approved amendment, transaction algorithms and experimental broker unchanged.
-All prior PI3 facts remain OPERATOR_SUPPLIED. No PI3/PI5 access or deployment occurred.
-Exactly one next action: separate controlled publication authorization for this
-validated operator-interface correction; no production execution is authorized here.
-See [the corrected operator procedure and prompts](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-simple-operator-interface--2026-10-26).
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Published baseline1452534a23528af96e69b9ec030f050b61bed859. Current Windows
+correction is uncommitted: five existing modified paths and one focused PE-7.3
+successor authorization record. No staging, commit, push or PI3/PI5 access performed.
+Owner executive decision PE73_OWNER_SEQUENCE_AUTHORIZATION_20261027 is recorded
+verbatim in governance/pe7/pe73-sequence-authorization.json. It explicitly supersedes
+repeated human authorization inside a previously approved fixed process. Original
+contract/amendment text and historical nine-prompt decisions remain preserved.
+Normal deployment and the specifically approved EXCLUDED resume now run without
+per-operation prompts. Fresh technical grants, material context checks, durable
+intent and all transaction/recovery safeguards remain mandatory. Unexpected
+recovery, rollback or materially changed scope requires new owner authorization.
+The last PI3 report is OPERATOR_SUPPLIED: source1452534a, PREPARED/pendingNone,
+windowEXCLUDED, three jobs excluded/nine preserved, no installed artifacts/rollback,
+journal SHA256b899a8fa79bde3c6619d6abd8217d88833c414823e7888358ed7a043b766600f.
+Failure NATIVE_AUTHORIZATION_CONTEXT_DRIFT is retained. Diagnostic unrelated PID
+lists were incorrectly part of context equality; the code defect is reproduced.
+The exact historical changed field/PID is unknown because the context pair was not supplied.
+The corrected binding retains fresh completeness, boot and exact affected-process
+identities while keeping unrelated PID diagnostic churn outside authority.
+The bounded resume verifies the exact raw journal anchor, PREPARED/EXCLUDED phase,
+all13 current target identities, all13 stages/five backups, source and scheduler
+before ATTACH. It never repeats PREPARE/PRESERVE/EXCLUDE or overwrites backups.
+Approved continuation: ATTACH,DRAIN,ESTABLISH,COMMIT,AUTHORIZE_RELEASE,
+RESTORE_SCHEDULER,RELEASE, with automated fresh per-operation technical validation.
+FOCUSED_VALIDATION=66_RUN_66_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+All13 delivery,39 successor and449 protected identities verify; original controller,
+contract, verbatim amendment and transaction algorithms unchanged. No automatic
+retry, rollback, cron restoration, release or uncertain-state adoption is introduced.
+The corrected command needs these exact corrected tool bytes in release-source;
+the old1452534a runner fails its hash check. Publication/source delivery has not
+been performed in this assignment. No production resume/closure is claimed.
+See [the recovery evidence and exact operator command](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-approved-process-resume-and-material-context-correction--2026-10-27).
 
 #### Historical repository-preparation snapshot at85c1a4f1
 
@@ -8410,38 +8418,42 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — operator-interface correction, 2026-10-26.
+Classification: CURRENT — approved-process recovery correction, 2026-10-27.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
-PE73_SIMPLE_OPERATOR_INTERFACE=PASS; UNATTENDED_DEPLOYMENT_SUPPORTED=FALSE.
-PE73_DEPLOYMENT_READINESS=READY_FOR_OPERATOR_AUTHORIZATION; PE73_COMPLETE=FALSE.
-PE73_PRODUCTION_DELIVERY_AUTHORIZED=FALSE; PE74_STATUS=NOT_AUTHORIZED.
-Published baseline43b3084948831e45ccfb0e4bac2f2394d97ea631. This five-file
-operator-interface correction is uncommitted; no staging, commit or push authorized.
-The normal runner follows the fixed nine-step sequence automatically, but each
-operation still requires a separate plain-language Y/N decision on /dev/tty.
-References/context digests are generated internally; no operation names, external
-references, JSON interpretation or cryptographic copying are requested from the operator.
-Whitespace/case around Y/N is normalized. Blank/invalid input refuses permission.
-Queued terminal input is discarded before each new prompt, preventing answer reuse.
-Fresh technical context, boot/session/expiry/risk binding, durable intent, exact
-artifact/security validation, single-attempt scheduler mutation and readback remain.
-Read-only/internal checks advance automatically; journaled readiness and consequential
-steps retain their individual authorizations. No unattended sequence is established
-by the accepted contract/amendment. All nine approvals remain mandatory; rollback
-and recovery remain separately authorized and are never part of the automatic path.
-Manual caller restrictions stay procedural. N/interruption never retries, restores
-cron, rolls back or releases callers. Reboot/restart/uncertain effects stop as before.
-FOCUSED_UI_VALIDATION=26_RUN_26_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
-Real Linux controlling-terminal whitespace and queued-answer isolation PASS.
-Prior106-test evidence remains historical; unchanged transaction/provider algorithms
-retain their accepted88-test evidence. No unrelated historical suite was repeated.
-All13 delivery,39 successor and449 protected identities verify. Core controller,
-contract, approved amendment, transaction algorithms and experimental broker unchanged.
-All prior PI3 facts remain OPERATOR_SUPPLIED. No PI3/PI5 access or deployment occurred.
-Exactly one next action: separate controlled publication authorization for this
-validated operator-interface correction; no production execution is authorized here.
-See [the corrected operator procedure and prompts](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-simple-operator-interface--2026-10-26).
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Published baseline1452534a23528af96e69b9ec030f050b61bed859. Current Windows
+correction is uncommitted: five existing modified paths and one focused PE-7.3
+successor authorization record. No staging, commit, push or PI3/PI5 access performed.
+Owner executive decision PE73_OWNER_SEQUENCE_AUTHORIZATION_20261027 is recorded
+verbatim in governance/pe7/pe73-sequence-authorization.json. It explicitly supersedes
+repeated human authorization inside a previously approved fixed process. Original
+contract/amendment text and historical nine-prompt decisions remain preserved.
+Normal deployment and the specifically approved EXCLUDED resume now run without
+per-operation prompts. Fresh technical grants, material context checks, durable
+intent and all transaction/recovery safeguards remain mandatory. Unexpected
+recovery, rollback or materially changed scope requires new owner authorization.
+The last PI3 report is OPERATOR_SUPPLIED: source1452534a, PREPARED/pendingNone,
+windowEXCLUDED, three jobs excluded/nine preserved, no installed artifacts/rollback,
+journal SHA256b899a8fa79bde3c6619d6abd8217d88833c414823e7888358ed7a043b766600f.
+Failure NATIVE_AUTHORIZATION_CONTEXT_DRIFT is retained. Diagnostic unrelated PID
+lists were incorrectly part of context equality; the code defect is reproduced.
+The exact historical changed field/PID is unknown because the context pair was not supplied.
+The corrected binding retains fresh completeness, boot and exact affected-process
+identities while keeping unrelated PID diagnostic churn outside authority.
+The bounded resume verifies the exact raw journal anchor, PREPARED/EXCLUDED phase,
+all13 current target identities, all13 stages/five backups, source and scheduler
+before ATTACH. It never repeats PREPARE/PRESERVE/EXCLUDE or overwrites backups.
+Approved continuation: ATTACH,DRAIN,ESTABLISH,COMMIT,AUTHORIZE_RELEASE,
+RESTORE_SCHEDULER,RELEASE, with automated fresh per-operation technical validation.
+FOCUSED_VALIDATION=66_RUN_66_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+All13 delivery,39 successor and449 protected identities verify; original controller,
+contract, verbatim amendment and transaction algorithms unchanged. No automatic
+retry, rollback, cron restoration, release or uncertain-state adoption is introduced.
+The corrected command needs these exact corrected tool bytes in release-source;
+the old1452534a runner fails its hash check. Publication/source delivery has not
+been performed in this assignment. No production resume/closure is claimed.
+See [the recovery evidence and exact operator command](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-approved-process-resume-and-material-context-correction--2026-10-27).
 
 #### Historical repository-preparation snapshot at85c1a4f1
 
