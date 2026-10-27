@@ -801,10 +801,13 @@ class NativeAdmissionTests(unittest.TestCase):
         self.prompt_count = 0
         def confirmed(prompt):
             self.prompt_count += 1
-            self.assertIn('"operator": "jazofv1"', prompt)
-            self.assertIn('"manual_launch_control": "PROCEDURAL_ONLY"', prompt)
-            for risk in w.RISKS: self.assertIn(risk, prompt)
-            return prompt.split("Type exactly: ")[-1].strip()
+            self.assertIn("operator jazofv1", prompt)
+            self.assertIn("Approve this step? [Y/N]: ", prompt)
+            self.assertIn("procedural, not universal technical exclusion", prompt)
+            self.assertIn("cached modules, retained file descriptors, alternate launchers", prompt)
+            self.assertNotIn("context_sha256", prompt)
+            self.assertNotIn("Type exactly", prompt)
+            return "  Y \t"
         self.confirmed = confirmed
         self.real_tty = w.tty_line
         self.tty = patch.object(w, "tty_line", side_effect=confirmed)
@@ -812,7 +815,7 @@ class NativeAdmissionTests(unittest.TestCase):
 
     def step(self, action):
         self.sequence += 1
-        result = self.coordinator.interactive(action, "NATIVE_EXTERNAL_" + str(self.sequence))
+        result = self.coordinator.interactive(action)
         self.assertIsNone(self.ops._admission)
         return result
 
@@ -955,4 +958,117 @@ class NativeAdmissionTests(unittest.TestCase):
              patch.object(w.os, "close") as closed:
             with self.assertRaisesRegex(d.Failure, "NATIVE_TTY_REQUIRED"): self.real_tty("prompt")
         self.assertEqual(opened.call_args.args[0], "/dev/tty")
+        closed.assert_called_once_with(123)
+
+
+class SimpleOperatorInterfaceTests(unittest.TestCase):
+    setUp = NativeAdmissionTests.setUp
+    bind = NativeAdmissionTests.bind
+    authorization = NativeAdmissionTests.authorization
+    step = NativeAdmissionTests.step
+
+    def run_sequence(self):
+        import io
+        with contextlib.redirect_stdout(io.StringIO()) as stream:
+            w.run_deployment_sequence(self.coordinator)
+        return stream.getvalue()
+
+    def test_fixed_sequence_has_nine_independently_bound_y_approvals(self):
+        captured = []
+        execute = self.coordinator.execute
+        def recorded(action, authorization):
+            captured.append(copy.deepcopy(authorization))
+            return execute(action, authorization)
+        with patch.object(self.coordinator, "execute", side_effect=recorded): output = self.run_sequence()
+        expected = ("PREPARE", "PRESERVE", "EXCLUDE", "DRAIN", "ESTABLISH", "COMMIT",
+                    "AUTHORIZE_RELEASE", "RESTORE_SCHEDULER", "RELEASE")
+        self.assertEqual(tuple(a["action"] for a in captured), expected)
+        self.assertEqual(w.DEPLOYMENT_SEQUENCE, expected)
+        self.assertEqual(len({a["reference"] for a in captured}), 9)
+        self.assertEqual(len({a["context_sha256"] for a in captured}), 9)
+        self.assertTrue(all(a["reference"].startswith("AUTO_" + a["action"] + "_") for a in captured))
+        self.assertEqual(self.prompt_count, 9)
+        self.assertEqual(self.fs.publications, list(d.ORDER))
+        self.assertEqual(self.ops.raw, self.original)
+        self.assertEqual(self.c._journal()["window"]["phase"], "RELEASED")
+        self.assertIn("Deployment window completed", output)
+        self.assertIsNone(self.ops._admission)
+        self.fs.assert_unrelated(self)
+
+    def test_whitespace_and_case_around_y_are_accepted(self):
+        for response in ("Y", " Y ", "\tY\t", " y "):
+            with self.subTest(response=response), patch.object(w, "tty_line", return_value=response):
+                # Context construction is real; stop before effect to exercise
+                # every accepted spelling without creating multiple transactions.
+                with patch.object(self.coordinator, "execute", return_value={}) as execute:
+                    self.coordinator.interactive("PREPARE")
+                    execute.assert_called_once()
+            self.assertIsNone(self.ops._admission)
+        self.assertFalse(self.fs.transaction_present())
+
+    def test_n_blank_accidental_and_multi_answer_input_never_authorize(self):
+        for response in ("N", " N ", "n", "", "  ", "YES", "Y N", "Y\nY", "Y\u200b"):
+            with self.subTest(response=response), patch.object(w, "tty_line", return_value=response):
+                with self.assertRaisesRegex(d.Failure, "NATIVE_OPERATOR_AUTHORIZATION_REFUSED"):
+                    self.coordinator.interactive("PREPARE")
+            self.assertIsNone(getattr(self.ops, "_admission", None))
+        self.assertFalse(self.fs.transaction_present()); self.assertEqual(self.commands, [])
+
+    def test_prompt_contains_no_hash_json_reference_or_manual_action_input(self):
+        prompts = []
+        def accepted(prompt):
+            prompts.append(prompt)
+            return "Y"
+        with patch.object(w, "tty_line", side_effect=accepted): self.run_sequence()
+        for prompt in prompts:
+            self.assertNotRegex(prompt, r"[a-f0-9]{64}")
+            self.assertNotIn("EXTERNAL_REFERENCE", prompt)
+            self.assertNotIn("context_sha256", prompt)
+            self.assertNotIn("{", prompt)
+            self.assertIn("Approve this step? [Y/N]: ", prompt)
+            self.assertIn("Approve this step only", prompt)
+
+    def test_refusal_after_exclusion_preserves_recoverable_excluded_state(self):
+        responses = iter(["Y", "Y", "Y", "N"])
+        with patch.object(w, "tty_line", side_effect=lambda prompt: next(responses)):
+            with self.assertRaisesRegex(d.Failure, "NATIVE_OPERATOR_AUTHORIZATION_REFUSED"): self.run_sequence()
+        self.assertEqual(self.c._journal()["window"]["phase"], "EXCLUDED")
+        self.assertEqual(self.ops.raw, self.provider.reduced)
+        self.assertEqual(self.commands, [self.provider.reduced])
+        self.assertFalse(self.fs.publications)
+        self.assertIsNone(self.ops._admission)
+
+    def test_interruption_after_exclusion_never_restores_or_releases(self):
+        responses = ["Y", "Y", "Y"]
+        def interrupted(prompt):
+            if responses: return responses.pop(0)
+            raise EOFError("synthetic private interruption")
+        with patch.object(w, "tty_line", side_effect=interrupted):
+            with self.assertRaises(EOFError): self.run_sequence()
+        self.assertEqual(self.c._journal()["window"]["phase"], "EXCLUDED")
+        self.assertEqual(self.commands, [self.provider.reduced]); self.assertFalse(self.fs.publications)
+
+    def test_existing_transaction_is_not_automatically_resumed_by_sequence(self):
+        self.step("PREPARE"); before = self.fs.read(d.TX + "/journal.json")
+        with self.assertRaisesRegex(d.Failure, "TRANSACTION_EXISTS"): self.run_sequence()
+        self.assertEqual(before, self.fs.read(d.TX + "/journal.json"))
+        self.assertEqual(self.prompt_count, 1); self.assertEqual(self.commands, [])
+
+    def test_controlling_tty_drops_queued_answers_before_presenting_next_prompt(self):
+        import sys
+        events = []
+        termios = type("Termios", (), {"TCIFLUSH": 99,
+            "tcflush": staticmethod(lambda fd, mode: events.append(("flush", fd, mode)))})
+        def written(fd, raw): events.append(("write", fd)); return len(raw)
+        with patch.dict(sys.modules, {"termios": termios}), \
+             patch.multiple(w.os, O_NOFOLLOW=0, O_CLOEXEC=0, O_NOCTTY=0, create=True), \
+             patch.object(w.os, "open", return_value=123), \
+             patch.object(w.os, "fstat", return_value=type("Info", (), {"st_mode": w.stat.S_IFCHR})()), \
+             patch.object(w.os, "isatty", return_value=True), \
+             patch.object(w.os, "write", side_effect=written), \
+             patch.object(w.os, "read", return_value=b" Y \t\n"), \
+             patch.object(w.os, "close") as closed:
+            response = self.real_tty("Approve this step? [Y/N]: ")
+        self.assertEqual(response.strip().upper(), "Y")
+        self.assertEqual(events[0], ("flush", 123, 99)); self.assertEqual(events[1][0], "write")
         closed.assert_called_once_with(123)

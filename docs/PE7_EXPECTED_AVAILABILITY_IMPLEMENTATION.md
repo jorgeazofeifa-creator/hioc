@@ -3431,3 +3431,169 @@ validated five-file candidate. No immediate PI3 action is authorized.
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
 CODEX_PI3_ACCESS=FALSE; CODEX_PI5_ACCESS=FALSE; PRODUCTION_DEPLOYMENT_PERFORMED=FALSE.
 STAGING_PERFORMED=FALSE; COMMIT_CREATED=FALSE; PUSH_PERFORMED=FALSE.
+
+
+### PE-7.3 simple operator interface — 2026-10-26
+
+PE73_SIMPLE_OPERATOR_INTERFACE=PASS; UNATTENDED_DEPLOYMENT_SUPPORTED=FALSE.
+Authority: Eliminate Manual Cryptographic Deployment Confirmations. This changes
+only the operator interface of the candidate published at43b3084948831e45ccfb0e4bac2f2394d97ea631.
+That published source remains the verified clean baseline. The prior manual ACTION /
+EXTERNAL_REFERENCE and hash-copying procedure is historical and superseded by this
+section for the corrected candidate; all original decisions/evidence remain intact.
+
+The predefined normal sequence is PREPARE -> PRESERVE -> EXCLUDE -> DRAIN ->
+ESTABLISH -> COMMIT -> AUTHORIZE_RELEASE -> RESTORE_SCHEDULER -> RELEASE. Native
+bootstrap, exact source/root/origin/ancestry/cleanliness, runtime security/provenance,
+scheduler, process and context checks run automatically. The operator is never asked
+to select an action, supply a reference, read JSON, or copy a digest. Each interactive
+operation generates an AUTO_action_UUID reference and its existing exact context /
+authorization hash internally. Fresh context is verified before/after the response;
+NativeOps still requires the same ephemeral operation-specific admission.
+
+Every one of the nine journaled steps retains separate human authorization. The
+existing grant-order contract includes preservation, drain/readiness and independent
+release/restoration; these are not silently converted to unattended permissions.
+Only read-only/internal checks advance without a new decision. Separately requested
+rollback/attachment still use their own operation-specific approval and existing
+recovery gates, and are absent from the predefined normal sequence. No blanket
+approval, environment/CLI switch or receipt/journal override is introduced.
+
+The controlling terminal accepts only Y or N, case-insensitively, after trimming
+leading/trailing whitespace. Only Y authorizes the displayed step. Blank, N, YES,
+mixed/multiple answers or other input stops before that operation's effects.
+tty_line flushes queued/type-ahead terminal input before displaying every prompt;
+an answer pasted for a preceding operation cannot authorize the next operation.
+The existing bounded tty read, terminal type check and descriptor cleanup remain.
+Human impact/restriction text replaces prompt JSON/digests; sanitized technical
+receipts are still emitted after each completed step for later review, explicitly
+labelled as requiring no interpretation for the next decision.
+
+Fresh source/runtime/scheduler/process/journal, boot/session/expiry, named operator,
+exclusive responsibility and all six residual risks remain bound internally.
+Durable EXCLUSION_UNCERTAIN/RESTORE_UNCERTAIN intent, qualified native scheduler
+operation fingerprint, one attempt and exact readback are unchanged. N, failure,
+SSH interruption or expiry never retries, rolls back, restores cron or releases
+callers. The manual no-launch restriction remains until explicit release; it is
+procedural and does not claim universal exclusion. Existing pending/uncertain
+transaction refusal, separate rollback and fresh recovery requirements remain.
+
+Validation:26 focused tests PASS (18 adapted native-admission integration tests,
+eight added operator-interface tests), zero failures/errors/skips/class-level skips.
+These exercise the actual fixed sequence/coordinator/provider/controller with explicit
+Windows OS/TTY/scheduler fixtures, including whitespace Y across real transaction
+steps, nine unique internal references/context bindings, exact13-file installation,
+separate release/restoration, invalid/mixed/blank responses, wrong operation,
+technical drift, refusal/interruption after exclusion, fresh-context/reboot/expiry,
+failed restoration and refusal to auto-resume an existing transaction. No production
+execution is inferred. Source hashes were unchanged across validation.
+The prior88 affected transaction/source/process tests are retained rather than
+rerun: their relevant algorithms and test ASTs remain unchanged. Existing106-run
+published evidence remains historical; it is not relabelled as this correction's run.
+The core controller, NativeOps live/scheduler guards, source gate, window algorithms,
+grant validator, journal semantics and native scheduler implementation are unchanged.
+
+Real local non-production Linux pseudo-terminal test PASS: an initial whitespace Y
+was accepted, an additionally queued N was flushed before the second prompt, and a
+new separately entered whitespace Y was required. No scheduler, service, permission,
+credential, runtime or repository source mutation occurred in that test. The native
+crontab operation is unchanged and retains its already recorded real Linux
+qualification; it was not reinstalled merely for this interface correction.
+Exact new tty qualification receipt (CODEX_OBSERVED_LOCAL, not PI3):
+```json
+{
+  "child_exit_status": 0,
+  "files_modified_in_repository": false,
+  "production_access": false,
+  "queued_old_response_discarded": true,
+  "result": "PASS_REAL_LINUX_SIMPLE_YN_TTY",
+  "scheduler_modified": false,
+  "separate_fresh_responses_required": true,
+  "target": "LOCAL_NON_PRODUCTION_WSL",
+  "tty_function_sha256": "360c41a3d04c3e6ff6330b5f7afd5130bab5a07a602b8a2001be94abf80dbb06",
+  "whitespace_y_accepted": true
+}
+```
+
+Provider SHA256:3df4790ca50fb2f67c91f09140c8d248d7f78fd6ff40f464bed2e3afe34b921c
+Provider tests SHA256:bd26c3d203b2a95db912a427a06aa4b23c78d5167c6c65b5a6425dd1ddb981f3
+Controller unchanged:76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2.
+All13 immutable delivery,39 successor and449 protected identities verify. Only two
+existing document identity entries are refreshed. Original contract and verbatim
+approved amendment remain unchanged; experimental broker remains unadopted. Five
+unstaged files only; index empty, no untracked paths, stash unchanged; main and
+origin/main remain43b3084948831e45ccfb0e4bac2f2394d97ea631, ahead/behind0/0.
+
+#### Corrected complete operator command — PI3 NUT&PIHOLE
+
+PREPARED ONLY. This uncommitted correction must first be separately published and
+the exact corrected tools synchronized to release-source. Separate production
+authorization is still required. The currently published old runner fails the new
+hash check; do not bypass that check or copy runtime files manually.
+The operator copies this complete command; no digest/reference must be typed or
+manually validated. Hashes are enforced internally. No interactive-shell set -e,
+sudo, SSH logout or automatic recovery command is used.
+
+```sh
+/usr/bin/python3 -I -S -B - <<'PY'
+import hashlib, os, pathlib, runpy, socket, stat, sys
+if (sys.platform != 'linux' or socket.gethostname() != 'nutandpihole'
+        or not os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 1000):
+    print('RESULT=FAIL_STOP_TARGET_IDENTITY')
+    raise SystemExit(1)
+root = pathlib.Path('/home/jazofv1/hioc-release-source')
+expected = {
+    'tools/hioc-pe73-pi3-delivery.py': '76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2',
+    'tools/pe73_maintenance_window.py': '3df4790ca50fb2f67c91f09140c8d248d7f78fd6ff40f464bed2e3afe34b921c',
+}
+for relative, digest in expected.items():
+    path = root / relative
+    info = path.lstat()
+    if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+            or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
+        print('RESULT=FAIL_STOP_TOOLING_IDENTITY')
+        raise SystemExit(1)
+print('PI3 NUT&PIHOLE: each step requires its own Y/N decision. No step is approved by starting this command.', flush=True)
+runpy.run_path(str(root / 'tools/pe73_maintenance_window.py'), run_name='__main__')
+PY
+PE73_EXIT_STATUS=$?
+printf 'PE73_EXIT_STATUS=%s\n' "$PE73_EXIT_STATUS"
+```
+
+The immediate exit-status capture is included at the end of the command. The
+runner reads decisions from /dev/tty, not the here-document or a prefilled input file.
+
+Exact common notice before each approval:
+```text
+PI3 NUT&PIHOLE - operator jazofv1. Approve this step only.
+You must control this window alone. Do not run independent or manual affected commands until release is confirmed.
+A known process may be missed; cached modules, retained file descriptors, alternate launchers and concurrent schedule edits remain risks. Manual restrictions are procedural, not universal technical exclusion.
+N, blank or invalid input stops. Stopping never automatically retries, rolls back, restores the schedule or releases callers. Keep the manual restriction until explicit release.
+```
+Each step then displays its exact impact text, followed by exactly:
+```text
+Approve this step? [Y/N]:
+```
+The nine impact texts, in order:
+
+1. Save five original files and prepare thirteen verified delivery files. No live runtime file is replaced.
+2. Save the exact current schedule for later verified restoration. Scheduled jobs are not changed.
+3. Temporarily pause the three approved HIOC scheduled jobs. Preserve the other nine entries.
+4. Check that no known affected process is running and record the observation. Do not stop or kill processes.
+5. Recheck the schedule and known processes, then record that this maintenance window is ready.
+6. Install the thirteen verified files in dependency order and verify them. Do not activate PE-7 features.
+7. Authorize reopening only after the complete installation or authorized rollback has been verified. This step does not restore the schedule.
+8. Restore and verify the exact original schedule. The three paused HIOC jobs can run again.
+9. Finish the verified window and end the restriction on independent or manual affected commands.
+
+Permitted responses: Y approves only that displayed step; N refuses it and stops.
+Leading/trailing spaces/tabs and lowercase y/n are accepted. Blank is never approval.
+Do not paste a list of answers; queued responses are discarded. Starting the command
+does not approve any operation. There is no supported no-further-approvals mode.
+After refusal/interruption, keep the manual restriction; do not restart the normal
+sequence as recovery. Preserve output/journal and obtain the existing separately
+authorized recovery disposition. The source/production and PE-7.4 boundaries remain.
+
+STAGING_PERFORMED=FALSE; COMMIT_CREATED=FALSE; PUSH_PERFORMED=FALSE.
+CODEX_PI3_ACCESS=FALSE; CODEX_PI5_ACCESS=FALSE; PRODUCTION_DEPLOYMENT_PERFORMED=FALSE.
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.

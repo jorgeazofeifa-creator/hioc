@@ -36,6 +36,28 @@ ACTIONS = {"PRESERVE", "EXCLUDE", "DRAIN", "ESTABLISH", "ATTACH", "COMMIT", "ROL
            "AUTHORIZE_RELEASE", "RESTORE_SCHEDULER", "RELEASE"}
 SCHEDULER_OPERATION_PIN = "8c7026ba84b748677381ea9adfef9334156795eabb16df059a2e752a90049e66"
 
+DEPLOYMENT_SEQUENCE = ("PREPARE", "PRESERVE", "EXCLUDE", "DRAIN", "ESTABLISH", "COMMIT",
+                       "AUTHORIZE_RELEASE", "RESTORE_SCHEDULER", "RELEASE")
+OPERATION_IMPACTS = {
+    "PREPARE": "Save five original files and prepare thirteen verified delivery files. No live runtime file is replaced.",
+    "PRESERVE": "Save the exact current schedule for later verified restoration. Scheduled jobs are not changed.",
+    "EXCLUDE": "Temporarily pause the three approved HIOC scheduled jobs. Preserve the other nine entries.",
+    "DRAIN": "Check that no known affected process is running and record the observation. Do not stop or kill processes.",
+    "ESTABLISH": "Recheck the schedule and known processes, then record that this maintenance window is ready.",
+    "COMMIT": "Install the thirteen verified files in dependency order and verify them. Do not activate PE-7 features.",
+    "AUTHORIZE_RELEASE": "Authorize reopening only after the complete installation or authorized rollback has been verified. This step does not restore the schedule.",
+    "RESTORE_SCHEDULER": "Restore and verify the exact original schedule. The three paused HIOC jobs can run again.",
+    "RELEASE": "Finish the verified window and end the restriction on independent or manual affected commands.",
+    "ATTACH": "Inspect an existing transaction and bind a fresh recovery session. Do not resume or adopt uncertain changes.",
+    "ROLLBACK": "Perform the separately authorized rollback using verified original-file backups and exact installed-file provenance.",
+}
+OPERATOR_NOTICE = (
+    "PI3 NUT&PIHOLE - operator jazofv1. Approve this step only.\n"
+    "You must control this window alone. Do not run independent or manual affected commands until release is confirmed.\n"
+    "A known process may be missed; cached modules, retained file descriptors, alternate launchers and concurrent schedule edits remain risks. Manual restrictions are procedural, not universal technical exclusion.\n"
+    "N, blank or invalid input stops. Stopping never automatically retries, rolls back, restores the schedule or releases callers. Keep the manual restriction until explicit release.\n"
+)
+
 PHASES = {"PRESERVATION_UNCERTAIN", "PRESERVED", "EXCLUSION_UNCERTAIN", "EXCLUDED",
           "DRAINED", "ESTABLISHED", "INSTALLATION_UNCERTAIN", "INSTALLATION_VERIFIED",
           "ROLLBACK_UNCERTAIN", "RESTORATION_VERIFIED", "RELEASE_AUTHORIZED",
@@ -642,23 +664,20 @@ class MaintenanceCoordinator:
         return p.progress(action, grant)
 
 
-    def interactive(self, action, reference):
+    def interactive(self, action):
         """Native entry: one fresh named operator decision, never a receipt loader."""
         require(type(self.provider.ops) is NativeOps, "NATIVE_OPS_REQUIRED")
-        require(type(reference) is str and d.AUTH.fullmatch(reference), "WINDOW_AUTHORIZATION_INVALID")
+        require(action == "PREPARE" or action in ACTIONS, "WINDOW_ACTION_INVALID")
+        reference = "AUTO_" + action + "_" + uuid.uuid4().hex
         ops = self.provider.ops
         require(getattr(ops, "_admission", None) is None, "NATIVE_OPERATION_ALREADY_ACTIVE")
         context = self.context(action)
         authorization = {"action": action, "context_sha256": d.sha(d.canonical(context)),
             "reference": reference, "operator": "UID1000_jazofv1", "expires_at": ops.now() + 300,
             "exclusive_responsibility": True, "risks_acknowledged": list(RISKS)}
-        challenge = d.sha(d.canonical(authorization))
-        prompt = {"target": "PI3 NUT&PIHOLE", "operator": "jazofv1", "context": context,
-            "authorization": authorization, "manual_launch_control": "PROCEDURAL_ONLY",
-            "instruction": "Separately authorize this operation only; prohibit all independent/manual affected callers until explicit RELEASE. Acknowledge every listed residual risk."}
-        expected = "AUTHORIZE " + action + " " + challenge
-        response = tty_line(json.dumps(prompt, sort_keys=True) + "\nType exactly: " + expected + "\n")
-        require(response == expected, "NATIVE_OPERATOR_AUTHORIZATION_REFUSED")
+        prompt = OPERATOR_NOTICE + OPERATION_IMPACTS[action] + "\nApprove this step? [Y/N]: "
+        response = tty_line(prompt).strip().upper()
+        require(response == "Y", "NATIVE_OPERATOR_AUTHORIZATION_REFUSED")
         require(self.context(action) == context and ops.now() < authorization["expires_at"],
                 "NATIVE_AUTHORIZATION_CONTEXT_DRIFT")
         admission = _NativeAdmission(ops, self, action, authorization)
@@ -687,6 +706,9 @@ def tty_line(prompt):
     fd = os.open("/dev/tty", os.O_RDWR | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NOCTTY)
     try:
         require(stat.S_ISCHR(os.fstat(fd).st_mode) and os.isatty(fd), "NATIVE_TTY_REQUIRED")
+        # Drop prior/type-ahead responses. A queued Y must not approve a later operation.
+        import termios
+        termios.tcflush(fd, termios.TCIFLUSH)
         raw = prompt.encode("utf-8")
         while raw:
             written = os.write(fd, raw)
@@ -714,18 +736,20 @@ def native_main():
     require(len(inventory) == 12 and list(inventory.values()).count("EXCLUDE") == 3,
             "WINDOW_SCHEDULER_INVENTORY_CHANGED")
     coordinator = MaintenanceCoordinator.native(original, inventory)
-    for _ in range(64):
-        text = tty_line("PI3 NUT&PIHOLE: enter ACTION EXTERNAL_REFERENCE or STOP. No action is automatic.\n")
-        if text == "STOP":
-            return 0
-        parts = text.split(" ")
-        require(len(parts) == 2, "WINDOW_ACTION_INVALID")
-        result = coordinator.interactive(*parts)
-        print(json.dumps({"result": "PASS_EXPLICIT_OPERATION", "action": parts[0],
+    run_deployment_sequence(coordinator)
+    return 0
+
+
+def run_deployment_sequence(coordinator):
+    """Fixed normal path only. No automatic recovery or repeated operation."""
+    for number, action in enumerate(DEPLOYMENT_SEQUENCE, 1):
+        print("Step " + str(number) + " of 9: " + OPERATION_IMPACTS[action], flush=True)
+        result = coordinator.interactive(action)
+        print("Step " + str(number) + " completed. Save the technical receipt below; no interpretation is needed to answer the next prompt.", flush=True)
+        print(json.dumps({"result": "PASS_EXPLICIT_OPERATION", "action": action,
             "evidence": result, "pe7_executed": False, "universal_exclusion": False}, sort_keys=True), flush=True)
-        if parts[0] == "RELEASE":
-            return 0
-    raise d.Failure("NATIVE_SESSION_OPERATION_LIMIT")
+    print("Deployment window completed and explicitly released. PE-7.4 is not authorized.", flush=True)
+
 
 
 if __name__ == "__main__":
