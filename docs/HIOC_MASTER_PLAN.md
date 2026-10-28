@@ -6270,7 +6270,49 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — bounded live HA Dashboard-shape correction; native qualification pending.
+Classification: CURRENT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED filesystem qualification remains PASS and is not repeated.
+Accepted OPERATOR_SUPPLIED receipt atc5274abccb1637335fbf9a9095716e40ace986b4:
+authenticated read-only HA WS PASS; storage resources; six registered Dashboards;
+existing HIOC Dashboard v2 at hioc-dashboard-v2; its six views/paths read; no HIOC
+Asset Editor card detected; no mutation. DEFAULT_STORAGE_SOURCE_NOT_ESTABLISHED
+did not establish an unsafe HIOC Dashboard or resource conflict.
+EXCLUSIVE_HIOC_UI=hioc-dashboard-v2. The existing HIOC Dashboard v2 is the sole
+interface for ALL HIOC functionality, including manual Asset and device controls.
+No alternate Dashboard, separate management UI, selection exercise, duplicate or
+migration is authorized. Preserve all six existing views/navigation/layout/content.
+Repository view references: hioc-v2-executive,hioc-v2-operations,hioc-v2-diagnostics,
+hioc-v2-inventory,hioc-v2-network,hioc-v2-servers. These are repository definitions;
+the supplied receipt summary confirms six paths read, not new per-path measurements.
+The bounded qualifier freshly records actual existing paths without replacing them
+with repository content or choosing a placement view. Existing delivery plans must
+use the fixed HIOC Dashboard; earlier choice-oriented preparation is superseded.
+HA2026.10.4 can register its compatibility lovelace panel without config metadata.
+Panel metadata is not authority for the resource import source. The corrected read
+binds config(None) to the actual default storage object using supported setup and
+complete catalog evidence excluding a named lovelace shadow. It requires absent
+legacy resources or config_not_found before resources/list. Unknown/null/shadowed
+or legacy-key evidence blocks; no .storage, import, save, reload or permission bypass.
+Only HIOC target config and the necessary import-source probe are read; no other
+Dashboard config is fetched or offered. Global resource inventory is bounded and
+reported only as count/digest/HIOC-editor conflicts, never unrelated URLs/content.
+FOCUSED_NATIVE_VALIDATION=73_RUN_73_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_EXCLUSIVE_HIOC_RESOURCE_QUALIFICATION_PUBLICATION.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify.
+Contract/amendment/executive instruction, PI3 deployment, filesystem PASS, disabled
+roles, trust, transaction algorithms and prior receipts remain unchanged.
+Native installation remains unauthorized pending actual live resource result,
+fresh cross-host disabled/exclusive/local guards and actual trust/backup bindings.
+Next action: one operator-run immutable-source-verified PI5 read-only qualifier for
+this fixed HIOC target; retain sanitized receipt/exit status and stop.
+See [exclusive HIOC UI and resource-source evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-exclusive-hioc-dashboard-and-resource-source-qualification).
+
+### Historical Dashboard-shape qualification preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — bounded live HA Dashboard-shape correction; native qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -7849,7 +7891,49 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — bounded live HA Dashboard-shape correction; native qualification pending.
+Classification: CURRENT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED filesystem qualification remains PASS and is not repeated.
+Accepted OPERATOR_SUPPLIED receipt atc5274abccb1637335fbf9a9095716e40ace986b4:
+authenticated read-only HA WS PASS; storage resources; six registered Dashboards;
+existing HIOC Dashboard v2 at hioc-dashboard-v2; its six views/paths read; no HIOC
+Asset Editor card detected; no mutation. DEFAULT_STORAGE_SOURCE_NOT_ESTABLISHED
+did not establish an unsafe HIOC Dashboard or resource conflict.
+EXCLUSIVE_HIOC_UI=hioc-dashboard-v2. The existing HIOC Dashboard v2 is the sole
+interface for ALL HIOC functionality, including manual Asset and device controls.
+No alternate Dashboard, separate management UI, selection exercise, duplicate or
+migration is authorized. Preserve all six existing views/navigation/layout/content.
+Repository view references: hioc-v2-executive,hioc-v2-operations,hioc-v2-diagnostics,
+hioc-v2-inventory,hioc-v2-network,hioc-v2-servers. These are repository definitions;
+the supplied receipt summary confirms six paths read, not new per-path measurements.
+The bounded qualifier freshly records actual existing paths without replacing them
+with repository content or choosing a placement view. Existing delivery plans must
+use the fixed HIOC Dashboard; earlier choice-oriented preparation is superseded.
+HA2026.10.4 can register its compatibility lovelace panel without config metadata.
+Panel metadata is not authority for the resource import source. The corrected read
+binds config(None) to the actual default storage object using supported setup and
+complete catalog evidence excluding a named lovelace shadow. It requires absent
+legacy resources or config_not_found before resources/list. Unknown/null/shadowed
+or legacy-key evidence blocks; no .storage, import, save, reload or permission bypass.
+Only HIOC target config and the necessary import-source probe are read; no other
+Dashboard config is fetched or offered. Global resource inventory is bounded and
+reported only as count/digest/HIOC-editor conflicts, never unrelated URLs/content.
+FOCUSED_NATIVE_VALIDATION=73_RUN_73_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_EXCLUSIVE_HIOC_RESOURCE_QUALIFICATION_PUBLICATION.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify.
+Contract/amendment/executive instruction, PI3 deployment, filesystem PASS, disabled
+roles, trust, transaction algorithms and prior receipts remain unchanged.
+Native installation remains unauthorized pending actual live resource result,
+fresh cross-host disabled/exclusive/local guards and actual trust/backup bindings.
+Next action: one operator-run immutable-source-verified PI5 read-only qualifier for
+this fixed HIOC target; retain sanitized receipt/exit status and stop.
+See [exclusive HIOC UI and resource-source evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-exclusive-hioc-dashboard-and-resource-source-qualification).
+
+### Historical Dashboard-shape qualification preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — bounded live HA Dashboard-shape correction; native qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8912,7 +8996,49 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — bounded live HA Dashboard-shape correction; native qualification pending.
+Classification: CURRENT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED filesystem qualification remains PASS and is not repeated.
+Accepted OPERATOR_SUPPLIED receipt atc5274abccb1637335fbf9a9095716e40ace986b4:
+authenticated read-only HA WS PASS; storage resources; six registered Dashboards;
+existing HIOC Dashboard v2 at hioc-dashboard-v2; its six views/paths read; no HIOC
+Asset Editor card detected; no mutation. DEFAULT_STORAGE_SOURCE_NOT_ESTABLISHED
+did not establish an unsafe HIOC Dashboard or resource conflict.
+EXCLUSIVE_HIOC_UI=hioc-dashboard-v2. The existing HIOC Dashboard v2 is the sole
+interface for ALL HIOC functionality, including manual Asset and device controls.
+No alternate Dashboard, separate management UI, selection exercise, duplicate or
+migration is authorized. Preserve all six existing views/navigation/layout/content.
+Repository view references: hioc-v2-executive,hioc-v2-operations,hioc-v2-diagnostics,
+hioc-v2-inventory,hioc-v2-network,hioc-v2-servers. These are repository definitions;
+the supplied receipt summary confirms six paths read, not new per-path measurements.
+The bounded qualifier freshly records actual existing paths without replacing them
+with repository content or choosing a placement view. Existing delivery plans must
+use the fixed HIOC Dashboard; earlier choice-oriented preparation is superseded.
+HA2026.10.4 can register its compatibility lovelace panel without config metadata.
+Panel metadata is not authority for the resource import source. The corrected read
+binds config(None) to the actual default storage object using supported setup and
+complete catalog evidence excluding a named lovelace shadow. It requires absent
+legacy resources or config_not_found before resources/list. Unknown/null/shadowed
+or legacy-key evidence blocks; no .storage, import, save, reload or permission bypass.
+Only HIOC target config and the necessary import-source probe are read; no other
+Dashboard config is fetched or offered. Global resource inventory is bounded and
+reported only as count/digest/HIOC-editor conflicts, never unrelated URLs/content.
+FOCUSED_NATIVE_VALIDATION=73_RUN_73_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_EXCLUSIVE_HIOC_RESOURCE_QUALIFICATION_PUBLICATION.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify.
+Contract/amendment/executive instruction, PI3 deployment, filesystem PASS, disabled
+roles, trust, transaction algorithms and prior receipts remain unchanged.
+Native installation remains unauthorized pending actual live resource result,
+fresh cross-host disabled/exclusive/local guards and actual trust/backup bindings.
+Next action: one operator-run immutable-source-verified PI5 read-only qualifier for
+this fixed HIOC target; retain sanitized receipt/exit status and stop.
+See [exclusive HIOC UI and resource-source evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-exclusive-hioc-dashboard-and-resource-source-qualification).
+
+### Historical Dashboard-shape qualification preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — bounded live HA Dashboard-shape correction; native qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

@@ -5135,3 +5135,141 @@ Primary source references reviewed:
 - https://github.com/home-assistant/frontend/blob/20260930.5/src/data/lovelace/config/types.ts
 - https://github.com/home-assistant/frontend/blob/20260930.5/src/data/lovelace/config/view.ts
 - https://github.com/home-assistant/frontend/blob/20260930.5/src/panels/lovelace/strategies/get-strategy.ts
+
+### PE-7.3 exclusive HIOC Dashboard and resource-source qualification
+
+Classification: CURRENT PREPARATION; independent focused acceptance PASS for this
+bounded repository correction/publication. PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+Baseline c5274abccb1637335fbf9a9095716e40ace986b4; clean synchronized main/origin.
+
+**Accepted OPERATOR_SUPPLIED production evidence:** authenticated read-only HA WS
+access passed; resource mode storage; six registered Dashboards observed; existing
+HIOC Dashboard v2 confirmed at url_path hioc-dashboard-v2; its six existing views
+and paths read successfully; no existing HIOC Asset Editor card detected; no
+production mutation. Qualifier stopped DEFAULT_STORAGE_SOURCE_NOT_ESTABLISHED.
+No claim of resource-conflict PASS, actual registry contents or production trust
+follows from that stop. No raw get_panels result was supplied in this summary; the
+specific failing metadata field is not invented. Filesystem PASS remains accepted,
+not repeated. Codex did not access PI3/PI5 or execute production qualification.
+
+**Owner-established exclusive interface (current governed requirement):** the existing
+HIOC Dashboard v2, hioc-dashboard-v2, is the sole interface for all HIOC functionality,
+including manual Asset/device controls. No alternative Dashboard, separate management
+UI, Dashboard-selection exercise, duplicate or migration is authorized. This narrows
+current delivery to the existing accepted interface; it does not rewrite historical
+contracts, change controls/authentication/trust, or authorize feature activation.
+Repository homeassistant/dashboards/hioc_dashboard_v2.yaml defines six reference paths:
+hioc-v2-executive, hioc-v2-operations, hioc-v2-diagnostics, hioc-v2-inventory,
+hioc-v2-network, hioc-v2-servers. Preserve their existing navigation/layout/content.
+The supplied production summary establishes six views/paths read; it does not
+separately supply their string values or complete configuration bytes. Reference
+definitions are repository facts, not invented per-path production observations.
+The qualifier freshly reports the actual six observed paths and configuration digest;
+it never rewrites them to match YAML, chooses a placement view or offers another UI.
+The existing guarded delivery plan is governed to use hioc-dashboard-v2 exclusively;
+its general library interface is not authority for another target. No native delivery
+CLI or Dashboard change is introduced here. Earlier choice-oriented preparation is
+historical and superseded by this explicit owner decision, not deleted or rewritten.
+
+**Confirmed predicate defect and source-supported proof:** HA2026.10.4's
+_async_ensure_default_panel registers a compatibility lovelace panel without passing
+config. Therefore a required get_panels['lovelace']['config'] dictionary is not a
+supported universal precondition and does not establish resource safety. Setup creates
+LovelaceStorage(hass,None), shares it with ResourceStorageCollection, and stores it
+under dashboards[None]. The config WS handler chooses that object when no named
+lovelace shadows it. Catalog listing includes named configs, so a complete bounded
+catalog without that alias binds the read to the real import source. Resource loading
+imports/saves only if its fallback config contains resources; absent config raises
+config_not_found through the same handler. This is object-flow evidence from the
+supported implementation, not matching Dashboard names or panel metadata.
+
+**Bounded correction:** remove the irrelevant panel predicate and get_panels request,
+not the import safeguard. Read only the uniquely registered storage HIOC target,
+plus config(None) solely as the legacy import probe. Its content is not enumerated
+as another Dashboard/target. Target must still expose six distinct existing paths,
+no editor card and a compatible static-addition capability; no automatic rebuild,
+missing-path/card insertion, generated strategy evaluation or fallback target.
+Read-only catalog metadata is necessary for unique target/source binding; unrelated
+Dashboard configs are never fetched or reported. The WS config selector itself is
+restricted to the fixed target or None. No target choice field or selection request.
+
+Require storage resource mode, a complete typed bounded catalog, no named lovelace,
+and either an actual default dictionary without ANY resources key or a genuine
+config_not_found response. Successful null, unsupported type, inaccessible source,
+unknown catalog row, omitted entries, legacy key or named shadow blocks before any
+resources/list request. Source shape diagnostics are sanitized and do not disclose
+configuration. No .storage read, bypass, alternate API, resource initialization call
+merely for discovery, reload or migration. The compatibility panel may be absent,
+config-less or null without defeating the separate actual-source proof.
+
+Global resource listing is necessary to check the one proposed local resource.
+The bounded receipt exposes count, canonical registry digest and HIOC editor conflict
+fingerprints only; no unrelated per-resource data, URL/query, cards/entity IDs or
+private values. /local/hioc-asset-editor.js and encoded/same-editor path conflicts
+remain fatal. A successful result is bounded read-only resource/UI qualification,
+not native delivery readiness or proof of no concurrent external change. The later
+fresh exclusive guard, exact API exports/private backups and drift checks remain.
+
+**Uncertainty behavior:** if a named lovelace shadows the import object or its
+configuration is inaccessible, the supported APIs used here cannot establish this
+read-only import proof. The command stops with that exact blocker and performs no
+list/import/write. A supported non-mutating route would require independently bound
+evidence that the existing resource collection is already loaded, or the actual
+default import source has no legacy key; the current APIs do not expose a loaded
+flag. Opening Resources to force loading, editing storage, assuming migration ran,
+or accepting a current target config as the legacy source is not a resolution.
+No such extra evidence is assumed or demanded in advance: the single corrected
+operator command evaluates the supported proof once and stops if unavailable.
+
+**Unchanged boundaries:** existing credential-only normal internal authentication
+and actual admin check are repeated only because a fresh single combined API session
+requires authentication; accepted auth is not reopened as an investigation. No
+filesystem requalification. Absent integration remains inactive; the native delivery
+ready flag stays false. Fresh cross-host disabled/exclusive/local route guards,
+real mTLS/assertion/private-file/SPKI/independent ACL trust and backups remain mandatory
+before any future delivery. No secret provisioning/disclosure, service, runtime,
+production, migration, editing/evaluation/notifications/activation or PE-7.4 permission.
+
+**Focused native validation:** documented bundled Windows interpreter, repository
+root, shell-free PATH, HIOC_TEST_SHELL cleared, sys.path[:0]=['tests','pi4/lib'].
+Final73 tests run,73 passed,0 failures,0 errors,0 skipped,0 class-level skips, exact
+final source/test hashes unchanged during run. A preceding73/73 run validated the
+same behavior before receipt output was narrowed to HIOC-only resource conflicts;
+the final run covers those exact final bytes. Existing104 delivery passes retain
+unchanged source/test evidence; no unrelated historical suite or production checks.
+Tests cover the config-less/null/missing compatibility panel, actual source success,
+config_not_found versus successful null, every legacy-key shape, named alias, unknown
+catalog, fixed/missing/duplicate/YAML target, exactly six preserved views, no alternate
+config reads, old shape diagnostics, generated/incompatible views, resource conflicts,
+all used read failures, credential/privacy protection, no mutation and native guards.
+
+**Independent focused acceptance:** actual source/diff and tests inspected beyond
+counts. Panel removal is replaced by the source-supported same-object/alias/key proof;
+the list call remains strictly downstream of it. The target is fixed in requests
+and receipt; neither missing/incompatible target nor schema error offers fallback.
+No publication changes to accepted controller, HA publisher, native transaction/
+recovery or trust algorithms. No material repository acceptance blocker remains;
+runtime resource qualification is still pending operator evidence.
+
+- `tools/pe73_ha_live_qualify.py`: SHA-256 `ce4bbd30fdb268ec28637f990b85e9640d174a120eba971ed730f7ba94dfb845`.
+- `tests/test_pe73_ha_live_qualify.py`: SHA-256 `728e00d1138e8ea8985a528b87250621e76ec5ad0735e15fba80e52fb6cb7272`.
+
+**Governance and preservation:** exactly five existing paths change: qualifier/tests,
+Master Plan, append-only implementation evidence and candidate record. The record's
+two existing current-document SHA/blob bindings now bind the exclusive-interface
+directive and evidence; no new governance record/model or historical field changes.
+All39 current successor and449 unchanged protected identities verify. All13 immutable
+PI3 delivery and six immutable HA source identities remain.496 other tracked files,
+original contract/amendment, executive authorization quote, PI3 deployment, filesystem
+PASS and previous receipts/limitations remain unchanged. Stash preserved. Publication
+does not authorize installation or advance PE-7.4.
+
+One next action: run the single immutable-source-verified read-only qualifier on
+PI5 Terminal for hioc-dashboard-v2 and resource conflict evidence; retain receipt/
+immediate exit status and stop. No Dashboard-selection task or automatic follow-on.
+
+Primary support reviewed:
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/__init__.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/websocket.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/resources.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/dashboard.py
