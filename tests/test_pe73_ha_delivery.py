@@ -50,7 +50,7 @@ class Files(existing.FixtureFS):
 
 class API:
     def __init__(self):
-        self.config = {'title':'Existing theme/layout', 'views':[{'path':'observed-view','cards':[{'type':'markdown','content':'preserve'}]}]}
+        self.config = {'title':'Existing theme/layout', 'views':[{'path':'hioc-v2-inventory','cards':[{'type':'markdown','content':'preserve'}]}]}
         self.resources = [{'id':'existing-css','url':'/observed-existing.css','type':'css'}]
         self.calls = []
         self.active = False
@@ -98,10 +98,10 @@ class DeliveryAcceptanceTests(unittest.TestCase):
         self.trust = {'identity':'fixture-bound-public-digests', 'ha_private_files':True,'backend_private_files':True,
             'certificate_pair':True,'assertion_pair':True,'spki_pin':True,'independent_acl':True}
         self.driver = h.Delivery(self.fs,self.api,lambda:copy.deepcopy(self.guard_value),
-            lambda _:copy.deepcopy(self.trust),lambda release,p:SOURCE[p])
+            lambda _:copy.deepcopy(self.trust),lambda release,p:SOURCE[p], route_probe=lambda url,expected: {'url':url,'sha256':expected,'status':200,'identity_encoding':True})
         ha,backend=configs()
-        self.plan = {'resource_url':'/local/hioc-asset-editor.js','dashboard':'observed-dashboard',
-            'view':'observed-view','before_files':{p:self.fs.snapshot(p,0o644) for p in h.FILES.values()},
+        self.plan = {'resource_url':'/local/hioc-asset-editor.js','dashboard':'hioc-dashboard-v2',
+            'view':'hioc-v2-inventory','before_files':{p:self.fs.snapshot(p,0o644) for p in h.FILES.values()},
             'ha_trust':ha,'backend_trust':backend}
 
     def run_delivery(self):
@@ -113,7 +113,7 @@ class DeliveryAcceptanceTests(unittest.TestCase):
         self.assertEqual(result['state'],'DELIVERED_DISABLED')
         self.assertFalse(result['activation']);self.assertEqual(result['files'],4)
         for source,target in h.FILES.items():self.assertEqual(self.fs.read(target,0o644),SOURCE[source])
-        self.assertEqual(self.api.config,h.add_card(before,'observed-view'))
+        self.assertEqual(self.api.config,h.add_card(before,'hioc-v2-inventory'))
         self.assertEqual(self.api.resources[:-1],resources)
         packet=json.loads(self.fs.read(h.TRUST_BUNDLE))
         self.assertFalse(packet['backend']['enabled'])
@@ -228,7 +228,7 @@ class DeliveryAcceptanceTests(unittest.TestCase):
 
     def test_scope_change_invalidates_preparation(self):
         prepared=self.driver.prepare(self.plan);self.plan['dashboard']='different'
-        with self.assertRaisesRegex(h.Stop,'FRESH_CONTEXT_DRIFT'):
+        with self.assertRaisesRegex(h.Stop,'EXCLUSIVE_HIOC_DASHBOARD_REQUIRED'):
             self.driver.install(self.plan,prepared,whole_process_reference='OWNER_APPROVED_FIXED_DELIVERY')
 
     def test_live_identity_change_invalidates_preparation(self):
@@ -304,7 +304,7 @@ class DeliveryAcceptanceTests(unittest.TestCase):
     def test_partial_journal_never_automatically_adopted(self):
         self.api.fail='lovelace/config/save:after'
         with self.assertRaises(OSError):self.run_delivery()
-        fresh=h.Delivery(self.fs,self.api,lambda:self.guard_value,lambda _:self.trust,lambda release,p:SOURCE[p])
+        fresh=h.Delivery(self.fs,self.api,lambda:self.guard_value,lambda _:self.trust,lambda release,p:SOURCE[p], route_probe=lambda url,expected: {'url':url,'sha256':expected,'status':200,'identity_encoding':True})
         with self.assertRaises(h.Stop):fresh.install(self.plan,'irrelevant',whole_process_reference='OWNER_APPROVED_FIXED_DELIVERY')
 
     def test_concurrent_unrelated_resource_edit_stops_without_overwrite(self):
@@ -499,9 +499,9 @@ class HAOSPublisherTests(unittest.TestCase):
         self.trust={'identity':'fixture','ha_private_files':True,'backend_private_files':True,
             'certificate_pair':True,'assertion_pair':True,'spki_pin':True,'independent_acl':True}
         self.driver=h.Delivery(self.fs,self.api,lambda:copy.deepcopy(self.guard),lambda _:self.trust,
-            lambda release,p:SOURCE[p])
+            lambda release,p:SOURCE[p], route_probe=lambda url,expected: {'url':url,'sha256':expected,'status':200,'identity_encoding':True})
         ha,backend=configs()
-        self.plan={'resource_url':'/local/hioc-asset-editor.js','dashboard':'observed-dashboard','view':'observed-view',
+        self.plan={'resource_url':'/local/hioc-asset-editor.js','dashboard':'hioc-dashboard-v2','view':'hioc-v2-inventory',
             'ha_trust':ha,'backend_trust':backend,'before_files':{p:self.fs.snapshot(p,0o644) for p in h.FILES.values()}}
     def run_delivery(self):return self.driver.run(self.plan,whole_process_reference='ONE_APPROVED_HAOS_PROCESS')
     def test_root_publisher_distinct_core_owner_and_private_records(self):

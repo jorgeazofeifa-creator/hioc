@@ -6270,7 +6270,57 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
+Classification: CURRENT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED PI3 deployment, PI5 filesystem identity, authenticated HA
+API, fixed HIOC Dashboard/six views, resource conflict and legacy import checks PASS.
+They are not repeated; fresh delivery-time identity/drift checks remain mandatory.
+Resource mode storage; 11 resources; zero editor conflicts. Exclusive existing
+HIOC Dashboard hioc-dashboard-v2; accepted canonical config SHA-256
+7502a36014253a6cce6b5bcd82277c3c59242d33a191161500d5b3f8c6660ab8.
+EXCLUSIVE_HIOC_UI=hioc-dashboard-v2; EDITOR_VIEW=hioc-v2-inventory.
+The owner now explicitly permits the smallest appended grid section/card in Inventory.
+Preserve all six existing views, paths, navigation, sections, cards and their order;
+no alternate interface, new Dashboard, replacement or storage migration.
+Deferred separate future roadmap checkpoint: comprehensive visual refinement of the
+existing HIOC Dashboard after functional delivery, requiring its own scoped direction;
+it is not a current delivery blocker or permission to advance PE-7.4.
+Real parameterized bindings now validate role-owned private files, CA/leaf/key/time/
+identity, mutual TLS >=1.2 and hostname checks, exact client SPKI, shared 32-byte
+HMAC-SHA256 key possession, issuer/key ID and independent backend actor/operation/
+exact Asset ACL matching HA allowlist. Product assertion protocol remains unchanged.
+A bounded operator-started foreground mTLS observation channel rereads PI3 trust,
+boot, scheduler, runtime payload and disabled state; no remote commands or persistent
+service. Fresh exclusive private leases and approved manual-caller risk responsibility
+are required on both hosts; no universal exclusion or cached-reader claim.
+The existing Delivery transaction retains exact file/metadata publication, backups,
+intent and readback. Verify actual editor HTTP bytes AFTER file publication and BEFORE
+resource registration/card save. Route failure retains LOCAL_ROUTE_BLOCKED for explicit
+recovery; uncertain API mutations never auto-retry, rollback, restore cron or release.
+Live native guard binds actual Core/root/device/inode/owner/ACL and approved installed
+source identities; no old receipt becomes fresh exclusive authority. Supported API
+exports/readback and legacy import safeguard remain mandatory; no direct .storage edit.
+FOCUSED_NATIVE_VALIDATION=207_RUN_207_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+FOCUSED_ACCEPTANCE=PASS_FOR_PARAMETERIZED_REPOSITORY_BINDINGS_NOT_PRODUCTION_DELIVERY.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify.
+Original contract/amendment/executive decision, PI3 deployment and accepted receipts
+are preserved. All runtime enable flags remain false; no migration, evaluation,
+notification, recurring activation, service reload/restart or PE-7.4 authorization.
+The owner explicitly confirms production trust and endpoint decisions remain unbound.
+Production remains blocked until actual locally approved PKI/HMAC/independent ACL,
+private parents/owners, endpoints/observer port, frontend origin and live exclusion
+inputs are bound and validated. No secrets or sensitive ACL content belong in chat,
+Git, public receipts or Dashboard. Unknown native capabilities fail closed.
+Next action: bind the genuine operator-specific trust/endpoint inputs locally using
+already-issued approved materials; no new production diagnostic or deployment is
+authorized by repository test PASS. No installation command with invented values.
+See [native trust and guarded HA delivery evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-native-trust-and-guarded-ha-delivery-bindings).
+
+### Historical exclusive HIOC resource qualification snapshot
+
+Classification: HISTORICAL SNAPSHOT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -7891,7 +7941,57 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
+Classification: CURRENT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED PI3 deployment, PI5 filesystem identity, authenticated HA
+API, fixed HIOC Dashboard/six views, resource conflict and legacy import checks PASS.
+They are not repeated; fresh delivery-time identity/drift checks remain mandatory.
+Resource mode storage; 11 resources; zero editor conflicts. Exclusive existing
+HIOC Dashboard hioc-dashboard-v2; accepted canonical config SHA-256
+7502a36014253a6cce6b5bcd82277c3c59242d33a191161500d5b3f8c6660ab8.
+EXCLUSIVE_HIOC_UI=hioc-dashboard-v2; EDITOR_VIEW=hioc-v2-inventory.
+The owner now explicitly permits the smallest appended grid section/card in Inventory.
+Preserve all six existing views, paths, navigation, sections, cards and their order;
+no alternate interface, new Dashboard, replacement or storage migration.
+Deferred separate future roadmap checkpoint: comprehensive visual refinement of the
+existing HIOC Dashboard after functional delivery, requiring its own scoped direction;
+it is not a current delivery blocker or permission to advance PE-7.4.
+Real parameterized bindings now validate role-owned private files, CA/leaf/key/time/
+identity, mutual TLS >=1.2 and hostname checks, exact client SPKI, shared 32-byte
+HMAC-SHA256 key possession, issuer/key ID and independent backend actor/operation/
+exact Asset ACL matching HA allowlist. Product assertion protocol remains unchanged.
+A bounded operator-started foreground mTLS observation channel rereads PI3 trust,
+boot, scheduler, runtime payload and disabled state; no remote commands or persistent
+service. Fresh exclusive private leases and approved manual-caller risk responsibility
+are required on both hosts; no universal exclusion or cached-reader claim.
+The existing Delivery transaction retains exact file/metadata publication, backups,
+intent and readback. Verify actual editor HTTP bytes AFTER file publication and BEFORE
+resource registration/card save. Route failure retains LOCAL_ROUTE_BLOCKED for explicit
+recovery; uncertain API mutations never auto-retry, rollback, restore cron or release.
+Live native guard binds actual Core/root/device/inode/owner/ACL and approved installed
+source identities; no old receipt becomes fresh exclusive authority. Supported API
+exports/readback and legacy import safeguard remain mandatory; no direct .storage edit.
+FOCUSED_NATIVE_VALIDATION=207_RUN_207_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+FOCUSED_ACCEPTANCE=PASS_FOR_PARAMETERIZED_REPOSITORY_BINDINGS_NOT_PRODUCTION_DELIVERY.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify.
+Original contract/amendment/executive decision, PI3 deployment and accepted receipts
+are preserved. All runtime enable flags remain false; no migration, evaluation,
+notification, recurring activation, service reload/restart or PE-7.4 authorization.
+The owner explicitly confirms production trust and endpoint decisions remain unbound.
+Production remains blocked until actual locally approved PKI/HMAC/independent ACL,
+private parents/owners, endpoints/observer port, frontend origin and live exclusion
+inputs are bound and validated. No secrets or sensitive ACL content belong in chat,
+Git, public receipts or Dashboard. Unknown native capabilities fail closed.
+Next action: bind the genuine operator-specific trust/endpoint inputs locally using
+already-issued approved materials; no new production diagnostic or deployment is
+authorized by repository test PASS. No installation command with invented values.
+See [native trust and guarded HA delivery evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-native-trust-and-guarded-ha-delivery-bindings).
+
+### Historical exclusive HIOC resource qualification snapshot
+
+Classification: HISTORICAL SNAPSHOT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8996,7 +9096,57 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
+Classification: CURRENT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED PI3 deployment, PI5 filesystem identity, authenticated HA
+API, fixed HIOC Dashboard/six views, resource conflict and legacy import checks PASS.
+They are not repeated; fresh delivery-time identity/drift checks remain mandatory.
+Resource mode storage; 11 resources; zero editor conflicts. Exclusive existing
+HIOC Dashboard hioc-dashboard-v2; accepted canonical config SHA-256
+7502a36014253a6cce6b5bcd82277c3c59242d33a191161500d5b3f8c6660ab8.
+EXCLUSIVE_HIOC_UI=hioc-dashboard-v2; EDITOR_VIEW=hioc-v2-inventory.
+The owner now explicitly permits the smallest appended grid section/card in Inventory.
+Preserve all six existing views, paths, navigation, sections, cards and their order;
+no alternate interface, new Dashboard, replacement or storage migration.
+Deferred separate future roadmap checkpoint: comprehensive visual refinement of the
+existing HIOC Dashboard after functional delivery, requiring its own scoped direction;
+it is not a current delivery blocker or permission to advance PE-7.4.
+Real parameterized bindings now validate role-owned private files, CA/leaf/key/time/
+identity, mutual TLS >=1.2 and hostname checks, exact client SPKI, shared 32-byte
+HMAC-SHA256 key possession, issuer/key ID and independent backend actor/operation/
+exact Asset ACL matching HA allowlist. Product assertion protocol remains unchanged.
+A bounded operator-started foreground mTLS observation channel rereads PI3 trust,
+boot, scheduler, runtime payload and disabled state; no remote commands or persistent
+service. Fresh exclusive private leases and approved manual-caller risk responsibility
+are required on both hosts; no universal exclusion or cached-reader claim.
+The existing Delivery transaction retains exact file/metadata publication, backups,
+intent and readback. Verify actual editor HTTP bytes AFTER file publication and BEFORE
+resource registration/card save. Route failure retains LOCAL_ROUTE_BLOCKED for explicit
+recovery; uncertain API mutations never auto-retry, rollback, restore cron or release.
+Live native guard binds actual Core/root/device/inode/owner/ACL and approved installed
+source identities; no old receipt becomes fresh exclusive authority. Supported API
+exports/readback and legacy import safeguard remain mandatory; no direct .storage edit.
+FOCUSED_NATIVE_VALIDATION=207_RUN_207_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+FOCUSED_ACCEPTANCE=PASS_FOR_PARAMETERIZED_REPOSITORY_BINDINGS_NOT_PRODUCTION_DELIVERY.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify.
+Original contract/amendment/executive decision, PI3 deployment and accepted receipts
+are preserved. All runtime enable flags remain false; no migration, evaluation,
+notification, recurring activation, service reload/restart or PE-7.4 authorization.
+The owner explicitly confirms production trust and endpoint decisions remain unbound.
+Production remains blocked until actual locally approved PKI/HMAC/independent ACL,
+private parents/owners, endpoints/observer port, frontend origin and live exclusion
+inputs are bound and validated. No secrets or sensitive ACL content belong in chat,
+Git, public receipts or Dashboard. Unknown native capabilities fail closed.
+Next action: bind the genuine operator-specific trust/endpoint inputs locally using
+already-issued approved materials; no new production diagnostic or deployment is
+authorized by repository test PASS. No installation command with invented values.
+See [native trust and guarded HA delivery evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-native-trust-and-guarded-ha-delivery-bindings).
+
+### Historical exclusive HIOC resource qualification snapshot
+
+Classification: HISTORICAL SNAPSHOT — exclusive existing HIOC Dashboard v2 and panel-independent resource qualification.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

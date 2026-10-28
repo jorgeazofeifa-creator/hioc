@@ -5273,3 +5273,186 @@ Primary support reviewed:
 - https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/websocket.py
 - https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/resources.py
 - https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/dashboard.py
+
+### PE-7.3 native trust and guarded HA delivery bindings
+
+Classification: CURRENT REPOSITORY IMPLEMENTATION; PE73 IN_PROGRESS; PE74 NOT_AUTHORIZED.
+Baseline 3c561f83f03c4b954bbc23be60a334b0633c0f69, synchronized clean main before work.
+This is implementation readiness, not production installation, trust provisioning or
+feature activation. No Codex PI3/PI5 access, SSH, credentials or production execution.
+
+**Accepted production evidence (OPERATOR_SUPPLIED, retained):** PI3 guarded artifact
+deployment PASS; PI5 filesystem identity qualification PASS; authenticated HA API,
+exclusive Dashboard and six view configurations PASS; storage resource inventory11,
+zero editor conflicts and legacy resource-import safeguard PASS. Accepted HIOC
+Dashboard canonical SHA256 is
+7502a36014253a6cce6b5bcd82277c3c59242d33a191161500d5b3f8c6660ab8.
+No additional production observations or health/completion claims are invented.
+These establish accepted historical qualification, not a reusable exclusive lease.
+Fresh checks below are delivery-time continuity requirements, not a broad re-review.
+
+**Owner UI decision:** all manual Asset/device controls belong in existing
+hioc-dashboard-v2 / hioc-v2-inventory. A minimal additional grid section/card is now
+explicitly approved for functionality. Existing cards/sections retain their order;
+all six views, paths, layout/navigation and unrelated content remain intact. The
+accepted original Dashboard architecture and PE-7 contract remain byte-identical;
+this explicit bounded successor placement decision is recorded here, not silently
+edited into their historical text. The repository Dashboard YAML is not installed.
+Comprehensive visual refinement is a separate deferred future roadmap checkpoint,
+not a present blocker, Dashboard replacement, new UI or PE-7.4 authorization.
+
+**Native private trust:** tools/pe73_ha_production.py supplies PrivateFiles, TrustSide,
+the finite Peer/GuardServer channel, NativeHAState/NativeBackendState, DeliveryAPI,
+RouteProbe and native_delivery. It reuses Delivery and the existing descriptor
+publisher, plus the protected PI3 NativeFS/process observer; no second deployment
+transaction, new broker, persistent service, shell or product runtime is introduced.
+All imported tooling must come from one verified immutable published toolkit. The
+library contains no installation-on-import, auto-start, active configuration writer,
+credential generation, Asset-state write or HA/HIOC runtime import.
+
+PrivateFiles opens every ancestor with directory descriptors and NOFOLLOW, verifies
+no group/other write, expected root/role ownership and no POSIX ACLs. Its explicitly
+approved private parent must already be0700 with the actual role UID/GID. Regular
+single-link files must be0600, bounded, owned by that role, with named/descriptor
+identity checked before/after reading and while TLS loads the held descriptors via
+/proc/self/fd. PI5 owner comes from actual qualified Core identity, not PI3's1000
+policy. Missing/unsafe parents are a named provisioning prerequisite, never repaired
+or created implicitly in production. PrivateFiles.provision imports only explicitly
+supplied already-issued bytes into NEW exclusive files, with bounded writes, fsync,
+parent fsync and exact readback; no overwrite, retry, key generation or permissions
+repair. The exclusive descriptor alone may be set0600. Uncertain evidence remains.
+
+TrustSide reads a canonical inactive packet through native_packet/PrivateFiles from
+each independently owned private trust parent. HA contract paths remain /config;
+the Terminal mapping is applied only under the actual shared Core-root proof.
+Both packet shapes, all role enable flagsfalse, exact issuer/key ID, private address/
+port, HA allowlist and backend exact actor/operation/dev_ID scope are checked using
+the accepted disabled_trust validator. Backend packet/ACL is independently read on
+PI3, never granted by a HA-supplied assertion or overwritten from the client.
+Public/private certificate keys must match. Native cryptography validates bounded
+certificate/CA material, time, BasicConstraints, CA signing permission, required
+client/server EKU, supplied chain signatures and server IP SAN. OpenSSL, not a new
+path-validation algorithm, validates actual peer CA chains during required mutual
+TLS >=1.2; client hostname checking stays enabled. Backend verifies exact presented
+client SPKI and HA source IP. Addresses/ports must match the inactive runtime plan.
+Encrypted/malformed/expired/mismatched/absent material blocks; no password guessing.
+
+The assertion material is exactly32 bytes shared HMAC-SHA256, not an asymmetric
+assertion keypair. A domain-separated nonce/session/counter-bound key-possession
+proof inside mTLS establishes the pair without sending keys. It is guard evidence
+ONLY: no actor assertion, editing command or substitute product protocol. Existing
+product message/signature/expiry/replay/ACL semantics and payload remain unchanged.
+No raw key, token, sensitive ACL, private path or native exception is returned in
+sanitized receipts. Private identities remain inside the authenticated guard channel
+and private transaction context, not public readiness reports.
+
+**Finite live guard:** an operator may bind an explicitly approved temporary private
+observer port, distinct from the still-disabled product adapter endpoint, using the
+existing accepted server certificate/client CA. serve_guard handles exactly one
+foreground mTLS connection, at most128 CHECKs over900 seconds, bounded frames,
+handshake/read/accept timeouts, exact HA peer IP and client SPKI. There is no daemon,
+service installer, arbitrary command/path request, SSH tunnel or mutation/recovery
+command. Native role-owned canonical packet readers and the real qualified Supervisor
+Proxy/socket are required by production factories; fixture callbacks and
+JSON receipts cannot be admitted there. Socket closure never restores cron, changes
+consumers, deletes leases or claims delivery success. Unexpected loss fails the
+transaction; no reconnection or request/mutation retry.
+
+Both sides generate a fresh random session under the same whole-process reference.
+The backend and HA acquire the same fixed lease basename in their approved private
+trust parents using exclusive durable create. Existing lease, changed lease, boot,
+context, material or deadline refuses. Leases remain for explicit disposition after
+failure/uncertainty, not timeout cleanup. A live socket challenge prevents replay of
+historical reports. NativeBackendState rereads actual target/boot, exact restored
+scheduler SHA, absence of PE-7 scheduled roles, accepted known-process/drain evidence,
+all13 installed immutable payload/security identities, and inactive PE-7 evaluator/
+notification policy. NativeHAState rereads actual Core/root/namespace/ancestry/device/
+inode/owner/mode/ACL, exact approved frontend/public implementation hashes and lease.
+Expected host/source bindings are operator-approved accepted observations, never
+arbitrary version guesses or a permanent HA version pin.
+
+Manual/independent callers remain PROCEDURALLY prohibited, not universally enforced;
+retained descriptors, cached modules and uncooperative/privileged callers are not
+claimed excluded. The accepted residual-risk model and whole-process executive
+instruction remain verbatim in their prior records. No per-operation approvals are
+introduced. Any new unexpected recovery/changed scope retains its separate boundary.
+This HA-only transaction does not pause/redeploy PI3, modify its restored cron or
+reinterpret its completed artifact deployment as a new maintenance installation.
+
+Bindings verifies actual live peer trust, Core components/services absent, storage
+mode and resource availability. DeliveryAPI reuses the qualified Supervisor WebSocket
+transport; it does not widen the published read-only qualifier. Resource reads first
+repeat ONLY the necessary delivery-time complete-catalog/default-object legacy
+import check. Unknown/legacy/shadowed/failed source refuses before resources/list.
+The first live HIOC config must match the accepted hash and exact six paths; initial
+resource count must remain11. Actual full current exports become the exact private
+baseline checked through the transaction. No unrelated Dashboard config is read.
+Only the two existing supported resource/create and fixed HIOC config/save writes
+are admitted, once each, with exact durable journal intent/whole-process reference,
+verified route and exact intended body. Lost ACK consumes the attempt and stops.
+No call_service, activation, direct .storage edit, reload, restart or migration API.
+
+**Publication order:** prove the supported www/local mapping and actual destination
+before prepare; preserve private exact Dashboard/resource exports and file backups;
+publish/read back all four pinned HA files and metadata via existing transaction;
+record VERIFYING_LOCAL_RESOURCE; perform bounded credential-free GET of exactly
+/local/hioc-asset-editor.js at the explicitly approved HA HTTPS origin, with TLS CA/
+hostname verification, actual approved PI5 peer address, no redirects/compression and
+exact immutable SHA256; record LOCAL_ROUTE_VERIFIED; only then resource/create and
+additive Inventory save. Final independent file/API/route readback is required before
+DELIVERED_DISABLED. No absent-file route is claimed served by historical evidence.
+Route failure before API mutation records LOCAL_ROUTE_BLOCKED and preserves the four
+verified files/backups. Explicit separately adjudicated file recovery is permitted
+only with unchanged installed identities and exact original live API baselines.
+Journal-save uncertainty retains prior pending intent and prevents unsafe recovery.
+Failure after possible API mutation remains nonterminal; no automatic API rollback,
+file restore, scheduler restoration, consumer release or retry.
+
+**Operator-specific bindings still required, not fabricated:** approved issued CA/
+client/server chains/private keys, shared32-byte HMAC, issuer/key ID, exact independently
+owned ACL and HA allowlist, approved private parent paths/observed owners, backend
+IP/product port, actual HA source, temporary observer port, actual verified HTTPS
+frontend origin/CA, accepted native host/source bindings, and fresh exclusive/manual
+responsibility. Runtime constructors/checkers accept these inputs and fail closed;
+they are not deployment-ready until bound locally and validated on the actual hosts.
+No secret values belong in chat or Git. Native cryptography/proc/ACL capabilities
+must be available; the existing product already uses cryptography, but Windows
+availability is not asserted as PI3/PI5 observation. No packages are installed here.
+requirements() / --requirements is a sanitized, read-only input report, not an
+installer or a production qualification. No executable installation command with
+invented endpoints, private package or authority is provided.
+
+**Focused final-byte validation and acceptance:** established bundled Windows Python,
+repository root, shell-free PATH, HIOC_TEST_SHELL cleared, sys.path setup tests/pi4/lib,
+-B. Exactly207 tests run/pass,0 failures/errors/skips/class-level skips. Tests include
+real Windows loopback OpenSSL mutual TLS and invalid CA/hostname/missing client;
+certificate validity/identity/key/SPKI, HMAC length/pair/drift, ACL, private descriptor/
+owner/mode/ancestor/ACL/hard-link/security, finite live challenge/independent packet,
+replay/loss/expiry, native boot/cron/process/payload/config drift, fixed lease and
+fixture-admission refusals; route timing/bytes/redirect/encoding/peer checks;
+Inventory six-view preservation, supported API and legacy safeguard, disabled roles,
+full existing-transaction/live-peer integration, interruption and explicit recovery.
+Windows POSIX metadata fixtures and socketpair protocol seams are explicitly synthetic;
+loopback TLS is real Windows TLS, not Linux or production qualification. No unrelated
+historical suites or previously passed production checks are repeated.
+Actual source/test logic and negative paths were inspected against the governing
+contract independently of the previous readiness summary. Acceptance applies only
+to parameterized repository bindings; no external human review, PKI issuance,
+native deployment success or production installation is inferred from these tests.
+
+Accepted final implementation/test identities:
+- `tools/pe73_ha_delivery.py`: SHA-256 `25ab8ca4140b9ddc73b60f8e921b426a234901ab6634d2239f865469505558ca`.
+- `tests/test_pe73_ha_delivery.py`: SHA-256 `832e910008d7dc8497b444f079607ab7c5e3990f4795b6f9d46b3f3f73960584`.
+- `tools/pe73_ha_production.py`: SHA-256 `86e4333ef2df1bf67b4621ccd6a3314f1322af00dafb42e9d3c5f0724e7bd23c`.
+- `tests/test_pe73_ha_production.py`: SHA-256 `116bdfe6fa80912fce9c9e4cb6966cfccd61c1c86aff0f476777e62254323acb`.
+
+All13 PI3 payload, six immutable HA sources,39 successor and449 protected bindings
+verify; only the two current documentation entries in the existing candidate record
+are refreshed. Original contract, maintenance amendment, controller/provider, runtime
+payloads, prior production receipts and historical evidence remain unchanged. Existing
+PI3 deployment remains complete. HA/PE-7 integration and all editing/evaluator/
+migration/notification/recurring roles remain disabled; no service reload/restart.
+Implementation readiness PASS does not mean production delivery readiness. Exactly
+one next action: bind the genuine local operator-specific production trust/endpoint
+inputs from approved existing material, without secrets in chat or a new discovery
+phase. PE73 IN_PROGRESS; PE74 NOT_AUTHORIZED; Codex production access/mutation NONE.

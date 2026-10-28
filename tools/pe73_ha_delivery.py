@@ -38,6 +38,8 @@ TX = 'backups/pe73-ha-delivery-v1'
 TRUST_BUNDLE = TX + '/trust.disabled.json'
 BOOTSTRAP = '.pe73-ha-directory-intent.json'
 CARD = {'type': 'custom:hioc-asset-editor', 'inventory_entity': 'sensor.hioc_inventory_devices'}
+DASHBOARD = 'hioc-dashboard-v2'
+VIEW = 'hioc-v2-inventory'
 READS = ('auth/current_user', 'get_config', 'get_services', 'lovelace/info',
          'lovelace/resources/list', 'lovelace/config')
 MUTATIONS = ('lovelace/resources/create', 'lovelace/config/save')
@@ -167,9 +169,10 @@ class Delivery:
     host/disabled/caller state; trust_preflight examines existing private trust safely.
     These native bindings are NOT established by synthetic fixtures or saved reports.
     """
-    def __init__(self, fs, api, guard, trust_preflight, read_object, *, clock=time.monotonic):
+    def __init__(self, fs, api, guard, trust_preflight, read_object, *, route_probe=None, clock=time.monotonic):
         self.fs, self.api, self.guard, self.trust_preflight = fs, api, guard, trust_preflight
         self.read_object, self.clock = read_object, clock
+        self.route_probe = route_probe
         self.stopped = False
         self.last = None
 
@@ -179,8 +182,9 @@ class Delivery:
         require(url.scheme == url.netloc == url.query == url.fragment == '' and
             url.path == '/local/hioc-asset-editor.js', 'RESOURCE_URL_UNSUPPORTED')
         # /local is the source-supported HA mapping for www; capability must verify it.
-        require(plan['dashboard'] is None or type(plan['dashboard']) is str and bool(plan['dashboard']), 'DASHBOARD_ID_REQUIRED')
-        require(type(plan['view']) is str and bool(plan['view']), 'VIEW_REQUIRED')
+        require(plan['dashboard'] == DASHBOARD, 'EXCLUSIVE_HIOC_DASHBOARD_REQUIRED')
+        require(plan['view'] == VIEW, 'INVENTORY_VIEW_REQUIRED')
+        require(callable(self.route_probe), 'POST_PUBLICATION_ROUTE_BINDING_REQUIRED')
         state = self.guard()
         require(set(state) == {'host_identity','disabled','exclusive_delivery','resources_loaded','local_mapping',
                               'storage_dashboard','capability_identity'}, 'LIVE_GUARD_SHAPE')
@@ -215,7 +219,7 @@ class Delivery:
         # All facts checked BEFORE creating transaction, staging files or API mutations.
         self.fs.begin(TX)
         journal = dict(schema_version='1.0', state='PREPARING', pending=None, installed=[], dashboard=plan['dashboard'],
-                       resource=None, api_after=None, observation=observed, source_release=RELEASE)
+                       resource=None, api_after=None, route=None, observation=observed, source_release=RELEASE)
         self.last = copy.deepcopy(journal)
         self.fs.save(journal)
         if hasattr(self.fs, 'provision_directories'):
@@ -265,6 +269,17 @@ class Delivery:
                 require(snapshot['sha256'] == MANIFEST[source][0], 'INSTALLATION_NOT_VERIFIED')
                 journal['installed'].append({'path':target, 'snapshot':snapshot})
                 self._save(journal, 'INSTALLING', None)
+            self._fresh(journal, deadline)
+            self._save(journal, 'VERIFYING_LOCAL_RESOURCE', 'local_resource')
+            try:
+                self._route(journal, plan)
+            except BaseException:
+                # Files are verified; no HA API mutation has been attempted. Only
+                # explicit recovery may restore them after current API adjudication.
+                try:self._save(journal, 'LOCAL_ROUTE_BLOCKED', None)
+                except BaseException:pass  # Retain prior durable intent, never retry.
+                raise
+            self._save(journal, 'LOCAL_ROUTE_VERIFIED', None)
             self._fresh(journal, deadline)
             self._save(journal, 'REGISTERING_RESOURCE', 'resource')
             resource = self.api.call({'type':'lovelace/resources/create', 'res_type':'module', 'url':plan['resource_url']})
@@ -322,6 +337,15 @@ class Delivery:
             require(sha(self.fs.read(target, 0o644)) == MANIFEST[source][0], 'INDEPENDENT_READBACK_FAILED')
         require(self.api.call({'type':'lovelace/config','url_path':plan['dashboard']}) == journal['observation']['after'], 'DASHBOARD_NOT_VERIFIED')
         require(self.fs.read(TRUST_BUNDLE) == canonical(journal['observation']['packet']), 'TRUST_PACKET_DRIFT')
+        self._route(journal, plan)
+
+    def _route(self, journal, plan):
+        source='homeassistant/www/hioc-asset-editor.js'
+        result=self.route_probe(plan['resource_url'], MANIFEST[source][0])
+        require(type(result) is dict and set(result)=={'url','sha256','status','identity_encoding'} and
+            result=={'url':plan['resource_url'],'sha256':MANIFEST[source][0],
+                'status':200,'identity_encoding':True}, 'LOCAL_RESOURCE_NOT_VERIFIED')
+        journal['route']=result
 
     def restore_files(self, *, recovery_reference):
         """Explicit recovery ONLY after operator adjudicates API/uncertainty externally.
@@ -331,7 +355,10 @@ class Delivery:
         """
         require(type(recovery_reference) is str and re.fullmatch('[A-Za-z0-9_-]{8,96}', recovery_reference), 'RECOVERY_AUTHORIZATION_REQUIRED')
         journal = self.fs.load()
-        require(journal['state'] == 'DELIVERED_DISABLED' and journal['pending'] is None, 'RECOVERY_ADJUDICATION_REQUIRED')
+        require(journal['state'] in ('DELIVERED_DISABLED','LOCAL_ROUTE_BLOCKED') and journal['pending'] is None, 'RECOVERY_ADJUDICATION_REQUIRED')
+        if journal['state']=='LOCAL_ROUTE_BLOCKED':
+            require(journal['resource'] is None and journal['api_after'] is None and
+                len(journal['installed'])==len(FILES), 'RECOVERY_ADJUDICATION_REQUIRED')
         require(self.guard() == journal['observation']['state'], 'RECOVERY_CONTEXT_DRIFT')
         require(self.api.call({'type':'lovelace/resources/list'}) == journal['observation']['resources'] and
                 self.api.call({'type':'lovelace/config','url_path':journal['dashboard']}) == journal['observation']['config'], 'API_RESTORATION_NOT_ESTABLISHED')
@@ -684,7 +711,7 @@ class _ScopedHAFileSystem:
     def authorize_recovery(self, reference):
         require((self._begun or self._existing) and not self._recovery and re.fullmatch('[A-Za-z0-9_-]{8,96}',reference), 'RECOVERY_NOT_AUTHORIZED')
         self._live();journal=self.load()
-        require(journal['state']=='DELIVERED_DISABLED' and journal['pending'] is None and
+        require(journal['state'] in ('DELIVERED_DISABLED','LOCAL_ROUTE_BLOCKED') and journal['pending'] is None and
             journal['source_release']==RELEASE and [x['path'] for x in journal['installed']]==list(FILES.values()) and
             set(journal['observation']['before'])==set(FILES.values()), 'UNCERTAIN_RECOVERY_REFUSED')
         for index,(source,target) in enumerate(FILES.items()):
