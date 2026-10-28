@@ -6270,7 +6270,43 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
+Classification: CURRENT — PE-7.3 bounded offline trust provisioning preparation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Existing OPERATOR_SUPPLIED PI3 deployment, PI5 filesystem/API and exclusive HIOC
+Dashboard/resource qualification remain accepted historical evidence, not fresh leases.
+Exclusive UI hioc-dashboard-v2, Inventory hioc-v2-inventory; preserve all six views.
+The owner's explicit CA decision: "Create a dedicated offline PE-7 CA locally on PI3".
+New bounded operator tooling generates an encrypted offline CA/server key on PI3,
+HA key/CSR on PI5, exact SAN/EKU issuance, matching 32-byte HMAC, inactive NativePacket,
+issuer/key ID and independently chosen actor/operation/exact Asset ACL. No key exports
+to chat/Git/receipts, CA service, global trust, credential replacement or Core install.
+Existing PrivateFiles, TrustSide and native delivery protocol/transaction remain intact.
+Existing credentials are never overwritten; partial material is retained and cannot
+be blindly retried. Private authenticated transfer requires existing strict SSH trust
+and noninteractive authentication; no new SSH identity or unsafe host-key acceptance.
+Native dependency support, existing SSH route, exact private names/ports/subjects,
+validity, human HA principal/Asset scope and HTTPS frontend origin are not invented.
+Historical .252/.251 LAN identities alone do not prove safe current endpoints.
+Actual endpoint/source restrictions, fresh filesystem/disabled-state checks and live
+mutual TLS/HMAC key possession remain mandatory before any guarded installation.
+48 focused repository tests PASS; actual Windows loopback OpenSSL mutual TLS PASS.
+This is not observed PI3/PI5 provisioning, dependency support or production readiness.
+Prior 207 binding tests retained against unchanged executable identities.
+13 PI3 payload, six HA source,39 successor,449 protected identities preserved;
+only necessary current documentation identity fields refreshed. Original contract,
+amendment, executive authorization instruction and production evidence preserved.
+Next action: one consolidated read-only PI5 provisioning-runtime/transfer assessment.
+If dependency/SSH prerequisites are unavailable, stop before credential creation;
+no automatic package installation, new privileges, service or transport fallback.
+PE-7.3 remains IN_PROGRESS; no PE-7.4, editing, migration, evaluation, notifications,
+recurring activation, scheduler change, service reload/restart or actual deployment.
+See [offline provisioning sequence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-offline-ca-and-disabled-trust-provisioning).
+
+### Historical parameterized native binding implementation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -7941,7 +7977,43 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
+Classification: CURRENT — PE-7.3 bounded offline trust provisioning preparation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Existing OPERATOR_SUPPLIED PI3 deployment, PI5 filesystem/API and exclusive HIOC
+Dashboard/resource qualification remain accepted historical evidence, not fresh leases.
+Exclusive UI hioc-dashboard-v2, Inventory hioc-v2-inventory; preserve all six views.
+The owner's explicit CA decision: "Create a dedicated offline PE-7 CA locally on PI3".
+New bounded operator tooling generates an encrypted offline CA/server key on PI3,
+HA key/CSR on PI5, exact SAN/EKU issuance, matching 32-byte HMAC, inactive NativePacket,
+issuer/key ID and independently chosen actor/operation/exact Asset ACL. No key exports
+to chat/Git/receipts, CA service, global trust, credential replacement or Core install.
+Existing PrivateFiles, TrustSide and native delivery protocol/transaction remain intact.
+Existing credentials are never overwritten; partial material is retained and cannot
+be blindly retried. Private authenticated transfer requires existing strict SSH trust
+and noninteractive authentication; no new SSH identity or unsafe host-key acceptance.
+Native dependency support, existing SSH route, exact private names/ports/subjects,
+validity, human HA principal/Asset scope and HTTPS frontend origin are not invented.
+Historical .252/.251 LAN identities alone do not prove safe current endpoints.
+Actual endpoint/source restrictions, fresh filesystem/disabled-state checks and live
+mutual TLS/HMAC key possession remain mandatory before any guarded installation.
+48 focused repository tests PASS; actual Windows loopback OpenSSL mutual TLS PASS.
+This is not observed PI3/PI5 provisioning, dependency support or production readiness.
+Prior 207 binding tests retained against unchanged executable identities.
+13 PI3 payload, six HA source,39 successor,449 protected identities preserved;
+only necessary current documentation identity fields refreshed. Original contract,
+amendment, executive authorization instruction and production evidence preserved.
+Next action: one consolidated read-only PI5 provisioning-runtime/transfer assessment.
+If dependency/SSH prerequisites are unavailable, stop before credential creation;
+no automatic package installation, new privileges, service or transport fallback.
+PE-7.3 remains IN_PROGRESS; no PE-7.4, editing, migration, evaluation, notifications,
+recurring activation, scheduler change, service reload/restart or actual deployment.
+See [offline provisioning sequence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-offline-ca-and-disabled-trust-provisioning).
+
+### Historical parameterized native binding implementation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -9096,7 +9168,43 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
+Classification: CURRENT — PE-7.3 bounded offline trust provisioning preparation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Existing OPERATOR_SUPPLIED PI3 deployment, PI5 filesystem/API and exclusive HIOC
+Dashboard/resource qualification remain accepted historical evidence, not fresh leases.
+Exclusive UI hioc-dashboard-v2, Inventory hioc-v2-inventory; preserve all six views.
+The owner's explicit CA decision: "Create a dedicated offline PE-7 CA locally on PI3".
+New bounded operator tooling generates an encrypted offline CA/server key on PI3,
+HA key/CSR on PI5, exact SAN/EKU issuance, matching 32-byte HMAC, inactive NativePacket,
+issuer/key ID and independently chosen actor/operation/exact Asset ACL. No key exports
+to chat/Git/receipts, CA service, global trust, credential replacement or Core install.
+Existing PrivateFiles, TrustSide and native delivery protocol/transaction remain intact.
+Existing credentials are never overwritten; partial material is retained and cannot
+be blindly retried. Private authenticated transfer requires existing strict SSH trust
+and noninteractive authentication; no new SSH identity or unsafe host-key acceptance.
+Native dependency support, existing SSH route, exact private names/ports/subjects,
+validity, human HA principal/Asset scope and HTTPS frontend origin are not invented.
+Historical .252/.251 LAN identities alone do not prove safe current endpoints.
+Actual endpoint/source restrictions, fresh filesystem/disabled-state checks and live
+mutual TLS/HMAC key possession remain mandatory before any guarded installation.
+48 focused repository tests PASS; actual Windows loopback OpenSSL mutual TLS PASS.
+This is not observed PI3/PI5 provisioning, dependency support or production readiness.
+Prior 207 binding tests retained against unchanged executable identities.
+13 PI3 payload, six HA source,39 successor,449 protected identities preserved;
+only necessary current documentation identity fields refreshed. Original contract,
+amendment, executive authorization instruction and production evidence preserved.
+Next action: one consolidated read-only PI5 provisioning-runtime/transfer assessment.
+If dependency/SSH prerequisites are unavailable, stop before credential creation;
+no automatic package installation, new privileges, service or transport fallback.
+PE-7.3 remains IN_PROGRESS; no PE-7.4, editing, migration, evaluation, notifications,
+recurring activation, scheduler change, service reload/restart or actual deployment.
+See [offline provisioning sequence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-offline-ca-and-disabled-trust-provisioning).
+
+### Historical parameterized native binding implementation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 parameterized native trust and guarded HA delivery implementation.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

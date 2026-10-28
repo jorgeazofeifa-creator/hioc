@@ -5456,3 +5456,378 @@ Implementation readiness PASS does not mean production delivery readiness. Exact
 one next action: bind the genuine local operator-specific production trust/endpoint
 inputs from approved existing material, without secrets in chat or a new discovery
 phase. PE73 IN_PROGRESS; PE74 NOT_AUTHORIZED; Codex production access/mutation NONE.
+
+### PE-7.3 offline CA and disabled trust provisioning
+
+Classification: CURRENT PREPARATION; PE73 IN_PROGRESS; PE74 NOT_AUTHORIZED.
+Baseline 686be8841f461eacd57a9076948acf632bbf7bea. The owner selected:
+**"Create a dedicated offline PE-7 CA locally on PI3".** This authorizes the
+bounded local issuance route, not a CA service, global CA trust or PE-7 activation.
+No Codex production access or production provisioning occurred.
+
+**Decision boundaries.** The actual private basename, two distinct reserved
+unprivileged ports, explicitly approved .252 backend/.251 source addresses,
+certificate subjects and validity, existing HTTPS frontend origin, genuine human
+HA ID and independently owned exact Asset/operation scope must be entered locally.
+No wildcard ACL, system discovery principal substituted for a human, assumed port,
+default credential package or pre-approved listener is inferred. The wizard generates
+the explicitly new issuer UUID/key ID internally; it does not ask for challenge copying.
+These are policy inputs, not separate consequential-operation authorization prompts.
+Current interface/source routing and permitted temporary observer reachability still
+require actual local verification; no firewall change is authorized or performed here.
+
+**Key custody.** PI3 creates a P-256 offline CA with an encrypted PKCS8 key and a
+separate server key; a locally retained passphrase of at least16 bytes is required.
+PI5 generates and retains its own client key and sends only its signed CSR. PI3 checks
+exact subject/IP SAN/key type/extensions before issuance. Leaves have exact server/client
+EKU, validated chain, time and key pairing. The CA and backend private keys never leave
+PI3; the HA private key never leaves PI5. The 32-byte random HMAC and inactive packet
+transfer only over an existing strict-host-key, batch-authenticated SSH pipe. No keys,
+tokens, ACL entries or private transfer bytes appear in public receipts or Git.
+The CA file is encrypted at rest, offline from all listeners; no CA daemon or global
+trust installation. It must not be treated as a general-purpose PKI or automatic rotation.
+
+**Filesystem and interruptions.** Reuse existing qualified native filesystem and
+PrivateFiles reader/provisioner. Only one new direct-child private directory per host
+is created, mode0700, role-derived owner (PI3 1000:1000; HA qualified Core identity,
+not a PI3 UID assumption). Existing directories/credentials refuse mutation. Native
+no-follow ancestry, identity, link, ACL, owner/mode and durable readback checks remain.
+Private files0600, complete canonical packet written LAST. There is no second journal,
+publisher or recovery algorithm. Partial material and an incomplete toolkit are retained;
+stop and preserve evidence, never blindly repeat a mutating step or delete/recover it.
+
+**Dependencies and transport.** Actual PI3/PI5 dependency support is UNKNOWN until
+observed. The first action below is read-only PI5 assessment: Terminal Python/OpenSSL,
+required cryptography APIs, existing OpenSSH availability and public PI3 known-host
+record, plus a fixed import-only Core crypto probe. No HA import/reload, config/secret
+read, package install or Core modification. Probe results are not proof of usable SSH
+authentication, network policy, listener approval or current filesystem qualification.
+Missing crypto, SSH trust/authentication or permission is a BLOCKED prerequisite; no
+credential creation, unsafe host-key acceptance or alternative transport is attempted.
+If Terminal crypto is missing but Core supports it, the smallest candidate remedy is
+a separately reviewed temporary Terminal-only dependency bundle pinned for the observed
+Python/architecture, not installing into Core/global packages. Its feasibility and exact
+wheel identities are not established by Windows tests and are not invented here.
+
+**Validation.** 48/48 focused native Windows tests, zero failures/errors/skips:
+new CA randomness/encryption, SAN/EKU/pair/time/chain, actual OpenSSL mutual TLS over
+Windows loopback using newly issued material, policy/ACL negatives, partial/collision
+handling, two-host private transfer fixtures, wrong pin/key/plan and stale HMAC refusal,
+dependency refusal and redacted receipts. Synthetic NativePacket adapters in fixture
+tests are explicitly not production evidence; the unchanged native factory still rejects
+fixture readers. Existing 207 binding tests remain tied to unchanged accepted source;
+their owner/mode/ACL/symlink, guard, native type and transaction results are retained.
+No live Pi mTLS, HMAC possession, source-IP policy, credential installation or endpoint
+readiness is claimed. Independent exact-byte source inspection retains all native gates.
+
+**Direct delivery continuity.** The final canonical packet is consumed by unchanged
+NativePacket and TrustSide; exact source/runtime paths and independently owned ACL are
+preserved. Actual connect_peer/serve_guard key possession, approved-source identity,
+NativeHAState/NativeBackendState leases and native_delivery requirements remain mandatory
+in the existing delivery session. Do not start an isolated guard merely as a test: its
+durable one-attempt lease cannot be discarded or reused. Provisioning itself opens no
+application or guard listener and performs no filesystem installation or HA API mutation.
+The existing Delivery alone publishes four artifacts, verifies actual editor route bytes
+before resource registration, then appends only the minimal Inventory section. No `.storage`
+edit, alternative Dashboard, reload/restart, PE-7 editing/evaluation/migration/notification
+or recurring activation. Preserve all six HIOC views and accepted PI3 evidence.
+
+**Deterministic operator sequence — stop after each receipt; no automatic retries.**
+
+1. PI5 HA: read-only provisioning-runtime assessment supplied in the handoff. If a
+   prerequisite is BLOCKED, stop before the mutating steps; report only its sanitized receipt.
+2. PI3 NUT&PIHOLE as jazofv1: prepare the dedicated offline CA/server material. Mutating
+   only a new private toolkit cache and approved private trust child; requires local explicit
+   policy values and masked CA passphrase. Expected PASS_BACKEND_OFFLINE_CA_PREPARATION.
+3. PI5 Terminal: create its local client key/CSR and transfer only the public CSR using
+   existing SSH trust/authentication. Mutating new approved HA trust child only. Expected
+   PASS_HA_LOCAL_KEY_AND_PUBLIC_REQUEST. No private key crosses hosts.
+4. PI3: unlock the offline CA locally for the exact saved CSR. Expected
+   PASS_BACKEND_OFFLINE_ISSUANCE; encrypted CA/private backend key retained only on PI3.
+5. PI5: securely pull and validate the completed inactive bundle, compare transferred
+   HMAC to protected local readback; expected PASS_HA_DISABLED_TRUST_PROVISIONING with
+   cross_host_live_validation=REQUIRED. Local PASS is not live trust or deployment PASS.
+6. Existing guarded delivery session, only after actual prerequisites are established:
+   use the same packets/private paths in actual TrustSide/NativePacket, bounded observer,
+   fresh leases, authenticated_proxy and native_delivery. Actual mutual TLS verifies
+   chain/hostname/client SPKI/source IP and fresh HMAC key possession. All current source,
+   scheduler, disabled-state and route gates remain; no fabricated host identity or
+   capability hash. This preparation does not authorize arbitrary inputs or publish a
+   speculative installation command before those mandatory native facts exist.
+
+The following complete commands implement steps2–5 without manual source editing,
+hash copying or operation identifiers. The content hash pins the new helper even if
+the public main moves; dependencies remain pinned to accepted baseline686be884.
+They use existing HTTPS CA verification and existing SSH identity only, never sudo,
+credentials in arguments or global package installation. The cache is code only, not
+a secret store. An existing exact cache is read/verified; a partial/different one stops.
+No cryptographic material is printed by ordinary actions; `_pipe` is internal SSH-only
+transport, never an operator command or user-visible output channel.
+
+**PI3 — backend-init**
+
+```sh
+/usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,os,pathlib,stat,sys,urllib.request
+PINS={'pe73_ha_production': '86e4333ef2df1bf67b4621ccd6a3314f1322af00dafb42e9d3c5f0724e7bd23c', 'pe73_ha_delivery': '25ab8ca4140b9ddc73b60f8e921b426a234901ab6634d2239f865469505558ca', 'pe73_ha_assess': 'da4c97ef7e5acaf5840b9cbca03ee0cd888183e784a3f55bb8671b45b8372443', 'pe73_ha_live_qualify': 'ce4bbd30fdb268ec28637f990b85e9640d174a120eba971ed730f7ba94dfb845', 'pe73_maintenance_window': '756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741', 'hioc-pe73-pi3-delivery': '76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2'}
+EXPECTED='2594d985f76d51b02365ca2ef98f02ac4372e566559be893762a41e6ccb39d89'
+ACTION='backend-init'
+try:
+    if sys.platform!='linux' or not (os.getuid()==os.geteuid()==os.getgid()==os.getegid()==1000):
+        raise ValueError('TARGET_IDENTITY')
+    base='https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/'
+    def fetch(url,identity):
+        with urllib.request.urlopen(url,timeout=30) as stream:
+            raw=stream.read(1048577)
+        if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!=identity:raise ValueError('SOURCE_IDENTITY')
+        return raw
+    raw=fetch(base+'main/tools/pe73_ha_provision.py',EXPECTED)
+    # Actual crypto APIs must exist BEFORE cache or credential writes.
+    scope={'__name__':'pe73_bootstrap_check','__file__':'verified-memory-source'}
+    exec(compile(raw,'verified-memory-source','exec'),scope);scope['crypto']()
+    root=pathlib.Path.home()/'.hioc-pe73-provision-toolkit'
+    home=root.parent.lstat()
+    if not stat.S_ISDIR(home.st_mode) or home.st_uid!=1000 or stat.S_IMODE(home.st_mode)&0o022:raise ValueError('HOME_SECURITY')
+    sources={'pe73_ha_provision.py':raw}
+    for name,identity in PINS.items():
+        sources[name+'.py']=fetch(base+'686be8841f461eacd57a9076948acf632bbf7bea/tools/'+name+'.py',identity)
+    # Existing exact toolkit can be read again; partial/mismatched caches STOP.
+    new=not os.path.lexists(root)
+    if new:os.mkdir(root,0o700)
+    info=root.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid!=1000 or stat.S_IMODE(info.st_mode)!=0o700:raise ValueError('CACHE_SECURITY')
+    fd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:
+        if (info.st_dev,info.st_ino)!=(os.fstat(fd).st_dev,os.fstat(fd).st_ino):raise ValueError('CACHE_IDENTITY')
+        for acl in ('system.posix_acl_access','system.posix_acl_default'):
+            try:os.getxattr(fd,acl)
+            except OSError as error:
+                import errno
+                if error.errno!=errno.ENODATA:raise
+            else:raise ValueError('CACHE_ACL')
+        if not new and set(os.listdir(fd))!=set(sources):raise ValueError('PARTIAL_CACHE')
+        for name,value in sources.items():
+            flags=os.O_RDWR|os.O_NOFOLLOW|(os.O_CREAT|os.O_EXCL if new else 0)
+            item=os.open(name,flags,0o600,dir_fd=fd)
+            try:
+                obj=os.fstat(item)
+                if not stat.S_ISREG(obj.st_mode) or obj.st_uid!=1000 or obj.st_nlink!=1 or stat.S_IMODE(obj.st_mode)!=0o600:raise ValueError('SOURCE_SECURITY')
+                if new:
+                    with os.fdopen(os.dup(item),'wb') as stream:stream.write(value);stream.flush();os.fsync(stream.fileno())
+                os.lseek(item,0,os.SEEK_SET)
+                if os.read(item,1048577)!=value:raise ValueError('SOURCE_READBACK')
+            finally:os.close(item)
+        os.fsync(fd)
+    finally:os.close(fd)
+    sys.argv=[str(root/'pe73_ha_provision.py'),ACTION]
+    exec(compile(raw,str(root/'pe73_ha_provision.py'),'exec'),{'__name__':'__main__','__file__':str(root/'pe73_ha_provision.py')})
+except BaseException as error:
+    if isinstance(error,SystemExit):raise
+    print(json.dumps({'RESULT':'BLOCKED_PROVISIONING_BOOTSTRAP','partial_material':'RETAINED_IF_CREATED','automatic_retry':False,'STOP_REQUIRED':True},sort_keys=True))
+    raise SystemExit(1)
+PY
+pe73_status=$?
+printf 'PE73_PROVISION_EXIT_STATUS=%s\n' "$pe73_status"
+```
+
+**PI5 — ha-request**
+
+```sh
+/usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,os,pathlib,stat,sys,urllib.request
+PINS={'pe73_ha_production': '86e4333ef2df1bf67b4621ccd6a3314f1322af00dafb42e9d3c5f0724e7bd23c', 'pe73_ha_delivery': '25ab8ca4140b9ddc73b60f8e921b426a234901ab6634d2239f865469505558ca', 'pe73_ha_assess': 'da4c97ef7e5acaf5840b9cbca03ee0cd888183e784a3f55bb8671b45b8372443', 'pe73_ha_live_qualify': 'ce4bbd30fdb268ec28637f990b85e9640d174a120eba971ed730f7ba94dfb845', 'pe73_maintenance_window': '756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741', 'hioc-pe73-pi3-delivery': '76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2'}
+EXPECTED='2594d985f76d51b02365ca2ef98f02ac4372e566559be893762a41e6ccb39d89'
+ACTION='ha-request'
+try:
+    if sys.platform!='linux' or not (os.getuid()==os.geteuid()==os.getgid()==os.getegid()==0):
+        raise ValueError('TARGET_IDENTITY')
+    base='https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/'
+    def fetch(url,identity):
+        with urllib.request.urlopen(url,timeout=30) as stream:
+            raw=stream.read(1048577)
+        if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!=identity:raise ValueError('SOURCE_IDENTITY')
+        return raw
+    raw=fetch(base+'main/tools/pe73_ha_provision.py',EXPECTED)
+    # Actual crypto APIs must exist BEFORE cache or credential writes.
+    scope={'__name__':'pe73_bootstrap_check','__file__':'verified-memory-source'}
+    exec(compile(raw,'verified-memory-source','exec'),scope);scope['crypto']()
+    root=pathlib.Path.home()/'.hioc-pe73-provision-toolkit'
+    home=root.parent.lstat()
+    if not stat.S_ISDIR(home.st_mode) or home.st_uid!=0 or stat.S_IMODE(home.st_mode)&0o022:raise ValueError('HOME_SECURITY')
+    sources={'pe73_ha_provision.py':raw}
+    for name,identity in PINS.items():
+        sources[name+'.py']=fetch(base+'686be8841f461eacd57a9076948acf632bbf7bea/tools/'+name+'.py',identity)
+    # Existing exact toolkit can be read again; partial/mismatched caches STOP.
+    new=not os.path.lexists(root)
+    if new:os.mkdir(root,0o700)
+    info=root.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid!=0 or stat.S_IMODE(info.st_mode)!=0o700:raise ValueError('CACHE_SECURITY')
+    fd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:
+        if (info.st_dev,info.st_ino)!=(os.fstat(fd).st_dev,os.fstat(fd).st_ino):raise ValueError('CACHE_IDENTITY')
+        for acl in ('system.posix_acl_access','system.posix_acl_default'):
+            try:os.getxattr(fd,acl)
+            except OSError as error:
+                import errno
+                if error.errno!=errno.ENODATA:raise
+            else:raise ValueError('CACHE_ACL')
+        if not new and set(os.listdir(fd))!=set(sources):raise ValueError('PARTIAL_CACHE')
+        for name,value in sources.items():
+            flags=os.O_RDWR|os.O_NOFOLLOW|(os.O_CREAT|os.O_EXCL if new else 0)
+            item=os.open(name,flags,0o600,dir_fd=fd)
+            try:
+                obj=os.fstat(item)
+                if not stat.S_ISREG(obj.st_mode) or obj.st_uid!=0 or obj.st_nlink!=1 or stat.S_IMODE(obj.st_mode)!=0o600:raise ValueError('SOURCE_SECURITY')
+                if new:
+                    with os.fdopen(os.dup(item),'wb') as stream:stream.write(value);stream.flush();os.fsync(stream.fileno())
+                os.lseek(item,0,os.SEEK_SET)
+                if os.read(item,1048577)!=value:raise ValueError('SOURCE_READBACK')
+            finally:os.close(item)
+        os.fsync(fd)
+    finally:os.close(fd)
+    sys.argv=[str(root/'pe73_ha_provision.py'),ACTION]
+    exec(compile(raw,str(root/'pe73_ha_provision.py'),'exec'),{'__name__':'__main__','__file__':str(root/'pe73_ha_provision.py')})
+except BaseException as error:
+    if isinstance(error,SystemExit):raise
+    print(json.dumps({'RESULT':'BLOCKED_PROVISIONING_BOOTSTRAP','partial_material':'RETAINED_IF_CREATED','automatic_retry':False,'STOP_REQUIRED':True},sort_keys=True))
+    raise SystemExit(1)
+PY
+pe73_status=$?
+printf 'PE73_PROVISION_EXIT_STATUS=%s\n' "$pe73_status"
+```
+
+**PI3 — backend-issue**
+
+```sh
+/usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,os,pathlib,stat,sys,urllib.request
+PINS={'pe73_ha_production': '86e4333ef2df1bf67b4621ccd6a3314f1322af00dafb42e9d3c5f0724e7bd23c', 'pe73_ha_delivery': '25ab8ca4140b9ddc73b60f8e921b426a234901ab6634d2239f865469505558ca', 'pe73_ha_assess': 'da4c97ef7e5acaf5840b9cbca03ee0cd888183e784a3f55bb8671b45b8372443', 'pe73_ha_live_qualify': 'ce4bbd30fdb268ec28637f990b85e9640d174a120eba971ed730f7ba94dfb845', 'pe73_maintenance_window': '756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741', 'hioc-pe73-pi3-delivery': '76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2'}
+EXPECTED='2594d985f76d51b02365ca2ef98f02ac4372e566559be893762a41e6ccb39d89'
+ACTION='backend-issue'
+try:
+    if sys.platform!='linux' or not (os.getuid()==os.geteuid()==os.getgid()==os.getegid()==1000):
+        raise ValueError('TARGET_IDENTITY')
+    base='https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/'
+    def fetch(url,identity):
+        with urllib.request.urlopen(url,timeout=30) as stream:
+            raw=stream.read(1048577)
+        if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!=identity:raise ValueError('SOURCE_IDENTITY')
+        return raw
+    raw=fetch(base+'main/tools/pe73_ha_provision.py',EXPECTED)
+    # Actual crypto APIs must exist BEFORE cache or credential writes.
+    scope={'__name__':'pe73_bootstrap_check','__file__':'verified-memory-source'}
+    exec(compile(raw,'verified-memory-source','exec'),scope);scope['crypto']()
+    root=pathlib.Path.home()/'.hioc-pe73-provision-toolkit'
+    home=root.parent.lstat()
+    if not stat.S_ISDIR(home.st_mode) or home.st_uid!=1000 or stat.S_IMODE(home.st_mode)&0o022:raise ValueError('HOME_SECURITY')
+    sources={'pe73_ha_provision.py':raw}
+    for name,identity in PINS.items():
+        sources[name+'.py']=fetch(base+'686be8841f461eacd57a9076948acf632bbf7bea/tools/'+name+'.py',identity)
+    # Existing exact toolkit can be read again; partial/mismatched caches STOP.
+    new=not os.path.lexists(root)
+    if new:os.mkdir(root,0o700)
+    info=root.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid!=1000 or stat.S_IMODE(info.st_mode)!=0o700:raise ValueError('CACHE_SECURITY')
+    fd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:
+        if (info.st_dev,info.st_ino)!=(os.fstat(fd).st_dev,os.fstat(fd).st_ino):raise ValueError('CACHE_IDENTITY')
+        for acl in ('system.posix_acl_access','system.posix_acl_default'):
+            try:os.getxattr(fd,acl)
+            except OSError as error:
+                import errno
+                if error.errno!=errno.ENODATA:raise
+            else:raise ValueError('CACHE_ACL')
+        if not new and set(os.listdir(fd))!=set(sources):raise ValueError('PARTIAL_CACHE')
+        for name,value in sources.items():
+            flags=os.O_RDWR|os.O_NOFOLLOW|(os.O_CREAT|os.O_EXCL if new else 0)
+            item=os.open(name,flags,0o600,dir_fd=fd)
+            try:
+                obj=os.fstat(item)
+                if not stat.S_ISREG(obj.st_mode) or obj.st_uid!=1000 or obj.st_nlink!=1 or stat.S_IMODE(obj.st_mode)!=0o600:raise ValueError('SOURCE_SECURITY')
+                if new:
+                    with os.fdopen(os.dup(item),'wb') as stream:stream.write(value);stream.flush();os.fsync(stream.fileno())
+                os.lseek(item,0,os.SEEK_SET)
+                if os.read(item,1048577)!=value:raise ValueError('SOURCE_READBACK')
+            finally:os.close(item)
+        os.fsync(fd)
+    finally:os.close(fd)
+    sys.argv=[str(root/'pe73_ha_provision.py'),ACTION]
+    exec(compile(raw,str(root/'pe73_ha_provision.py'),'exec'),{'__name__':'__main__','__file__':str(root/'pe73_ha_provision.py')})
+except BaseException as error:
+    if isinstance(error,SystemExit):raise
+    print(json.dumps({'RESULT':'BLOCKED_PROVISIONING_BOOTSTRAP','partial_material':'RETAINED_IF_CREATED','automatic_retry':False,'STOP_REQUIRED':True},sort_keys=True))
+    raise SystemExit(1)
+PY
+pe73_status=$?
+printf 'PE73_PROVISION_EXIT_STATUS=%s\n' "$pe73_status"
+```
+
+**PI5 — ha-complete**
+
+```sh
+/usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,os,pathlib,stat,sys,urllib.request
+PINS={'pe73_ha_production': '86e4333ef2df1bf67b4621ccd6a3314f1322af00dafb42e9d3c5f0724e7bd23c', 'pe73_ha_delivery': '25ab8ca4140b9ddc73b60f8e921b426a234901ab6634d2239f865469505558ca', 'pe73_ha_assess': 'da4c97ef7e5acaf5840b9cbca03ee0cd888183e784a3f55bb8671b45b8372443', 'pe73_ha_live_qualify': 'ce4bbd30fdb268ec28637f990b85e9640d174a120eba971ed730f7ba94dfb845', 'pe73_maintenance_window': '756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741', 'hioc-pe73-pi3-delivery': '76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2'}
+EXPECTED='2594d985f76d51b02365ca2ef98f02ac4372e566559be893762a41e6ccb39d89'
+ACTION='ha-complete'
+try:
+    if sys.platform!='linux' or not (os.getuid()==os.geteuid()==os.getgid()==os.getegid()==0):
+        raise ValueError('TARGET_IDENTITY')
+    base='https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/'
+    def fetch(url,identity):
+        with urllib.request.urlopen(url,timeout=30) as stream:
+            raw=stream.read(1048577)
+        if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!=identity:raise ValueError('SOURCE_IDENTITY')
+        return raw
+    raw=fetch(base+'main/tools/pe73_ha_provision.py',EXPECTED)
+    # Actual crypto APIs must exist BEFORE cache or credential writes.
+    scope={'__name__':'pe73_bootstrap_check','__file__':'verified-memory-source'}
+    exec(compile(raw,'verified-memory-source','exec'),scope);scope['crypto']()
+    root=pathlib.Path.home()/'.hioc-pe73-provision-toolkit'
+    home=root.parent.lstat()
+    if not stat.S_ISDIR(home.st_mode) or home.st_uid!=0 or stat.S_IMODE(home.st_mode)&0o022:raise ValueError('HOME_SECURITY')
+    sources={'pe73_ha_provision.py':raw}
+    for name,identity in PINS.items():
+        sources[name+'.py']=fetch(base+'686be8841f461eacd57a9076948acf632bbf7bea/tools/'+name+'.py',identity)
+    # Existing exact toolkit can be read again; partial/mismatched caches STOP.
+    new=not os.path.lexists(root)
+    if new:os.mkdir(root,0o700)
+    info=root.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid!=0 or stat.S_IMODE(info.st_mode)!=0o700:raise ValueError('CACHE_SECURITY')
+    fd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:
+        if (info.st_dev,info.st_ino)!=(os.fstat(fd).st_dev,os.fstat(fd).st_ino):raise ValueError('CACHE_IDENTITY')
+        for acl in ('system.posix_acl_access','system.posix_acl_default'):
+            try:os.getxattr(fd,acl)
+            except OSError as error:
+                import errno
+                if error.errno!=errno.ENODATA:raise
+            else:raise ValueError('CACHE_ACL')
+        if not new and set(os.listdir(fd))!=set(sources):raise ValueError('PARTIAL_CACHE')
+        for name,value in sources.items():
+            flags=os.O_RDWR|os.O_NOFOLLOW|(os.O_CREAT|os.O_EXCL if new else 0)
+            item=os.open(name,flags,0o600,dir_fd=fd)
+            try:
+                obj=os.fstat(item)
+                if not stat.S_ISREG(obj.st_mode) or obj.st_uid!=0 or obj.st_nlink!=1 or stat.S_IMODE(obj.st_mode)!=0o600:raise ValueError('SOURCE_SECURITY')
+                if new:
+                    with os.fdopen(os.dup(item),'wb') as stream:stream.write(value);stream.flush();os.fsync(stream.fileno())
+                os.lseek(item,0,os.SEEK_SET)
+                if os.read(item,1048577)!=value:raise ValueError('SOURCE_READBACK')
+            finally:os.close(item)
+        os.fsync(fd)
+    finally:os.close(fd)
+    sys.argv=[str(root/'pe73_ha_provision.py'),ACTION]
+    exec(compile(raw,str(root/'pe73_ha_provision.py'),'exec'),{'__name__':'__main__','__file__':str(root/'pe73_ha_provision.py')})
+except BaseException as error:
+    if isinstance(error,SystemExit):raise
+    print(json.dumps({'RESULT':'BLOCKED_PROVISIONING_BOOTSTRAP','partial_material':'RETAINED_IF_CREATED','automatic_retry':False,'STOP_REQUIRED':True},sort_keys=True))
+    raise SystemExit(1)
+PY
+pe73_status=$?
+printf 'PE73_PROVISION_EXIT_STATUS=%s\n' "$pe73_status"
+```
+
+Accepted source identities:
+- `tools/pe73_ha_provision.py`: SHA-256 `2594d985f76d51b02365ca2ef98f02ac4372e566559be893762a41e6ccb39d89`.
+- `tests/test_pe73_ha_provision.py`: SHA-256 `63ac73a9bfcb63e4fe1a1427ddabd5f08ea7533499211c63ea290cc565559e49`.
