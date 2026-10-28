@@ -5831,3 +5831,158 @@ printf 'PE73_PROVISION_EXIT_STATUS=%s\n' "$pe73_status"
 Accepted source identities:
 - `tools/pe73_ha_provision.py`: SHA-256 `2594d985f76d51b02365ca2ef98f02ac4372e566559be893762a41e6ccb39d89`.
 - `tests/test_pe73_ha_provision.py`: SHA-256 `63ac73a9bfcb63e4fe1a1427ddabd5f08ea7533499211c63ea290cc565559e49`.
+
+### PE-7.3 Terminal-only pinned provisioning environment
+
+Classification: CURRENT REPOSITORY CORRECTION; PE73 IN_PROGRESS; PE74 NOT_AUTHORIZED.
+Baseline b5a020982484e35126daa70b256860a23af8e88f. No Codex PI3/PI5 access.
+
+**New OPERATOR_SUPPLIED PI5 receipt, preserved:**
+RESULT=BLOCKED_TERMINAL_CRYPTOGRAPHY_UNAVAILABLE; EXIT_STATUS=1.
+Terminal CPython3.14.8/aarch64, OpenSSL3.5.9; cryptography unavailable.
+Core CPython3.14.9 with cryptography50.0.1. SSH and SCP available; PI3 host key
+recognized; no credentials read and no production mutation. These are operator
+observations, not independent Codex production inspection. Existing SSH authentication
+success, libc/native loader compatibility and stdlib venv availability were not proved.
+
+**Root cause and bounded correction:** The preceding bootstrap required crypto()
+in Terminal before any isolated dependency setup. That prerequisite is false on the
+observed Terminal. Core's successful import does not authorize Core provisioning.
+The existing helper and all trust/deployment code remain byte-identical. A finite
+Terminal-only environment helper creates exactly one new private root-owned cache at
+`/root/.hioc-pe73-provision-environment`, outside the shared HA configuration/runtime.
+It uses stdlib venv without ensurepip, system packages, upgrades or global installation;
+an absent venv module fails before cache creation. No Docker/Core invocation, container
+change, added privileges, service, listener, scheduler, HA/API/resource check or secret
+operation. Neither Core's interpreter nor Core's cryptography is used.
+
+**Pinned official dependency closure:** cryptography50.0.2, cffi2.0.0, pycparser2.23;
+installer pip25.3 is executed only from its verified wheel, not installed globally.
+Metadata and full wheel bytes were independently checked against official PyPI release
+SHA256/size and archive tags. Cryptography cp311-abi3 and CFFI cp314-cp314 aarch64
+wheels are provided for manylinux2014/glibc>=2.17 and musllinux1.2; pure pycparser and
+pip wheels complete the closure for ordinary CPython3.14. Free-threaded Python and
+other ABIs/architectures are not silently accepted. No inferred libc from HA OS or
+from Core. Official pip uses native compatible tags; unsupported tags stop before
+installation. Exact versions/hashes, --no-index, --no-deps, --only-binary=:all:,
+--require-hashes, --no-user and an explicit isolated prefix prevent arbitrary resolution,
+source builds or host installation. All downloads verify before cache creation.
+Installer configuration is disabled; subprocess environments omit Supervisor tokens,
+proxy credentials, user Python paths and SSH agents. HTTPS downloads do not use proxy
+credentials. Installation is offline; no global package manager or network fallback.
+
+Primary support: [Python3.14 venv](https://docs.python.org/3.14/library/venv.html),
+[cryptography wheel support](https://cryptography.io/en/latest/installation/),
+[pip secure binary/hash installs](https://pip.pypa.io/en/stable/topics/secure-installs/),
+[pip configuration isolation](https://pip.pypa.io/en/stable/topics/configuration/).
+Exact release metadata: [cryptography50.0.2](https://pypi.org/pypi/cryptography/50.0.2/json),
+[cffi2.0.0](https://pypi.org/pypi/cffi/2.0.0/json),
+[pycparser2.23](https://pypi.org/pypi/pycparser/2.23/json),
+[pip25.3](https://pypi.org/pypi/pip/25.3/json).
+
+**Security and failure handling:** New cache parent0700, new downloaded sources0600,
+exclusive creation, observed role owner0:0 and no-follow/ACL checks. Existing cache
+refused; no overwrite, recursive deletion, environment replacement or automatic retry.
+Failed preparation retains its partial private cache without a usable ready seal; stop
+and preserve that evidence. No attempt is made to delete unknown/replaced files or
+to run provisioning after failed qualification. Final marker is written only after
+native imports, exact versions, module origins within venv, crypto API availability
+and ephemeral in-memory key/CSR smoke succeed. No production credential is generated.
+All installed files and the source interpreter are fingerprinted. Each later launch
+rechecks the seal, versions and interpreter before allowing only existing ha-request
+or ha-complete. Bytecode writes disabled; no permanent runtime dependency is introduced
+into HA/HIOC. The standard venv lib64->lib alias is accepted exactly; other links fail.
+Do not delete/recreate a failed or drifted environment without explicit recovery scope.
+
+**Trust and runtime continuity:** Seven exact prior helper/dependency sources are
+downloaded from their accepted immutable revisions and verified. The HA private key
+is generated locally by the unchanged helper inside Terminal, then stored only in its
+qualified HA-owned private directory, not transferred to PI3/Windows or receipts.
+Offline CA remains encrypted/operated on PI3; HMAC remains exactly32 bytes; no changes
+to issuer/independent ACL, mTLS/SPKI, NativePacket/TrustSide, controller, route ordering,
+exclusive Dashboard/Inventory, persistent Asset isolation or enable=false semantics.
+Only the existing SSH agent socket reference is optionally passed to the later SSH
+provisioning action; no application token or private key value is passed by this helper.
+
+**Validation:** 33/33 focused native Windows tests, zero failures/errors/skips, including
+actual local venv isolation, missing Terminal crypto/venv, positive isolated sequencing,
+hash/length/path/redirect failures, binary-only offline arguments, secret-env isolation,
+interruption retention, missing/altered ready seal, no Core command and expected venv
+alias handling. Two official pip offline dry runs resolve exactly the pinned three
+packages for CPython3.14/cp314 on aarch64 glibc and musl; no target package installation.
+The Linux wheels were not executed on Windows. Actual PI5 native-loader/import success
+remains UNKNOWN until the operator runs the command below. No production provisioning,
+current freshness, cross-host key proof or delivery readiness is claimed from tests.
+The earlier 48 provisioning and207 binding test results remain tied to unchanged code.
+13 PI3/six HA payload,39 successor/449 protected identities verify; original contracts,
+amendment, executive decision and historical receipts preserved. Only the two current
+documentation artifact identities are refreshed in existing governance.
+
+**Integrated operator sequence:** The immediate next action is PI5 environment
+preparation/qualification only; it creates a private Terminal cache and no credentials.
+Expected PASS_PI5_ISOLATED_PROVISIONING_ENVIRONMENT, native_smoke=PASS, exit0.
+A BLOCKED receipt stops with no fallback or automatic retry. Then use the existing
+PI3 backend-init and backend-issue commands unchanged. For the corresponding PI5
+steps3/5, the two commands below supersede the prior system-Python bootstrap: they
+verify this environment helper's exact content, recheck the ready seal and execute the
+unchanged provisioning helper with isolated Python. No manual hash/context copying,
+Core package installation or new authorization prompts. Existing locally approved
+identity/endpoint/ACL inputs and authenticated SSH prerequisites still apply.
+No repeated filesystem/API/Dashboard/resource qualification here; later actual
+credential/delivery-time security gates remain mandatory.
+
+**PI5 HA Terminal — ha-request (only after successful environment qualification and its preceding PI3 step)**
+
+```sh
+/usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,sys,urllib.request
+url="https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/main/tools/pe73_provision_environment.py"
+try:
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(url,timeout=30) as response:
+        if response.geturl()!=url:raise ValueError()
+        raw=response.read(1048577)
+    if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!="0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7":raise ValueError()
+except Exception:
+    print(json.dumps({"RESULT":"BLOCKED_VERIFIED_ENVIRONMENT_SOURCE","STOP_REQUIRED":True}))
+    raise SystemExit(1)
+sys.argv=["pe73_provision_environment.py","ha-request"]
+exec(compile(raw,url,"exec"),{"__name__":"__main__","__file__":url})
+PY
+pe73_status=$?
+printf 'PE73_ISOLATED_ENVIRONMENT_EXIT_STATUS=%s\n' "$pe73_status"
+```
+
+**PI5 HA Terminal — ha-complete (only after successful environment qualification and its preceding PI3 step)**
+
+```sh
+/usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,sys,urllib.request
+url="https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/main/tools/pe73_provision_environment.py"
+try:
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(url,timeout=30) as response:
+        if response.geturl()!=url:raise ValueError()
+        raw=response.read(1048577)
+    if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!="0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7":raise ValueError()
+except Exception:
+    print(json.dumps({"RESULT":"BLOCKED_VERIFIED_ENVIRONMENT_SOURCE","STOP_REQUIRED":True}))
+    raise SystemExit(1)
+sys.argv=["pe73_provision_environment.py","ha-complete"]
+exec(compile(raw,url,"exec"),{"__name__":"__main__","__file__":url})
+PY
+pe73_status=$?
+printf 'PE73_ISOLATED_ENVIRONMENT_EXIT_STATUS=%s\n' "$pe73_status"
+```
+
+Exact accepted source identities:
+- `tools/pe73_provision_environment.py`: SHA256 `0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7`.
+- `tests/test_pe73_provision_environment.py`: SHA256 `238acfbe6fb3be93eccc1c80809ae24ae31e3613daa1501c813184a87cce6b30`.
+
+Pinned wheel identities:
+- `cryptography-50.0.2-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl`: SHA256 `79def8d059362e7831389ed3be0ecdf58a89386e1271e35dd9f5af84e81bffd0`.
+- `cryptography-50.0.2-cp311-abi3-musllinux_1_2_aarch64.whl`: SHA256 `25784ce8b9621c90c643efb9e1e2162ab3b0224cae446ad5e70e7fcb1ce18b51`.
+- `cffi-2.0.0-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl`: SHA256 `24b6f81f1983e6df8db3adc38562c83f7d4a0c36162885ec7f7b77c7dcbec97b`.
+- `cffi-2.0.0-cp314-cp314-musllinux_1_2_aarch64.whl`: SHA256 `737fe7d37e1a1bffe70bd5754ea763a62a066dc5913ca57e957824b72a85e205`.
+- `pycparser-2.23-py3-none-any.whl`: SHA256 `e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934`.
+- `pip-25.3-py3-none-any.whl`: SHA256 `9655943313a94722b7774661c21049070f6bbb0a1516bf02f7c8d5d9201514cd`.
