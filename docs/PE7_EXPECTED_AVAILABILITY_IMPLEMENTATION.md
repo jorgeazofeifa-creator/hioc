@@ -5986,3 +5986,137 @@ Pinned wheel identities:
 - `cffi-2.0.0-cp314-cp314-musllinux_1_2_aarch64.whl`: SHA256 `737fe7d37e1a1bffe70bd5754ea763a62a066dc5913ca57e957824b72a85e205`.
 - `pycparser-2.23-py3-none-any.whl`: SHA256 `e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934`.
 - `pip-25.3-py3-none-any.whl`: SHA256 `9655943313a94722b7774661c21049070f6bbb0a1516bf02f7c8d5d9201514cd`.
+
+### PE-7.3 PI3 UID1000 isolated provisioning environment
+
+Classification: CURRENT BOUNDED ENVIRONMENT PREPARATION; PE73 IN_PROGRESS;
+PE74 NOT_AUTHORIZED. Baseline513d511fe255e11a875145543f62fa5dca2169a1.
+
+**Actual operator evidence (OPERATOR_SUPPLIED, not Codex observation):**
+PI3 NUT&PIHOLE: RESULT=BLOCKED_PI3_PROVISIONING_CRYPTO;
+PE73_PI3_CRYPTO_EXIT_STATUS=1; Python3.11.2/aarch64; jazofv1 UID1000;
+installed cryptography38.0.4 lacks some required APIs; production mutations none.
+Separately, the operator confirms PI5's isolated environment has passed production
+validation with cryptography50.0.2,cffi2.0.0,pycparser2.23. No additional receipt fields,
+GID/home observations or service health results are invented. The PI5 checkpoint is
+not repeated, modified or reopened; its exact accepted source remains unchanged.
+
+**Correction and boundary:** A PI3-only role profile loads the accepted environment
+engine from immutable commit513d511, SHA256
+0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7,
+verifies its exact bytes before compilation, and reuses its original finite prepare,
+fetch/hash/archive validation, lock generation, pip command and subprocess isolation
+algorithms. Role-specific ownership/ancestry/file/seal checks use UID/GID1000 instead
+of PI5's root policy; only the private in-memory engine instance changes. The PI5
+source file and production environment never change. No new installer, CA mechanism,
+trust transport, deployment journal or framework. The original trust/provisioning
+helper and all accepted production bindings remain byte-identical.
+
+**Native preconditions:** Require Linux CPython3.11/aarch64, hostname nutandpihole,
+real/effective UID/GID1000, account jazofv1 with governed home/home-group. Root execution
+is explicitly rejected, not a fallback. Existing stdlib venv must be available;
+otherwise stop before environment creation. No apt, sudo, ensurepip, host/user package
+installation or source builds. Existing system Python and cryptography38.0.4 are not
+imported for dependency setup, upgraded or replaced. No assumptions about current
+libc from the machine label; official pip selects compatible native wheel tags.
+
+**Private path and ownership:** Create only the new cache
+`/home/jazofv1/.hioc-pe73-provision-environment`, mode0700, outside both
+`/home/jazofv1/hioc` and `/home/jazofv1/hioc-release-source`. All ancestors are opened
+with no-follow directory descriptors and checked for owner/group, no group/other
+writes, no ACLs and named/held device/inode continuity. Home/cache leaf owner must
+be1000:1000; allowed root-owned ancestors do not imply root execution. New source/
+wheel/receipt files exclusively created0600, owner1000:1000; symlinks, hardlinks,
+unexpected ownership, ACL ambiguity and drift fail closed. Only the standard venv
+lib64->lib alias is permitted. Existing cache refuses mutation. Interrupted/uncertain
+setup retains the private partial cache, creates no usable ready seal, and never
+automatically retries, deletes/recreates, provisions credentials or changes services.
+
+**Dependencies:** cryptography50.0.2 (same cp311-abi3 wheels as accepted PI5),
+cffi2.0.0 cp311-cp311 aarch64 manylinux2014/glibc>=2.17 or musllinux1.2 wheels,
+pycparser2.23 and the existing SHA-pinned pip25.3 wheel. Every URL/size/SHA256 is pinned
+and full archive bytes verified before cache creation. Installation is offline,
+binary-only, exact-version, hash-required, no dependency resolution or global/user
+packages. The accepted engine omits inherited tokens, proxy/SSH credentials and
+Python user paths from subprocesses; no secrets or raw subprocess exceptions in
+receipts. No OS package or global CA trust changes. Primary support:
+[Python3.11 venv](https://docs.python.org/3.11/library/venv.html),
+[CFFI2.0.0 release wheels](https://pypi.org/project/cffi/2.0.0/), and the previously
+accepted [pip secure install contract](https://pip.pypa.io/en/stable/topics/secure-installs/).
+Pins gate this finite provisioning environment, not a permanent HIOC runtime version.
+Independently updated dependencies require a new bounded compatibility/pin review.
+
+**Actual API smoke:** Inside isolated Python, require exact versions, origins under
+the venv, no system/user site exposure, CSR signing, existing helper crypto() and
+native toolkit import, encrypted PKCS8 roundtrip, UTC certificate validity properties,
+PEM certificate loading and verify_directly_issued_by. Test only an ephemeral,
+self-signed non-CA leaf with an explicit fixture subject; no production CA, production
+certificate issuance, trust identity, HMAC provisioning or private-key persistence.
+The secret test bytes never enter stdout/receipts. Write ready.json only after full
+smoke success and file/interpreter fingerprinting. A native failure never becomes PASS.
+
+**CA custody limit retained, not silently weakened:** This helper exposes only
+`prepare`, not backend-init, backend-issue or any credential operation. It creates
+and stores no CA material anywhere. Normal HIOC jobs and the operator share UID1000;
+0700/0600 alone cannot exclude same-UID runtime processes. Outside-runtime private CA
+custody must be established before a later production CA action; the existing
+backend-init runtime-parent placement is not accepted as satisfying that requirement.
+Do not run that credential command on the strength of this environment result.
+No new privileged account/service, CA mechanism or policy change is introduced here.
+The dedicated PI3-operated CA and exact32-byte HMAC-SHA256 design remain unchanged;
+PI5 client-key generation/custody and independent backend ACL remain mandatory.
+
+**Validation/acceptance:** 33/33 focused PI3 profile tests, zero failures/errors/skips:
+exact shared-engine identity, unchanged PI5 source/profile, root/wrong user/group/
+host/ABI refusal, complete descriptor ancestry/ACL/drift cases, UID1000 seal owner/mode/
+link checks, missing old system crypto, unsupported wheels, partial/interrupted setup,
+no ready on incomplete smoke, no credential CLI and actual ephemeral cryptographic
+API execution on Windows. Two official offline pip dry runs resolve the exact pinned
+closure for CPython3.11/cp311 aarch64 glibc and musl without installing target packages.
+These are repository/synthetic results, not actual native PI3 qualification. Full
+Linux wheel imports on PI3 remain pending the operator command. The completed PI5
+native checkpoint and historical Windows suites are not rerun. All13 PI3/six HA,
+39 successor/449 protected identities verified; accepted controller/contracts,
+amendment, executive instruction and all historical production evidence preserved.
+
+**Exactly one next operator action:** PI3 NUT&PIHOLE as jazofv1, no sudo: execute the
+immutable-source-verified `prepare` command supplied with the publication handoff.
+Expected PASS_PI3_ISOLATED_PROVISIONING_ENVIRONMENT, provisioning_crypto_apis=PASS,
+native_smoke=PASS and exit0. It only establishes/smoke-tests this private environment.
+On BLOCKED/interruption stop, retain evidence, do not retry or remove the cache.
+No CA/key issuance, HMAC material, HIOC mutation, activation or PI5 operation.
+PE73 remains IN_PROGRESS; PE74 NOT_AUTHORIZED.
+
+Exact accepted source identities:
+- `tools/pe73_pi3_provision_environment.py`: SHA256 `a99f0fa72746ec3c455696627ec2ba6d53e4440dba0a483650d147d570aa8687`.
+- `tests/test_pe73_pi3_provision_environment.py`: SHA256 `71a80ee01c85caf36a0712da4cbad3fb54551d2cba5015bcc12348b79f423eb7`.
+
+Complete PI3 environment-only command (content identity remains fixed if main moves):
+
+```sh
+/usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,sys,urllib.request
+url="https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/main/tools/pe73_pi3_provision_environment.py"
+try:
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(url,timeout=30) as response:
+        if response.geturl()!=url:raise ValueError()
+        raw=response.read(1048577)
+    if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!="a99f0fa72746ec3c455696627ec2ba6d53e4440dba0a483650d147d570aa8687":raise ValueError()
+except Exception:
+    print(json.dumps({"RESULT":"BLOCKED_VERIFIED_PI3_ENVIRONMENT_SOURCE","STOP_REQUIRED":True}))
+    raise SystemExit(1)
+sys.argv=["pe73_pi3_provision_environment.py","prepare"]
+exec(compile(raw,url,"exec"),{"__name__":"__main__","__file__":url})
+PY
+pe73_status=$?
+printf 'PE73_PI3_ISOLATED_ENVIRONMENT_EXIT_STATUS=%s\n' "$pe73_status"
+```
+
+Pinned PI3 wheel identities:
+- `cryptography-50.0.2-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl`: SHA256 `79def8d059362e7831389ed3be0ecdf58a89386e1271e35dd9f5af84e81bffd0`.
+- `cryptography-50.0.2-cp311-abi3-musllinux_1_2_aarch64.whl`: SHA256 `25784ce8b9621c90c643efb9e1e2162ab3b0224cae446ad5e70e7fcb1ce18b51`.
+- `pycparser-2.23-py3-none-any.whl`: SHA256 `e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934`.
+- `pip-25.3-py3-none-any.whl`: SHA256 `9655943313a94722b7774661c21049070f6bbb0a1516bf02f7c8d5d9201514cd`.
+- `cffi-2.0.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl`: SHA256 `730cacb21e1bdff3ce90babf007d0a0917cc3e6492f336c2f0134101e0944f93`.
+- `cffi-2.0.0-cp311-cp311-musllinux_1_2_aarch64.whl`: SHA256 `a05d0c237b3349096d3981b727493e22147f934b20f6f125a3eba8f994bec4a9`.

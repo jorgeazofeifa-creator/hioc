@@ -1,18 +1,18 @@
 {
   "artifacts": [
     {
-      "file_sha256": "8abe00f0d16e29f72570dfc5e7528744120905f8bbcd34029dc3db53ea5983b9",
-      "git_blob": "00fbf45acbb5dcb27b64b3d6b5b1deba991a4d0b",
+      "file_sha256": "b386b007af5034c22ab442fe201adf6eeff8a6dc3cb60df75ce51d3bfd0dc96d",
+      "git_blob": "2f3a790429308aca2ef3837afdeb2d1f38adaef6",
       "mode": "100644",
       "path": "docs/HIOC_MASTER_PLAN.md",
-      "sha256": "8abe00f0d16e29f72570dfc5e7528744120905f8bbcd34029dc3db53ea5983b9"
+      "sha256": "b386b007af5034c22ab442fe201adf6eeff8a6dc3cb60df75ce51d3bfd0dc96d"
     },
     {
-      "file_sha256": "e769239e3c5d80548ed0a9c396b19465ece7434206144f2ef6bb99342dc655c3",
-      "git_blob": "b85010ec2cdc63d51cdcbcf3afdb50151f3704f2",
+      "file_sha256": "057b9a535296fa394118b0b37d1f0fd69abbff29744e9734efc25e1327657920",
+      "git_blob": "abd1ad77e73439b1a8c36a09774063f4f3ec728c",
       "mode": "100644",
       "path": "docs/PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md",
-      "sha256": "e769239e3c5d80548ed0a9c396b19465ece7434206144f2ef6bb99342dc655c3"
+      "sha256": "057b9a535296fa394118b0b37d1f0fd69abbff29744e9734efc25e1327657920"
     },
     {
       "file_sha256": "db8e25ba10e7038ee56a66aa12481d11c18b731a22ee4dfdc4de761031a9e14d",

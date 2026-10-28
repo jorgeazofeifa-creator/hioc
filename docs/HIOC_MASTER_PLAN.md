@@ -6270,7 +6270,43 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — PE-7.3 isolated PI5 Terminal provisioning dependencies.
+Classification: CURRENT — PE-7.3 PI3 UID1000 isolated provisioning environment.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3: BLOCKED_PI3_PROVISIONING_CRYPTO, exit1; jazofv1 UID1000,
+Python3.11.2/aarch64, system cryptography38.0.4 missing required APIs; no mutation.
+OPERATOR_SUPPLIED PI5 isolated environment production validation already PASS with
+cryptography50.0.2,cffi2.0.0,pycparser2.23. Preserve that completed checkpoint exactly;
+neither its source/environment nor successful filesystem/API/Dashboard checks repeated.
+PI3 correction reuses the exact accepted isolated dependency engine in a private
+in-memory UID1000 profile. Host nutandpihole, account jazofv1, UID/GID1000 and Python3.11
+are checked before downloads. No root/sudo or global package changes; system Python
+and cryptography38.0.4 retained. Cache /home/jazofv1/.hioc-pe73-provision-environment
+is outside HIOC runtime and release-source; full no-follow ancestry/ACL/owner checks.
+Pinned cryptography50.0.2,cffi2.0.0 CPython3.11 aarch64 wheels, pycparser2.23 and pip25.3;
+binary-only offline hash-locked install, no source build, fallback, upgrade or retry.
+Actual provisioning crypto APIs and native toolkit import must pass in the isolated
+interpreter using ephemeral non-CA fixtures only. No production CA, certificate
+issuance, HMAC provisioning, service, scheduler, HIOC/repository or PI5 mutation.
+Only environment preparation is exposed. No CA material is stored in this cache.
+CA private-key custody outside normal runtime access remains mandatory before any
+later CA action; mode0700 cannot exclude other processes sharing UID1000. No claim
+that same-UID filesystem permissions create a CA isolation boundary; no waiver.
+33 PI3-focused tests and two CPython3.11 aarch64 offline wheel-resolution dry runs PASS;
+actual PI3 isolated imports remain unknown until the operator runs this bounded command.
+PI5's completed native environment result remains operator supplied and unchanged.
+Original contracts, mTLS/HMAC32/ACL design, dedicated PI3 CA decision, accepted
+controller,13 PI3/six HA payload,39 successor and449 protected identities preserved;
+only necessary current documentation identities refreshed. Exclusive HIOC Dashboard
+hioc-dashboard-v2, Inventory hioc-v2-inventory and all six existing views preserved.
+Next action: operator jazofv1 on PI3 prepares/smoke-tests ONLY the isolated environment.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED; no activation or credential generation.
+See [PI3 isolated dependency correction](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-pi3-uid1000-isolated-provisioning-environment).
+
+### Historical PI5 isolated dependency preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 isolated PI5 Terminal provisioning dependencies.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8015,7 +8051,43 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PE-7.3 isolated PI5 Terminal provisioning dependencies.
+Classification: CURRENT — PE-7.3 PI3 UID1000 isolated provisioning environment.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3: BLOCKED_PI3_PROVISIONING_CRYPTO, exit1; jazofv1 UID1000,
+Python3.11.2/aarch64, system cryptography38.0.4 missing required APIs; no mutation.
+OPERATOR_SUPPLIED PI5 isolated environment production validation already PASS with
+cryptography50.0.2,cffi2.0.0,pycparser2.23. Preserve that completed checkpoint exactly;
+neither its source/environment nor successful filesystem/API/Dashboard checks repeated.
+PI3 correction reuses the exact accepted isolated dependency engine in a private
+in-memory UID1000 profile. Host nutandpihole, account jazofv1, UID/GID1000 and Python3.11
+are checked before downloads. No root/sudo or global package changes; system Python
+and cryptography38.0.4 retained. Cache /home/jazofv1/.hioc-pe73-provision-environment
+is outside HIOC runtime and release-source; full no-follow ancestry/ACL/owner checks.
+Pinned cryptography50.0.2,cffi2.0.0 CPython3.11 aarch64 wheels, pycparser2.23 and pip25.3;
+binary-only offline hash-locked install, no source build, fallback, upgrade or retry.
+Actual provisioning crypto APIs and native toolkit import must pass in the isolated
+interpreter using ephemeral non-CA fixtures only. No production CA, certificate
+issuance, HMAC provisioning, service, scheduler, HIOC/repository or PI5 mutation.
+Only environment preparation is exposed. No CA material is stored in this cache.
+CA private-key custody outside normal runtime access remains mandatory before any
+later CA action; mode0700 cannot exclude other processes sharing UID1000. No claim
+that same-UID filesystem permissions create a CA isolation boundary; no waiver.
+33 PI3-focused tests and two CPython3.11 aarch64 offline wheel-resolution dry runs PASS;
+actual PI3 isolated imports remain unknown until the operator runs this bounded command.
+PI5's completed native environment result remains operator supplied and unchanged.
+Original contracts, mTLS/HMAC32/ACL design, dedicated PI3 CA decision, accepted
+controller,13 PI3/six HA payload,39 successor and449 protected identities preserved;
+only necessary current documentation identities refreshed. Exclusive HIOC Dashboard
+hioc-dashboard-v2, Inventory hioc-v2-inventory and all six existing views preserved.
+Next action: operator jazofv1 on PI3 prepares/smoke-tests ONLY the isolated environment.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED; no activation or credential generation.
+See [PI3 isolated dependency correction](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-pi3-uid1000-isolated-provisioning-environment).
+
+### Historical PI5 isolated dependency preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 isolated PI5 Terminal provisioning dependencies.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -9244,7 +9316,43 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PE-7.3 isolated PI5 Terminal provisioning dependencies.
+Classification: CURRENT — PE-7.3 PI3 UID1000 isolated provisioning environment.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3: BLOCKED_PI3_PROVISIONING_CRYPTO, exit1; jazofv1 UID1000,
+Python3.11.2/aarch64, system cryptography38.0.4 missing required APIs; no mutation.
+OPERATOR_SUPPLIED PI5 isolated environment production validation already PASS with
+cryptography50.0.2,cffi2.0.0,pycparser2.23. Preserve that completed checkpoint exactly;
+neither its source/environment nor successful filesystem/API/Dashboard checks repeated.
+PI3 correction reuses the exact accepted isolated dependency engine in a private
+in-memory UID1000 profile. Host nutandpihole, account jazofv1, UID/GID1000 and Python3.11
+are checked before downloads. No root/sudo or global package changes; system Python
+and cryptography38.0.4 retained. Cache /home/jazofv1/.hioc-pe73-provision-environment
+is outside HIOC runtime and release-source; full no-follow ancestry/ACL/owner checks.
+Pinned cryptography50.0.2,cffi2.0.0 CPython3.11 aarch64 wheels, pycparser2.23 and pip25.3;
+binary-only offline hash-locked install, no source build, fallback, upgrade or retry.
+Actual provisioning crypto APIs and native toolkit import must pass in the isolated
+interpreter using ephemeral non-CA fixtures only. No production CA, certificate
+issuance, HMAC provisioning, service, scheduler, HIOC/repository or PI5 mutation.
+Only environment preparation is exposed. No CA material is stored in this cache.
+CA private-key custody outside normal runtime access remains mandatory before any
+later CA action; mode0700 cannot exclude other processes sharing UID1000. No claim
+that same-UID filesystem permissions create a CA isolation boundary; no waiver.
+33 PI3-focused tests and two CPython3.11 aarch64 offline wheel-resolution dry runs PASS;
+actual PI3 isolated imports remain unknown until the operator runs this bounded command.
+PI5's completed native environment result remains operator supplied and unchanged.
+Original contracts, mTLS/HMAC32/ACL design, dedicated PI3 CA decision, accepted
+controller,13 PI3/six HA payload,39 successor and449 protected identities preserved;
+only necessary current documentation identities refreshed. Exclusive HIOC Dashboard
+hioc-dashboard-v2, Inventory hioc-v2-inventory and all six existing views preserved.
+Next action: operator jazofv1 on PI3 prepares/smoke-tests ONLY the isolated environment.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED; no activation or credential generation.
+See [PI3 isolated dependency correction](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-pi3-uid1000-isolated-provisioning-environment).
+
+### Historical PI5 isolated dependency preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 isolated PI5 Terminal provisioning dependencies.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
