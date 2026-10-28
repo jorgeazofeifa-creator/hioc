@@ -118,20 +118,16 @@ spec=importlib.util.spec_from_file_location('pe73_pi3_api_smoke',helper)
 q=importlib.util.module_from_spec(spec);spec.loader.exec_module(q)
 q.crypto();q.native()
 # Exercise required APIs with an ephemeral non-CA leaf and encrypted in-memory
-# key only. No production identity, CA, HMAC, trust file or output serialization.
+# key only. Certificate APIs use a fixed PUBLIC EXPIRED NON-CA fixture;
+# no certificate is signed/issued on the Pi. No production identity, CA or HMAC.
 password=secrets.token_bytes(32)
 encoded=key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,
     serialization.BestAvailableEncryption(password))
 restored=serialization.load_pem_private_key(encoded,password)
 assert restored.public_key().public_numbers()==key.public_key().public_numbers()
-now=datetime.datetime.now(datetime.timezone.utc)
-leaf=(x509.CertificateBuilder().subject_name(csr.subject).issuer_name(csr.subject)
-    .public_key(key.public_key()).serial_number(x509.random_serial_number())
-    .not_valid_before(now-datetime.timedelta(minutes=1)).not_valid_after(now+datetime.timedelta(minutes=1))
-    .add_extension(x509.BasicConstraints(ca=False,path_length=None),True)
-    .sign(key,hashes.SHA256()))
+leaf=x509.load_pem_x509_certificate(b'-----BEGIN CERTIFICATE-----\nMIIBYjCCAQmgAwIBAgIDCyTHMAoGCCqGSM49BAMCMDExLzAtBgNVBAMMJlBFNzMg\nUFVCTElDIEVYUElSRUQgTk9OIENBIEFQSSBGSVhUVVJFMB4XDTIwMDEwMTAwMDAw\nMFoXDTIxMDEwMTAwMDAwMFowMTEvMC0GA1UEAwwmUEU3MyBQVUJMSUMgRVhQSVJF\nRCBOT04gQ0EgQVBJIEZJWFRVUkUwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATj\np5xBbaJnZ6U2YwOfiyjaJPtmahJPX+UJEFg2Z4WggjKn6DLhuY41VudJqJSwCmRZ\ntfcVLhUEeXr31FHMjYlkoxAwDjAMBgNVHRMBAf8EAjAAMAoGCCqGSM49BAMCA0cA\nMEQCIHWa/HfBc9UQVtCPxxZ8d5yYHNabJc6uCxoTf7EWdrmSAiAuUz6Ix4vX+DSM\nrBmrvaOt017lRrJLjY6kgxAhbA+VYg==\n-----END CERTIFICATE-----\n')
 leaf.verify_directly_issued_by(leaf)
-assert leaf.not_valid_before_utc<=now<leaf.not_valid_after_utc
+assert leaf.not_valid_before_utc<leaf.not_valid_after_utc
 assert len(x509.load_pem_x509_certificates(leaf.public_bytes(serialization.Encoding.PEM)))==1
 '''
 

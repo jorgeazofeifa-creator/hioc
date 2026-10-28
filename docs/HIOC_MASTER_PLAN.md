@@ -6287,7 +6287,8 @@ is outside HIOC runtime and release-source; full no-follow ancestry/ACL/owner ch
 Pinned cryptography50.0.2,cffi2.0.0 CPython3.11 aarch64 wheels, pycparser2.23 and pip25.3;
 binary-only offline hash-locked install, no source build, fallback, upgrade or retry.
 Actual provisioning crypto APIs and native toolkit import must pass in the isolated
-interpreter using ephemeral non-CA fixtures only. No production CA, certificate
+interpreter using an ephemeral key/CSR and a fixed public expired non-CA certificate;
+no certificate signing or issuance occurs in this step. No production CA, certificate
 issuance, HMAC provisioning, service, scheduler, HIOC/repository or PI5 mutation.
 Only environment preparation is exposed. No CA material is stored in this cache.
 CA private-key custody outside normal runtime access remains mandatory before any
@@ -8068,7 +8069,8 @@ is outside HIOC runtime and release-source; full no-follow ancestry/ACL/owner ch
 Pinned cryptography50.0.2,cffi2.0.0 CPython3.11 aarch64 wheels, pycparser2.23 and pip25.3;
 binary-only offline hash-locked install, no source build, fallback, upgrade or retry.
 Actual provisioning crypto APIs and native toolkit import must pass in the isolated
-interpreter using ephemeral non-CA fixtures only. No production CA, certificate
+interpreter using an ephemeral key/CSR and a fixed public expired non-CA certificate;
+no certificate signing or issuance occurs in this step. No production CA, certificate
 issuance, HMAC provisioning, service, scheduler, HIOC/repository or PI5 mutation.
 Only environment preparation is exposed. No CA material is stored in this cache.
 CA private-key custody outside normal runtime access remains mandatory before any
@@ -9333,7 +9335,8 @@ is outside HIOC runtime and release-source; full no-follow ancestry/ACL/owner ch
 Pinned cryptography50.0.2,cffi2.0.0 CPython3.11 aarch64 wheels, pycparser2.23 and pip25.3;
 binary-only offline hash-locked install, no source build, fallback, upgrade or retry.
 Actual provisioning crypto APIs and native toolkit import must pass in the isolated
-interpreter using ephemeral non-CA fixtures only. No production CA, certificate
+interpreter using an ephemeral key/CSR and a fixed public expired non-CA certificate;
+no certificate signing or issuance occurs in this step. No production CA, certificate
 issuance, HMAC provisioning, service, scheduler, HIOC/repository or PI5 mutation.
 Only environment preparation is exposed. No CA material is stored in this cache.
 CA private-key custody outside normal runtime access remains mandatory before any

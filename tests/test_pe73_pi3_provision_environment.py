@@ -43,7 +43,8 @@ class ProfileTests(unittest.TestCase):
         attrs={x.func.attr for x in ast.walk(tree) if isinstance(x,ast.Call) and isinstance(x.func,ast.Attribute)}
         self.assertFalse(attrs & {'generate_ca','issue','backend_material','provision','stage','write_bytes','write_text','install'})
         self.assertIn('crypto',attrs);self.assertIn('native',attrs)
-        self.assertIn('ca=False',p.EXTRA_SMOKE)
+        self.assertNotIn('CertificateBuilder',p.EXTRA_SMOKE)
+        self.assertIn('PUBLIC EXPIRED NON-CA',p.EXTRA_SMOKE)
     def test_dependency_subprocess_receives_no_host_credentials(self):
         engine=p.profile(p.load_engine(ENGINE))
         with patch.dict(os.environ,{'SUPERVISOR_TOKEN':'PRIVATE_TOKEN','SSH_AUTH_SOCK':'PRIVATE_SOCKET','PYTHONPATH':'PRIVATE_PATH'}):env=engine.clean_env(p.ROOT)

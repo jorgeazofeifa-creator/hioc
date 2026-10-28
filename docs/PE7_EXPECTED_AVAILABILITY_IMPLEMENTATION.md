@@ -6120,3 +6120,49 @@ Pinned PI3 wheel identities:
 - `pip-25.3-py3-none-any.whl`: SHA256 `9655943313a94722b7774661c21049070f6bbb0a1516bf02f7c8d5d9201514cd`.
 - `cffi-2.0.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl`: SHA256 `730cacb21e1bdff3ce90babf007d0a0917cc3e6492f336c2f0134101e0944f93`.
 - `cffi-2.0.0-cp311-cp311-musllinux_1_2_aarch64.whl`: SHA256 `a05d0c237b3349096d3981b727493e22147f934b20f6f125a3eba8f994bec4a9`.
+
+### PE-7.3 PI3 environment-only smoke: no certificate issuance
+
+This final scope clarification supersedes the in-memory leaf-signing fixture in the
+preceding preparation evidence. The operator command signs NO certificate. It loads
+a fixed public, expired, non-CA test certificate embedded in the reviewed helper,
+checks its signature/UTC/PEM APIs and discards ephemeral key/CSR/encryption test values
+in memory. No fixture private key is included in the source; no production CA/key,
+certificate issuance, HMAC provisioning or private material persistence is performed.
+Only EXTRA_SMOKE changes in the PI3 helper; the accepted installer, UID1000 identity,
+ancestry, wheel pins, refusal logic and completed PI5 environment remain unchanged.
+33 final focused tests PASS, zero failures/errors/skips. The fixed fixture is never
+an accepted production certificate, CA or trust input. Protected13 PI3/six HA payload,
+39 successor/449 protected identities remain verified. PE73 IN_PROGRESS;
+PE74 NOT_AUTHORIZED. Native PI3 smoke remains pending the operator execution.
+The previous dependency-resolution evidence remains valid because the profile,
+installer, engine and wheel bytes are identical. Earlier evidence is preserved.
+CA private custody outside runtime access remains required; same UID1000 is not an
+OS isolation boundary, and no credential operation is exposed by this command.
+
+Final reviewed identities:
+- `tools/pe73_pi3_provision_environment.py`: SHA256 `f55543e7207dc7bd9b23e7262f1b17c17fcc568afdf64d8aad6335321f6f93f1`.
+- `tests/test_pe73_pi3_provision_environment.py`: SHA256 `309c4615a4515933f80308eedb82ef4e53c2c8960e4dd81be8c1eaac4d2d2d00`.
+
+Exactly one next action: PI3 as jazofv1, no sudo; environment setup/smoke only.
+
+```sh
+/usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,sys,urllib.request
+url="https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/main/tools/pe73_pi3_provision_environment.py"
+try:
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(url,timeout=30) as response:
+        if response.geturl()!=url:raise ValueError()
+        raw=response.read(1048577)
+    if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!="f55543e7207dc7bd9b23e7262f1b17c17fcc568afdf64d8aad6335321f6f93f1":raise ValueError()
+except Exception:
+    print(json.dumps({"RESULT":"BLOCKED_VERIFIED_PI3_ENVIRONMENT_SOURCE","STOP_REQUIRED":True}))
+    raise SystemExit(1)
+sys.argv=["pe73_pi3_provision_environment.py","prepare"]
+exec(compile(raw,url,"exec"),{"__name__":"__main__","__file__":url})
+PY
+pe73_status=$?
+printf 'PE73_PI3_ISOLATED_ENVIRONMENT_EXIT_STATUS=%s\n' "$pe73_status"
+```
+Stop on BLOCKED; no retries or cleanup.
