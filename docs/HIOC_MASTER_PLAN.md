@@ -6270,7 +6270,112 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — PI3 runtime delivery evidence; full PE-7.3 closure blocked.
+Classification: CURRENT — HA OS preflight prerequisite correction; native qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The accepted111-test HA correction and completed OPERATOR_SUPPLIED PI3 deployment
+evidence are preserved. This bounded follow-up resolves fresh-install prerequisites.
+Missing custom_components/hioc_operator is observed as absence, not an installation
+failure. Only that fixed public directory0755 and missing private backups0700 may
+be created. Private durable intent precedes creation; exact identities/readback and
+Core-visible proof follow. Existing directories are never chmod/chowned or adopted.
+Missing backups uses a fixed exclusive private bootstrap intent before mkdir, not
+manual directory setup. Uncertain creation remains pending; no retry or auto recovery.
+Explicit recovery removes only the empty, exact created HIOC directory; backup and
+transaction evidence remain preserved. Missing custom_components/www remains a real
+parent prerequisite. HA Core need not traverse private publisher backup storage.
+Host PID mode is not a required configuration. Existing proc visibility must prove
+the exact Core-container PID, process birth, credentials, user namespace and actual
+Core-visible filesystem objects. Matching mount paths or archive metadata alone
+are insufficient. Missing/hidden proof blocks; no new privileges, exec, namespace
+entry or container change is authorized. Production support remains UNKNOWN.
+FOCUSED_PREREQUISITE_CORRECTION=125_RUN_125_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+Synthetic Windows results do not establish native Linux filesystem qualification.
+All13 PI3 delivery,39 successor and449 protected identities verify; immutable HA
+payload, original contract/amendment, trust design and completed PI3 evidence remain.
+Disabled behavior, backups, whole-process authority, interruption evidence, runtime
+independence and persistent-state isolation are preserved. No installation or Git
+publication occurs here. Live HA/Dashboard/trust and native filesystem evidence
+remain unverified. PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+INDEPENDENT_REPOSITORY_ACCEPTANCE=PASS. The exact code/test candidate was reviewed
+against all15 mandatory acceptance gates;125 focused results match unchanged bytes,
+and25 preservation checks pass. Native installation/readiness is not established.
+This authorized publication records repository acceptance only; no PE-7.3 closure.
+Next action: operator-run consolidated read-only PI5 qualification using the accepted
+preflight; unavailable Core filesystem proof blocks delivery without a workaround.
+See [the prerequisite correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-preflight-prerequisite-review-and-bounded-correction).
+
+### Historical accepted111-test HA OS correction snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS delivery compatibility correction; native delivery unqualified.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The completed PI3 deployment evidence at2784ef31da5e4ebc0e75af19695c8cc68c3d04a1
+is preserved as OPERATOR_SUPPLIED; source release1c07932bd43aab1eac693ea07e195a74150fe550.
+The existing six-file HA candidate is corrected, not replaced. A one-shot publisher
+separates observed Terminal UID/GID0:0 from actual HA Core process ownership.
+Only four pinned integration/editor files and a closed private transaction file set
+are writable. Public files0644 use qualified Core UID/GID; private records0600 and
+transaction directory0700 use publisher0:0. No PI3 ownership exception is introduced.
+Before mutation, actual Core-visible descriptor identities must match the Terminal
+destination; matching Docker mount-source strings alone are insufficient. Existing
+host-PID/proc visibility is required. Missing proof or required existing directories
+refuses delivery; no container changes, privilege expansion or guessed owner fallback.
+FOCUSED_CORRECTION=111_RUN_111_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+Windows descriptor/ownership models are synthetic, not native Linux qualification.
+All13 PI3 delivery,39 successor and449 protected identities verify. Original contract,
+amendment, controller, executive instruction and PI3 evidence remain unchanged.
+Whole-process authority, private backups, durable intent, single-attempt publication,
+exact readback and separate unexpected-recovery authority remain mandatory. No retries,
+automatic rollback or consumer release. Existing pending transactions require disposition.
+Runtime code has no publisher/transaction dependency; persistent Assets, policies,
+history and configuration are outside the write scope. No permanent HA version pin,
+migration, trust provisioning, activation, scheduling or service operation is added.
+Remaining native requirements: actual Core/mount/ownership/security qualification,
+supported live HA/API and approved Dashboard/view export, disabled guard, actual trust
+identities/private validation, and native filesystem behavior. None is fabricated.
+Next action: operator-run the self-contained, no-prompt read-only PI5 identity preflight
+in the correction evidence. This is not installation or PE-7.4 authorization.
+See [the HA OS correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-ha-os-delivery-compatibility-correction-and-runtime-protection).
+
+### Historical HA delivery preparation snapshot (superseded compatibility assumptions)
+
+Classification: HISTORICAL SNAPSHOT — HA integration/UI/trust delivery preparation candidate.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The PI3 runtime deployment is a completed, independently verified sub-checkpoint,
+recorded as OPERATOR_SUPPLIED production evidence and published at
+2784ef31da5e4ebc0e75af19695c8cc68c3d04a1. Its source release was
+1c07932bd43aab1eac693ea07e195a74150fe550. That deployment is not reopened.
+A finite HA delivery procedure now reuses six immutable PE-7.1 HA artifact identities:
+four integration/editor files delivered, Dashboard/package retained as references.
+Supported HA resource/card registration preserves existing layout, unrelated cards,
+resources and package behavior. No .storage writes or broad installer/restart.
+Private before/stage/reference/trust-packet backups and durable pending intent precede
+single-attempt mutation. Interrupted operations are not automatically adopted,
+retried, rolled back or released. One whole-process authority; no per-operation prompts.
+The trust configuration packet preserves mTLS, assertion keys and independent ACLs
+and remains disabled/offline; it is not active HA/PI3 configuration or provisioned secrets.
+FOCUSED_ACCEPTANCE=69_RUN_69_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+IMPLEMENTATION=PARTIAL_NATIVE_DELIVERY_NOT_ESTABLISHED; SYNTHETIC_PROCEDURE=PASS.
+The native HA connection, live guard and two-host trust-file validation bindings
+are explicit inputs, not manufactured production observations. Actual PI5 roots,
+ownership/filesystem capabilities, supported APIs/resources/Dashboard and trust
+placement remain required observations. No native end-to-end delivery claim is made.
+All13 PI3 delivery,39 successor and449 protected identities verify; original contract,
+controller, amendment, executive decision and completed PI3 evidence remain preserved.
+Next action: operator-run the single consolidated read-only PI5 capability/integration
+assessment below to bind actual paths/capabilities; no new research/checkpoint phase.
+PE-7.3 remains IN_PROGRESS; PE-7.4 remains NOT_AUTHORIZED. No activation, migration,
+notifications, credentials, service restart, PI3/PI5 access or Git publication here.
+See [the integrated HA preparation evidence and assessment](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-integrated-ha-integration-ui-and-trust-delivery-preparation).
+
+### Historical PI3 runtime deployment evidence snapshot
+
+Classification: HISTORICAL SNAPSHOT — accepted PI3 runtime delivery evidence.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -7638,7 +7743,112 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PI3 runtime delivery evidence; full PE-7.3 closure blocked.
+Classification: CURRENT — HA OS preflight prerequisite correction; native qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The accepted111-test HA correction and completed OPERATOR_SUPPLIED PI3 deployment
+evidence are preserved. This bounded follow-up resolves fresh-install prerequisites.
+Missing custom_components/hioc_operator is observed as absence, not an installation
+failure. Only that fixed public directory0755 and missing private backups0700 may
+be created. Private durable intent precedes creation; exact identities/readback and
+Core-visible proof follow. Existing directories are never chmod/chowned or adopted.
+Missing backups uses a fixed exclusive private bootstrap intent before mkdir, not
+manual directory setup. Uncertain creation remains pending; no retry or auto recovery.
+Explicit recovery removes only the empty, exact created HIOC directory; backup and
+transaction evidence remain preserved. Missing custom_components/www remains a real
+parent prerequisite. HA Core need not traverse private publisher backup storage.
+Host PID mode is not a required configuration. Existing proc visibility must prove
+the exact Core-container PID, process birth, credentials, user namespace and actual
+Core-visible filesystem objects. Matching mount paths or archive metadata alone
+are insufficient. Missing/hidden proof blocks; no new privileges, exec, namespace
+entry or container change is authorized. Production support remains UNKNOWN.
+FOCUSED_PREREQUISITE_CORRECTION=125_RUN_125_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+Synthetic Windows results do not establish native Linux filesystem qualification.
+All13 PI3 delivery,39 successor and449 protected identities verify; immutable HA
+payload, original contract/amendment, trust design and completed PI3 evidence remain.
+Disabled behavior, backups, whole-process authority, interruption evidence, runtime
+independence and persistent-state isolation are preserved. No installation or Git
+publication occurs here. Live HA/Dashboard/trust and native filesystem evidence
+remain unverified. PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+INDEPENDENT_REPOSITORY_ACCEPTANCE=PASS. The exact code/test candidate was reviewed
+against all15 mandatory acceptance gates;125 focused results match unchanged bytes,
+and25 preservation checks pass. Native installation/readiness is not established.
+This authorized publication records repository acceptance only; no PE-7.3 closure.
+Next action: operator-run consolidated read-only PI5 qualification using the accepted
+preflight; unavailable Core filesystem proof blocks delivery without a workaround.
+See [the prerequisite correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-preflight-prerequisite-review-and-bounded-correction).
+
+### Historical accepted111-test HA OS correction snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS delivery compatibility correction; native delivery unqualified.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The completed PI3 deployment evidence at2784ef31da5e4ebc0e75af19695c8cc68c3d04a1
+is preserved as OPERATOR_SUPPLIED; source release1c07932bd43aab1eac693ea07e195a74150fe550.
+The existing six-file HA candidate is corrected, not replaced. A one-shot publisher
+separates observed Terminal UID/GID0:0 from actual HA Core process ownership.
+Only four pinned integration/editor files and a closed private transaction file set
+are writable. Public files0644 use qualified Core UID/GID; private records0600 and
+transaction directory0700 use publisher0:0. No PI3 ownership exception is introduced.
+Before mutation, actual Core-visible descriptor identities must match the Terminal
+destination; matching Docker mount-source strings alone are insufficient. Existing
+host-PID/proc visibility is required. Missing proof or required existing directories
+refuses delivery; no container changes, privilege expansion or guessed owner fallback.
+FOCUSED_CORRECTION=111_RUN_111_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+Windows descriptor/ownership models are synthetic, not native Linux qualification.
+All13 PI3 delivery,39 successor and449 protected identities verify. Original contract,
+amendment, controller, executive instruction and PI3 evidence remain unchanged.
+Whole-process authority, private backups, durable intent, single-attempt publication,
+exact readback and separate unexpected-recovery authority remain mandatory. No retries,
+automatic rollback or consumer release. Existing pending transactions require disposition.
+Runtime code has no publisher/transaction dependency; persistent Assets, policies,
+history and configuration are outside the write scope. No permanent HA version pin,
+migration, trust provisioning, activation, scheduling or service operation is added.
+Remaining native requirements: actual Core/mount/ownership/security qualification,
+supported live HA/API and approved Dashboard/view export, disabled guard, actual trust
+identities/private validation, and native filesystem behavior. None is fabricated.
+Next action: operator-run the self-contained, no-prompt read-only PI5 identity preflight
+in the correction evidence. This is not installation or PE-7.4 authorization.
+See [the HA OS correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-ha-os-delivery-compatibility-correction-and-runtime-protection).
+
+### Historical HA delivery preparation snapshot (superseded compatibility assumptions)
+
+Classification: HISTORICAL SNAPSHOT — HA integration/UI/trust delivery preparation candidate.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The PI3 runtime deployment is a completed, independently verified sub-checkpoint,
+recorded as OPERATOR_SUPPLIED production evidence and published at
+2784ef31da5e4ebc0e75af19695c8cc68c3d04a1. Its source release was
+1c07932bd43aab1eac693ea07e195a74150fe550. That deployment is not reopened.
+A finite HA delivery procedure now reuses six immutable PE-7.1 HA artifact identities:
+four integration/editor files delivered, Dashboard/package retained as references.
+Supported HA resource/card registration preserves existing layout, unrelated cards,
+resources and package behavior. No .storage writes or broad installer/restart.
+Private before/stage/reference/trust-packet backups and durable pending intent precede
+single-attempt mutation. Interrupted operations are not automatically adopted,
+retried, rolled back or released. One whole-process authority; no per-operation prompts.
+The trust configuration packet preserves mTLS, assertion keys and independent ACLs
+and remains disabled/offline; it is not active HA/PI3 configuration or provisioned secrets.
+FOCUSED_ACCEPTANCE=69_RUN_69_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+IMPLEMENTATION=PARTIAL_NATIVE_DELIVERY_NOT_ESTABLISHED; SYNTHETIC_PROCEDURE=PASS.
+The native HA connection, live guard and two-host trust-file validation bindings
+are explicit inputs, not manufactured production observations. Actual PI5 roots,
+ownership/filesystem capabilities, supported APIs/resources/Dashboard and trust
+placement remain required observations. No native end-to-end delivery claim is made.
+All13 PI3 delivery,39 successor and449 protected identities verify; original contract,
+controller, amendment, executive decision and completed PI3 evidence remain preserved.
+Next action: operator-run the single consolidated read-only PI5 capability/integration
+assessment below to bind actual paths/capabilities; no new research/checkpoint phase.
+PE-7.3 remains IN_PROGRESS; PE-7.4 remains NOT_AUTHORIZED. No activation, migration,
+notifications, credentials, service restart, PI3/PI5 access or Git publication here.
+See [the integrated HA preparation evidence and assessment](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-integrated-ha-integration-ui-and-trust-delivery-preparation).
+
+### Historical PI3 runtime deployment evidence snapshot
+
+Classification: HISTORICAL SNAPSHOT — accepted PI3 runtime delivery evidence.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8490,7 +8700,112 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PI3 runtime delivery evidence; full PE-7.3 closure blocked.
+Classification: CURRENT — HA OS preflight prerequisite correction; native qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The accepted111-test HA correction and completed OPERATOR_SUPPLIED PI3 deployment
+evidence are preserved. This bounded follow-up resolves fresh-install prerequisites.
+Missing custom_components/hioc_operator is observed as absence, not an installation
+failure. Only that fixed public directory0755 and missing private backups0700 may
+be created. Private durable intent precedes creation; exact identities/readback and
+Core-visible proof follow. Existing directories are never chmod/chowned or adopted.
+Missing backups uses a fixed exclusive private bootstrap intent before mkdir, not
+manual directory setup. Uncertain creation remains pending; no retry or auto recovery.
+Explicit recovery removes only the empty, exact created HIOC directory; backup and
+transaction evidence remain preserved. Missing custom_components/www remains a real
+parent prerequisite. HA Core need not traverse private publisher backup storage.
+Host PID mode is not a required configuration. Existing proc visibility must prove
+the exact Core-container PID, process birth, credentials, user namespace and actual
+Core-visible filesystem objects. Matching mount paths or archive metadata alone
+are insufficient. Missing/hidden proof blocks; no new privileges, exec, namespace
+entry or container change is authorized. Production support remains UNKNOWN.
+FOCUSED_PREREQUISITE_CORRECTION=125_RUN_125_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+Synthetic Windows results do not establish native Linux filesystem qualification.
+All13 PI3 delivery,39 successor and449 protected identities verify; immutable HA
+payload, original contract/amendment, trust design and completed PI3 evidence remain.
+Disabled behavior, backups, whole-process authority, interruption evidence, runtime
+independence and persistent-state isolation are preserved. No installation or Git
+publication occurs here. Live HA/Dashboard/trust and native filesystem evidence
+remain unverified. PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+INDEPENDENT_REPOSITORY_ACCEPTANCE=PASS. The exact code/test candidate was reviewed
+against all15 mandatory acceptance gates;125 focused results match unchanged bytes,
+and25 preservation checks pass. Native installation/readiness is not established.
+This authorized publication records repository acceptance only; no PE-7.3 closure.
+Next action: operator-run consolidated read-only PI5 qualification using the accepted
+preflight; unavailable Core filesystem proof blocks delivery without a workaround.
+See [the prerequisite correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-preflight-prerequisite-review-and-bounded-correction).
+
+### Historical accepted111-test HA OS correction snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS delivery compatibility correction; native delivery unqualified.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The completed PI3 deployment evidence at2784ef31da5e4ebc0e75af19695c8cc68c3d04a1
+is preserved as OPERATOR_SUPPLIED; source release1c07932bd43aab1eac693ea07e195a74150fe550.
+The existing six-file HA candidate is corrected, not replaced. A one-shot publisher
+separates observed Terminal UID/GID0:0 from actual HA Core process ownership.
+Only four pinned integration/editor files and a closed private transaction file set
+are writable. Public files0644 use qualified Core UID/GID; private records0600 and
+transaction directory0700 use publisher0:0. No PI3 ownership exception is introduced.
+Before mutation, actual Core-visible descriptor identities must match the Terminal
+destination; matching Docker mount-source strings alone are insufficient. Existing
+host-PID/proc visibility is required. Missing proof or required existing directories
+refuses delivery; no container changes, privilege expansion or guessed owner fallback.
+FOCUSED_CORRECTION=111_RUN_111_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+Windows descriptor/ownership models are synthetic, not native Linux qualification.
+All13 PI3 delivery,39 successor and449 protected identities verify. Original contract,
+amendment, controller, executive instruction and PI3 evidence remain unchanged.
+Whole-process authority, private backups, durable intent, single-attempt publication,
+exact readback and separate unexpected-recovery authority remain mandatory. No retries,
+automatic rollback or consumer release. Existing pending transactions require disposition.
+Runtime code has no publisher/transaction dependency; persistent Assets, policies,
+history and configuration are outside the write scope. No permanent HA version pin,
+migration, trust provisioning, activation, scheduling or service operation is added.
+Remaining native requirements: actual Core/mount/ownership/security qualification,
+supported live HA/API and approved Dashboard/view export, disabled guard, actual trust
+identities/private validation, and native filesystem behavior. None is fabricated.
+Next action: operator-run the self-contained, no-prompt read-only PI5 identity preflight
+in the correction evidence. This is not installation or PE-7.4 authorization.
+See [the HA OS correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-ha-os-delivery-compatibility-correction-and-runtime-protection).
+
+### Historical HA delivery preparation snapshot (superseded compatibility assumptions)
+
+Classification: HISTORICAL SNAPSHOT — HA integration/UI/trust delivery preparation candidate.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+The PI3 runtime deployment is a completed, independently verified sub-checkpoint,
+recorded as OPERATOR_SUPPLIED production evidence and published at
+2784ef31da5e4ebc0e75af19695c8cc68c3d04a1. Its source release was
+1c07932bd43aab1eac693ea07e195a74150fe550. That deployment is not reopened.
+A finite HA delivery procedure now reuses six immutable PE-7.1 HA artifact identities:
+four integration/editor files delivered, Dashboard/package retained as references.
+Supported HA resource/card registration preserves existing layout, unrelated cards,
+resources and package behavior. No .storage writes or broad installer/restart.
+Private before/stage/reference/trust-packet backups and durable pending intent precede
+single-attempt mutation. Interrupted operations are not automatically adopted,
+retried, rolled back or released. One whole-process authority; no per-operation prompts.
+The trust configuration packet preserves mTLS, assertion keys and independent ACLs
+and remains disabled/offline; it is not active HA/PI3 configuration or provisioned secrets.
+FOCUSED_ACCEPTANCE=69_RUN_69_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+IMPLEMENTATION=PARTIAL_NATIVE_DELIVERY_NOT_ESTABLISHED; SYNTHETIC_PROCEDURE=PASS.
+The native HA connection, live guard and two-host trust-file validation bindings
+are explicit inputs, not manufactured production observations. Actual PI5 roots,
+ownership/filesystem capabilities, supported APIs/resources/Dashboard and trust
+placement remain required observations. No native end-to-end delivery claim is made.
+All13 PI3 delivery,39 successor and449 protected identities verify; original contract,
+controller, amendment, executive decision and completed PI3 evidence remain preserved.
+Next action: operator-run the single consolidated read-only PI5 capability/integration
+assessment below to bind actual paths/capabilities; no new research/checkpoint phase.
+PE-7.3 remains IN_PROGRESS; PE-7.4 remains NOT_AUTHORIZED. No activation, migration,
+notifications, credentials, service restart, PI3/PI5 access or Git publication here.
+See [the integrated HA preparation evidence and assessment](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-integrated-ha-integration-ui-and-trust-delivery-preparation).
+
+### Historical PI3 runtime deployment evidence snapshot
+
+Classification: HISTORICAL SNAPSHOT — accepted PI3 runtime delivery evidence.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

@@ -3884,3 +3884,871 @@ not authorized. No production action is prepared or executed by this documentati
 Publication is conditional on no unresolved mandatory acceptance criterion. That
 condition is not met; these documentation/binding updates remain uncommitted and
 unstaged. No commit or push is performed and no checkpoint closure is claimed.
+
+
+### PE-7.3 integrated HA integration, UI and trust delivery preparation
+
+Scope: authorized Windows-only implementation; baseline
+`2784ef31da5e4ebc0e75af19695c8cc68c3d04a1`. The accepted PI3 deployment evidence
+above and published sub-checkpoint are preserved. No PI3 deployment is reopened.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. No Codex PI3/PI5 access or production mutation.
+
+**Result: PARTIAL for native delivery; integrated synthetic procedure PASS.**
+The bounded implementation is `tools/pe73_ha_delivery.py`; read-only assessment is
+`tools/pe73_ha_assess.py`; one consolidated test module is
+`tests/test_pe73_ha_delivery.py`. Original PE-7.1 components are reused unchanged.
+No new deployment framework, broker, privilege mechanism or credential system.
+
+#### Exact artifact and publication boundary
+
+All six inputs are read from immutable Git objects at
+`51398bab4e2293b578b2cdac2d0740c3738cab2f`; SHA-256 AND Git blob pins are verified.
+Under the ACTUAL observed HA configuration root, only these four live files may
+be published, as UID/GID1000:1000, mode0644 under secure pinned ancestors:
+
+- `custom_components/hioc_operator/__init__.py`
+- `custom_components/hioc_operator/manifest.json`
+- `custom_components/hioc_operator/services.yaml`
+- `www/hioc-asset-editor.js`
+
+The current NativeFS binding is limited to its already-supported UID/GID1000;
+that is an implementation limit, NOT an observed PI5 identity. Other ownership is
+a blocker; no sudo/chown/mode relaxation. Destination directories must already be
+safely provisioned; the runner does not guess paths or create active configuration.
+Foreign component files, duplicate editor cards, incompatible resource registrations,
+unsupported layouts, dirty before-state and active HIOC services are refused.
+
+The full `homeassistant/dashboards/hioc_dashboard_v2.yaml` and
+`homeassistant/packages/hioc_incident_center.yaml` are verified/reference-backed,
+NOT copied over the live Dashboard or package. They cannot silently enable existing
+notification automations, change recipients/theme or replace unrelated HA behavior.
+
+Private transaction `backups/pe73-ha-delivery-v1` is exclusively created, mode0700;
+records/stages/backups mode0600. Existing transactions are never overwritten.
+It preserves exact old file bytes and observed identities, stage bytes, complete
+Dashboard/resource before-exports, both reference artifacts and
+`trust.disabled.json`. These are private on-host records, not public Git evidence.
+Descriptor-anchored no-follow reads, ACL checks, ownership/mode and bounded read
+checks, fsync/replace and renameat2 no-replace for absent targets are reused from
+the accepted NativeFS without altering the PI3 controller or its transaction.
+Native POSIX/filesystem/ACL behavior for PI5 is NOT qualified by Windows fixtures.
+Individual publication is atomic where the accepted primitives apply; four files,
+HA API changes and the journal are NOT one globally atomic transaction.
+
+#### Integrated sequence and supported HA mechanisms
+
+`Delivery.run(plan, whole_process_reference=...)` performs one bounded approved
+process, with no Y/N prompts. Source pins, actual host/capability/disabled guard,
+trust checks, exact before-files, admin session, complete resource inventory and
+observed Dashboard/view are required BEFORE any private transaction creation.
+Qualified endpoints must establish exclusive delivery responsibility and stop
+concurrent HA editing/configuration changes. Readback detects endpoint differences;
+HA resource/config APIs provide no cross-request compare-and-swap or universal
+consumer exclusion. No stronger race-free/transient-history assurance is claimed.
+
+Prepare -> verified backups/stages -> four exact file publications -> supported
+resource registration -> one additive editor card -> independent file/API readback.
+Fresh guard/trust/journal/runtime/resource/Dashboard checks and a finite 15-minute
+installation deadline remain mandatory. API calls are single-attempt. Durable
+pending intent precedes each publication/API mutation; lost acknowledgement stops
+with uncertainty retained. No automatic retry, rollback, restoration or consumer
+release occurs after failure. A new session never auto-adopts a partial journal.
+
+The API port uses the existing authenticated HA WebSocket request contract:
+`auth/current_user`, `get_services`, `lovelace/info`, `lovelace/resources/list`,
+`lovelace/config`, `lovelace/resources/create` (`res_type=module`, exact observed
+`/local/hioc-asset-editor.js` mapping), and `lovelace/config/save` with the observed
+`url_path`. No production URL, Dashboard/view ID or API support is invented.
+The module supports an additive card in an observed masonry view, or an additive
+grid section in an observed sections view, preserving all other config fields.
+YAML-resource mode and unknown/panel/custom layouts stop rather than migrate.
+No direct .storage edits; no resource reload, HA reload, restart or service call.
+
+Primary-source API reference is HA core2026.8.1, matching the existing PE-7.1 HA
+contract reference, not a claim of the installed PI5 version:
+https://github.com/home-assistant/core/blob/2026.8.1/homeassistant/components/lovelace/websocket.py
+https://github.com/home-assistant/core/blob/2026.8.1/homeassistant/components/lovelace/resources.py
+https://github.com/home-assistant/core/blob/2026.8.1/homeassistant/components/lovelace/const.py
+Resource listing may lazily import a legacy resources section during initial load.
+Therefore the synthetic native guard requires an already-loaded, established
+resource collection. The assessment below does NOT call that API and cannot trigger
+this migration. Its static source result is never substituted for live capability.
+
+#### Trust preparation and disabled state
+
+A closed disabled packet matches the existing integration Client fields and backend
+adapter issuer-trust fields. It requires explicit HTTPS endpoint/address/port,
+issuer/key ID, private certificate/key/CA/assertion-file references, a specific
+operator allowlist and independent backend actor/operation/exact-Asset ACLs.
+Wildcard permissions, missing ACLs, enabled entries and unknown extra fields fail.
+No secret contents, production keys/certificates or defaults are generated/embedded.
+The packet is a private offline preparation artifact, not installation into active
+`configuration.yaml` or the PI3 adapter configuration. No credentials are provisioned.
+
+Existing accepted Client/server_context/IssuerTrust behavior remains authoritative
+for actual on-host private-file security, 32-byte assertion keys, certificate/key
+consistency, client-SPKI pin and independent backend authorization. The live
+`trust_preflight` port must bind those actual two-host observations and reject
+missing/changed facts. A synthetic True, saved JSON claim or this evidence document
+is not a native permission or proof of valid production trust.
+
+Adapter/listener, editing services, observations, evaluator, migrations, recurring
+PE-7 jobs and PE-7 notifications remain disabled. Tests actually invoke the unchanged
+HA integration with all three role gates False and assert no clients/services/I/O.
+No existing PI3 crontab, runtime, backups/journal or source is changed.
+
+#### Recovery and limitations
+
+Private file/API before-exports and pending journals survive interruption. An
+uncertain/partial transaction requires explicit adjudication, never blind replay.
+For a fully verified delivered-disabled transaction, explicit separate recovery
+requires exact current live resource/Dashboard restoration through supported HA
+management, verified against the saved exports, BEFORE file restoration. The
+bounded `restore_files` then verifies installed identities and backup hashes,
+restores old bytes/modes or removes only its proven new objects. It retains backups.
+It does not restore old inode/timestamps, erase transaction history, automatically
+roll back HA API state or change unrelated resources. A failed recovery also stops
+with durable pending evidence. Rollback/material scope changes retain the unchanged
+executive-decision boundaries; per-operation prompts are not reintroduced.
+
+Native PARTIAL reasons are precise: actual PI5 root/owner/filesystem/API context
+is not supplied; the existing authenticated connection and fresh host guard ports
+have no production binding; actual two-host trust material is not inspected or
+installed. The current tool is an integrated, callable synthetic candidate, not a
+ready native CLI or evidence that HA/PI3 trust delivery has completed. No unqualified
+native deployment command is offered. Backend packet preparation does not imply
+PI3 trust installation. These requirements belong to the existing PE-7.3 scope.
+
+#### Consolidated validation and exact candidate identities
+
+One focused selection: test_pe73_ha_delivery, test_pe7_ha, test_pe7_security,
+test_pe7_dashboard. Final result69 RUN/69 PASS/0 failures/0 errors/0 skipped;
+class-level skips0. Includes real Windows temporary-file/fsync/replace fixtures,
+existing local TLS fixture, and real Node editor assertions. No unrelated historical
+suite or already-completed PI3 native qualification is repeated. All13 delivery,
+39 successor,449 protected identities remain required and statically reverified
+following documentation identity synchronization. Product source, controller,
+maintenance provider, original contract and amendment remain byte-identical.
+
+Two new fixture defects were corrected without changing accepted product code:
+first8 run/7 passed/1 failure mocked Windows event-loop setup; second21 run/20
+passed/1 error expected a Failure class from a different independent import, with
+an event-loop mock diagnostic also observed. Both reports remain externally retained.
+The final socket/client guards avoid modifying the socket class used by asyncio.
+
+- `tools/pe73_ha_delivery.py`: SHA-256 `afb674da2bf781d4541defe61038addcfb4b0e22022156ed7a134a363a682bed`.
+- `tools/pe73_ha_assess.py`: SHA-256 `5e01c99d484ee443e322621ba3262b77f02b1e4bc36a911aecb6aa78032498a1`.
+- `tests/test_pe73_ha_delivery.py`: SHA-256 `a838cc41843fbe9da20a2aecf935048e0e24ff7a915635631af0af0f1c11c59c`.
+
+#### One consolidated read-only PI5 assessment procedure
+
+Run only as the operator in an existing PI5/HA execution environment. Enter the
+actual config and installed `homeassistant` package directory, not guessed defaults.
+Do not use sudo or install packages. If the host/container does not expose these
+paths, return INSUFFICIENT_EVIDENCE; do not broaden diagnostics or mutate access.
+The command reads only metadata and bounded public installed source. It does not
+import/execute HA, read config/secret/.storage contents, call HA APIs, create files,
+change ownership/permissions, reload or restart. Exit0 is assessment completed,
+NOT native delivery readiness; source support alone never establishes live APIs.
+Retain command arguments and full JSON as OPERATOR_SUPPLIED evidence.
+
+~~~sh
+printf 'Actual Home Assistant configuration directory: '
+IFS= read -r PE73_HA_CONFIG
+printf 'Actual installed homeassistant Python package directory: '
+IFS= read -r PE73_HA_PACKAGE
+python3 -I -S -B - "$PE73_HA_CONFIG" "$PE73_HA_PACKAGE" <<'PY'
+"""One bounded read-only PI5 filesystem/source assessment. No HA imports/API calls.
+
+Run with -I -S -B in the operator's existing Python, supplying the ACTUAL HA config
+and installed homeassistant package directories. No guesses, credentials, .storage
+contents, production configuration contents or state values are read or emitted.
+"""
+import ast
+import hashlib
+import json
+import os
+from pathlib import Path
+import stat
+import sys
+
+
+def metadata(path):
+    """No following symlinks, no implicit ownership correction."""
+    for parent in (path, *path.parents):
+        info = parent.lstat()
+        if stat.S_ISLNK(info.st_mode):
+            raise ValueError('SYMLINK_PATH')
+    info = path.lstat()
+    return {'device':info.st_dev, 'inode':info.st_ino, 'uid':info.st_uid, 'gid':info.st_gid,
+            'mode':format(stat.S_IMODE(info.st_mode), '04o'), 'links':info.st_nlink,
+            'type':'DIRECTORY' if stat.S_ISDIR(info.st_mode) else 'REGULAR' if stat.S_ISREG(info.st_mode) else 'OTHER',
+            'mtime_ns':info.st_mtime_ns, 'ctime_ns':info.st_ctime_ns}
+
+
+def assess(config, package):
+    if not config.is_absolute() or not package.is_absolute() or '..' in config.parts or '..' in package.parts:
+        raise ValueError('ABSOLUTE_OBSERVED_ROOTS_REQUIRED')
+    result = {'RESULT':'READ_ONLY_ASSESSMENT', 'authority':'OPERATOR_SUPPLIED_WHEN_RETURNED',
+              'uid':os.getuid() if hasattr(os,'getuid') else None,
+              'gid':os.getgid() if hasattr(os,'getgid') else None,
+              'host':__import__('socket').gethostname(), 'roots':{}, 'objects':{}, 'source_capabilities':{},
+              'live_api_capabilities':'NOT_ESTABLISHED_BY_STATIC_SOURCE',
+              'production_authorized':False, 'files_modified':False, 'STOP_REQUIRED':True}
+    result['roots'] = {'config':metadata(config), 'package':metadata(package)}
+    allowed = ('configuration.yaml','custom_components','custom_components/hioc_operator',
+               'custom_components/hioc_operator/__init__.py','custom_components/hioc_operator/manifest.json',
+               'custom_components/hioc_operator/services.yaml','www','www/hioc-asset-editor.js','backups',
+               '.storage/lovelace',' .storage/lovelace_resources')
+    for relative in allowed:
+        relative = relative.strip()
+        try:
+            result['objects'][relative] = metadata(config/relative)
+        except FileNotFoundError:
+            result['objects'][relative] = {'exists':False}
+    # Public installed source only; compile/AST inspection does not execute HA.
+    for relative in ('components/lovelace/websocket.py','components/lovelace/resources.py',
+                     'components/lovelace/__init__.py','components/frontend/__init__.py',
+                     'components/websocket_api/connection.py','core.py'):
+        target = package/relative
+        info = metadata(target)
+        if info['type'] != 'REGULAR' or info['links'] != 1:
+            raise ValueError('UNSAFE_SOURCE_TYPE')
+        with target.open('rb') as stream:
+            raw = stream.read(2097153)
+        if len(raw) > 2097152 or metadata(target) != info:
+            raise ValueError('SOURCE_DRIFT_OR_LIMIT')
+        tree = ast.parse(raw)
+        names = {n.name for n in ast.walk(tree) if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef))}
+        constants = {n.value for n in ast.walk(tree) if isinstance(n,ast.Constant) and isinstance(n.value,str)}
+        result['source_capabilities'][relative] = {'sha256':hashlib.sha256(raw).hexdigest(), 'metadata':info,
+            'commands':[x for x in ('lovelace/config','lovelace/config/save','lovelace/info','lovelace/resources') if x in constants],
+            'symbols':[x for x in ('current_connection','SupportsResponse','ResourceStorageCollection',
+                'ResourceStorageCollectionWebsocket','websocket_lovelace_save_config') if x in names],
+            'resource_load_may_import_legacy_configuration':relative.endswith('resources.py') and 'CONF_RESOURCES' in raw.decode()}
+    return result
+
+
+if __name__ == '__main__':
+    try:
+        if len(sys.argv) != 3:
+            raise ValueError('ACTUAL_CONFIG_AND_PACKAGE_DIRECTORIES_REQUIRED')
+        receipt = assess(Path(sys.argv[1]), Path(sys.argv[2]))
+    except BaseException as error:
+        receipt = {'RESULT':'INSUFFICIENT_EVIDENCE', 'failure_type':type(error).__name__,
+                   'files_modified':False, 'STOP_REQUIRED':True}
+    print(json.dumps(receipt, sort_keys=True, separators=(',',':')))
+    raise SystemExit(0 if receipt['RESULT']=='READ_ONLY_ASSESSMENT' else 1)
+PY
+PE73_HA_ASSESS_EXIT_STATUS=$?
+printf 'PE73_HA_ASSESS_EXIT_STATUS=%s\n' "$PE73_HA_ASSESS_EXIT_STATUS"
+~~~
+
+Actual observations still required for existing contract acceptance: HA version and
+actor/service-response capability, actual config/runtime access and secure ancestor/
+ACL/owner/mode/atomic-filesystem support; existing integration/resource inventories;
+actual Dashboard/view/layout/export and live storage-resource/admin capability;
+observed /local mapping and already-loaded-resource state without lazy migration;
+current disabled roles and controlled delivery responsibility; actual private trust
+paths/security/certificate/key consistency, issuer/key/SPKI, addresses and independent
+operator/Asset ACL. The command intentionally leaves live authentication and private
+trust validation UNKNOWN. It does not request secrets in chat or claim observation
+of facts it cannot read. Native endpoint binding must be completed using these
+actual supported interfaces inside PE-7.3, not another architecture/research phase.
+
+Exactly one next action: operator-run this consolidated read-only PI5 capability/
+integration assessment and return its sanitized receipt, to bind the existing
+native candidate to actual facts before any installation authority. No deployment,
+PI3/PI5 access by Codex, staging, commit, push, activation or PE-7.4 work here.
+
+### PE-7.3 HA OS delivery compatibility correction and runtime protection
+
+Classification: CURRENT PREPARATION — Windows correction validated; native delivery
+not established. PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. No staging/publication,
+production access, deployment or activation in this correction.
+
+Authority: owner-supplied “HA OS Delivery Compatibility Correction and Long-Term
+Runtime Protection”, 2026-10-27. The previous69-test preparation remains above as
+history. Its PI3 NativeFS reuse and path-prompt assessment are superseded by this
+bounded implementation, without altering the accepted HA architecture.
+
+**Established production facts (OPERATOR_SUPPLIED, not newly observed by Codex):**
+PI5 HA192.168.100.251, HA OS/Raspberry Pi5 aarch64, Core2026.10.4; Terminal0:0;
+/usr/bin/python3, /usr/bin/ha and /usr/local/bin/docker available; /config and
+/homeassistant expose custom_components/www; four delivery files absent; Core
+container visible. Core UID/GID, shared mount/object identity and destination safety
+remain unverified. Completed PI3 evidence and its limitations remain unchanged.
+
+**Confirmed defect and correction:** HA factory inherited PI3-specific1000:1000
+file ownership. It now creates a closed-scope one-shot HA publisher, not a generic
+root interface. The public four-file payload remains pinned to immutable PE-7.1
+51398bab4e2293b578b2cdac2d0740c3738cab2f; Dashboard/package are private references,
+never replacements for active YAML. No original runtime or contract bytes change.
+The production factory accepts no arbitrary root, owner or saved admission flag.
+
+Publisher credentials must be actual UID/EUID/GID/EGID0. Public code/frontend files
+0644 are owned by the proven Core process UID/GID, which may itself be0 only when
+independently established. Private transaction directory0700 and records0600 are
+0:0, excluding unauthorized unprivileged readers; they do not isolate against other
+privileged root processes. Creation-time fchown/fchmod apply only to newly created
+exclusive descriptors in the closed target set. No recursive operations, existing
+directory ownership/mode corrections, arbitrary paths or secret provisioning.
+
+**Identity/security admission:** exact local Docker bind mappings, no nested config
+mounts or user remapping; unique numeric Core Python PID/UID/GID, same user namespace,
+stable process birth/boot/container/image, and actual Core /proc/PID/root/config
+descriptor identities must match Terminal ancestors and required directories.
+Matching Source strings alone cannot admit delivery. Existing host-PID visibility
+and permitted proc reads are necessary. If unavailable, return the precise blocker;
+no docker exec, setns, new privilege, new dependency or container reconfiguration.
+Required existing root/custom_components/hioc_operator/www/backups directories must
+be secure and Core-traversable. Missing directories stop before any mkdir/write;
+this task does not invent directory provisioning authority. Unsupported ACLs,
+unreadable ACL state, symlinks, hard links, unsafe parents, owner/mode mismatch,
+identity replacement and pre/post-operation security drift refuse admission.
+
+**Transactions/recovery:** private before/stage/reference/disabled-trust files,
+durable pending journal, exclusive creation, fsync, atomic replace (NOREPLACE for
+absent destinations), installed readback and fresh context checks remain. No
+mutation retry, automatic rollback or release after uncertainty. Fresh sessions
+may inspect a safe existing transaction read-only but cannot reuse it for another
+deployment. Separate explicit recovery may restore only a fully verified terminal
+DELIVERED_DISABLED journal after supported-API Dashboard/resource restoration and
+fresh guard checks. Pending/incomplete transactions require explicit disposition;
+no blind adoption. Backup bytes and exact installed identities are rechecked.
+One defined whole-process authorization; no operation prompts or invented blanket
+authority for unexpected recovery. The standing executive decision remains verbatim
+in the unchanged successor authorization record.
+
+**HA/trust boundaries:** existing authenticated WebSocket, supported resource/card
+registration, private full exports, additive layout and unrelated-resource protection
+are preserved. No direct .storage edits or Dashboard mode migration. Trust packet
+remains disabled/offline and is not installed TLS material, provisioned keys or live
+ACL authorization. Actual authenticated connection, live disabled guard and two-host
+trust validation are still explicit unqualified native input ports. Static installed
+HA source capability observations are not proof of authenticated live APIs.
+
+**Long-term non-regression:** accepted runtime artifacts remain byte-identical and
+introduce no publisher or transaction-file dependency. Normal device/IP/entity/room
+changes, observation reconciliation and incidents do not invoke deployment. Assets,
+operator notes/policies, identities, history and unrelated configuration are outside
+the publisher write allowlist. Code updates do not imply migrations, policy resets,
+trust rotation or activation. New authorized software payloads require future exact
+artifact/transaction governance, not a permanent Core version pin. Boot/image binding
+is specific to one transaction. PI5 delivery failure has no PI3 filesystem/network,
+MQTT, incident/offline fabrication or service-control operation. Deferred roadmap
+capabilities are not implemented here.
+
+**Focused validation:** one consolidated native-Windows unittest harness selects
+test_pe73_ha_delivery, test_pe7_ha, test_pe7_security and test_pe7_dashboard with
+sys.path[:0]=['tests','pi4/lib'], shell-free PATH and HIOC_TEST_SHELL cleared.
+Final result111 run111 passed,0 failures,0 errors,0 skipped; exact three executable/
+test hashes unchanged across the run. Covers root/Core identity separation, private
+access, descriptor/path/ACL/link/ownership drift, missing prerequisites, payload pins,
+backups, atomic/readback failures, interruptions, fresh-session explicit recovery,
+resource conflicts, disabled behavior, persistent-state and runtime independence.
+Windows fixtures explicitly model POSIX credentials/dir_fd behavior; no claim of
+native Linux chmod/chown/fsync/rename or production qualification. Earlier42-run
+fixture attempt had41 passes/1 error from a Windows inode-change-time model mismatch;
+the fixture was corrected without weakening production checks. Interim107/107 and
+109/109 passes are retained as test history; final111/111 supersedes them.
+
+- `tools/pe73_ha_delivery.py`: SHA-256 `5e2238afeb584b279fe9b0e2de9ff4b5fa3cc5724a3be028be25131c64b34e1f`.
+- `tools/pe73_ha_assess.py`: SHA-256 `7437c9d585ae288094a39b30f55adfb4aad66c8502744fa121ae03dbbdc1f350`.
+- `tests/test_pe73_ha_delivery.py`: SHA-256 `0eebe7e1c6706b13b19c1f6078b989d2a51533b17965d3e617d24e664ea73693`.
+
+**Preservation:**13 immutable PI3 and six immutable HA source pins verify;39 successor
+identities (only two current-document identity entries refreshed) and449 protected
+identities verify. Accepted contract, approved amendment, controller, maintenance
+provider, original executive instruction and completed PI3 evidence are unchanged.
+Exactly the original six candidate paths; three tracked modifications, three new
+untracked paths, empty index, unchanged stash/main/origin and no unexpected paths.
+
+#### Consolidated read-only PI5 qualification
+
+Ready only for the existing operator-controlled PI5 Terminal environment using
+already observed Python/Docker paths and0:0 identity. No paths to discover, prompts,
+unpublished repository files, HA import, reload/restart, container exec, secrets or
+credential contents. Reads local Docker metadata, kernel identities, directory/
+.storage metadata only, and bounded public installed HA source through stdout tar
+without extracting files. Never invokes /usr/bin/ha or HA live APIs. No container,
+ownership, permission, service or runtime changes. Native mutation qualification,
+live authenticated HA/Dashboard exports/selection/disabled guard and actual trust
+identities remain explicitly NOT_OBSERVED; no secret values requested in chat.
+
+PASS_READ_ONLY_FILESYSTEM_IDENTITY_QUALIFICATION with exit0 proves only that bounded
+read-only binding. BLOCKED_READ_ONLY_QUALIFICATION with exit1 reports missing proof,
+including host-PID visibility, unsafe/missing directories or nonidentical objects.
+Neither receipt is native deployment authorization/readiness. No automatic retry or
+workaround. Preserve JSON and immediate shell exit-status line as OPERATOR_SUPPLIED.
+
+~~~sh
+/usr/bin/python3 -I -S -B - <<'PY'
+import ast
+
+import hashlib
+
+import json
+
+import os
+
+from pathlib import Path
+
+import stat
+
+import sys
+
+import errno
+
+import re
+
+import socket
+
+import subprocess
+
+import ctypes
+
+import io
+
+import tarfile
+
+def metadata(path):
+    """No following symlinks, no implicit ownership correction."""
+    for parent in (path, *path.parents):
+        info = parent.lstat()
+        if stat.S_ISLNK(info.st_mode):
+            raise ValueError('SYMLINK_PATH')
+    info = path.lstat()
+    return {'device':info.st_dev, 'inode':info.st_ino, 'uid':info.st_uid, 'gid':info.st_gid,
+            'mode':format(stat.S_IMODE(info.st_mode), '04o'), 'links':info.st_nlink,
+            'type':'DIRECTORY' if stat.S_ISDIR(info.st_mode) else 'REGULAR' if stat.S_ISREG(info.st_mode) else 'OTHER',
+            'mtime_ns':info.st_mtime_ns, 'ctime_ns':info.st_ctime_ns}
+
+class QualificationError(ValueError):
+    pass
+
+def require(value, code):
+    if not value:
+        raise QualificationError(code)
+
+def anchor(info):
+    return {'device':info.st_dev, 'inode':info.st_ino, 'uid':info.st_uid,
+            'gid':info.st_gid, 'mode':stat.S_IMODE(info.st_mode)}
+
+def directory_chain(root, core_uid, core_gid):
+    """Read-only descriptor proof; no pathname fallback or mutation experiment."""
+    result = {}
+    fd = os.open('/', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    held = [fd]
+    links = []
+    try:
+        parts = [('/', None)] + [(part, part) for part in Path(root).parts[1:]]
+        absolute = ''
+        for label, part in parts:
+            if part is not None:
+                child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=fd)
+                links.append((fd, part, child));held.append(child);fd=child
+                absolute += '/' + part
+            info = os.fstat(fd)
+            require(stat.S_ISDIR(info.st_mode) and info.st_uid in (0,core_uid)
+                    and not stat.S_IMODE(info.st_mode) & 0o7022, 'UNSAFE_DIRECTORY')
+            # Do not assume that root or capabilities bypass an unreadable parent.
+            shift = 6 if info.st_uid == core_uid else 3 if info.st_gid == core_gid else 0
+            require((stat.S_IMODE(info.st_mode) >> shift) & 1, 'CORE_TRAVERSAL_NOT_ESTABLISHED')
+            for name in ('system.posix_acl_access','system.posix_acl_default'):
+                try:
+                    os.getxattr(fd,name)
+                except OSError as error:
+                    require(error.errno == errno.ENODATA, 'ACL_STATUS_UNKNOWN')
+                else:
+                    raise QualificationError('ACL_PRESENT')
+            result[absolute or '/'] = anchor(info)
+        for parent,name,child in links:
+            require(anchor(os.stat(name,dir_fd=parent,follow_symlinks=False)) == anchor(os.fstat(child)), 'ANCESTOR_DRIFT')
+        return result
+    finally:
+        for descriptor in reversed(held):
+            os.close(descriptor)
+
+def bind_mounts(terminal, core, root_metadata):
+    """Exact same bind source and identity mapping, never string-prefix trust."""
+    require(terminal['id'] != core['id'], 'DISTINCT_CONTAINERS_REQUIRED')
+    for value in (terminal,core):
+        require(value['running'] is True and value['userns'] in ('','host'), 'USER_NAMESPACE_UNSUPPORTED')
+        require(type(value['mounts']) is list, 'MOUNTS_INVALID')
+    mounts = [m for m in core['mounts'] if m.get('Destination') == '/config']
+    require(len(mounts) == 1, 'CORE_CONFIG_MOUNT_NOT_UNIQUE')
+    selected = mounts[0]
+    require(selected.get('Type') == 'bind' and selected.get('RW') is True
+            and type(selected.get('Source')) is str and selected['Source'].startswith('/')
+            and '..' not in Path(selected['Source']).parts, 'CORE_CONFIG_BIND_REQUIRED')
+    require(not any(m.get('Destination','').startswith('/config/') for m in core['mounts']), 'NESTED_CORE_CONFIG_MOUNT')
+    roots = []
+    for mount in terminal['mounts']:
+        dest = mount.get('Destination')
+        if dest in ('/config','/homeassistant') and mount.get('Source') == selected['Source']:
+            require(mount.get('Type') == 'bind' and mount.get('RW') is True
+                    and 'idmap' not in str(mount.get('Mode','')).lower(), 'TERMINAL_BIND_UNSUPPORTED')
+            require(not any(m.get('Destination','').startswith(dest+'/') for m in terminal['mounts']), 'NESTED_TERMINAL_CONFIG_MOUNT')
+            roots.append(dest)
+    require(bool(roots), 'TERMINAL_CORE_CONFIG_BINDING_UNAVAILABLE')
+    identities = [root_metadata(root) for root in roots]
+    require(all((x['device'],x['inode']) == (identities[0]['device'],identities[0]['inode']) for x in identities), 'CONFIG_ALIAS_IDENTITY_CONFLICT')
+    # Prefer the explicit HA configuration mount; never accept an arbitrary root.
+    return '/homeassistant' if '/homeassistant' in roots else '/config'
+
+def core_identity(top):
+    """Only PID/UID/GID/comm, no command arguments, environment or credentials."""
+    rows = top.strip().splitlines()
+    require(bool(rows) and rows[0].split() == ['PID','UID','GID','COMMAND'], 'CORE_PROCESS_FORMAT_UNKNOWN')
+    found=[]
+    for row in rows[1:]:
+        cols=row.split()
+        require(len(cols)==4, 'CORE_PROCESS_FORMAT_UNKNOWN')
+        if re.fullmatch(r'python(?:3(?:\.\d+)?)?',cols[3]):
+            require(all(x.isdecimal() for x in cols[:3]), 'CORE_IDENTITY_NOT_NUMERIC')
+            found.append([int(x) for x in cols[:3]])
+    require(len(found)==1, 'CORE_PYTHON_PROCESS_NOT_UNIQUE')
+    return {'pid':found[0][0], 'uid':found[0][1], 'gid':found[0][2]}
+
+class NativeProbe:
+    """Fixed local Docker reads and kernel metadata. Never exec, HA API or secrets."""
+    def docker(self,*args):
+        completed=subprocess.run(['/usr/local/bin/docker','--config','/proc/pe73-no-client-config',
+            '--host','unix:///var/run/docker.sock',*args],stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=20,
+            env={'PATH':'/usr/local/bin:/usr/bin:/bin','LANG':'C','LC_ALL':'C'})
+        require(completed.returncode==0 and len(completed.stdout)<=1048576, 'DOCKER_METADATA_UNAVAILABLE')
+        return completed.stdout.decode('utf-8')
+
+    def container(self,identity):
+        require(re.fullmatch('[0-9a-f]{12,64}',identity), 'CONTAINER_ID_INVALID')
+        template='{"id":{{json .Id}},"image":{{json .Image}},"running":{{json .State.Running}},"pid":{{json .State.Pid}},"userns":{{json .HostConfig.UsernsMode}},"pidmode":{{json .HostConfig.PidMode}},"workdir":{{json .Config.WorkingDir}},"mounts":{{json .Mounts}}}'
+        value=json.loads(self.docker('container','inspect','--format',template,identity))
+        value['mounts']=[m for m in value['mounts'] if any(m.get('Destination')==p or m.get('Destination','').startswith(p+'/') for p in ('/config','/homeassistant'))]
+        return value
+
+    def core_filesystem(self,terminal,identity,root,directories):
+        """Source strings alone are insufficient. Compare actual Core descriptor nodes.
+
+        Requires existing host-PID visibility; never docker exec, setns, privilege
+        escalation or container reconfiguration. Kernel /proc/PID/root is the sole
+        intentional proc magic-link traversal; config descendants remain NOFOLLOW.
+        """
+        require(terminal.get('pidmode')=='host', 'CORE_FILESYSTEM_NOT_OBSERVABLE_WITHOUT_HOST_PID_VISIBILITY')
+        pid=identity['pid'];base=Path('/proc')/str(pid)
+        def birth():
+            raw=(base/'stat').read_text()
+            ticks=int(raw.rsplit(')',1)[1].split()[19])
+            fields={line.split(':',1)[0]:line.split(':',1)[1].split() for line in (base/'status').read_text().splitlines() if line.startswith(('Uid:','Gid:'))}
+            require(list(map(int,fields['Uid']))==[identity['uid']]*4 and list(map(int,fields['Gid']))==[identity['gid']]*4, 'CORE_PROCESS_CREDENTIAL_DRIFT')
+            namespace=os.readlink(base/'ns/user')
+            require(namespace==os.readlink('/proc/self/ns/user'), 'CORE_USER_NAMESPACE_NOT_IDENTICAL')
+            return {'pid':pid,'start_ticks':ticks,'user_namespace':namespace}
+        before=birth();held=[]
+        try:
+            fd=os.open(base/'root',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);held.append(fd)
+            config=os.open('config',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=fd);held.append(config)
+            anchors={}
+            for relative in ('','custom_components','custom_components/hioc_operator','www','backups'):
+                current=config
+                for part in Path(relative).parts:
+                    current=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=current);held.append(current)
+                value=anchor(os.fstat(current));expected=directories[str(Path(root)/relative)]
+                require(value==expected, 'CORE_VISIBLE_DIRECTORY_IDENTITY_CONFLICT')
+                anchors[relative]=value
+            require(before==birth(), 'CORE_PROCESS_REPLACED_DURING_QUALIFICATION')
+            return {'process_birth':before,'anchors':anchors}
+        finally:
+            for fd in reversed(held):os.close(fd)
+
+    def public_capabilities(self, core):
+        """Public installed source only, memory tar stream, no extract or HA import."""
+        base=core['workdir']
+        require(type(base) is str and Path(base).is_absolute() and '..' not in Path(base).parts, 'CORE_PUBLIC_SOURCE_UNAVAILABLE')
+        result={}
+        for relative in ('components/lovelace/websocket.py','components/lovelace/resources.py',
+                         'components/lovelace/const.py','components/websocket_api/connection.py',
+                         'components/websocket_api/commands.py','components/frontend/__init__.py','core.py'):
+            try:
+                completed=subprocess.run(['/usr/local/bin/docker','--config','/proc/pe73-no-client-config',
+                    '--host','unix:///var/run/docker.sock','container','cp',
+                    core['id']+':'+str(Path(base)/'homeassistant'/relative),'-'],
+                    stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=20,
+                    env={'PATH':'/usr/local/bin:/usr/bin:/bin','LANG':'C','LC_ALL':'C'})
+                require(completed.returncode==0 and len(completed.stdout)<=4194304, 'PUBLIC_SOURCE_LIMIT')
+                with tarfile.open(fileobj=io.BytesIO(completed.stdout),mode='r:') as archive:
+                    members=archive.getmembers();files=[x for x in members if x.isfile()]
+                    require(len(files)==1 and files[0].size<=2097152 and
+                            Path(files[0].name).name==Path(relative).name and
+                            not any(x.issym() or x.islnk() for x in members), 'PUBLIC_SOURCE_ARCHIVE_INVALID')
+                    raw=archive.extractfile(files[0]).read(2097153)
+                tree=ast.parse(raw);names={n.id for n in ast.walk(tree) if isinstance(n,ast.Name)}
+                names.update(n.name for n in ast.walk(tree) if isinstance(n,(ast.ClassDef,ast.FunctionDef,ast.AsyncFunctionDef)))
+                literals={n.value for n in ast.walk(tree) if isinstance(n,ast.Constant) and type(n.value) is str}
+                result[relative]={'sha256':hashlib.sha256(raw).hexdigest(),
+                    'symbols':sorted(names.intersection({'SupportsResponse','current_connection','ResourceStorageCollection','websocket_lovelace_save_config'})),
+                    'commands':sorted(literals.intersection({'lovelace/config','lovelace/config/save','lovelace/info','lovelace/resources','lovelace/resources/list'})),
+                    'source_support_only':True}
+            except Exception:
+                result[relative]={'state':'PUBLIC_SOURCE_NOT_ESTABLISHED'}
+        return result
+
+    def collect(self):
+        self.observations={'paths':{},'production_mutation':False}
+        require(sys.platform=='linux' and os.getuid()==os.geteuid()==os.getgid()==os.getegid()==0, 'QUALIFIED_TERMINAL_ROOT_IDENTITY_REQUIRED')
+        require(socket.gethostname().lower().split('.')[0]!='nutandpihole', 'PI3_TARGET_REFUSED')
+        require(all(hasattr(os,x) for x in ('O_DIRECTORY','O_NOFOLLOW','O_CLOEXEC','getxattr','fchown','fchmod','fsync'))
+                and all(x in os.supports_dir_fd for x in (os.open,os.stat,os.mkdir,os.unlink,os.rename))
+                and hasattr(ctypes.CDLL(None),'renameat2'), 'NATIVE_FILESYSTEM_PRIMITIVES_UNAVAILABLE')
+        for root in ('/config','/homeassistant'):
+            for relative in ('','custom_components','custom_components/hioc_operator','www','backups',
+                             'backups/pe73-ha-delivery-v1','.storage/lovelace','.storage/lovelace_resources','.storage/lovelace_dashboards'):
+                name=str(Path(root)/relative)
+                try:self.observations['paths'][name]=metadata(Path(name))
+                except OSError as error:self.observations['paths'][name]={'state':'ABSENT' if error.errno==errno.ENOENT else 'UNAVAILABLE','errno':error.errno}
+                except ValueError:self.observations['paths'][name]={'state':'UNSAFE_PATH'}
+        for name in ('uid_map','gid_map'):
+            rows=[list(map(int,line.split())) for line in Path('/proc/self/'+name).read_text().splitlines()]
+            require(rows==[[0,0,4294967295]], 'IDENTITY_USER_NAMESPACE_REQUIRED')
+        options=json.loads(self.docker('system','info','--format','{{json .SecurityOptions}}'))
+        require(type(options) is list and not any('userns' in x.lower() or 'rootless' in x.lower() for x in options), 'DOCKER_USER_MAPPING_UNSUPPORTED')
+        core_ids=self.docker('container','ls','--filter','label=io.hass.type=homeassistant','--format','{{.ID}}').split()
+        if not core_ids:
+            core_ids=self.docker('container','ls','--filter','name=^/homeassistant$','--format','{{.ID}}').split()
+        require(len(core_ids)==1, 'CORE_CONTAINER_NOT_UNIQUE')
+        core=self.container(core_ids[0])
+        self._observed_core=core
+        identity=core_identity(self.docker('container','top',core['id'],'-eo','pid,uid,gid,comm'))
+        self.observations['core']={'container_id':core['id'],'image':core['image'],'process':identity}
+        ids=set(re.findall(r'(?:docker[-/]|containers/)([0-9a-f]{64})(?:[/.]|$)',Path('/proc/self/cgroup').read_text()))
+        for line in Path('/proc/self/mountinfo').read_text().splitlines():
+            cols=line.split()
+            if len(cols)>5 and cols[4] in ('/etc/hostname','/etc/hosts','/etc/resolv.conf'):
+                ids.update(re.findall(r'/containers/([0-9a-f]{64})/',cols[3]))
+        require(len(ids)==1, 'TERMINAL_CONTAINER_IDENTITY_UNAVAILABLE')
+        terminal=self.container(next(iter(ids)))
+        def root_meta(root):
+            return directory_chain(root,identity['uid'],identity['gid'])[root]
+        root=bind_mounts(terminal,core,root_meta)
+        self.observations['selected_root']=root
+        directories={}
+        failures=[]
+        for relative in ('','custom_components','custom_components/hioc_operator','www','backups'):
+            try:directories.update(directory_chain(str(Path(root)/relative),identity['uid'],identity['gid']))
+            except (OSError,QualificationError) as error:failures.append({'relative':relative,'code':str(error) if type(error) is QualificationError else 'DIRECTORY_NOT_ESTABLISHED'})
+        self.observations['directory_failures']=failures
+        require(not failures, 'DESTINATION_SECURITY_OR_PREREQUISITE_NOT_ESTABLISHED')
+        visible=self.core_filesystem(terminal,identity,root,directories)
+        # Same boot/container/image/process/mount and root anchors must survive every mutation.
+        require(self.container(terminal['id'])==terminal and self.container(core['id'])==core, 'CONTAINER_CONTEXT_DRIFT')
+        return {'schema_version':'1.0','root':root,'publisher_uid':0,'publisher_gid':0,
+            'core':identity,'terminal':terminal,'core_container':core,
+            'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+            'directories':directories,'core_filesystem':visible}
+
+def preflight(probe=None):
+    """Machine evidence only, never permission or an install flag."""
+    probe=NativeProbe() if probe is None else probe
+    try:
+        value=probe.collect()
+        result={'RESULT':'PASS_READ_ONLY_FILESYSTEM_IDENTITY_QUALIFICATION','filesystem_binding':value,
+            'native_delivery_ready':False,
+            'remaining':['LIVE_HA_CONNECTION_AND_DISABLED_GUARD','DASHBOARD_VIEW_RESOURCE_EXPORT',
+                         'ACTUAL_TRUST_IDENTITIES_AND_PRIVATE_FILE_VALIDATION'],
+            'mutation_performed':False,'HA_imported':False,'container_exec_performed':False,
+            'PE73':'IN_PROGRESS','PE74':'NOT_AUTHORIZED','STOP_REQUIRED':True}
+    except BaseException as error:
+        result={'RESULT':'BLOCKED_READ_ONLY_QUALIFICATION','failure_code':str(error) if type(error) is QualificationError else 'FILESYSTEM_OR_METADATA_NOT_ESTABLISHED',
+            'failure_type':type(error).__name__,'mutation_performed':False,'HA_imported':False,
+            'native_delivery_ready':False,'STOP_REQUIRED':True}
+    if isinstance(probe,NativeProbe):
+        result['observations']=getattr(probe,'observations',{})
+        if hasattr(probe,'_observed_core'):
+            try:result['public_capabilities']=probe.public_capabilities(probe._observed_core)
+            except Exception:result['public_capabilities']={'state':'NOT_ESTABLISHED'}
+        result['not_observed']=['LIVE_DASHBOARD_EXPORT_AND_RESOURCE_CONFLICTS','LIVE_DISABLED_ROLE_GUARD',
+            'PRODUCTION_TRUST_MATERIAL_AND_ACL','FILESYSTEM_MUTATION_BEHAVIOR']
+    return result
+
+if __name__ == '__main__':
+    result=preflight()
+    print(json.dumps(result,sort_keys=True,separators=(',',':')))
+    raise SystemExit(0 if result['RESULT'].startswith('PASS_') else 1)
+PY
+PE73_HA_OS_PREFLIGHT_EXIT_STATUS=$?
+printf 'PE73_HA_OS_PREFLIGHT_EXIT_STATUS=%s\n' "$PE73_HA_OS_PREFLIGHT_EXIT_STATUS"
+~~~
+
+Exactly one next operational action: the operator executes this read-only PI5
+qualification once and supplies its sanitized receipt and exit status. No PI3 work,
+production installation, stage/commit/push or PE-7.4 action is authorized here.
+
+### PE-7.3 preflight prerequisite review and bounded correction
+
+Classification: CURRENT PREPARATION. Existing six-file candidate only. PE-7.3
+IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. No production access, execution, Git staging,
+commit or push. The accepted111/111 result and protected historical identities are
+retained; this follow-up does not restart implementation or reopen PI3 deployment.
+
+**Actual findings, resolved together:**
+
+1. Fresh installation circularity: the native factory and before-state reader
+required custom_components/hioc_operator before the delivery sequence could run.
+Neither absent delivery files nor the accepted contract established that directory.
+The accepted contract section13 requires guarded artifact delivery with exact paths,
+owners, ancestors and backup/rollback; it does not forbid bounded directory creation.
+The reader now verifies absence through the secure existing parent, reports an empty
+HIOC directory and absent file snapshots without writes. Installation may create
+only that exact directory, root-owned0755, after durable pending intent in the private
+transaction. Exact descriptor/path identity, ACL, mode, fsync and fresh Core-visible
+readback are mandatory. A concurrent directory, symlink, owner/ACL/path substitution
+or mismatched process proof refuses continuation. Existing directories are unchanged.
+
+2. The same circularity affected backups when absent. Its creation is now preceded
+by an exclusive0600 root-owned `.pe73-ha-directory-intent.json` in the verified Core
+configuration root, binding the exact backups path, plan, process reference and
+context digest. Only missing backups0700 may follow. The bootstrap is fsynced and
+read back before mkdir; created directory identity is retained in the transaction.
+Existing bootstrap/transaction state is never overwritten or automatically adopted.
+Interruption before/after creation requires disposition; no automatic retry/cleanup.
+Backup evidence persists. No recursive mkdir or operator manual workaround.
+
+3. Private backup traversal was unnecessarily required of Core. Publisher-only0700
+backup storage does not serve HA runtime. All ancestor security checks remain, but
+Core access is required only for public destination ancestry, not private backups.
+Publisher and Core identities remain separate; installed files0644 use proven Core
+ownership, private records0600 use publisher0:0. No privilege expansion or new trust.
+
+4. Host PID mode was an over-specific implementation predicate, not an observed
+HA OS capability or contract requirement. It is no longer demanded. The existing
+read-only proc route now requires exact Core container cgroup identity (64-hex ID),
+numeric PID credentials, same user namespace and stable process start ticks, followed
+by actual Core /proc/PID/root/config descriptor identity comparison. PID-number
+collision, hidden cgroup, inaccessible proc, wrong credentials or object mismatch
+blocks. No docker exec, setns, privilege/container change or metadata-only fallback.
+Whether this existing PI5 Terminal can observe that proof remains genuinely UNKNOWN.
+
+Docker MountPoint metadata reports source/destination/options, not target device/inode.
+Docker archive PathStat reports name,size,mode,mtime,linkTarget, not device/inode.
+Therefore their equality alone cannot reproduce the accepted descriptor-level proof.
+Reference: https://github.com/moby/moby/blob/v28.5.1/api/types/container/container.go
+(PathStat and MountPoint). This is an explicit limitation, not proof that PI5 lacks
+the necessary existing visibility. No new configuration or production probe is asked
+for in this task.
+
+**Remaining preflight requirements inspected:** Python/root identity and Docker
+availability are accepted OPERATOR_SUPPLIED facts. Their presence does not establish
+the exact local Docker socket, user mappings, Core process/proc observability, mount
+identity, destination ACL/ownership or native atomic filesystem behavior. Those are
+genuine qualification gates, not contradictions with supplied facts. Existing
+custom_components/www are supplied; config aliases are selected by exact binding,
+not guessed equivalence. Unknown or multiple Core Python processes stop. Optional
+public source capability failure remains non-admitting information, not an exact HA
+version pin. There is no further prerequisite provably incompatible with the supplied
+facts, and no other missing installation-owned directory in the closed write scope.
+
+**Recovery:** separate explicit recovery after supported-API restoration removes
+only an empty HIOC directory whose full recorded identity matches this transaction's
+creation. Existing directories are never removed. Identity drift, foreign content,
+pending creation/publication or uncertain removal stops and preserves evidence.
+Private backup/bootstrap/transaction evidence is deliberately retained, not deleted.
+Fresh-session checks remain; neither success nor failure triggers automatic rollback.
+
+**Consolidated validation:** native Windows harness with shell-free PATH,
+HIOC_TEST_SHELL cleared and sys.path[:0]=['tests','pi4/lib']; the same four focused
+modules: test_pe73_ha_delivery, test_pe7_ha, test_pe7_security, test_pe7_dashboard.
+125 run125 passed;0 failures,0 errors,0 skipped. The previous111 tests remain in
+the selection, with the obsolete host-mode negative updated to require inaccessible
+proof refusal;14 regressions add missing-directory/bootstrap intent, interruption,
+substitution, fixed scope, exact/fresh recovery, existing-directory preservation,
+observable proc without a host-mode predicate, PID collision, hidden identity,
+credential drift and private backup separation. No unrelated historical suite.
+Executable/test bytes were unchanged throughout the run. Windows POSIX models
+remain synthetic, not production or Linux mutation qualification.
+
+- `tools/pe73_ha_delivery.py`: SHA-256 `4f50112d58a874c88e21b566168b5d78bdb926076008e3a2580ee5029df88c75`.
+- `tools/pe73_ha_assess.py`: SHA-256 `83f4effedbe8555e7671e91975f542e10d431b18b0611a9cc6d99d1f3beff418`.
+- `tests/test_pe73_ha_delivery.py`: SHA-256 `e44e3efc8957c045a209d45bb8d07da248b724673a5b74bbd9085c477498766c`.
+
+**Preservation:**13 PI3 delivery,39 successor,449 protected and six immutable HA
+source identities verify. Only the two current-document identity entries refresh.
+493 other tracked files, accepted contract/amendment, controller/provider, executive
+instruction, completed PI3 evidence and original111-test report remain unchanged.
+Trust architecture, disabled-by-default behavior, supported HA Dashboard mechanisms,
+runtime independence and persistent-state isolation remain. No migration/activation,
+secret operation or ordinary-device-change deployment dependency was introduced.
+
+The previous embedded operator command is retained as historical preparation,
+superseded by the corrected source; it must not be reused as the current preflight.
+No new PI5 command is requested or returned in this review. Actual live HA/API,
+approved Dashboard selection/export, disabled guard, trust identities and native
+filesystem capabilities remain qualification inputs, not accepted observations.
+
+Exactly one next action: bounded independent acceptance of the corrected six-file
+candidate before publication or native qualification. No production mutation.
+
+### PE-7.3 HA delivery candidate independent acceptance and controlled publication
+
+Classification: REPOSITORY ACCEPTANCE PASS; production qualification pending.
+Authority: owner's Final Independent Acceptance and Conditional Publication request.
+Baseline main/origin/main2784ef31da5e4ebc0e75af19695c8cc68c3d04a1. Exactly the existing
+six-file HA candidate; no implementation source or test bytes changed during review.
+
+The actual Delivery, scoped native filesystem, NativeProbe and regression logic were
+inspected against the15 mandatory acceptance requirements. The accepted PE-7 contract
+remains authoritative and byte-identical. Master Plan changes record current evidence
+and sequencing only; accepted requirements and historical narratives remain preserved.
+
+1. No inherited1000:1000 HA ownership policy. Publisher credentials, actual Core
+process identity, public files0644 and private records0600/directory0700 are distinct.
+2. Actual Core-visible descriptor identity must match before mutation. No admission
+from saved JSON, root privilege, mount strings, PID mode or branch names alone.
+3. Missing integration/backup directories have fixed-path, durable-intent procedures;
+private bootstrap precedes missing backup-parent creation. No manual workaround.
+4. Host PID mode is not universal. Exact container/process/namespace/birth and
+filesystem proof is required; hidden or unavailable evidence refuses continuation.
+5. Anchored no-follow traversal, device/inode, owner/mode, ACL, single-link file and
+pre/post-operation path checks remain. New descriptors alone receive bounded modes.
+6. Four exact immutable HA payloads and necessary private records are the only write
+scope. Backup/export, pending intent, exclusive creation, atomic publication and
+independent readback remain; failure never retries, rolls back or releases consumers.
+7. Explicit recovery uses exact retained evidence and only removes its empty created
+directory; unrelated/existing directories and uncertain transactions are not adopted.
+8. Runtime independence, persistent Asset/config/history isolation and capability-based
+compatibility remain. No permanent HA version pin, migration or discovery coupling.
+9. Supported authenticated HA Dashboard/resource calls preserve unrelated content and
+export originals. No direct .storage editing, broad YAML replacement or reload.
+10. Accepted mTLS, signed actors and independent ACL design is preserved. No production
+secrets/identities are invented, installed, exposed or activated. Disabled integration,
+editing, evaluator, migration and recurring-function boundaries remain mandatory.
+11. Completed PI3 evidence, contracts, amendment, executive decision and protected
+artifacts remain unchanged. PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+
+Validation retained:125 tests passed,0 failures/errors/skips; exact code/test hashes
+match source_before/source_after in the retained Windows result. No historical suites
+were repeated. All25 static preservation checks independently rerun PASS.13 PI3
+delivery identities,39 successor identities,449 protected identities and six immutable
+HA source pins verify. Only two current-document successor identity entries refresh.
+Diff checks cover tracked changes and all three new files. Actual remote refs/heads/main
+was checked against the baseline before publication. Stage/commit scope remains six.
+
+Accepted code/test SHA-256:
+- `tools/pe73_ha_delivery.py`: `4f50112d58a874c88e21b566168b5d78bdb926076008e3a2580ee5029df88c75`.
+- `tools/pe73_ha_assess.py`: `83f4effedbe8555e7671e91975f542e10d431b18b0611a9cc6d99d1f3beff418`.
+- `tests/test_pe73_ha_delivery.py`: `e44e3efc8957c045a209d45bb8d07da248b724673a5b74bbd9085c477498766c`.
+
+Remaining PI5 production requirements, explicitly not established by this review:
+- Actual local Docker/proc access, Core identity/user mappings, exact configuration
+  mount/object equivalence, secure ancestry/ACLs and ownership.
+- Native filesystem mutation/durability/atomic-publication qualification.
+- Authenticated live HA capability/disabled guard, /local mapping, supported storage
+  resources and approved Dashboard/view export and conflict-free additive delivery.
+- Actual production trust identities, private-file/certificate/key consistency and
+  independent ACL qualification through existing secure bindings; no secret disclosure.
+These are dependent native gates, not repository acceptance failures or authority to
+install, provision credentials, change containers, restart or activate functionality.
+
+One next operational action: operator-run the consolidated read-only PI5 qualification
+from the accepted preflight. No PI3 or PI5 access by Codex. No deployment, activation,
+production mutation or PE-7.4 work in this acceptance/publication operation.
