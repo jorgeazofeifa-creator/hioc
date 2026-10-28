@@ -6270,7 +6270,46 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — PE-7.3 PI3 UID1000 isolated provisioning environment.
+Classification: CURRENT — PE-7.3 separate manual CA signing custody.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3: PASS_PI3_ISOLATED_PROVISIONING_ENVIRONMENT, exit0;
+native_smoke=PASS; provisioning_crypto_apis=PASS; UID/GID1000/1000;
+/home/jazofv1/.hioc-pe73-provision-environment. PI5 isolated environment already PASS.
+Neither completed environment assessment is repeated, modified or used as root.
+Same UID1000 owns normal HIOC jobs and the proposed runtime CA file: encryption
+and mode0600 do not establish runtime exclusion. Historical co-located backend-init
+and backend-issue are superseded for production use; their immutable bytes remain.
+Bounded successor: manually invoked root signer, encrypted CA key in root-owned
+/root/.hioc-pe73-ca-custody, 0700 directory/0600 files, no ACLs, no-follow descriptors.
+Root-only signer dependencies use a separate /root/.hioc-pe73-ca-signing-environment
+and the accepted finite offline hash-locked CP311 installer/wheels. Never sudo the
+user-writable validated environment, install global packages or modify either cache.
+Existing manually operated CA and P256/SHA256 certificate semantics retained;
+no daemon, automatic issuance, account, sudoers change or management interface.
+Runtime UID1000 generates/keeps server private key and exact32-byte assertion key;
+PI5 retains its client key. Signer reads canonical approved plan and public CSRs,
+returns only bound public certificates; no HMAC/server/client key in CA custody.
+Manual signing uses retained pinned source/dependencies with no network downloads.
+Root custody protects against normal UID1000 runtime file access, not root/admin
+compromise or a human intentionally exercising sudo. Passphrase remains offline.
+Fresh local policy values/actor ACLs/ports/subjects are still required; none invented.
+56 focused Windows synthetic tests PASS; native root-custody setup remains unobserved.
+13 PI3/six HA payload,39 successor and449 protected identities verified unchanged
+except necessary current documentation bindings. Original contract/amendment,
+executive instruction and all historical production evidence preserved.
+Exclusive HIOC Dashboard hioc-dashboard-v2 and six existing views preserved.
+Next action: operator on PI3 prepares ONLY the root-owned signer environment and
+empty vault with existing sudo authority. No CA/key issuance, HMAC, runtime trust,
+HIOC services, scheduler, PI5 or production activation changes. Stop if privilege,
+identity, ancestry, ACL, seal or setup is not established; no retry/repair/cleanup.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+See [separate CA custody](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-separate-manual-ca-signing-custody).
+
+### Historical PI3 isolated dependency preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 PI3 UID1000 isolated provisioning environment.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8052,7 +8091,46 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PE-7.3 PI3 UID1000 isolated provisioning environment.
+Classification: CURRENT — PE-7.3 separate manual CA signing custody.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3: PASS_PI3_ISOLATED_PROVISIONING_ENVIRONMENT, exit0;
+native_smoke=PASS; provisioning_crypto_apis=PASS; UID/GID1000/1000;
+/home/jazofv1/.hioc-pe73-provision-environment. PI5 isolated environment already PASS.
+Neither completed environment assessment is repeated, modified or used as root.
+Same UID1000 owns normal HIOC jobs and the proposed runtime CA file: encryption
+and mode0600 do not establish runtime exclusion. Historical co-located backend-init
+and backend-issue are superseded for production use; their immutable bytes remain.
+Bounded successor: manually invoked root signer, encrypted CA key in root-owned
+/root/.hioc-pe73-ca-custody, 0700 directory/0600 files, no ACLs, no-follow descriptors.
+Root-only signer dependencies use a separate /root/.hioc-pe73-ca-signing-environment
+and the accepted finite offline hash-locked CP311 installer/wheels. Never sudo the
+user-writable validated environment, install global packages or modify either cache.
+Existing manually operated CA and P256/SHA256 certificate semantics retained;
+no daemon, automatic issuance, account, sudoers change or management interface.
+Runtime UID1000 generates/keeps server private key and exact32-byte assertion key;
+PI5 retains its client key. Signer reads canonical approved plan and public CSRs,
+returns only bound public certificates; no HMAC/server/client key in CA custody.
+Manual signing uses retained pinned source/dependencies with no network downloads.
+Root custody protects against normal UID1000 runtime file access, not root/admin
+compromise or a human intentionally exercising sudo. Passphrase remains offline.
+Fresh local policy values/actor ACLs/ports/subjects are still required; none invented.
+56 focused Windows synthetic tests PASS; native root-custody setup remains unobserved.
+13 PI3/six HA payload,39 successor and449 protected identities verified unchanged
+except necessary current documentation bindings. Original contract/amendment,
+executive instruction and all historical production evidence preserved.
+Exclusive HIOC Dashboard hioc-dashboard-v2 and six existing views preserved.
+Next action: operator on PI3 prepares ONLY the root-owned signer environment and
+empty vault with existing sudo authority. No CA/key issuance, HMAC, runtime trust,
+HIOC services, scheduler, PI5 or production activation changes. Stop if privilege,
+identity, ancestry, ACL, seal or setup is not established; no retry/repair/cleanup.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+See [separate CA custody](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-separate-manual-ca-signing-custody).
+
+### Historical PI3 isolated dependency preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 PI3 UID1000 isolated provisioning environment.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -9318,7 +9396,46 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PE-7.3 PI3 UID1000 isolated provisioning environment.
+Classification: CURRENT — PE-7.3 separate manual CA signing custody.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3: PASS_PI3_ISOLATED_PROVISIONING_ENVIRONMENT, exit0;
+native_smoke=PASS; provisioning_crypto_apis=PASS; UID/GID1000/1000;
+/home/jazofv1/.hioc-pe73-provision-environment. PI5 isolated environment already PASS.
+Neither completed environment assessment is repeated, modified or used as root.
+Same UID1000 owns normal HIOC jobs and the proposed runtime CA file: encryption
+and mode0600 do not establish runtime exclusion. Historical co-located backend-init
+and backend-issue are superseded for production use; their immutable bytes remain.
+Bounded successor: manually invoked root signer, encrypted CA key in root-owned
+/root/.hioc-pe73-ca-custody, 0700 directory/0600 files, no ACLs, no-follow descriptors.
+Root-only signer dependencies use a separate /root/.hioc-pe73-ca-signing-environment
+and the accepted finite offline hash-locked CP311 installer/wheels. Never sudo the
+user-writable validated environment, install global packages or modify either cache.
+Existing manually operated CA and P256/SHA256 certificate semantics retained;
+no daemon, automatic issuance, account, sudoers change or management interface.
+Runtime UID1000 generates/keeps server private key and exact32-byte assertion key;
+PI5 retains its client key. Signer reads canonical approved plan and public CSRs,
+returns only bound public certificates; no HMAC/server/client key in CA custody.
+Manual signing uses retained pinned source/dependencies with no network downloads.
+Root custody protects against normal UID1000 runtime file access, not root/admin
+compromise or a human intentionally exercising sudo. Passphrase remains offline.
+Fresh local policy values/actor ACLs/ports/subjects are still required; none invented.
+56 focused Windows synthetic tests PASS; native root-custody setup remains unobserved.
+13 PI3/six HA payload,39 successor and449 protected identities verified unchanged
+except necessary current documentation bindings. Original contract/amendment,
+executive instruction and all historical production evidence preserved.
+Exclusive HIOC Dashboard hioc-dashboard-v2 and six existing views preserved.
+Next action: operator on PI3 prepares ONLY the root-owned signer environment and
+empty vault with existing sudo authority. No CA/key issuance, HMAC, runtime trust,
+HIOC services, scheduler, PI5 or production activation changes. Stop if privilege,
+identity, ancestry, ACL, seal or setup is not established; no retry/repair/cleanup.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+See [separate CA custody](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-separate-manual-ca-signing-custody).
+
+### Historical PI3 isolated dependency preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 PI3 UID1000 isolated provisioning environment.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

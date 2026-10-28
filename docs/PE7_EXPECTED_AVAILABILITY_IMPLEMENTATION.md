@@ -6166,3 +6166,114 @@ pe73_status=$?
 printf 'PE73_PI3_ISOLATED_ENVIRONMENT_EXIT_STATUS=%s\n' "$pe73_status"
 ```
 Stop on BLOCKED; no retries or cleanup.
+
+### PE-7.3 separate manual CA signing custody
+
+**Accepted OPERATOR_SUPPLIED evidence:** PI3 NUT&PIHOLE reports
+RESULT=PASS_PI3_ISOLATED_PROVISIONING_ENVIRONMENT; native_smoke=PASS;
+provisioning_crypto_apis=PASS; EXIT_STATUS=0; UID/GID=1000/1000;
+Environment=/home/jazofv1/.hioc-pe73-provision-environment.
+The previously accepted PI5 isolated environment remains PASS. No dependency
+assessment is repeated and neither completed environment/source is modified.
+
+**Security determination:** accepted PI3 runtime deployment and cron observations
+record UID/GID1000:1000 for jazofv1 and normal HIOC jobs (earlier deployment and
+consumer-coordination evidence in this document). The prior runtime-parent
+ca-offline.key is encrypted but remains accessible to that same principal.
+That fails the already recorded outside-runtime CA custody requirement. Encryption
+alone is not a filesystem-access boundary; we do not waive the requirement.
+
+**Bounded successor:** tools/pe73_ca_custody.py separates the manual signer into
+/root/.hioc-pe73-ca-custody, owner0:0/mode0700, encrypted CA key0600. It reuses the
+accepted PrivateFiles descriptor/no-follow/full-ancestry/ACL/owner/mode/link/drift,
+exclusive creation, fsync and readback implementation. Existing state is refused,
+never adopted, moved, repaired, chowned, deleted or retried. Root custody contains
+only CA public/encrypted private material, approved-plan SHA and role-specific
+public issuance receipts. It contains no server/client private key, assertion key,
+actor ACL contents or runtime trust packet. Retain the CA passphrase offline.
+The old backend-init/backend-issue co-location workflow is NOT approved for future
+production use; its historical source and both sealed caches stay byte-identical.
+No existing CA is assumed to exist and no automatic migration is performed.
+
+Root is necessary for this custody boundary because ordinary HIOC processes use
+UID1000. This is a manual one-shot signer using existing operator sudo authority,
+not a permanent CA service, new account, sudoers change or unattended issuance.
+If sudo is unavailable/not permitted, stop without weakening the boundary.
+Root/admin compromise and deliberate human sudo are outside this normal-runtime
+UID isolation claim. A privileged signer never executes the user-owned venv or
+source checkout. A separate root-owned environment reuses the accepted installer
+and exact CP311 cryptography50.0.2/cffi2.0.0/pycparser2.23/pip25.3 wheel pins;
+all downloads are size/SHA checked before new files, installation is binary-only,
+offline, hash-locked and single attempt. The system Python/cryptography38.0.4 and
+existing PI3/PI5 environments remain unchanged. Root/interpreter/ancestry checks
+precede installation. Root cache readiness is sealed; manual signing checks that
+seal and loads retained hash-pinned engine/profile/toolkit without network fetch.
+No new CA certificate is signed by environment preparation; smoke uses ephemeral
+key/CSR API checks only. The new vault is empty after preparation.
+
+UID1000 runtime-side preparation retains the accepted local policy wizard without
+invented addresses/ports/subjects/human IDs/Asset ACLs. It generates server key,
+server CSR and exact32-byte HMAC locally; PI5 still generates its own client key.
+The signer reads only the canonical approved plan and public CSR through the
+existing UID1000 secure reader; plan SHA is retained in the root vault. Server CSR
+validation preserves accepted P256 key, exact subject/IP SAN and signature checks;
+leaf extensions/EKU/validity/CA chain match the original issuance semantics. Client
+issuance directly reuses the original accepted issue() implementation. One public
+role response binds plan SHA and CSR SHA, CA and chain; no secrets or ACL are sent.
+Runtime import checks role/CSR/key/chain/CA before exclusive writes. The existing
+disabled TrustSide/NativePacket is written last and existing private HA handoff
+shape remains intact. No listener, activation, certificate renewal, runtime service,
+Dashboard edit or discovery coupling is introduced. Original HMAC-SHA25632,
+mTLS, signed actor assertion and independent backend ACL remain authoritative.
+
+Manual CLI actions are separate role processes: prepare, initialize-ca, issue-server,
+issue-client (root signer); runtime-prepare, import-server, import-client,
+runtime-complete (sealed UID1000 venv). Public responses are captured local pipes,
+not operator JSON entry or cryptographic challenges. This checkpoint supplies ONLY
+the preparation command below. No issuance command or made-up policy is supplied.
+Any uncertainty/partial file is retained; stop for explicit recovery, no automatic
+retry, cleanup, overwrite, rollback, scheduler restoration or consumer release.
+
+**Validation:** 56 focused Windows synthetic tests PASS, zero failures/errors/skips:
+CA encryption, runtime/private-key separation, original client issuance and server
+extension compatibility, exact CSR/plan bindings, disabled final packets, partial
+writes/collisions, offline pinned dependency reuse and modeled root ownership,
+mode, ACL/hardlink/exclusive creation. These tests do NOT establish observed Linux
+root custody or sudo capability. Independent static preservation and current binding
+checks verify13 PI3/six HA payload,39 successor/449 protected identities, original
+contract/amendment/controller and both completed environment implementations.
+All earlier operator evidence and executive instructions remain historical authority.
+PE73 remains IN_PROGRESS; PE74 remains NOT_AUTHORIZED.
+
+Final accepted source identities:
+- `tools/pe73_ca_custody.py`: SHA256 `b0d0a6a47f50e294204beac40946b7a446979bb5577ea08d13ea79b0c85bc4c9`.
+- `tests/test_pe73_ca_custody.py`: SHA256 `9527f639ad8c96097863cbcab0158f8b6e12a4eda3d0d256e15487936f4c4067`.
+
+**Exactly one next action:** as jazofv1 on PI3 NUT&PIHOLE, prepare only the new
+root-owned signing environment and empty vault. Uses existing sudo authority; does
+not grant privileges, create CA/HMAC/server/client credentials, read runtime secrets,
+modify HIOC/runtime/services/scheduler or touch either completed environment.
+Expected RESULT=PASS_PI3_SEPARATE_CA_CUSTODY_PREPARATION and exit0; otherwise STOP.
+The URL plus exact accepted SHA pins source bytes; final handoff uses immutable commit URL.
+
+```sh
+sudo -H /usr/bin/python3 -I -B - <<'PY'
+import hashlib,json,os,platform,sys,urllib.request
+url="https://raw.githubusercontent.com/jorgeazofeifa-creator/hioc/main/tools/pe73_ca_custody.py"
+try:
+    if platform.node()!="nutandpihole" or sys.platform!="linux" or os.geteuid()!=0:
+        raise ValueError()
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(url,timeout=30) as response:
+        if response.geturl()!=url:raise ValueError()
+        raw=response.read(1048577)
+    if len(raw)>1048576 or hashlib.sha256(raw).hexdigest()!="b0d0a6a47f50e294204beac40946b7a446979bb5577ea08d13ea79b0c85bc4c9":raise ValueError()
+except Exception:
+    print(json.dumps({"RESULT":"BLOCKED_VERIFIED_PI3_CA_CUSTODY_SOURCE","STOP_REQUIRED":True}))
+    raise SystemExit(1)
+sys.argv=["pe73_ca_custody.py","prepare"]
+exec(compile(raw,url,"exec"),{"__name__":"__main__","__file__":url})
+PY
+pe73_status=$?
+printf 'PE73_CA_CUSTODY_PREPARATION_EXIT_STATUS=%s\n' "$pe73_status"
+```
