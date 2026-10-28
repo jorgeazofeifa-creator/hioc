@@ -6270,7 +6270,47 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — HA OS PID-namespace preflight correction; qualification pending.
+Classification: CURRENT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED filesystem result PASS_READ_ONLY_FILESYSTEM_IDENTITY_QUALIFICATION,
+exit0, source da630dd9cac20b784a6b433de614bfe323d4576f is accepted, not repeated.
+PI5 HA192.168.100.251 HAOS/Core2026.10.4; Terminal/Core0:0; /homeassistant and
+Core/config have matching actual filesystem identities/security/namespaces/process.
+Required existing directories pass; absent hioc_operator is expected; no mutation.
+Installed public source supports Lovelace storage/config, WS context/service response.
+New fixed read-only API qualifier uses only the Terminal app's existing supported
+Supervisor Core WebSocket proxy authentication, if already permitted. Root is not
+HA authorization. Actual admin/current_user is verified; proxy admin is not a human
+PE-7 editing actor. No token prompt, extraction, creation, logging or persistence;
+only the normal internal authentication handshake receives the existing app token.
+Missing/denied permission blocks and names existing browser-admin login as fallback.
+Read-only dashboard catalog/config exports report bounded titles/paths/view choices
+and resource fingerprints/conflicts, not cards, URLs/query secrets or credentials.
+No target selected, duplicate dashboard, YAML migration, .storage access or API save.
+Potential legacy-resource lazy import is refused before resources/list; an unprovable
+default-source binding blocks rather than allowing a read-side configuration write.
+HA integration absence is inactive, not unsafe. HA API observations cannot prove
+fresh cross-host evaluator/scheduler/manual-caller exclusion; those guards remain
+unknown/false. /local source capability is accepted; the actual route is not inferred
+from an absent editor/404. Native delivery remains blocked pending the live guards,
+an explicit compatible target, private full API export/backup and actual trust.
+Existing strict trust_preflight remains mandatory before Delivery.prepare: real
+certificate/assertion identities, private-file security, SPKI and independent ACL.
+No trust exemption, issuance, activation, deployment or PE-7.4 authorization.
+LIVE_QUALIFIER_IMPLEMENTATION=PASS; FOCUSED_NATIVE_VALIDATION=163_RUN_163_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_BOUNDED_READ_ONLY_REPOSITORY_PUBLICATION.
+13 PI3 delivery, six HA source,39 current successor and449 protected identities
+verify. Existing delivery/assessment, controller/provider, contract, amendment,
+executive instruction, completed PI3 deployment and historical evidence unchanged.
+Next action: one operator-run PI5 live read-only API qualification bound to the new
+published tool SHA/commit; retain sanitized receipt/exit status and stop.
+See [live API qualification evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-live-api-dashboard-and-disabled-role-qualification).
+
+### Historical PID-namespace preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS PID-namespace preflight correction; qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -7773,7 +7813,47 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — HA OS PID-namespace preflight correction; qualification pending.
+Classification: CURRENT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED filesystem result PASS_READ_ONLY_FILESYSTEM_IDENTITY_QUALIFICATION,
+exit0, source da630dd9cac20b784a6b433de614bfe323d4576f is accepted, not repeated.
+PI5 HA192.168.100.251 HAOS/Core2026.10.4; Terminal/Core0:0; /homeassistant and
+Core/config have matching actual filesystem identities/security/namespaces/process.
+Required existing directories pass; absent hioc_operator is expected; no mutation.
+Installed public source supports Lovelace storage/config, WS context/service response.
+New fixed read-only API qualifier uses only the Terminal app's existing supported
+Supervisor Core WebSocket proxy authentication, if already permitted. Root is not
+HA authorization. Actual admin/current_user is verified; proxy admin is not a human
+PE-7 editing actor. No token prompt, extraction, creation, logging or persistence;
+only the normal internal authentication handshake receives the existing app token.
+Missing/denied permission blocks and names existing browser-admin login as fallback.
+Read-only dashboard catalog/config exports report bounded titles/paths/view choices
+and resource fingerprints/conflicts, not cards, URLs/query secrets or credentials.
+No target selected, duplicate dashboard, YAML migration, .storage access or API save.
+Potential legacy-resource lazy import is refused before resources/list; an unprovable
+default-source binding blocks rather than allowing a read-side configuration write.
+HA integration absence is inactive, not unsafe. HA API observations cannot prove
+fresh cross-host evaluator/scheduler/manual-caller exclusion; those guards remain
+unknown/false. /local source capability is accepted; the actual route is not inferred
+from an absent editor/404. Native delivery remains blocked pending the live guards,
+an explicit compatible target, private full API export/backup and actual trust.
+Existing strict trust_preflight remains mandatory before Delivery.prepare: real
+certificate/assertion identities, private-file security, SPKI and independent ACL.
+No trust exemption, issuance, activation, deployment or PE-7.4 authorization.
+LIVE_QUALIFIER_IMPLEMENTATION=PASS; FOCUSED_NATIVE_VALIDATION=163_RUN_163_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_BOUNDED_READ_ONLY_REPOSITORY_PUBLICATION.
+13 PI3 delivery, six HA source,39 current successor and449 protected identities
+verify. Existing delivery/assessment, controller/provider, contract, amendment,
+executive instruction, completed PI3 deployment and historical evidence unchanged.
+Next action: one operator-run PI5 live read-only API qualification bound to the new
+published tool SHA/commit; retain sanitized receipt/exit status and stop.
+See [live API qualification evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-live-api-dashboard-and-disabled-role-qualification).
+
+### Historical PID-namespace preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS PID-namespace preflight correction; qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8760,7 +8840,47 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — HA OS PID-namespace preflight correction; qualification pending.
+Classification: CURRENT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED filesystem result PASS_READ_ONLY_FILESYSTEM_IDENTITY_QUALIFICATION,
+exit0, source da630dd9cac20b784a6b433de614bfe323d4576f is accepted, not repeated.
+PI5 HA192.168.100.251 HAOS/Core2026.10.4; Terminal/Core0:0; /homeassistant and
+Core/config have matching actual filesystem identities/security/namespaces/process.
+Required existing directories pass; absent hioc_operator is expected; no mutation.
+Installed public source supports Lovelace storage/config, WS context/service response.
+New fixed read-only API qualifier uses only the Terminal app's existing supported
+Supervisor Core WebSocket proxy authentication, if already permitted. Root is not
+HA authorization. Actual admin/current_user is verified; proxy admin is not a human
+PE-7 editing actor. No token prompt, extraction, creation, logging or persistence;
+only the normal internal authentication handshake receives the existing app token.
+Missing/denied permission blocks and names existing browser-admin login as fallback.
+Read-only dashboard catalog/config exports report bounded titles/paths/view choices
+and resource fingerprints/conflicts, not cards, URLs/query secrets or credentials.
+No target selected, duplicate dashboard, YAML migration, .storage access or API save.
+Potential legacy-resource lazy import is refused before resources/list; an unprovable
+default-source binding blocks rather than allowing a read-side configuration write.
+HA integration absence is inactive, not unsafe. HA API observations cannot prove
+fresh cross-host evaluator/scheduler/manual-caller exclusion; those guards remain
+unknown/false. /local source capability is accepted; the actual route is not inferred
+from an absent editor/404. Native delivery remains blocked pending the live guards,
+an explicit compatible target, private full API export/backup and actual trust.
+Existing strict trust_preflight remains mandatory before Delivery.prepare: real
+certificate/assertion identities, private-file security, SPKI and independent ACL.
+No trust exemption, issuance, activation, deployment or PE-7.4 authorization.
+LIVE_QUALIFIER_IMPLEMENTATION=PASS; FOCUSED_NATIVE_VALIDATION=163_RUN_163_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_BOUNDED_READ_ONLY_REPOSITORY_PUBLICATION.
+13 PI3 delivery, six HA source,39 current successor and449 protected identities
+verify. Existing delivery/assessment, controller/provider, contract, amendment,
+executive instruction, completed PI3 deployment and historical evidence unchanged.
+Next action: one operator-run PI5 live read-only API qualification bound to the new
+published tool SHA/commit; retain sanitized receipt/exit status and stop.
+See [live API qualification evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-live-api-dashboard-and-disabled-role-qualification).
+
+### Historical PID-namespace preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS PID-namespace preflight correction; qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

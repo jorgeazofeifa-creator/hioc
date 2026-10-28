@@ -4859,3 +4859,158 @@ No secret values are requested in chat. Unknown capabilities block dependent act
 One next operational action: operator-run the single read-only PI5 qualification
 command bound to the newly published immutable assessment commit and SHA-256, retain
 its sanitized receipt and immediate exit status, and stop. No installation follows.
+
+### PE-7.3 live API, Dashboard and disabled-role qualification
+
+Classification: CURRENT PREPARATION; LIVE_QUALIFIER_IMPLEMENTATION=PASS;
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_BOUNDED_READ_ONLY_REPOSITORY_PUBLICATION.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. This implements the existing delivery
+qualification only. No new checkpoint, architecture, production access or closure.
+Baseline main/origin da630dd9cac20b784a6b433de614bfe323d4576f.
+
+**Accepted OPERATOR_SUPPLIED filesystem qualification (not repeated):** source
+da630dd9cac20b784a6b433de614bfe323d4576f; result
+PASS_READ_ONLY_FILESYSTEM_IDENTITY_QUALIFICATION; exit0. PI5 HA192.168.100.251,
+HAOS/Core2026.10.4, Terminal/Core UID/GID0:0. Terminal/homeassistant and Core/config
+refer to the same actual objects. Device/inode, ownership, mode, namespace, process
+and existing required directories passed. Missing hioc_operator installation directory
+is expected/supported. No production mutation. Installed public source established
+Lovelace configuration/resource storage, WS context and service-response support.
+These are operator observations, not Codex-collected facts or new production claims.
+
+**Actual existing interfaces:** pe73_ha_delivery.READs/observe require admin,
+get_config/get_services, storage resources/config; fresh host/disabled/exclusive/
+resources_loaded/local_mapping/storage_dashboard/capability_identity guards; exact
+four-artifact publication and six immutable source references. Existing add_card
+supports unique masonry/cards or sections views; panel/unknown/duplicate/editor
+conflicts stop. The new qualifier adds only the supported get_panels and
+lovelace/dashboards/list read commands for actual target discovery, never an alternate
+editing/write interface. Existing delivery/assessment source is unchanged.
+
+**Supported authentication, with explicit limits:** official Home Assistant app
+communication documentation specifies ws://supervisor/core/websocket and the app's
+already-present SUPERVISOR_TOKEN in the normal auth handshake, conditional on the
+app's existing homeassistant_api permission. No token is copied from files/proc/
+Docker, requested from the operator, printed, placed in arguments, sent to HIOC or
+GitHub, persisted or created. The token is used only in RAM for that internal protocol.
+No permission elevation or add-on reconfiguration. The fixed peer is Supervisor
+172.30.32.2:80; no redirects, alternate hosts, retry or credential fallback. Native
+token/permission availability remains unobserved until the single operator action.
+Root is never used as proof of API authority. A successful protocol still requires
+actual auth/current_user admin and a nonempty hashed principal; no raw identity,
+credential metadata or private exceptions in the receipt. Server WS user checks
+establish active connection admission; proxy admin does not establish a non-system
+human editing actor. PE-7 authenticated interactive actor/allowlist/assertion/ACL
+requirements remain separate and unchanged.
+
+If existing app authentication is absent/denied, the tool stops without scanning or
+requesting secrets. Smallest supported fallback: open the existing HA frontend in
+the ordinary browser, log in as an existing administrator using the normal HA login
+and keep that authenticated same-origin session. Its supported hass.callWS interface
+can carry the same read-only allowlist; no access-token export, new credential or
+permission broadening. No browser session or fallback execution is invented here.
+
+**Read-only/resource safety:** a fixed allowlist contains only eight supported reads;
+no service call, dashboard/resource write, reload or mode switch is possible through
+the transport. Frame/JSON/message/deadline/request/catalog/view/resource budgets,
+response IDs, duplicate-key checks and sanitized failures are enforced. Socket closes
+on completion/failure; uncertain close cannot report PASS. No HIOC/HA import, file
+operation, lock, subprocess, filesystem inspection or installation is performed.
+Normal API connection/cache handling is not evidence of universal runtime immutability.
+
+Core2026.10.4 resources/list can lazy-import a legacy default resources key and save
+configuration. The qualifier therefore first observes the exact default storage
+config and refuses any legacy key. A named lovelace shadows config(None), so that
+case cannot prove the true default import source and blocks before listing resources.
+Unknown/default YAML source or unsupported APIs also block. No .storage or unsafe
+shortcut is used. Catalog/config reads preserve YAML dashboards without loading or
+migrating them. The guard evaluates observed source state; it is not an exclusive
+transaction or proof of no concurrent external configuration changes. The native
+delivery's separate fresh exclusive guard remains mandatory.
+
+**Dashboard/resource output and backup:** retain existing HIOC layout. Repository
+hioc_dashboard_v2.yaml is a reference with executive/operations/diagnostics/inventory/
+network/server views, not permission to overwrite the live dashboard. All compatible
+observed storage dashboard/view choices are returned, preferring existing HIOC labels
+for operator consideration; no target is selected even if unique. YAML and unsupported
+layouts remain untouched. Only bounded selection labels, layout/suitability, digests
+and editor-conflict flags are emitted. Card/entity content, resource URLs/query
+parameters and raw API errors are not emitted. Normalized/encoded editor paths are
+conflicts. Full observed config/resources are used in memory; later existing
+Delivery.prepare must export both exact API objects into private transaction backups
+before any publication. This qualifier creates no backup and authorizes no write.
+Existing accepted www/Core filesystem and installed frontend source support the
+/local mapping capability. The actual live route is not established merely by
+an absent editor or HTTP404; live_guard.local_mapping stays false pending proof.
+
+**Disabled roles and trust reconciliation:** absent component AND absent services
+establish HA integration inactivity without a circular requirement to run it first.
+A present role requests actual disabled evidence; it is not called unsafe merely
+because present. HA APIs cannot prove current PI3 evaluator, scheduler, migrations,
+notifications or manual caller exclusion; disabled/exclusive guards remain false,
+explicitly unestablished, and native_delivery_ready is always false. API-discovery
+PASS is not an executable native guard or frozen authorization report.
+Contract sections5,7,13 require actual trust/private-secret placement and guarded
+integration/UI/trust delivery. No authority was found to skip existing strict
+trust_preflight for disabled file staging. It remains before transaction creation:
+identity,ha_private_files,backend_private_files,certificate_pair,assertion_pair,
+spki_pin,independent_acl must all pass. Later production steps require owner-selected
+private endpoint/address/port and issuer/key ID; valid mTLS CA/certificate/key pairs;
+separate matching assertion key; client SPKI pin; observed0600 files/0700 private
+parents; explicit existing human HA operator allowlist and independent exact-Asset/
+operation backend ACL. Keep every enable flag false; securely provision under later
+production authorization, never send secret values in chat/Git/receipt. No trust
+material, ACL grant, configuration or service is created by this task.
+
+**Focused native validation:** documented bundled Windows interpreter, repository
+root, shell-free PATH, HIOC_TEST_SHELL cleared, sys.path[:0]=['tests','pi4/lib'].
+163 distinct final focused tests supported,163 passed,0 failures,0 errors,
+0 skipped,0 class-level skips. Initial consolidated run:161/161. Source review then
+added a normal-mode guard because safe mode can return an empty resource list without
+loading resources; final new-module run59/59, retaining104 unchanged delivery passes.
+Total actual test executions220, distinct final selection163; no failure was hidden.
+Selection: test_pe73_ha_live_qualify and existing test_pe73_ha_delivery only. Exact
+tool/test and existing publisher/assessment hashes remain unchanged during the run.
+Positive/negative tests cover existing admin proxy authentication, missing/denied
+auth, protocol/frame/response/size/deadline checks, unsupported reads, storage/YAML,
+legacy-import/shadow guards, conflicting resources, view/default-dashboard handling,
+absence/disabled role truthfulness, no target selection, redaction, per-read failure
+isolation, cleanup failure and zero mutation capability. Existing delivery tests
+retain trust, backup, atomic publication, interruption, exact recovery and ownership
+protections. No repeated filesystem qualification, production action or unrelated
+historical suite. Native PI5 API results remain UNKNOWN until the operator runs it.
+
+**Focused independent acceptance:** actual allowlist, source-supported proxy scope,
+read-side import refusal, backup/trust interface mapping, failure/cleanup output and
+negative tests inspected independently of the passing summary. No new production
+authority or acceptance gate is invented. Mandatory repository acceptance passes;
+conditional native capabilities and unresolved guard/trust facts remain explicit.
+
+- `tools/pe73_ha_live_qualify.py`: SHA-256 `cf9e172595c05ca81a0bfec991c33f9ac7be756e30fb25dc8a6ac065d1e9a1cc`.
+- `tests/test_pe73_ha_live_qualify.py`: SHA-256 `76b53ac64d7b1148baa8dd4810b9ec16c82b935726ce12e0a8e143e94f4d87f2`.
+
+**Preservation and publication scope:** exactly five files: new qualifier and its new
+tests, Master Plan, this append-only evidence and the existing candidate record.
+Only two current-document successor identities are refreshed in that record; all39
+current successor identities verify, all449 protected identities remain unchanged.
+All13 PI3 payload identities and all six immutable HA source identities remain.
+496 other tracked files, original contract/amendment, executive instruction, PI3
+deployment evidence, accepted delivery and assessment source, runtime independence,
+persistent-state isolation, disabled defaults and history remain byte-identical.
+Commit/push and clean-tree/remote identity checks are inside this authorized task;
+no PI3/PI5, production, credential generation, reload, restart, migration or activation.
+
+**One next operator action:** on PI5 Terminal only, run the single published,
+SHA-256-bound in-memory live qualifier; retain its sanitized report and immediate
+exit status and stop. It neither repeats accepted filesystem checks nor installs
+anything. BLOCKED means the precise missing API/auth/source/selection capability,
+not unsafe filesystem operation or permission to bypass the gate.
+
+Primary support reviewed:
+- https://contributors.home-assistant.io/apps/guides/communication/
+- https://contributors.home-assistant.io/frontend/reference/hass-object/
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/auth/__init__.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/websocket.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/resources.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/dashboard.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/frontend/__init__.py
