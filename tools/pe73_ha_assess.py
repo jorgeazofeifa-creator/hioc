@@ -1,7 +1,8 @@
 """Bounded HA OS read-only native identity qualification, no arguments/prompts.
 
 Default execution uses fixed local Docker metadata reads and kernel/descriptor
-metadata. No HA import/API, container exec, credentials or .storage contents.
+metadata. One fixed read-only Core metadata helper uses Docker exec; no HA
+import/API, shell, extra privileges, credentials or .storage contents.
 The earlier assess(config, package) source-only fixture remains available for its
 historical tests; it is not the operator entry or a native admission mechanism.
 """
@@ -20,6 +21,8 @@ import ctypes
 import io
 import tarfile
 
+
+CORE_FS_PROBE = "import errno\nimport json\nimport os\nimport re\nimport stat\n\n\ndef demand(condition, code):\n    if not condition:\n        raise ValueError(code)\n\n\ndef node(info):\n    return {'device':info.st_dev,'inode':info.st_ino,'uid':info.st_uid,\n            'gid':info.st_gid,'mode':stat.S_IMODE(info.st_mode)}\n\n\ndef process(local_pid):\n    base='/proc/'+str(local_pid)\n    with open(base+'/stat','r',encoding='ascii') as stream:\n        raw=stream.read(8193)\n    demand(len(raw)<=8192,'CORE_PROCESS_LIMIT')\n    ticks=int(raw.rsplit(')',1)[1].split()[19])\n    with open(base+'/status','r',encoding='ascii') as stream:\n        raw=stream.read(65537)\n    demand(len(raw)<=65536,'CORE_PROCESS_LIMIT')\n    fields={s.split(':',1)[0]:s.split(':',1)[1].split() for s in raw.splitlines() if s.startswith(('Uid:','Gid:'))}\n    uid=list(map(int,fields['Uid']));gid=list(map(int,fields['Gid']))\n    demand(len(uid)==len(gid)==4 and len(set(uid))==len(set(gid))==1,'CORE_CREDENTIAL_SHAPE')\n    return {'local_pid':local_pid,'start_ticks':ticks,'uid':uid[0],'gid':gid[0],\n            'user_namespace':os.readlink(base+'/ns/user')}\n\n\ndef local_python_processes():\n    found=[]\n    for name in os.listdir('/proc'):\n        if not name.isdecimal() or int(name)==os.getpid():\n            continue\n        try:\n            with open('/proc/'+name+'/comm','r',encoding='ascii') as stream:\n                comm=stream.read(65).strip()\n            if re.fullmatch(r'python(?:3(?:\\.\\d+)?)?',comm):\n                found.append(process(int(name)))\n        except FileNotFoundError:\n            continue\n    demand(len(found)==1,'CORE_LOCAL_PYTHON_NOT_UNIQUE')\n    return found\n\n\ndef capture():\n    candidates=local_python_processes();before=candidates[0]\n    demand(os.getuid()==os.geteuid()==before['uid'] and os.getgid()==os.getegid()==before['gid'], 'CORE_HELPER_IDENTITY_MISMATCH')\n    demand(os.readlink('/proc/self/ns/user')==before['user_namespace'],'CORE_HELPER_NAMESPACE_MISMATCH')\n    for name in ('uid_map','gid_map'):\n        with open('/proc/self/'+name,'r',encoding='ascii') as stream:\n            raw=stream.read(1025)\n        demand(len(raw)<=1024 and [list(map(int,s.split())) for s in raw.splitlines()]==[[0,0,4294967295]],'CORE_USER_MAPPING_UNSUPPORTED')\n    anchors={};held=[];links=[]\n    flags=os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC\n    try:\n        # Kernel proc root link is intentional; every config descendant is NOFOLLOW.\n        root=os.open('/proc/'+str(before['local_pid'])+'/root',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);held.append(root)\n        config=os.open('config',flags,dir_fd=root);held.append(config)\n        links.append((root,'config',config))\n        for relative in ('','custom_components','custom_components/hioc_operator','www','backups'):\n            fd=config\n            try:\n                for part in relative.split('/') if relative else ():\n                    child=os.open(part,flags,dir_fd=fd);held.append(child);links.append((fd,part,child));fd=child\n            except FileNotFoundError:\n                demand(relative in ('custom_components/hioc_operator','backups'),'CORE_REQUIRED_PARENT_ABSENT')\n                anchors[relative]=None\n                continue\n            info=os.fstat(fd);value=node(info)\n            demand(stat.S_ISDIR(info.st_mode) and info.st_uid in (0,before['uid']) and not value['mode']&0o7022,'CORE_DIRECTORY_SECURITY')\n            if relative!='backups':\n                shift=6 if info.st_uid==before['uid'] else 3 if info.st_gid==before['gid'] else 0\n                demand((value['mode']>>shift)&1,'CORE_DIRECTORY_TRAVERSAL')\n            for acl in ('system.posix_acl_access','system.posix_acl_default'):\n                try:os.getxattr(fd,acl)\n                except OSError as error:demand(error.errno==errno.ENODATA,'CORE_ACL_UNKNOWN')\n                else:raise ValueError('CORE_ACL_PRESENT')\n            anchors[relative]=value\n        for parent,name,fd in links:\n            demand(node(os.stat(name,dir_fd=parent,follow_symlinks=False))==node(os.fstat(fd)),'CORE_PATH_DRIFT')\n        demand(before==process(before['local_pid']) and candidates==local_python_processes(),'CORE_PROCESS_DRIFT')\n        return {'schema':'PE73_CORE_FILESYSTEM_V1','process':before,'anchors':anchors,\n                'helper_uid':os.getuid(),'helper_gid':os.getgid(),'read_only':True}\n    finally:\n        for fd in reversed(held):\n            os.close(fd)\n\n\ndef main():\n    try:\n        result=capture()\n    except BaseException as error:\n        result={'schema':'PE73_CORE_FILESYSTEM_V1','RESULT':'BLOCKED',\n                'failure_code':str(error) if type(error) is ValueError and re.fullmatch('[A-Z_]{4,80}',str(error)) else 'CORE_METADATA_UNAVAILABLE',\n                'read_only':True}\n        print(json.dumps(result,sort_keys=True,separators=(',',':')))\n        raise SystemExit(1)\n    print(json.dumps(result,sort_keys=True,separators=(',',':')))\n\n\nmain()\n"
 
 def metadata(path):
     """No following symlinks, no implicit ownership correction."""
@@ -171,7 +174,7 @@ def core_identity(top):
 
 
 class NativeProbe:
-    """Fixed local Docker reads and kernel metadata. Never exec, HA API or secrets."""
+    """Fixed Docker metadata and one closed read-only Core helper; no HA API/secrets."""
     def docker(self,*args):
         completed=subprocess.run(['/usr/local/bin/docker','--config','/proc/pe73-no-client-config',
             '--host','unix:///var/run/docker.sock',*args],stdin=subprocess.DEVNULL,
@@ -182,64 +185,45 @@ class NativeProbe:
 
     def container(self,identity):
         require(re.fullmatch('[0-9a-f]{12,64}',identity), 'CONTAINER_ID_INVALID')
-        template='{"id":{{json .Id}},"image":{{json .Image}},"running":{{json .State.Running}},"pid":{{json .State.Pid}},"userns":{{json .HostConfig.UsernsMode}},"pidmode":{{json .HostConfig.PidMode}},"workdir":{{json .Config.WorkingDir}},"mounts":{{json .Mounts}}}'
+        template='{"id":{{json .Id}},"image":{{json .Image}},"running":{{json .State.Running}},"pid":{{json .State.Pid}},"userns":{{json .HostConfig.UsernsMode}},"pidmode":{{json .HostConfig.PidMode}},"started_at":{{json .State.StartedAt}},"workdir":{{json .Config.WorkingDir}},"mounts":{{json .Mounts}}}'
         value=json.loads(self.docker('container','inspect','--format',template,identity))
         value['mounts']=[m for m in value['mounts'] if any(m.get('Destination')==p or m.get('Destination','').startswith(p+'/') for p in ('/config','/homeassistant'))]
         return value
 
-    def process_birth(self, identity, core_id):
-        require(type(core_id) is str and re.fullmatch('[0-9a-f]{64}',core_id), 'CORE_CONTAINER_ID_REQUIRED')
-        base=Path('/proc')/str(identity['pid'])
-        try:
-            raw=(base/'stat').read_text()
-            ticks=int(raw.rsplit(')',1)[1].split()[19])
-            fields={line.split(':',1)[0]:line.split(':',1)[1].split() for line in (base/'status').read_text().splitlines() if line.startswith(('Uid:','Gid:'))}
-            groups=set(re.findall(r'(?<![0-9a-f])[0-9a-f]{64}(?![0-9a-f])',(base/'cgroup').read_text()))
-            namespace=os.readlink(base/'ns/user')
-            own_namespace=os.readlink('/proc/self/ns/user')
-        except OSError:
-            raise QualificationError('CORE_PROCESS_FILESYSTEM_IDENTITY_NOT_OBSERVABLE') from None
-        require(groups=={core_id}, 'CORE_PROCESS_CONTAINER_BINDING_NOT_ESTABLISHED')
-        require(list(map(int,fields['Uid']))==[identity['uid']]*4 and list(map(int,fields['Gid']))==[identity['gid']]*4, 'CORE_PROCESS_CREDENTIAL_DRIFT')
-        require(namespace==own_namespace, 'CORE_USER_NAMESPACE_NOT_IDENTICAL')
-        return {'pid':identity['pid'],'start_ticks':ticks,'user_namespace':namespace,'container_id':core_id}
-
     def core_filesystem(self,terminal,identity,root,directories,core_id=None):
-        """Source strings alone are insufficient. Compare actual Core descriptor nodes.
+        """Exact device/inode proof from Core's namespace, not a host-PID guess.
 
-        Uses existing observable proc objects, never assumes host PID configuration.
-        Numeric PID is bound to the exact Core container cgroup, credentials, user
-        namespace and process birth. No metadata-only fallback, exec, setns or
-        container reconfiguration. Inaccessible or hidden identity proof stops.
+        The only exec is a fixed stdlib metadata program, no stdin/TTY/shell,
+        writable commands, arbitrary script/path parameters or extra privileges.
+        Docker supplies the exact selected container namespace; the helper checks
+        its actual UID/GID, finds Core's namespace-local Python PID and opens that
+        process's config root. Host PID remains Docker context, never /proc input.
         """
-        pid=identity['pid'];base=Path('/proc')/str(pid)
-        def birth():return self.process_birth(identity,core_id)
-        before=birth();held=[]
-        try:
-            fd=os.open(base/'root',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);held.append(fd)
-            config=os.open('config',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=fd);held.append(config)
-            anchors={}
-            for relative in ('','custom_components','custom_components/hioc_operator','www','backups'):
-                current=config
-                expected=directories.get(str(Path(root)/relative))
-                try:
-                    for part in Path(relative).parts:
-                        current=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=current);held.append(current)
-                except FileNotFoundError:
-                    require(expected is None and relative in ('custom_components/hioc_operator','backups'), 'CORE_VISIBLE_DIRECTORY_IDENTITY_CONFLICT')
-                    anchors[relative]=None
-                    continue
-                value=anchor(os.fstat(current))
-                require(value==expected, 'CORE_VISIBLE_DIRECTORY_IDENTITY_CONFLICT')
-                anchors[relative]=value
-            require(before==birth(), 'CORE_PROCESS_REPLACED_DURING_QUALIFICATION')
-            return {'process_birth':before,'anchors':anchors}
-        finally:
-            for fd in reversed(held):os.close(fd)
+        require(type(core_id) is str and re.fullmatch('[0-9a-f]{64}',core_id), 'CORE_CONTAINER_ID_REQUIRED')
+        require(all(type(identity[k]) is int and identity[k]>=0 for k in ('pid','uid','gid')), 'CORE_IDENTITY_INVALID')
+        self._core_probe_started=True
+        raw=self.docker('container','exec','--user',str(identity['uid'])+':'+str(identity['gid']),
+            '--workdir','/',core_id,'python3','-I','-S','-B','-c',CORE_FS_PROBE)
+        value=json.loads(raw)
+        require(type(value) is dict and set(value)=={'schema','process','anchors','helper_uid','helper_gid','read_only'} and
+                value['schema']=='PE73_CORE_FILESYSTEM_V1' and value['read_only'] is True, 'CORE_METADATA_PROOF_NOT_ESTABLISHED')
+        process=value['process']
+        require(type(process) is dict and set(process)=={'local_pid','start_ticks','uid','gid','user_namespace'} and
+            all(type(process[k]) is int and process[k]>=0 for k in ('local_pid','start_ticks','uid','gid')) and
+            process['local_pid']>0 and process['start_ticks']>0, 'CORE_LOCAL_PROCESS_INVALID')
+        require((process['uid'],process['gid'])==(identity['uid'],identity['gid'])==
+                (value['helper_uid'],value['helper_gid']), 'CORE_PROCESS_CREDENTIAL_DRIFT')
+        require(process['user_namespace']==os.readlink('/proc/self/ns/user'), 'CORE_USER_NAMESPACE_NOT_IDENTICAL')
+        expected={relative:directories.get(str(Path(root)/relative)) for relative in
+            ('','custom_components','custom_components/hioc_operator','www','backups')}
+        require(value['anchors']==expected, 'CORE_VISIBLE_DIRECTORY_IDENTITY_CONFLICT')
+        require(core_identity(self.docker('container','top',core_id,'-eo','pid,uid,gid,comm'))==identity,
+                'CORE_HOST_PROCESS_DRIFT')
+        return {'process_birth':process|{'host_pid':identity['pid'],'container_id':core_id},'anchors':value['anchors']}
 
     def public_capabilities(self, core):
         """Public installed source only, memory tar stream, no extract or HA import."""
-        base=core['workdir']
+        base='/usr/src/homeassistant'
         require(type(base) is str and Path(base).is_absolute() and '..' not in Path(base).parts, 'CORE_PUBLIC_SOURCE_UNAVAILABLE')
         result={}
         for relative in ('components/lovelace/websocket.py','components/lovelace/resources.py',
@@ -288,7 +272,7 @@ class NativeProbe:
             require(rows==[[0,0,4294967295]], 'IDENTITY_USER_NAMESPACE_REQUIRED')
         options=json.loads(self.docker('system','info','--format','{{json .SecurityOptions}}'))
         require(type(options) is list and not any('userns' in x.lower() or 'rootless' in x.lower() for x in options), 'DOCKER_USER_MAPPING_UNSUPPORTED')
-        core_ids=self.docker('container','ls','--filter','label=io.hass.type=homeassistant','--format','{{.ID}}').split()
+        core_ids=self.docker('container','ls','--filter','label=io.hass.type=core','--format','{{.ID}}').split()
         if not core_ids:
             core_ids=self.docker('container','ls','--filter','name=^/homeassistant$','--format','{{.ID}}').split()
         require(len(core_ids)==1, 'CORE_CONTAINER_NOT_UNIQUE')
@@ -335,7 +319,7 @@ def preflight(probe=None):
             'native_delivery_ready':False,
             'remaining':['LIVE_HA_CONNECTION_AND_DISABLED_GUARD','DASHBOARD_VIEW_RESOURCE_EXPORT',
                          'ACTUAL_TRUST_IDENTITIES_AND_PRIVATE_FILE_VALIDATION','NATIVE_MUTATION_BEHAVIOR'],
-            'mutation_performed':False,'HA_imported':False,'container_exec_performed':False,
+            'mutation_performed':False,'HA_imported':False,'container_exec_performed':bool(getattr(probe,'_core_probe_started',False)),
             'PE73':'IN_PROGRESS','PE74':'NOT_AUTHORIZED','STOP_REQUIRED':True}
     except BaseException as error:
         result={'RESULT':'BLOCKED_READ_ONLY_QUALIFICATION','failure_code':str(error) if type(error) is QualificationError else 'FILESYSTEM_OR_METADATA_NOT_ESTABLISHED',
@@ -343,6 +327,8 @@ def preflight(probe=None):
             'PE73':'IN_PROGRESS','PE74':'NOT_AUTHORIZED',
             'native_delivery_ready':False,'STOP_REQUIRED':True}
     if isinstance(probe,NativeProbe):
+        result['container_exec_performed']=bool(getattr(probe,'_core_probe_started',False))
+        result['core_probe_scope']='FIXED_READ_ONLY_METADATA_ONLY'
         result['observations']=getattr(probe,'observations',{})
         if hasattr(probe,'_observed_core'):
             try:result['public_capabilities']=probe.public_capabilities(probe._observed_core)

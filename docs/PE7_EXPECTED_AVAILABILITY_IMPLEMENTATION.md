@@ -4752,3 +4752,110 @@ install, provision credentials, change containers, restart or activate functiona
 One next operational action: operator-run the consolidated read-only PI5 qualification
 from the accepted preflight. No PI3 or PI5 access by Codex. No deployment, activation,
 production mutation or PE-7.4 work in this acceptance/publication operation.
+
+### PE-7.3 Core PID-namespace qualification correction
+
+Classification: CURRENT PREPARATION; focused independent repository acceptance PASS.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. This is the existing checkpoint's narrow
+compatibility correction and authorized Git publication, not production execution.
+Baseline published commit2d2ecf5b95531b2c514cc4a889aa358f9fc27365.
+
+**New OPERATOR_SUPPLIED evidence:** published qualifier source verification passed;
+result CORE_PROCESS_FILESYSTEM_IDENTITY_NOT_OBSERVABLE. Selected root/homeassistant;
+Docker-reported Core UID/GID0:0, host PID731186; directory failures none; HIOC integration
+absent as expected; production mutation false. Subsequent reads of/proc/731186/stat,
+/proc/731186/status,/proc/731186/cgroup,/proc/731186/ns/user,/proc/731186/root each
+returned ENOENT(errno2). Terminal PID namespace pid:[4026533213], user namespace
+user:[4026531837]. Codex did not collect or repeat these observations. They establish
+that the Docker host PID is unavailable in Terminal/proc; no directory-security
+failure, permission relaxation or production health assertion follows.
+
+**Confirmed defect:** published NativeProbe.process_birth/core_filesystem interpreted
+a Docker host PID as a Terminal-visible PID. Removing a host-mode predicate did not
+remove the namespace assumption. That direct Terminal/proc host-PID route is replaced.
+
+**Bounded supported correction:** Docker container exec targets the exact64-hex Core
+container ID selected by read-only inspection. The only program is python3 -I -S -B
+-c with a fixed embedded metadata script. No shell, TTY, stdin, arbitrary script/path,
+--privileged, privilege change, service, mount/config change or retry. It runs under
+the already observed numeric Core UID/GID, never guessed from Terminal root. Docker
+exec is explicitly disclosed in the receipt; the prior no-container-exec preparation
+claim is historical and superseded only for this fixed metadata preflight.
+
+The fixed helper reads only/proc process identity and approved/config directory
+metadata. It excludes its own Python PID, requires exactly one remaining Core Python
+process, checks actual helper/Core credentials and identity UID/GID mappings, and
+pins Core namespace-local PID/start ticks/user namespace before and after capture.
+It opens the actual local Core process root through the intentional kernel proc
+link and then/config and fixed descendants with descriptor-relative NOFOLLOW.
+Each directory's device,inode,UID,GID,mode,ACL absence/traversal and named/descriptor
+identity are checked. Missing integration/backups is represented as observed absence,
+not a manual prerequisite. Terminal compares every anchor/absence to its secure
+configuration-root evidence. User namespace must agree. Docker's host Python PID,
+UID/GID and container ID/image/start timestamp/mount metadata are checked again.
+Host and namespace-local PID are separate receipt fields; no numeric coincidence,
+matching path or mount-source string can establish filesystem equivalence.
+
+No file contents, configuration, environment values, private keys/certificates,
+tokens, credentials or HA modules are read by the Core helper. No HA import,
+reload/restart, classification, HIOC engine, scheduler, migration, activation or
+filesystem write. A transient metadata process is created through supported Docker
+exec; it is not a persistent service or HA runtime activation. Inaccessible proc,
+unsupported interpreter/exec, ambiguity, ACLs, namespace/credentials/object drift,
+helper failure or incomplete output blocks qualification without a workaround.
+
+**Directly related assumptions corrected together:** Core2026.10.4 Dockerfile uses
+io.hass.type=core (exact-name fallback retained), not the oldhomeassistant label.
+Its working directory/config is not the Python source directory. Optional bounded
+public-source reads now use/usr/src/homeassistant/homeassistant, the source-supported
+layout. Source inspection remains optional/capability evidence, not admission or a
+permanent HA version pin. Unknown layouts remain NOT_ESTABLISHED.
+Primary support: https://docs.docker.com/reference/cli/docker/container/exec/ and
+https://github.com/home-assistant/core/blob/2026.10.4/Dockerfile . These explain the
+API and reviewed source layout; they are not invented observations of PI5.
+
+**Focused validation and independent acceptance:** same four native Windows focused
+modules, documented shell-free PATH, HIOC_TEST_SHELL cleared, sys.path[:0]=['tests',
+'pi4/lib']. 133 run,133 passed,0 failures,0 errors,0 skipped; exact final
+source/test identities unchanged during validation. Simulated isolated Terminal
+namespace gives ENOENT for all host-PID paths while fixed Core-local metadata passes;
+positive descriptor capture is modeled with actual temporary Windows files plus
+explicit POSIX namespace/ownership seams. Negative cases include device/inode/mode/
+owner mismatch, unexpected directory, process/credential/user-namespace drift,
+blocked/incomplete helper output, ACL presence and process restart. Fixed-script AST
+and exact argv checks prohibit write/shell/network/HA operations. Native Linux/PI5
+qualification is not inferred from synthetic tests.
+
+An initial85-test attempt had84 passes/1 fixture error: Windows fixture translated
+Core/config on open but not its final named stat. The fixture alias was corrected;
+production identity checks were unchanged. Failure evidence is retained externally.
+Final passing run supersedes that fixture attempt. No unrelated historical suite.
+
+Focused independent inspection confirms the new helper is fixed/read-only, current
+container/identity/object evidence is mandatory and uncertain outcomes fail closed.
+The change is within the owner's authorization prohibiting unrestricted execution;
+it does not relax the accepted security contract. No mandatory repository acceptance
+blocker remains. No separate consequential-step approval prompt is introduced.
+
+- `tools/pe73_ha_delivery.py`: SHA-256 `4f50112d58a874c88e21b566168b5d78bdb926076008e3a2580ee5029df88c75`.
+- `tools/pe73_ha_assess.py`: SHA-256 `da4c97ef7e5acaf5840b9cbca03ee0cd888183e784a3f55bb8671b45b8372443`.
+- `tests/test_pe73_ha_delivery.py`: SHA-256 `3a2da88bf8235f6157ca23e1f1590d21544b7b954253267e54aaf592e85eca9f`.
+
+**Preservation:** publisher/transaction implementation is byte-identical to the
+accepted release. Four HA payloads and two HA references,13 PI3 delivery,39 successor
+and449 protected identities verify. Only the two current-document successor entries
+refresh. Historical contracts, maintenance amendment, executive instruction, completed
+PI3 deployment, original125-test acceptance, disabled roles, trust architecture,
+backups/recovery, runtime independence and persistent Asset/state isolation remain.
+Exactly five existing paths change: assessment, its existing delivery tests, Master
+Plan, implementation evidence and candidate record. No other paths or new files.
+
+Remaining native requirements: successful exact Core-local metadata capture through
+existing Docker/installed Python; exact directory/security equivalence; native atomic
+publication/durability; authenticated HA capabilities/disabled guard, approved live
+Dashboard/view/resource export; actual trust/private-file/independent ACL bindings.
+No secret values are requested in chat. Unknown capabilities block dependent action.
+
+One next operational action: operator-run the single read-only PI5 qualification
+command bound to the newly published immutable assessment commit and SHA-256, retain
+its sanitized receipt and immediate exit status, and stop. No installation follows.

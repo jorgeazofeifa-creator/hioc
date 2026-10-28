@@ -6270,7 +6270,37 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — HA OS preflight prerequisite correction; native qualification pending.
+Classification: CURRENT — HA OS PID-namespace preflight correction; qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI5 preflight at2d2ecf5b95531b2c514cc4a889aa358f9fc27365
+verified source identity, selected/homeassistant, observed Core0:0, no directory
+failures, integration absent and no mutation. Docker host PID731186 was not visible
+in Terminal/proc: stat/status/cgroup/ns/user/root all ENOENT2. This is namespace
+visibility evidence, not a filesystem-security failure or unsafe-directory finding.
+The corrected qualifier never opens a Docker host PID in Terminal/proc. One fixed,
+noninteractive read-only Docker exec runs stdlib metadata code in the exact Core
+container under the observed Core UID/GID. It finds namespace-local Core PID, checks
+credentials/user mapping/birth and opens actual Core config objects with NOFOLLOW.
+Device/inode/owner/group/mode, absence and ACL checks must agree with Terminal's
+secure/homeassistant proof. No mount-string-only admission, shell, extra privileges,
+host PID mode, container reconfiguration or persistent service. Failure blocks.
+The Core label and optional public-source location now follow the source-supported
+Core layout; no exact HA version gate or production identity is invented.
+FOCUSED_PID_NAMESPACE_CORRECTION=133_RUN_133_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_REPOSITORY_PUBLICATION. No runtime mutation
+or native delivery readiness is claimed. Existing publisher/transaction code is
+unchanged.13 PI3,39 successor,449 protected and six HA source identities verify.
+Trust, backups, interruption recovery, disabled behavior, runtime independence and
+persistent-state isolation remain. All prior PI3/PI5 evidence retains its authority.
+Next action: operator-run one consolidated read-only PI5 qualifier bound to this
+published correction's exact source SHA/commit. No installation/activation authority.
+See [PID-namespace correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-core-pid-namespace-qualification-correction).
+
+### Historical accepted HA preflight preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS preflight prerequisite correction; native qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -7743,7 +7773,37 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — HA OS preflight prerequisite correction; native qualification pending.
+Classification: CURRENT — HA OS PID-namespace preflight correction; qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI5 preflight at2d2ecf5b95531b2c514cc4a889aa358f9fc27365
+verified source identity, selected/homeassistant, observed Core0:0, no directory
+failures, integration absent and no mutation. Docker host PID731186 was not visible
+in Terminal/proc: stat/status/cgroup/ns/user/root all ENOENT2. This is namespace
+visibility evidence, not a filesystem-security failure or unsafe-directory finding.
+The corrected qualifier never opens a Docker host PID in Terminal/proc. One fixed,
+noninteractive read-only Docker exec runs stdlib metadata code in the exact Core
+container under the observed Core UID/GID. It finds namespace-local Core PID, checks
+credentials/user mapping/birth and opens actual Core config objects with NOFOLLOW.
+Device/inode/owner/group/mode, absence and ACL checks must agree with Terminal's
+secure/homeassistant proof. No mount-string-only admission, shell, extra privileges,
+host PID mode, container reconfiguration or persistent service. Failure blocks.
+The Core label and optional public-source location now follow the source-supported
+Core layout; no exact HA version gate or production identity is invented.
+FOCUSED_PID_NAMESPACE_CORRECTION=133_RUN_133_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_REPOSITORY_PUBLICATION. No runtime mutation
+or native delivery readiness is claimed. Existing publisher/transaction code is
+unchanged.13 PI3,39 successor,449 protected and six HA source identities verify.
+Trust, backups, interruption recovery, disabled behavior, runtime independence and
+persistent-state isolation remain. All prior PI3/PI5 evidence retains its authority.
+Next action: operator-run one consolidated read-only PI5 qualifier bound to this
+published correction's exact source SHA/commit. No installation/activation authority.
+See [PID-namespace correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-core-pid-namespace-qualification-correction).
+
+### Historical accepted HA preflight preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS preflight prerequisite correction; native qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8700,7 +8760,37 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — HA OS preflight prerequisite correction; native qualification pending.
+Classification: CURRENT — HA OS PID-namespace preflight correction; qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI5 preflight at2d2ecf5b95531b2c514cc4a889aa358f9fc27365
+verified source identity, selected/homeassistant, observed Core0:0, no directory
+failures, integration absent and no mutation. Docker host PID731186 was not visible
+in Terminal/proc: stat/status/cgroup/ns/user/root all ENOENT2. This is namespace
+visibility evidence, not a filesystem-security failure or unsafe-directory finding.
+The corrected qualifier never opens a Docker host PID in Terminal/proc. One fixed,
+noninteractive read-only Docker exec runs stdlib metadata code in the exact Core
+container under the observed Core UID/GID. It finds namespace-local Core PID, checks
+credentials/user mapping/birth and opens actual Core config objects with NOFOLLOW.
+Device/inode/owner/group/mode, absence and ACL checks must agree with Terminal's
+secure/homeassistant proof. No mount-string-only admission, shell, extra privileges,
+host PID mode, container reconfiguration or persistent service. Failure blocks.
+The Core label and optional public-source location now follow the source-supported
+Core layout; no exact HA version gate or production identity is invented.
+FOCUSED_PID_NAMESPACE_CORRECTION=133_RUN_133_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_REPOSITORY_PUBLICATION. No runtime mutation
+or native delivery readiness is claimed. Existing publisher/transaction code is
+unchanged.13 PI3,39 successor,449 protected and six HA source identities verify.
+Trust, backups, interruption recovery, disabled behavior, runtime independence and
+persistent-state isolation remain. All prior PI3/PI5 evidence retains its authority.
+Next action: operator-run one consolidated read-only PI5 qualifier bound to this
+published correction's exact source SHA/commit. No installation/activation authority.
+See [PID-namespace correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-core-pid-namespace-qualification-correction).
+
+### Historical accepted HA preflight preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — HA OS preflight prerequisite correction; native qualification pending.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

@@ -779,11 +779,31 @@ class NativeBindingTests(unittest.TestCase):
         value=self.a.preflight(probe)
         self.assertEqual(value['RESULT'],'BLOCKED_READ_ONLY_QUALIFICATION');self.assertNotIn('sensitive',json.dumps(value))
         self.assertFalse(value['mutation_performed'])
-    def test_no_host_pid_visibility_has_no_exec_or_namespace_workaround(self):
-        probe=self.a.NativeProbe()
-        with patch.object(self.a.Path,'read_text',side_effect=PermissionError('not visible')):
-            with self.assertRaisesRegex(self.a.QualificationError,'NOT_OBSERVABLE'):
-                probe.core_filesystem({'pidmode':''},{'pid':42,'uid':0,'gid':0},'/homeassistant',{},'a'*64)
+    def core_report(self):
+        dirs={str(Path('/homeassistant')/p):{'device':7,'inode':i+10,'uid':0,'gid':0,'mode':0o755}
+            for i,p in enumerate(('','custom_components','www'))}
+        anchors={p:dirs.get(str(Path('/homeassistant')/p)) for p in ('','custom_components','custom_components/hioc_operator','www','backups')}
+        value={'schema':'PE73_CORE_FILESYSTEM_V1','process':{'local_pid':32,'start_ticks':123,
+            'uid':0,'gid':0,'user_namespace':'user:[1]'},'anchors':anchors,
+            'helper_uid':0,'helper_gid':0,'read_only':True}
+        return dirs,value
+    def core_call(self,value=None,*,top='731186 0 0 python3'):
+        dirs,default=self.core_report();value=default if value is None else value
+        probe=self.a.NativeProbe();calls=[]
+        def docker(*args):
+            calls.append(args)
+            return json.dumps(value) if args[1]=='exec' else 'PID UID GID COMMAND\n'+top+'\n'
+        probe.docker=docker
+        with patch.object(self.a.os,'readlink',return_value='user:[1]'),patch.object(self.a.Path,'read_text',side_effect=FileNotFoundError(2,'isolated PID namespace')):
+            result=probe.core_filesystem({'pidmode':''},{'pid':731186,'uid':0,'gid':0},'/homeassistant',dirs,'a'*64)
+        return result,calls
+    def test_isolated_pid_namespace_uses_only_fixed_metadata_exec(self):
+        result,calls=self.core_call()
+        self.assertEqual(result['process_birth']['local_pid'],32)
+        self.assertEqual(result['process_birth']['host_pid'],731186)
+        self.assertEqual(calls[0],('container','exec','--user','0:0','--workdir','/','a'*64,
+            'python3','-I','-S','-B','-c',self.a.CORE_FS_PROBE))
+        self.assertEqual(len(calls),2)
     def test_core_cannot_read_private_parent_by_assumed_root_bypass(self):
         with tempfile.TemporaryDirectory() as temp:
             ops=RootOps(Path(temp));p=ops.root/'homeassistant';info=p.stat()
@@ -807,23 +827,90 @@ class NativeBindingTests(unittest.TestCase):
             'cgroup':'0::/docker/'+(core if groups is None else groups)+'\n'}
         return core,{'pid':pid,'uid':1000,'gid':1000},lambda path:values[path.name]
     def test_private_pid_mode_is_not_a_configuration_prerequisite(self):
-        core,identity,read=self.process_fixture();probe=self.a.NativeProbe()
-        with patch.object(self.a.Path,'read_text',lambda p:read(p)),patch.object(self.a.os,'readlink',return_value='user:[1]'):
-            self.assertEqual(probe.process_birth(identity,core)['container_id'],core)
+        result,calls=self.core_call();self.assertEqual(result['anchors']['']['device'],7)
         source=(ROOT/'tools/pe73_ha_assess.py').read_text()
         self.assertNotIn("terminal.get('pidmode')=='host'",source)
+        self.assertNotIn("base=Path('/proc')/str(identity['pid'])",source)
     def test_pid_number_collision_cannot_impersonate_core_container(self):
-        core,identity,read=self.process_fixture(groups='b'*64)
-        with patch.object(self.a.Path,'read_text',lambda p:read(p)),patch.object(self.a.os,'readlink',return_value='user:[1]'):
-            with self.assertRaisesRegex(self.a.QualificationError,'CONTAINER_BINDING'):self.a.NativeProbe().process_birth(identity,core)
-    def test_hidden_cgroup_never_becomes_metadata_only_admission(self):
-        core,identity,read=self.process_fixture(groups='')
-        with patch.object(self.a.Path,'read_text',lambda p:read(p)),patch.object(self.a.os,'readlink',return_value='user:[1]'):
-            with self.assertRaisesRegex(self.a.QualificationError,'CONTAINER_BINDING'):self.a.NativeProbe().process_birth(identity,core)
+        result,calls=self.core_call();self.assertEqual(calls[0][6],'a'*64)
+        self.assertEqual(result['process_birth']['container_id'],'a'*64)
+        with self.assertRaisesRegex(self.a.QualificationError,'CONTAINER_ID_REQUIRED'):
+            self.a.NativeProbe().core_filesystem({}, {'pid':731186,'uid':0,'gid':0},'/homeassistant',{},'homeassistant;bad')
+    def test_hidden_terminal_cgroup_never_becomes_metadata_only_admission(self):
+        dirs,value=self.core_report();value['anchors']['']['inode']+=1
+        with self.assertRaisesRegex(self.a.QualificationError,'IDENTITY_CONFLICT'):self.core_call(value)
     def test_core_credential_drift_is_not_hidden_by_container_match(self):
-        core,identity,read=self.process_fixture(uid=0)
-        with patch.object(self.a.Path,'read_text',lambda p:read(p)),patch.object(self.a.os,'readlink',return_value='user:[1]'):
-            with self.assertRaisesRegex(self.a.QualificationError,'CREDENTIAL_DRIFT'):self.a.NativeProbe().process_birth(identity,core)
+        dirs,value=self.core_report();value['process']['uid']=1000
+        with self.assertRaisesRegex(self.a.QualificationError,'CREDENTIAL_DRIFT'):self.core_call(value)
+    def test_device_inode_mode_and_owner_mismatch_each_refused(self):
+        for field in ('device','inode','uid','gid','mode'):
+            dirs,value=self.core_report();value['anchors']['www'][field]+=1
+            with self.subTest(field=field),self.assertRaisesRegex(self.a.QualificationError,'IDENTITY_CONFLICT'):
+                self.core_call(value)
+    def test_unexpected_core_directory_cannot_replace_proven_absence(self):
+        dirs,value=self.core_report();value['anchors']['custom_components/hioc_operator']=value['anchors']['www']
+        with self.assertRaisesRegex(self.a.QualificationError,'IDENTITY_CONFLICT'):self.core_call(value)
+    def test_core_host_process_change_during_helper_refused(self):
+        with self.assertRaisesRegex(self.a.QualificationError,'HOST_PROCESS_DRIFT'):self.core_call(top='731187 0 0 python3')
+    def test_failed_or_partial_helper_proof_cannot_admit(self):
+        for value in ({'RESULT':'BLOCKED'},{'schema':'PE73_CORE_FILESYSTEM_V1'},None):
+            if value is None:
+                dirs,value=self.core_report();value['read_only']=False
+            with self.subTest(value=value),self.assertRaises(self.a.QualificationError):self.core_call(value)
+    def test_core_user_namespace_mismatch_refused(self):
+        dirs,value=self.core_report();value['process']['user_namespace']='user:[different]'
+        with self.assertRaisesRegex(self.a.QualificationError,'NAMESPACE_NOT_IDENTICAL'):self.core_call(value)
+    def test_fixed_helper_has_no_write_shell_network_or_ha_operation(self):
+        import ast
+        tree=ast.parse(self.a.CORE_FS_PROBE)
+        banned={'write','unlink','rmdir','mkdir','chmod','fchmod','chown','fchown','replace','rename','system','popen','exec','eval','input','connect'}
+        for node in ast.walk(tree):
+            if isinstance(node,ast.Call):
+                name=node.func.attr if isinstance(node.func,ast.Attribute) else node.func.id if isinstance(node.func,ast.Name) else ''
+                self.assertNotIn(name,banned)
+        imports=[alias.name for node in tree.body if isinstance(node,ast.Import) for alias in node.names]
+        self.assertEqual(imports,['errno','json','os','re','stat'])
+        self.assertNotIn('731186',self.a.CORE_FS_PROBE)
+    def helper_capture(self,ops,*,drift=False):
+        import ast
+        tree=ast.parse(self.a.CORE_FS_PROBE)
+        defs=[n for n in tree.body if isinstance(n,ast.FunctionDef)]
+        scope={'os':ops,'json':json,'stat':stat,'errno':errno,'re':__import__('re')}
+        exec(compile(ast.Module(body=defs,type_ignores=[]),'fixed-helper-functions','exec'),scope)
+        birth={'local_pid':32,'start_ticks':123,'uid':0,'gid':0,'user_namespace':'user:[1]'}
+        scope['local_python_processes']=lambda:[dict(birth)]
+        scope['process']=lambda pid:dict(birth,start_ticks=124 if drift else 123)
+        original=ops.open
+        def opened(path,flags,mode=0o777,dir_fd=None):
+            if path=='/proc/32/root':return original('/',flags,mode,dir_fd)
+            if path=='config' and dir_fd is not None and ops.fds[dir_fd][0]=='/':return original('/homeassistant',flags,mode)
+            return original(path,flags,mode,dir_fd)
+        original_stat=ops.stat
+        def stated(path,dir_fd=None,follow_symlinks=False):
+            if path=='config' and dir_fd is not None and ops.fds[dir_fd][0]=='/':
+                return original_stat('/homeassistant',follow_symlinks=follow_symlinks)
+            return original_stat(path,dir_fd=dir_fd,follow_symlinks=follow_symlinks)
+        ops.stat=stated
+        ops.open=opened;ops.readlink=lambda path:'user:[1]'
+        real_open=open
+        def read_only_map(path,*args,**kwargs):
+            if path in ('/proc/self/uid_map','/proc/self/gid_map'):
+                return __import__('io').StringIO('0 0 4294967295\n')
+            return real_open(path,*args,**kwargs)
+        scope['open']=read_only_map
+        return scope['capture']()
+    def test_core_helper_actual_descriptors_readonly_and_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            ops=RootOps(Path(temp));value=self.helper_capture(ops)
+            self.assertEqual(value['anchors']['']['inode'],(ops.root/'homeassistant').stat().st_ino)
+            self.assertEqual(value['process']['local_pid'],32);self.assertEqual(ops.log,[]);self.assertFalse(ops.fds)
+    def test_core_helper_acl_drift_and_process_restart_fail_closed(self):
+        for failure in ('acl','restart'):
+            with self.subTest(failure=failure),tempfile.TemporaryDirectory() as temp:
+                ops=RootOps(Path(temp))
+                if failure=='acl':ops.acl['/homeassistant/www']='present'
+                with self.assertRaises(ValueError):self.helper_capture(ops,drift=failure=='restart')
+                self.assertEqual(ops.log,[]);self.assertFalse(ops.fds)
     def test_private_backup_directory_does_not_require_core_traversal(self):
         with tempfile.TemporaryDirectory() as temp:
             ops=RootOps(Path(temp));p=ops.root/'homeassistant/backups';info=p.stat();ops.attrs[(info.st_dev,info.st_ino)]=(0,0,0o700)
