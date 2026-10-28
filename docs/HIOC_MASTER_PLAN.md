@@ -6270,7 +6270,43 @@ is a permanent Working Agreement completion requirement.
 
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
+Classification: CURRENT — bounded live HA Dashboard-shape correction; native qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED filesystem qualification remains PASS and is not repeated.
+New OPERATOR_SUPPLIED PI5 receipt at5fc1560a4be75e509e351eaf976364ed9bec62f1:
+published source SHA verification PASS; authenticated Supervisor proxy/admin read-only
+discovery PASS; HIOC integration absent/inactive; Lovelace resource mode storage.
+DASHBOARD_SCHEMA_OR_LIMIT stopped discovery before any Dashboard results; mutation
+false; exit1. Actual returned config type/shape/count is not present in that receipt.
+It does not establish a malformed Dashboard or prove a particular strategy was used.
+Core2026.10.4 returns raw stored Lovelace config; its pinned frontend20260930.5
+supports static views OR a strategy. The old qualifier wrongly treated every response
+as a static views list and a local32-view cap as a global discovery requirement.
+The correction reports fixed-name type/presence/count diagnostics, preserves other
+valid Dashboards, and never generates or selects a view. Static scan budget256 is
+explicitly local; larger configs report count/omission, not an HA schema defect.
+Optional path/cards/sections and generated views remain subject to the unchanged
+publisher's actual additive-target requirements; nothing is filled in or migrated.
+Unknown catalog rows/default source, shadowed default, legacy resources, auth or
+transport failures retain fail-closed resource/qualification gates. Successful null
+is not config_not_found. Partial choices survive later failures; private contents do
+not enter the report. No .storage, service/write API, target selection or activation.
+FOCUSED_NATIVE_VALIDATION=81_RUN_81_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_DASHBOARD_SHAPE_CORRECTION_PUBLICATION.
+Existing104 delivery passes remain supported by unchanged delivery/assessment/tests.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify;
+contract,amendment,executive instruction,PI3 evidence and filesystem PASS preserved.
+Trust/private files/SPKI/independent ACL, fresh cross-host disabled/exclusive guards,
+actual live/local proof and approved target/backup remain required before delivery.
+Next action: one operator-run PI5 read-only qualifier bound to this new source SHA/
+commit; retain sanitized report and immediate exit status, then stop.
+See [Dashboard-shape correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-live-dashboard-shape-correction).
+
+### Historical initial live API qualification preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -7813,7 +7849,43 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
+Classification: CURRENT — bounded live HA Dashboard-shape correction; native qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED filesystem qualification remains PASS and is not repeated.
+New OPERATOR_SUPPLIED PI5 receipt at5fc1560a4be75e509e351eaf976364ed9bec62f1:
+published source SHA verification PASS; authenticated Supervisor proxy/admin read-only
+discovery PASS; HIOC integration absent/inactive; Lovelace resource mode storage.
+DASHBOARD_SCHEMA_OR_LIMIT stopped discovery before any Dashboard results; mutation
+false; exit1. Actual returned config type/shape/count is not present in that receipt.
+It does not establish a malformed Dashboard or prove a particular strategy was used.
+Core2026.10.4 returns raw stored Lovelace config; its pinned frontend20260930.5
+supports static views OR a strategy. The old qualifier wrongly treated every response
+as a static views list and a local32-view cap as a global discovery requirement.
+The correction reports fixed-name type/presence/count diagnostics, preserves other
+valid Dashboards, and never generates or selects a view. Static scan budget256 is
+explicitly local; larger configs report count/omission, not an HA schema defect.
+Optional path/cards/sections and generated views remain subject to the unchanged
+publisher's actual additive-target requirements; nothing is filled in or migrated.
+Unknown catalog rows/default source, shadowed default, legacy resources, auth or
+transport failures retain fail-closed resource/qualification gates. Successful null
+is not config_not_found. Partial choices survive later failures; private contents do
+not enter the report. No .storage, service/write API, target selection or activation.
+FOCUSED_NATIVE_VALIDATION=81_RUN_81_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_DASHBOARD_SHAPE_CORRECTION_PUBLICATION.
+Existing104 delivery passes remain supported by unchanged delivery/assessment/tests.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify;
+contract,amendment,executive instruction,PI3 evidence and filesystem PASS preserved.
+Trust/private files/SPKI/independent ACL, fresh cross-host disabled/exclusive guards,
+actual live/local proof and approved target/backup remain required before delivery.
+Next action: one operator-run PI5 read-only qualifier bound to this new source SHA/
+commit; retain sanitized report and immediate exit status, then stop.
+See [Dashboard-shape correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-live-dashboard-shape-correction).
+
+### Historical initial live API qualification preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8840,7 +8912,43 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
+Classification: CURRENT — bounded live HA Dashboard-shape correction; native qualification pending.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+Accepted OPERATOR_SUPPLIED filesystem qualification remains PASS and is not repeated.
+New OPERATOR_SUPPLIED PI5 receipt at5fc1560a4be75e509e351eaf976364ed9bec62f1:
+published source SHA verification PASS; authenticated Supervisor proxy/admin read-only
+discovery PASS; HIOC integration absent/inactive; Lovelace resource mode storage.
+DASHBOARD_SCHEMA_OR_LIMIT stopped discovery before any Dashboard results; mutation
+false; exit1. Actual returned config type/shape/count is not present in that receipt.
+It does not establish a malformed Dashboard or prove a particular strategy was used.
+Core2026.10.4 returns raw stored Lovelace config; its pinned frontend20260930.5
+supports static views OR a strategy. The old qualifier wrongly treated every response
+as a static views list and a local32-view cap as a global discovery requirement.
+The correction reports fixed-name type/presence/count diagnostics, preserves other
+valid Dashboards, and never generates or selects a view. Static scan budget256 is
+explicitly local; larger configs report count/omission, not an HA schema defect.
+Optional path/cards/sections and generated views remain subject to the unchanged
+publisher's actual additive-target requirements; nothing is filled in or migrated.
+Unknown catalog rows/default source, shadowed default, legacy resources, auth or
+transport failures retain fail-closed resource/qualification gates. Successful null
+is not config_not_found. Partial choices survive later failures; private contents do
+not enter the report. No .storage, service/write API, target selection or activation.
+FOCUSED_NATIVE_VALIDATION=81_RUN_81_PASSED_0_FAILURES_0_ERRORS_0_SKIPPED.
+INDEPENDENT_FOCUSED_ACCEPTANCE=PASS_FOR_DASHBOARD_SHAPE_CORRECTION_PUBLICATION.
+Existing104 delivery passes remain supported by unchanged delivery/assessment/tests.
+13 PI3 delivery,six HA source,39 current successor,449 protected identities verify;
+contract,amendment,executive instruction,PI3 evidence and filesystem PASS preserved.
+Trust/private files/SPKI/independent ACL, fresh cross-host disabled/exclusive guards,
+actual live/local proof and approved target/backup remain required before delivery.
+Next action: one operator-run PI5 read-only qualifier bound to this new source SHA/
+commit; retain sanitized report and immediate exit status, then stop.
+See [Dashboard-shape correction evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-live-dashboard-shape-correction).
+
+### Historical initial live API qualification preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — accepted PI5 filesystem qualification; bounded live API discovery preparation.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

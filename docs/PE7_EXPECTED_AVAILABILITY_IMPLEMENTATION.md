@@ -5014,3 +5014,124 @@ Primary support reviewed:
 - https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/resources.py
 - https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/dashboard.py
 - https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/frontend/__init__.py
+
+### PE-7.3 live Dashboard-shape correction
+
+Classification: CURRENT PREPARATION; independent focused acceptance PASS for this
+bounded correction/publication. PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED. Baseline
+5fc1560a4be75e509e351eaf976364ed9bec62f1, main/origin synchronized and clean.
+
+**New OPERATOR_SUPPLIED PI5 receipt:** published source SHA-256 verification PASS;
+authenticated Supervisor proxy WebSocket PASS; administrator principal PASS for
+read-only discovery; integration absent/inactive; Lovelace resource mode storage.
+Dashboard discovery stopped with DASHBOARD_SCHEMA_OR_LIMIT; Dashboard results empty
+because discovery stopped. Production mutation false; exit1. The receipt does not
+include the returned config's type, presence/type of views, or view count. Those
+actual runtime details remain UNKNOWN; no malformed-Dashboard claim, strategy guess
+or invented production observation. Accepted filesystem qualification remains PASS,
+accepted/not repeated. Codex did not access PI3/PI5 or collect these observations.
+
+**Established software defects and source authority:** Core2026.10.4
+websocket_lovelace_config returns config.async_json directly; LovelaceStorage builds
+JSON from the raw stored config, not a guaranteed static-view wrapper. Its pinned
+frontend manifest selects20260930.5, whose LovelaceRawConfig union is static views OR
+strategy. A strategy can legitimately omit views. Thus views(config)'s universal
+static-list prerequisite was incomplete.32 was a qualifier-local cap, not an HA
+schema maximum, and one exception discarded remaining Dashboard discovery. The
+original error combined several predicates, so the specific on-host predicate is
+not proven by the supplied receipt. Static support is evidence about software, not
+proof of the actual production config. No runtime JSON-string unwrap or speculative
+response-wrapper interpretation is introduced.
+
+**Correction:** fixed-schema diagnostics expose only JSON type, top-level key count,
+views presence/type/count, strategy presence/type and legacy-resources-key presence.
+No arbitrary key names, strategy type values/options, entity IDs, card contents,
+private config, resource URLs/query values, principal IDs or credentials are output.
+Known label fields remain bounded/control-safe and may be null if unreportable;
+canonical config digests remain evidence, not reconstructed historical fingerprints.
+Static views up to256 are safely inspected;33 is accepted.256 is an explicit local
+budget, not an HA validity rule. Larger configs report the actual count, all omitted
+views and LOCAL_VIEW_BUDGET_EXCEEDED; they are not offered as targets. The request,
+message/JSON/deadline/catalog/resource bounds remain finite. Catalog overflow or
+unknown/duplicate selector rows preserve bounded discovery but keep resources blocked.
+
+Strategy-declared Dashboards and views are observed as generated/not static. The
+qualifier never evaluates strategy code, substitutes generated output, takes control,
+creates a Dashboard, changes mode or selects a target. Missing/non-list views and
+unexpected top-level types are unqualified observations, not assertions of malformed
+HA config. A config_not_found read records no static export and continues. Read
+authorization/unsupported-command/transport errors still stop; no retry or permission
+fallback. Completed choices remain in the report if a later read fails.
+
+**Related assumptions corrected together:** view path/title/cards/sections are
+optional in HA's frontend schema. The unchanged existing Delivery.add_card needs an
+explicit unique path and supported static cards/sections list for its narrow additive
+operation. Such absence is therefore a target limitation, not an HA schema failure;
+no synthetic path, empty list or index is invented. Unknown/non-object view rows
+cannot qualify that Dashboard because the existing publisher iterates every row.
+Other valid Dashboards remain available. Catalog title/control-character problems no
+longer discard all discovery; unsafe/ambiguous selectors are never requested. Unicode
+alphanumeric selectors retain the same bounded non-traversal character restriction.
+Unsupported resource_mode values are redacted rather than echoed. Panel config null/
+unexpected shapes get an exact public blocker instead of a raw attribute failure.
+Resource-response shape/count diagnostics are similarly sanitized; incomplete
+resource conflict evidence remains fatal to qualification.
+
+**Legacy-resource and security gates:** no resource API is called merely to recover
+Dashboard discovery. Catalog/default-source proof remains separate from view-shape
+analysis. Named lovelace shadowing, incomplete catalog, unreadable default, unknown
+default type or ANY legacy resources key blocks resources/list. A successful null
+default response is now explicitly distinguished from config_not_found and blocks;
+it cannot establish absence. Missing views alone in a dictionary does not imply a
+legacy key exists or allow bypass of that check. Dashboard shape problems never
+relax authentication, strict read allowlist, framing/context budgets, private-error
+sanitization, editor conflicts or native guards. No new service/read API or new auth.
+Native delivery remains false; trust and fresh cross-host disabled/exclusion/local
+mapping evidence are neither inferred nor waived. Existing transaction and backup
+publication, rollback/recovery algorithms and strict trust_preflight are unchanged.
+
+**Validation:** bundled Windows native interpreter, repository-root working directory,
+documented shell-free PATH, HIOC_TEST_SHELL cleared, sys.path[:0]=['tests','pi4/lib'].
+81 tests run,81 passed,0 failures,0 errors,0 skipped,0 class-level skips. Exact tool/
+test hashes unchanged through run. The consolidated focused module covers all59
+previous qualifier regressions (three expectations corrected to the new reporting
+semantics) plus22 new cases: missing/non-list/unexpected responses, strategies,
+33/excessive view counts, mixed YAML/storage, valid Dashboard preservation, optional
+fields, incompatible rows, unknown catalog, partial transport failure, default-null
+and legacy-resource protection, redaction and panel/resource shape failure. No
+unrelated historical suite rerun; previous104 delivery tests retain exact unchanged
+source/test evidence from5fc1560. No production command was run by Codex.
+
+**Focused independent acceptance:** inspected the actual source diff and negative
+cases independently of summary counts: only successful config_not_found and safe
+unsupported shapes continue; security/transport failures stop; the resource gate is
+not weakened; publisher-incompatible/generated targets are never eligible; no private
+payload is copied into diagnostics. Missing actual runtime shape is intentionally
+deferred to this single sanitized operator receipt, not guessed. Repository acceptance
+passes for publication; production qualification/installation is not claimed.
+
+- `tools/pe73_ha_live_qualify.py`: SHA-256 `6c4eda9cec7a1b8db0ca82dec8981eb837ea55041381615a01f59d009903db07`.
+- `tests/test_pe73_ha_live_qualify.py`: SHA-256 `11214b00aaeb3b7e3fd319fa9b6c587049119b271d3f6730214fa480a17b5100`.
+
+**Preservation:** exactly five existing paths change: qualifier, its tests, Master
+Plan, append-only implementation evidence and existing candidate record. Only two
+current-document successor identities refresh; all39 current bindings and all449
+unchanged protected identities verify.13 immutable PI3 delivery and six immutable HA
+source identities verify.496 other tracked files, original PE-7 contract, maintenance
+amendment/executive instruction, PI3 deployment, accepted filesystem evidence, old
+production failure and prior test evidence remain unchanged. No HA artifact, service,
+credential, Dashboard or runtime change. Stash preserved. PE-7.3 remains IN_PROGRESS;
+PE-7.4 remains NOT_AUTHORIZED.
+
+One next action: operator-run the single read-only PI5 qualifier from the newly
+published immutable commit with SHA-256 verification in memory; capture sanitized
+shape/choice/resource report and immediate exit status, then stop. No deployment,
+resource write, YAML migration, selection, reload, activation or follow-on action.
+
+Primary source references reviewed:
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/websocket.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/lovelace/dashboard.py
+- https://github.com/home-assistant/core/blob/2026.10.4/homeassistant/components/frontend/manifest.json
+- https://github.com/home-assistant/frontend/blob/20260930.5/src/data/lovelace/config/types.ts
+- https://github.com/home-assistant/frontend/blob/20260930.5/src/data/lovelace/config/view.ts
+- https://github.com/home-assistant/frontend/blob/20260930.5/src/panels/lovelace/strategies/get-strategy.ts

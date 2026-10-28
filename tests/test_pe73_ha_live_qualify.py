@@ -158,22 +158,152 @@ class QualificationTests(unittest.TestCase):
         r=self.run_api();self.assertEqual(r['resources']['count'],1);self.assertNotIn(SECRET,json.dumps(r))
     def test_limits_dashboards(self):
         self.api.data['lovelace/dashboards/list']*=17
-        self.blocked('LOVELACE_SCHEMA_OR_LIMIT')
+        r=self.blocked('CATALOG_INCOMPLETE_RESOURCE_SAFETY_NOT_ESTABLISHED')
+        self.assertEqual(r['catalog_count'],17);self.assertEqual(r['catalog_omitted'],1)
+        self.assertNotIn('lovelace/resources/list',self.api.calls)
     def test_limits_resources(self):
         self.api.data['lovelace/resources/list']=[{}]*257
         self.blocked('RESOURCE_SCHEMA_OR_LIMIT')
     def test_limits_views(self):
-        self.api.data[('lovelace/config','hioc')]['views']*=33
-        self.blocked('DASHBOARD_SCHEMA_OR_LIMIT')
+        self.api.data[('lovelace/config','hioc')]['views']*=q.MAX_VIEWS+1
+        r=self.blocked('NO_COMPATIBLE_STORAGE_VIEW')
+        self.assertEqual(r['dashboards'][0]['discovery_status'],'LOCAL_VIEW_BUDGET_EXCEEDED')
+        self.assertEqual(r['dashboards'][0]['response_shape']['view_count'],q.MAX_VIEWS+1)
     def test_control_characters_not_printed(self):
         self.api.data['lovelace/dashboards/list'][0]['title']='bad\x1btitle'
-        self.blocked('UNSUPPORTED_SELECTION_LABEL')
+        r=self.run_api();self.assertIsNone(r['dashboards'][0]['title'])
+        self.assertNotIn('bad\x1btitle',json.dumps(r))
     def test_every_read_has_failure_isolation(self):
         for command in q.READS:
             with self.subTest(command=command):
                 self.api=API();self.api.fail[command]=OSError(SECRET)
                 r=self.run_api();self.assertTrue(r['RESULT'].startswith('BLOCKED'))
                 self.assertNotIn(SECRET,json.dumps(r))
+
+    def add_valid_dashboard(self):
+        self.api.data['lovelace/dashboards/list'].append({'url_path':'hioc-valid','title':'HIOC Valid','mode':'storage'})
+        self.api.data[('lovelace/config','hioc-valid')]=config()
+    def test_strategy_dashboard_supported_response_not_malformed(self):
+        self.api.data[('lovelace/config','hioc')]={'strategy':{'type':'original-states','private':SECRET}}
+        self.add_valid_dashboard();r=self.run_api()
+        self.assertTrue(r['RESULT'].startswith('PASS'))
+        self.assertEqual(r['dashboards'][0]['discovery_status'],'STRATEGY_DECLARED_NOT_STATIC')
+        self.assertEqual(r['dashboards'][0]['response_shape']['views_type'],'absent')
+        self.assertEqual(r['compatible_choices'],[{'dashboard':'hioc-valid','view':'operations'}])
+        self.assertNotIn(SECRET,json.dumps(r))
+    def test_missing_views_preserves_later_valid_dashboard(self):
+        self.api.data[('lovelace/config','hioc')]={SECRET:SECRET}
+        self.add_valid_dashboard();r=self.run_api()
+        self.assertEqual(r['dashboards'][0]['response_shape'],{'response_type':'object','key_count':1,
+            'views_present':False,'views_type':'absent','view_count':None,'strategy_present':False,
+            'strategy_type':'absent','legacy_resources_present':False})
+        self.assertEqual(r['dashboards'][1]['discovery_status'],'STATIC_VIEWS_OBSERVED')
+        self.assertEqual(len(r['compatible_choices']),1);self.assertNotIn(SECRET,json.dumps(r))
+    def test_unexpected_config_types_diagnosed_without_unwrapping(self):
+        for value in (None,True,7,[SECRET],SECRET,'{"views":[{"path":"invented","cards":[]}]}'):
+            with self.subTest(response_type=q.json_type(value)):
+                self.api=API();self.api.data[('lovelace/config','hioc')]=value;self.add_valid_dashboard()
+                r=self.run_api();self.assertEqual(r['dashboards'][0]['discovery_status'],'UNSUPPORTED_CONFIG_SHAPE')
+                self.assertEqual(r['dashboards'][0]['response_shape']['response_type'],q.json_type(value))
+                self.assertEqual(r['compatible_choices'],[{'dashboard':'hioc-valid','view':'operations'}])
+                self.assertNotIn(SECRET,json.dumps(r));self.assertNotIn('invented',json.dumps(r))
+    def test_non_list_views_safe_type_diagnostics(self):
+        for value in (None,SECRET,{},3):
+            self.api=API();self.api.data[('lovelace/config','hioc')]={'views':value};self.add_valid_dashboard()
+            r=self.run_api();self.assertEqual(r['dashboards'][0]['response_shape']['views_type'],q.json_type(value))
+            self.assertEqual(len(r['compatible_choices']),1);self.assertNotIn(SECRET,json.dumps(r))
+    def test_33_views_are_not_an_HA_schema_error(self):
+        self.api.data[('lovelace/config','hioc')]['views']=[{'path':'v'+str(i),'cards':[]} for i in range(33)]
+        r=self.run_api();self.assertEqual(r['dashboards'][0]['response_shape']['view_count'],33)
+        self.assertEqual(len(r['compatible_choices']),33);self.assertTrue(r['RESULT'].startswith('PASS'))
+    def test_excessive_views_preserve_other_valid_dashboards(self):
+        self.api.data[('lovelace/config','hioc')]['views']*=q.MAX_VIEWS+1
+        self.add_valid_dashboard();r=self.run_api()
+        self.assertEqual(r['dashboards'][0]['views_omitted'],q.MAX_VIEWS+1)
+        self.assertEqual(len(r['compatible_choices']),1)
+    def test_mixed_yaml_strategy_static_are_all_preserved(self):
+        self.api.data[('lovelace/config','hioc')]={'strategy':{'type':'areas'}}
+        self.api.data['lovelace/dashboards/list'].append({'url_path':'yaml-preserved','title':'YAML','mode':'yaml'})
+        self.add_valid_dashboard();r=self.run_api()
+        self.assertEqual(len(r['dashboards']),4)
+        self.assertEqual(r['dashboards'][1]['views_not_read'],'YAML_PRESERVED_NO_MODE_MIGRATION_OR_DUPLICATE_DASHBOARD')
+        self.assertEqual(r['compatible_choices'],[{'dashboard':'hioc-valid','view':'operations'}])
+    def test_generated_views_never_offered_for_static_addition(self):
+        self.api.data[('lovelace/config','hioc')]['views'][0]['strategy']={'type':'original-states'}
+        r=self.blocked('NO_COMPATIBLE_STORAGE_VIEW')
+        self.assertTrue(r['dashboards'][0]['views'][0]['strategy_present'])
+    def test_top_strategy_with_static_views_not_a_static_target(self):
+        self.api.data[('lovelace/config','hioc')]['strategy']={'type':'areas'}
+        self.blocked('NO_COMPATIBLE_STORAGE_VIEW')
+    def test_optional_path_and_cards_not_invented(self):
+        self.api.data[('lovelace/config','hioc')]['views']=[{'title':'Index only'},{'path':'empty'}]
+        r=self.blocked('NO_COMPATIBLE_STORAGE_VIEW')
+        self.assertEqual(r['dashboards'][0]['views'][0]['path_type'],'absent')
+        self.assertEqual(r['dashboards'][0]['views'][1]['cards_type'],'absent')
+    def test_non_object_view_does_not_qualify_publisher_incompatible_target(self):
+        self.api.data[('lovelace/config','hioc')]['views'].append(SECRET)
+        self.add_valid_dashboard();r=self.run_api()
+        self.assertEqual(r['dashboards'][0]['discovery_status'],'UNSUPPORTED_VIEW_ROWS')
+        self.assertEqual(r['dashboards'][0]['views'][1]['reason'],'VIEW_NOT_OBJECT')
+        self.assertEqual(len(r['compatible_choices']),1);self.assertNotIn(SECRET,json.dumps(r))
+    def test_unreportable_optional_view_labels_do_not_abort_discovery(self):
+        self.api.data[('lovelace/config','hioc')]['views'].append({'path':'x'*129,'title':{'private':SECRET},'cards':[]})
+        r=self.run_api();self.assertEqual(len(r['compatible_choices']),1)
+        self.assertIsNone(r['dashboards'][0]['views'][1]['path']);self.assertIsNone(r['dashboards'][0]['views'][1]['title'])
+        self.assertNotIn(SECRET,json.dumps(r))
+    def test_default_missing_views_still_checks_legacy_key_independently(self):
+        self.api.data[('lovelace/config',None)]={'strategy':{'type':'areas'},'resources':[]}
+        r=self.blocked('RESOURCE_LAZY_IMPORT_SAFETY_NOT_ESTABLISHED')
+        self.assertEqual(len(r['compatible_choices']),1)
+        self.assertEqual(r['dashboards'][-1]['response_shape']['legacy_resources_present'],True)
+        self.assertNotIn('lovelace/resources/list',self.api.calls)
+    def test_default_strategy_without_legacy_key_does_not_block_other_dashboard(self):
+        self.api.data[('lovelace/config',None)]={'strategy':{'type':'areas'}}
+        r=self.run_api();self.assertTrue(r['RESULT'].startswith('PASS'))
+        self.assertEqual(r['dashboards'][-1]['discovery_status'],'STRATEGY_DECLARED_NOT_STATIC')
+    def test_successful_null_default_is_not_config_not_found(self):
+        self.api.data[('lovelace/config',None)]=None
+        r=self.blocked('RESOURCE_LAZY_IMPORT_SAFETY_NOT_ESTABLISHED')
+        self.assertEqual(r['dashboards'][-1]['response_shape']['response_type'],'null')
+        self.assertNotIn('lovelace/resources/list',self.api.calls)
+    def test_wrong_default_type_keeps_valid_choices_but_blocks_resources(self):
+        self.api.data[('lovelace/config',None)]=SECRET
+        r=self.blocked('RESOURCE_LAZY_IMPORT_SAFETY_NOT_ESTABLISHED')
+        self.assertEqual(len(r['compatible_choices']),1);self.assertNotIn(SECRET,json.dumps(r))
+    def test_named_config_not_found_does_not_discard_other_dashboards(self):
+        original=self.api.call
+        def call(kind,**fields):
+            if kind=='lovelace/config' and fields.get('url_path')=='hioc':
+                self.api.calls.append(kind);raise q.Stop('CONFIG_NOT_FOUND')
+            return original(kind,**fields)
+        self.api.call=call;self.add_valid_dashboard();r=self.run_api()
+        self.assertEqual(r['dashboards'][0]['discovery_status'],'CONFIG_NOT_FOUND_NO_STATIC_EXPORT')
+        self.assertEqual(len(r['compatible_choices']),1)
+    def test_catalog_unknown_rows_keep_choices_but_block_resource_guard(self):
+        self.api.data['lovelace/dashboards/list'].insert(0,SECRET)
+        r=self.blocked('CATALOG_INCOMPLETE_RESOURCE_SAFETY_NOT_ESTABLISHED')
+        self.assertEqual(len(r['compatible_choices']),1);self.assertFalse(r['catalog_complete'])
+        self.assertNotIn(SECRET,json.dumps(r));self.assertNotIn('lovelace/resources/list',self.api.calls)
+    def test_partial_discovery_not_hidden_by_later_transport_failure(self):
+        self.add_valid_dashboard();original=self.api.call
+        def call(kind,**fields):
+            if kind=='lovelace/config' and fields.get('url_path')=='hioc-valid':
+                raise OSError(SECRET)
+            return original(kind,**fields)
+        self.api.call=call;r=self.blocked('READ_OR_SCHEMA_FAILURE')
+        self.assertEqual(r['compatible_choices'],[{'dashboard':'hioc','view':'operations'}])
+        self.assertNotIn('lovelace/resources/list',self.api.calls);self.assertNotIn(SECRET,json.dumps(r))
+    def test_unsupported_resource_mode_does_not_disclose_payload(self):
+        self.api.data['lovelace/info']['resource_mode']={'private':SECRET}
+        r=self.blocked('RESOURCE_MODE_UNKNOWN');self.assertNotIn(SECRET,json.dumps(r))
+    def test_null_panel_config_fails_closed_with_public_code(self):
+        self.api.data['get_panels']['lovelace']['config']=None
+        self.blocked('DEFAULT_STORAGE_SOURCE_NOT_ESTABLISHED')
+    def test_non_list_resource_diagnostics_do_not_disclose_payload(self):
+        self.api.data['lovelace/resources/list']={SECRET:SECRET}
+        r=self.blocked('RESOURCE_SCHEMA_OR_LIMIT')
+        self.assertEqual(r['resource_response_shape']['response_type'],'object')
+        self.assertNotIn(SECRET,json.dumps(r))
 
 
 class RunTests(unittest.TestCase):

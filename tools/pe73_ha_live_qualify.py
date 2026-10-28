@@ -20,7 +20,7 @@ READS=frozenset(('auth/current_user','get_config','get_services','get_panels',
 MAX_MESSAGE=2097152
 MAX_DASHBOARDS=16
 MAX_RESOURCES=256
-MAX_VIEWS=32
+MAX_VIEWS=256  # Local bounded discovery budget, not an HA schema constraint.
 EDITOR='/local/hioc-asset-editor.js'
 LOGIN_WORKFLOW='USE_EXISTING_HA_BROWSER_LOGIN_AS_ADMIN_NO_TOKEN_EXPORT_OR_NEW_CREDENTIAL'
 
@@ -44,6 +44,28 @@ def digest(value):
 def public_text(value):
     require(type(value) is str and len(value)<=128 and all(ord(c)>=32 and ord(c)!=127 for c in value),'UNSUPPORTED_SELECTION_LABEL')
     return value
+
+
+def label(value):
+    return value if type(value) is str and len(value)<=128 and all(32<=ord(c)!=127 for c in value) else None
+
+
+def json_type(value):
+    return {dict:'object',list:'array',str:'string',int:'number',float:'number',bool:'boolean',type(None):'null'}.get(type(value),'unsupported')
+
+
+def shape(value):
+    """Fixed field names and counts only; never arbitrary keys or payload values."""
+    result={'response_type':json_type(value)}
+    if type(value) is dict:
+        result.update(key_count=len(value),views_present='views' in value,
+            views_type=json_type(value['views']) if 'views' in value else 'absent',
+            view_count=len(value['views']) if type(value.get('views')) is list else None,
+            strategy_present='strategy' in value,
+            strategy_type=json_type(value['strategy']) if 'strategy' in value else 'absent',
+            legacy_resources_present='resources' in value)
+    elif type(value) in (list,str):result['item_count' if type(value) is list else 'character_count']=len(value)
+    return result
 
 
 def decode(raw):
@@ -135,7 +157,8 @@ class Proxy:
         require(self.authenticated and kind in READS,'NON_READ_OPERATION_REFUSED')
         if kind=='lovelace/config':
             require(set(fields)=={'url_path'} and (fields['url_path'] is None or type(fields['url_path']) is str
-                and re.fullmatch('[A-Za-z0-9_-]{1,128}',fields['url_path'])),'UNSAFE_DASHBOARD_SELECTOR')
+                and bool(fields['url_path']) and label(fields['url_path']) is not None
+                and all(c.isalnum() or c in '_-' for c in fields['url_path'])),'UNSAFE_DASHBOARD_SELECTOR')
         else:require(not fields,'UNEXPECTED_READ_ARGUMENTS')
         require(self.counter<64 and time.monotonic()<self.deadline,'READ_BUDGET')
         self.counter+=1;self.calls.append(kind)
@@ -155,19 +178,57 @@ class Proxy:
 
 
 def views(config):
-    require(type(config) is dict and type(config.get('views')) is list and len(config['views'])<=MAX_VIEWS,'DASHBOARD_SCHEMA_OR_LIMIT')
+    result={'response_shape':shape(config),'views':[], 'existing_editor_conflict':None,
+        'discovery_status':'UNSUPPORTED_CONFIG_SHAPE','views_omitted':0}
+    if type(config) is not dict:return result
     existing='custom:hioc-asset-editor' in canonical(config).decode()
-    result=[]
-    for view in config['views']:
-        require(type(view) is dict,'VIEW_SCHEMA')
+    result['existing_editor_conflict']=existing
+    if 'strategy' in config:
+        result['discovery_status']='STRATEGY_DECLARED_NOT_STATIC';return result
+    if type(config.get('views')) is not list:
+        result['discovery_status']='VIEWS_NOT_EXPOSED_AS_LIST';return result
+    if len(config['views'])>MAX_VIEWS:
+        result.update(discovery_status='LOCAL_VIEW_BUDGET_EXCEEDED',views_omitted=len(config['views']));return result
+    # The unchanged publisher iterates .get on every row. An unsupported row
+    # prevents this dashboard being offered as a target, but not other dashboards.
+    all_objects=all(type(v) is dict for v in config['views'])
+    result['discovery_status']='STATIC_VIEWS_OBSERVED' if all_objects else 'UNSUPPORTED_VIEW_ROWS'
+    for index,view in enumerate(config['views']):
+        if type(view) is not dict:
+            result['views'].append({'index':index,'response_type':json_type(view),
+                'suitable_for_existing_additive_delivery':False,'reason':'VIEW_NOT_OBJECT'});continue
         path=view.get('path');kind=view.get('type','masonry')
-        suitable=(type(path) is str and bool(path) and kind in ('masonry','sections') and not view.get('panel')
+        suitable=(all_objects and label(path) is not None and bool(path) and kind in ('masonry','sections')
+            and not view.get('panel') and 'strategy' not in view
             and type(view.get('cards' if kind=='masonry' else 'sections')) is list and not existing
             and sum(v.get('path')==path for v in config['views'] if type(v) is dict)==1)
-        result.append({'path':public_text(path) if type(path) is str else None,
-            'title':public_text(view.get('title','')),'layout':kind if kind in ('masonry','sections','panel') else 'UNSUPPORTED',
+        result['views'].append({'index':index,'path':label(path),'path_type':json_type(path) if 'path' in view else 'absent',
+            'title':label(view.get('title','')),'layout':kind if kind in ('masonry','sections','panel') else 'UNSUPPORTED',
+            'strategy_present':'strategy' in view,'cards_type':json_type(view['cards']) if 'cards' in view else 'absent',
+            'sections_type':json_type(view['sections']) if 'sections' in view else 'absent',
             'suitable_for_existing_additive_delivery':suitable})
-    return result,existing
+    return result
+
+
+def dashboard_config(api,item,url):
+    """Keep a config-not-found observation; transport/authorization failures stop."""
+    try:raw=api.call('lovelace/config',url_path=url)
+    except Stop as error:
+        if str(error)!='CONFIG_NOT_FOUND':raise
+        item.update(discovery_status='CONFIG_NOT_FOUND_NO_STATIC_EXPORT',views=[],
+            response_shape={'response_type':'not_observed','error_code':'CONFIG_NOT_FOUND'});return None,True
+    item.update(views(raw));item['config_sha256']=digest(raw)
+    return raw,False
+
+
+def choices(report):
+    report['preferred_existing_hioc']=[x['url_path'] for x in report['dashboards'] if x.get('existing_hioc')]
+    report['compatible_choices']=[{'dashboard':d['url_path'],'view':v['path']} for d in report['dashboards']
+        for v in d.get('views',[]) if v['suitable_for_existing_additive_delivery']]
+    report['dashboard_summary']={'observed':len(report['dashboards']),
+        'static_views_observed':sum(d.get('discovery_status')=='STATIC_VIEWS_OBSERVED' for d in report['dashboards']),
+        'non_static_or_unqualified':sum(d.get('discovery_status')!='STATIC_VIEWS_OBSERVED' for d in report['dashboards']),
+        'compatible_choices':len(report['compatible_choices'])}
 
 
 def qualify(api):
@@ -196,46 +257,54 @@ def qualify(api):
             'cross_host_evaluator_scheduler_migration_notifications':'NOT_ESTABLISHED_BY_HA_API'}
         require(absent,'HIOC_ACTIVE_OR_CONFIGURED_ROLE_REQUIRES_EVIDENCE')
         panels=api.call('get_panels');info=api.call('lovelace/info');catalog=api.call('lovelace/dashboards/list')
-        require(type(panels) is dict and type(info) is dict and type(catalog) is list and len(catalog)<=MAX_DASHBOARDS,'LOVELACE_SCHEMA_OR_LIMIT')
-        report['resource_mode']=info.get('resource_mode')
+        report['api_shapes']={'panels':shape(panels),'lovelace_info':shape(info),'dashboard_catalog':shape(catalog)}
+        require(type(panels) is dict and type(info) is dict and type(catalog) is list,'LOVELACE_SCHEMA_OR_LIMIT')
+        report['resource_mode']=info.get('resource_mode') if info.get('resource_mode') in ('yaml','storage') else 'UNKNOWN'
         require(info.get('resource_mode') in ('yaml','storage'),'RESOURCE_MODE_UNKNOWN')
         report['dashboards']=[]
-        for row in catalog:
-            require(type(row) is dict and type(row.get('url_path')) is str and row.get('mode') in ('yaml','storage'),'DASHBOARD_CATALOG_SCHEMA')
-            url=public_text(row['url_path']);title=public_text(row.get('title',''))
-            is_hioc='hioc' in (url+' '+title).lower()
-            item={'url_path':url,'title':title,'mode':row['mode'],'existing_hioc':is_hioc,'views':[]}
-            if row['mode']=='storage':
-                raw=api.call('lovelace/config',url_path=url)
-                item['views'],item['existing_editor_conflict']=views(raw)
-                item['config_sha256']=digest(raw)
-            else:item['views_not_read']='YAML_PRESERVED_NO_MODE_MIGRATION_OR_DUPLICATE_DASHBOARD'
+        report['catalog_count']=len(catalog);report['catalog_omitted']=max(0,len(catalog)-MAX_DASHBOARDS)
+        complete=len(catalog)<=MAX_DASHBOARDS
+        seen=set()
+        for index,row in enumerate(catalog[:MAX_DASHBOARDS]):
+            item={'catalog_index':index,'views':[],'response_shape':shape(row)}
             report['dashboards'].append(item)
-        report['preferred_existing_hioc']=[x['url_path'] for x in report['dashboards'] if x['existing_hioc']]
+            if type(row) is not dict or type(row.get('url_path')) is not str or row.get('mode') not in ('yaml','storage'):
+                item['discovery_status']='UNSUPPORTED_CATALOG_ROW';complete=False;continue
+            url=label(row['url_path']);title=label(row.get('title',''))
+            if not url or not all(c.isalnum() or c in '_-' for c in url) or url in seen:
+                item['discovery_status']='UNREPORTABLE_OR_DUPLICATE_SELECTOR';complete=False;continue
+            seen.add(url)
+            item.update(url_path=url,title=title,mode=row['mode'],existing_hioc='hioc' in (url+' '+(title or '')).lower())
+            if row['mode']=='storage':
+                dashboard_config(api,item,url)
+            else:item['views_not_read']='YAML_PRESERVED_NO_MODE_MIGRATION_OR_DUPLICATE_DASHBOARD'
+            choices(report)
+        choices(report)
+        report['catalog_complete']=complete
         require(info['resource_mode']=='storage','RESOURCE_STORAGE_MODE_REQUIRED_NO_MODE_CHANGE')
         # resources/list can save legacy imported resources. Never call it unless
         # the exact default storage source is addressable and has no legacy key.
+        require(complete,'CATALOG_INCOMPLETE_RESOURCE_SAFETY_NOT_ESTABLISHED')
         if any(row['url_path']=='lovelace' for row in catalog):
             report['resource_read_guard']='DEFAULT_STORAGE_SOURCE_SHADOWED_BY_NAMED_LOVELACE'
             raise Stop('RESOURCE_LAZY_IMPORT_SAFETY_NOT_ESTABLISHED')
         default_panel=panels.get('lovelace',{})
+        panel_config=default_panel.get('config') if type(default_panel) is dict else None
+        report['default_panel_shape']=shape(default_panel)
         require(type(default_panel) is dict and default_panel.get('component_name')=='lovelace'
-            and default_panel.get('config',{}).get('mode') in (None,'storage'),'DEFAULT_STORAGE_SOURCE_NOT_ESTABLISHED')
-        try:default=api.call('lovelace/config',url_path=None)
-        except Stop as error:
-            if str(error)!='CONFIG_NOT_FOUND':raise
-            default=None
-        require(default is None or type(default) is dict and 'resources' not in default,'RESOURCE_LAZY_IMPORT_SAFETY_NOT_ESTABLISHED')
-        if default is not None:
-            default_views,editor=views(default)
-            report['dashboards'].append({'url_path':None,'title':public_text(default.get('title','Default Dashboard')),
-                'mode':'storage','existing_hioc':'hioc' in str(default.get('title','')).lower(),
-                'views':default_views,'existing_editor_conflict':editor,'config_sha256':digest(default)})
-        report['preferred_existing_hioc']=[x['url_path'] for x in report['dashboards'] if x['existing_hioc']]
-        suitable=[{'dashboard':d['url_path'],'view':v['path']} for d in report['dashboards'] for v in d['views'] if v['suitable_for_existing_additive_delivery']]
-        report['compatible_choices']=suitable
+            and type(panel_config) is dict and panel_config.get('mode') in (None,'storage'),'DEFAULT_STORAGE_SOURCE_NOT_ESTABLISHED')
+        item={'url_path':None,'title':'Default Dashboard','mode':'storage','existing_hioc':False,'views':[]}
+        report['dashboards'].append(item)
+        default,missing=dashboard_config(api,item,None)
+        if type(default) is dict:
+            item['title']=label(default.get('title','Default Dashboard'))
+            item['existing_hioc']='hioc' in (item['title'] or '').lower()
+        choices(report)
+        # A successful null is NOT a config_not_found response or proof of absence.
+        require(missing or type(default) is dict and 'resources' not in default,'RESOURCE_LAZY_IMPORT_SAFETY_NOT_ESTABLISHED')
         report['resource_read_guard']='EXACT_DEFAULT_HAS_NO_LEGACY_RESOURCE_IMPORT'
         resources=api.call('lovelace/resources/list')
+        report['resource_response_shape']=shape(resources)
         require(type(resources) is list and len(resources)<=MAX_RESOURCES,'RESOURCE_SCHEMA_OR_LIMIT')
         items=[];conflicts=0
         for item in resources:
@@ -249,7 +318,7 @@ def qualify(api):
         require(not conflicts,'EXISTING_HIOC_RESOURCE_CONFLICT')
         report['local_mapping']={'source_capability':'ACCEPTED_WWW_TO_LOCAL_IMPLEMENTATION',
             'actual_route':'NOT_PROVEN_BY_ABSENT_EDITOR_OR_404','required_resource_url':EDITOR}
-        require(bool(suitable),'NO_COMPATIBLE_STORAGE_VIEW')
+        require(bool(report['compatible_choices']),'NO_COMPATIBLE_STORAGE_VIEW')
         report['live_guard']['storage_dashboard']=True
         report['RESULT']='PASS_READ_ONLY_API_DASHBOARD_DISCOVERY'
     except BaseException as error:
