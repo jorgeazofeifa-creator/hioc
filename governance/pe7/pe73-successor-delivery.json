@@ -1,0 +1,93 @@
+{
+  "artifacts": [
+    {
+      "git_blob": "0b4d8bfdbf432dbed6ef62add9da73c74764c574",
+      "path": "pi4/bin/hioc-assets.py",
+      "prior_sha256": "43d84f837243606ee58fb64f3febbc28f7766d05378045b42213c7adf48127ab",
+      "sha256": "43d84f837243606ee58fb64f3febbc28f7766d05378045b42213c7adf48127ab"
+    },
+    {
+      "git_blob": "695d6047de12eca2b776f0cfedf2414aa9cf25f4",
+      "path": "pi4/bin/hioc-availability-adapter.py",
+      "prior_sha256": "d53114faf5d3cddf6666716871f3f5b51a3876ea7db68b6ce0ab1379b0334ed7",
+      "sha256": "60a6437c34b56c423b3513b83bfa1e50d31334e43b995a6ca4dbfff0c68b0852"
+    },
+    {
+      "git_blob": "f1a2423919edd609a79e8bbf4dfd574c98fee30e",
+      "path": "pi4/bin/hioc-incident-engine-v2.py",
+      "prior_sha256": "6e9ec9d591ae2e48d19825c095aceb54542405329c842e271a367094475ffffe",
+      "sha256": "6e9ec9d591ae2e48d19825c095aceb54542405329c842e271a367094475ffffe"
+    },
+    {
+      "git_blob": "98e587eb51780f02c32335d7b954ecb4f5b642cd",
+      "path": "pi4/lib/hioc/asset_policy.py",
+      "prior_sha256": "565e2314c8947a17e31e327b21960db4338e37f514ab7c3df31738006d178a2f",
+      "sha256": "87bc525e8a87db2c7c749536be9c190e7fb92197b2f12eb89757332c552dc26f"
+    },
+    {
+      "git_blob": "132c572d875d8b87ae0d89b72eec2c69ddd1b57b",
+      "path": "pi4/lib/hioc/assets.py",
+      "prior_sha256": "5a06d401c7496871c878337a32ec85a37dae53ba7e74fe97e30446f4d720f3ac",
+      "sha256": "5a06d401c7496871c878337a32ec85a37dae53ba7e74fe97e30446f4d720f3ac"
+    },
+    {
+      "git_blob": "c56a2c29fa712609adc9121d48c1639b69b818ba",
+      "path": "pi4/lib/hioc/availability.py",
+      "prior_sha256": "8b10bf0ced9e280a0d634fe4ec0082d6f267c1a5fd8c8abcae34e5660b2ba54d",
+      "sha256": "8b10bf0ced9e280a0d634fe4ec0082d6f267c1a5fd8c8abcae34e5660b2ba54d"
+    },
+    {
+      "git_blob": "1479d5c553608b6ceafc14e9553c7aa8f8839de1",
+      "path": "pi4/lib/hioc/availability_contract.py",
+      "prior_sha256": "b27f422e6badd13aefff5f75c1dfd03859f60b927be02721c95e56f18b4eaef3",
+      "sha256": "b27f422e6badd13aefff5f75c1dfd03859f60b927be02721c95e56f18b4eaef3"
+    },
+    {
+      "git_blob": "d765e77eb9b8442db97c0435f72a0ffe00142584",
+      "path": "pi4/lib/hioc/availability_incidents.py",
+      "prior_sha256": "f3d700b10b1de607dd32a36603bd6399a956450fa0a0eb75def4491567a39f5f",
+      "sha256": "f3d700b10b1de607dd32a36603bd6399a956450fa0a0eb75def4491567a39f5f"
+    },
+    {
+      "git_blob": "6fe80ab1ea94a458db723c7ceabd4355fe07b8f0",
+      "path": "pi4/lib/hioc/availability_observation.py",
+      "prior_sha256": "16722847de9d0a44097d82fffa1056a94efefb9b3eeac3e955336574db324ac0",
+      "sha256": "16722847de9d0a44097d82fffa1056a94efefb9b3eeac3e955336574db324ac0"
+    },
+    {
+      "git_blob": "ae15ba60c140f853756619058aebcd9e73ce91f2",
+      "path": "pi4/lib/hioc/availability_protocol.py",
+      "prior_sha256": "3245db6e1e05cd247095031d516d376298dbab8c33e6668548b5e0321350472b",
+      "sha256": "1a6ab763a0aefc9eca5a0a748a60a4b0d874c50611322bc15dd757cd55153608"
+    },
+    {
+      "git_blob": "efe0aa0da94f8fbce9b62395b28673dbde1dada4",
+      "path": "pi4/lib/hioc/availability_server.py",
+      "prior_sha256": "406cb71e787eafee6c1c780f70167449a9196eacdfe8222fa1cce66312952ab2",
+      "sha256": "406cb71e787eafee6c1c780f70167449a9196eacdfe8222fa1cce66312952ab2"
+    },
+    {
+      "git_blob": "c69c533e46a352dd498813c50fa680cfb57db84f",
+      "path": "pi4/lib/hioc/classification.py",
+      "prior_sha256": "003ccb0eaead3476b85b8e2458d39199a84b439006f165f3fec8341c41a6eaa1",
+      "sha256": "003ccb0eaead3476b85b8e2458d39199a84b439006f165f3fec8341c41a6eaa1"
+    },
+    {
+      "git_blob": "369a0efbbebea9d24ed571fe9210562feaddb464",
+      "path": "pi4/lib/hioc/mqtt.py",
+      "prior_sha256": "126cfcc6c6780be79e8ed6c1ce7b27f4088edfde7221794ced62bf31e24095d4",
+      "sha256": "126cfcc6c6780be79e8ed6c1ce7b27f4088edfde7221794ced62bf31e24095d4"
+    }
+  ],
+  "changed_paths": [
+    "pi4/bin/hioc-availability-adapter.py",
+    "pi4/lib/hioc/asset_policy.py",
+    "pi4/lib/hioc/availability_protocol.py"
+  ],
+  "controller_sha256": "76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2",
+  "prior_release": "51398bab4e2293b578b2cdac2d0740c3738cab2f",
+  "provider_sha256": "756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741",
+  "release": "20f7f4c64fd32865f006ecfb2135ae6bbcada16c",
+  "schema_version": "1.0",
+  "transaction": "backups/pe73-full-inventory-delivery-v1"
+}

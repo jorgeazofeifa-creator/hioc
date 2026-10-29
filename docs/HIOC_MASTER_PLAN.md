@@ -6268,6 +6268,105 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+### PE-7.3 bounded successor delivery candidate — synthetic qualification PASS
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+Payload authority remains accepted release20f7f4c64fd32865f006ecfb2135ae6bbcada16c.
+OPERATOR_SUPPLIED: PI3 release-source synchronized to that exact release, clean.
+This is source-only evidence, not a claim that the successor runtime is installed.
+
+The complete delivery dependency closure was established before editing. New
+`tools/pe73_successor_delivery.py` pins the closed13-file payload/prior manifest in
+`governance/pe7/pe73-successor-delivery.json` and verifies both existing source tools
+before compiling private isolated namespaces. Only their fixed loading bootstrap
+and release/prior/transaction configuration are adapted; original transaction,
+security, process detection, scheduler and authorization function bodies are reused.
+Original controller SHA256 remains76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2;
+original maintenance provider remains756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741.
+No historical source or immutable record is rewritten.
+
+Dependency graph: accepted20f7 Git objects -> exact13 SHA256/blob pins and original
+51398bab prior digests -> original NativeFS/preflight -> all13 backups/stages and
+strict original journal -> ten identity-checked no-op slots plus three atomic live
+replacements -> full13 verification -> explicit release. Rollback uses the original
+reverse-order provenance/backups, with only the same three live restorations.
+Core receipts count13 verified transaction slots, not13 filesystem replacements.
+Three replacement paths: pi4/bin/hioc-availability-adapter.py,
+pi4/lib/hioc/asset_policy.py, pi4/lib/hioc/availability_protocol.py.
+Original owners/modes, no-follow ancestry/device/inode, ACL/hard-link checks,
+durable intent, exact readback and shared deployment mutex are retained.
+
+New transaction namespace: backups/pe73-full-inventory-delivery-v1. The original
+backups/pe73-pi3-delivery-v1 must first validate through its original strict
+COMMITTED/pending-null/RELEASED validators and match all13 current runtime identities.
+Its journal identity is then guarded at each new private write/transaction lock and
+publication. It is never adopted, overwritten or used as the new transaction.
+All13 files must have the exact original installed bytes/modes before preparation.
+Ten unchanged files retain their actual device/inode/timestamps through install and
+rollback; no unnecessary live replacement or chmod is performed.
+
+Existing approved maintenance-window and whole-process authorization models remain:
+exact full scheduler and original/reduced hashes, classified three-job exclusion,
+complete fresh known-process drain, session/boot/time/runtime/source/journal binding,
+manual no-launch responsibility and stated residual risks. Matching cron locks do
+not establish universal exclusion; retained descriptors/cached or missed independent
+callers remain explicit limitations. Active or incomplete observations fail closed.
+No failure/uncertainty causes retry, rollback, scheduler restoration or release.
+An existing successor transaction refuses normal entry; the original historically
+anchored EXCLUDED-resume shortcut is not a successor recovery authorization.
+Unexpected recovery/rollback and materially changed scope remain separately gated.
+
+Focused native Windows stdin validation:32 executed,32 PASS,zero failures/errors/
+skips; synthetic fixtures only. This includes original algorithm/scheduler-source
+identity, exact13 payloads, ten no-op identities, three publications, backup/rollback,
+whole-process sequence, expiry/context/boot/consumer/scheduler drift, hard links,
+manifest/tool tampering, strict predecessor validation, interruption/pending refusal,
+and uncertain scheduler restoration. Earlier test-introspection error is retained
+outside the repository; it was a fixture source-inspection error, not native evidence.
+No complete regression or broad test discovery was run. Product source is unchanged
+from the accepted4038-test release; the owner's focused validation policy governs
+this delivery-tool correction. Original contract and historical C20 text are preserved.
+Current documentation identities refresh the existing39-artifact map; its historical
+metadata is not reclassified as acceptance of this new candidate. The new manifest
+pins no publication HEAD and no self digest; Git publication will bind the new tool,
+test and manifest. No circular checkout identity or permissive source fallback.
+
+IMPLEMENTATION_QUALIFICATION=PASS_SYNTHETIC; INDEPENDENT_ACCEPTANCE=PASS_REPOSITORY_REVIEW.
+Independent acceptance completed under the owner instruction "HIOC PE-7.3: Accept
+and Publish the Successor Delivery Adapter". Actual source/manifest/tests, original
+PE-7 contract, adopted maintenance-window amendment and current governance were
+reviewed against all ten acceptance conditions; no blocking defect was identified.
+Exact qualified adapter SHA256:
+cb6d84c2c4b2181fc1af6e03fee3685a0d364146f528466483b6b20751dcc394;
+test SHA256:79e4060d44a9637f9cfbc36021f5a18b35e4c5c0e931d78e585c093d7cd83838;
+pinned manifest SHA256:e8b37aba46c2bbb56616366420fb4041353fb009ae17d158cf5937aa064ae7a7.
+The existing32/32 focused result applies to these unchanged implementation bytes;
+no additional tests or broad discovery were required or run during acceptance.
+Original backup/journal/rollback, precise three-file publication, ten preserved
+identities, read-only native entry and fail-closed native admissions were verified.
+This accepts repository publication, not native mutation or universal caller exclusion.
+Exactly six existing candidate paths are authorized for this publication; only
+acceptance/current sequencing documentation and its manifest hashes change after
+review. Original historical records/contract/tooling and all product bytes remain
+unchanged. Commit/push are authorized after exact stage/blob/parent/scope checks;
+post-publication remote commit/tree, stash and clean-tree verification remain mandatory.
+Only the read-only `inspect` CLI is exposed; native_coordinator construction is
+read-only and supplies no admission.
+After acceptance/publication and source sync, fresh native inspection must establish
+original journal/runtime, exact scheduler, process visibility and no successor
+transaction. No current fencing fact is inferred from Windows tests. Any eventual
+normal sequence must use the accepted provider's fresh per-operation technical
+admissions under the approved whole-process authority and manual restrictions.
+No runtime migration/editing/evaluator/notifications, credential or sealed toolkit
+replacement is added. This adapter delivers only the three runtime deltas; any
+provisioning-toolkit successor remains its own required existing delivery boundary.
+Exactly one next operator action after this authorized Git publication: synchronize
+only /home/jazofv1/hioc-release-source to the exact published immutable commit and
+verify its tree/main/origin/clean state. Do not combine source synchronization with
+runtime delivery. A subsequent guarded native assessment and separately authorized
+maintenance sequence remain required. No PI3/PI5 access or production mutation by Codex.
+
+
 ### Accepted full-inventory successor — repository acceptance and publication
 
 Owner authority: **HIOC PE-7.3: Finalize and Publish the Qualified Release Candidate**.
@@ -9610,6 +9709,22 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### CURRENT PE-7.3 accepted successor delivery adapter publication
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+The accepted20f7 full-inventory payload release remains authoritative; OPERATOR_SUPPLIED
+PI3 release-source synchronization to20f7 is complete and clean. The exact six-path
+successor adapter has independent repository acceptance PASS with unchanged32/32
+synthetic test evidence. Authorized Git publication follows exact source/binding,
+staging/commit and remote/clean checks; it does not establish production installation.
+Next operator action: source-only fast-forward synchronization of the PI3 release-source
+checkout to this checkpoint's exact published commit and tree, then clean-state
+verification. No new architecture or production evidence is implied. Subsequent
+native inspection must establish current journal, scheduler/runtime/process facts;
+no deployment, recovery, migration or activation command is authorized here.
+See [successor delivery evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-bounded-successor-delivery-candidate--synthetic-qualification-pass).
+
+### Historical accepted full-inventory publication guidance
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
 Classification: CURRENT — PE-7.3 owner-directed full-inventory Asset authorization.
