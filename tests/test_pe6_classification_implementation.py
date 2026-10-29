@@ -373,8 +373,8 @@ def validate_timestamp_correction(record=None):
 
 def implementation_successor():
     if not globals().get('_PE7_HISTORICAL_REPLAY', False):
-        from test_pe7_binding import current_candidate
-        candidate=current_candidate(read=raw, git_runner=git)
+        from test_pe7_binding import current_successor
+        candidate=current_successor(read=raw, git_runner=git)
         # Read-only inherited bindings preserve the established consumer map;
         # they do not grant edit authority over the protected baseline.
         inherited={item['path'] for item in accepted_implementation()['artifacts']}
@@ -399,8 +399,8 @@ def implementation_binding(path):
 
 def assert_implementation_sequence(text):
     if not globals().get('_PE7_HISTORICAL_REPLAY', False):
-        from test_pe7_binding import assert_candidate_sequence
-        return assert_candidate_sequence(text, read=raw, git_runner=git)
+        from test_pe7_binding import assert_successor_sequence
+        return assert_successor_sequence(text, read=raw, git_runner=git)
     implementation_binding("docs/HIOC_MASTER_PLAN.md")
     full=raw("docs/HIOC_MASTER_PLAN.md").decode()
     status=full.split("# Implementation Status",1)[1].split("# Historical Operator Preparation Chronology",1)[0]
@@ -409,12 +409,12 @@ def assert_implementation_sequence(text):
     require(section=="\n"+CORRECTION_CURRENT,"current PE6.3 successor / PE6.4 separate authorization")
 
 
-@lru_cache(maxsize=4096)
+@lru_cache(maxsize=16384)
 def _immutable_replay_command(repository_root, args):
     return subprocess.check_output(['git', '--no-optional-locks', *args], cwd=repository_root,
         env=dict(os.environ, GIT_OPTIONAL_LOCKS='0'), stderr=subprocess.PIPE)
 
-def load_tests(loader, tests, pattern, *, namespaces=()):
+def load_tests(loader, tests, pattern, *, namespaces=(), revision=None):
     """Replay these historical governance fixtures at their immutable accepted commit.
 
     Current PE-7 bindings have separate negative fixtures in test_pe7_binding.
@@ -425,10 +425,13 @@ def load_tests(loader, tests, pattern, *, namespaces=()):
     import tempfile
     import zipfile
     from contextlib import ExitStack
-    accepted = '9d6ce274a80a578d488d7245ebfa5bca1d5f5a83'
+    accepted = revision or '9d6ce274a80a578d488d7245ebfa5bca1d5f5a83'
+    require(accepted in ('9d6ce274a80a578d488d7245ebfa5bca1d5f5a83',
+                        '3f54723f3ece7c7b2b3bb3921776c9f2698967c1'), 'unsupported historical replay authority')
     repository_root = ROOT
     namespace_git = {id(namespace): namespace['git'] for namespace in namespaces
-        if 'git' in namespace and namespace.get('_pe7_original_git', namespace['git']) is not namespace['git']}
+        if 'git' in namespace and not getattr(namespace['git'], '_pe7_immutable_cache', False)
+        and namespace.get('_pe7_original_git', namespace['git']) is not namespace['git']}
     @lru_cache(maxsize=None)
     def repository_git(*args):
         # Only explicitly immutable object/ref arguments enter the shared cache.
@@ -448,6 +451,16 @@ def load_tests(loader, tests, pattern, *, namespaces=()):
                     require(not path.is_absolute() and '..' not in path.parts, 'historical archive path')
                     require((member.external_attr >> 16) & 0o170000 != 0o120000, 'historical archive link')
                 archive.extractall(snapshot)
+                if accepted == '3f54723f3ece7c7b2b3bb3921776c9f2698967c1':
+                    # git archive on Windows may convert line endings. These
+                    # sealed loaders own exact raw Git identities, not EOL variants.
+                    for path, identity in {
+                        'tools/pe73_pi3_provision_environment.py': 'f55543e7207dc7bd9b23e7262f1b17c17fcc568afdf64d8aad6335321f6f93f1',
+                        'tools/pe73_provision_environment.py': '0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7',
+                    }.items():
+                        content = repository_git('--no-replace-objects', 'show', accepted + ':' + path)
+                        require(sha(content) == identity, 'sealed raw historical source identity')
+                        (snapshot / path).write_bytes(content)
                 # This selected historical law hashes two unnormalized source
                 # files. Reproduce their recorded Git representation, never a
                 # guessed LF conversion or a refreshed historical identity.
@@ -532,12 +545,21 @@ def load_tests(loader, tests, pattern, *, namespaces=()):
                     # A historical dependency graph must read one historical
                     # checkout, not current bytes paired with historical hashes.
                     for name,module in list(__import__('sys').modules.items()):
-                        if name.startswith(('test_pe4_', 'test_pe5_', 'test_pe6_', 'test_pe10_')) and module is not None:
+                        if name.removeprefix('tests.').startswith(('test_pe4_', 'test_pe5_', 'test_pe6_', 'test_pe10_')) and module is not None:
                             namespace=vars(module)
                             if namespace.get('ROOT') == repository_root:
-                                stack.enter_context(patch.dict(namespace, ROOT=snapshot))
+                                replacement = dict(ROOT=snapshot)
+                                helper = namespace.get('git')
+                                # Standard argv-style Git dependencies must see the same
+                                # immutable HEAD as their snapshot bytes. Literal ref/path
+                                # helpers retain their own calling convention.
+                                if callable(helper) and getattr(helper, '__code__', None) and helper.__code__.co_flags & 0x04:
+                                    replacement['git'] = namespace_git.get(id(namespace), historical_git)
+                                stack.enter_context(patch.dict(namespace, **replacement))
                     for namespace in namespaces:
                         replacement = dict(ROOT=snapshot)
+                        if namespace.get('R') == repository_root:
+                            replacement['R'] = snapshot
                         if 'git' in namespace:
                             replacement['git'] = namespace_git.get(id(namespace), historical_git)
                         stack.enter_context(patch.dict(namespace, **replacement))
@@ -979,3 +1001,53 @@ class TimestampSuccessorTests(unittest.TestCase):
 
 
 if __name__=="__main__":unittest.main()
+
+
+def immutable_git_read(args):
+    """Only explicit immutable object queries; never a worktree, index or ref view."""
+    import re
+    values = tuple(args)
+    if values[:1] == ('--no-replace-objects',): values = values[1:]
+    oid = lambda value: isinstance(value, str) and re.fullmatch(r'[0-9a-f]{40}', value) is not None
+    if len(values) == 2 and values[0] == 'show':
+        return re.fullmatch(r'[0-9a-f]{40}:.+', values[1]) is not None
+    if len(values) == 3 and values[:2] == ('cat-file', 'blob'): return oid(values[2])
+    if len(values) == 2 and values[0] == 'rev-parse':
+        return re.fullmatch(r'[0-9a-f]{40}(?:\^\{(?:tree|commit)\}|\^[0-9]*|~[0-9]+)?', values[1]) is not None
+    if values[:1] == ('ls-tree',):
+        operands = [v for v in values[1:] if not v.startswith('-')]
+        return len(operands) == 1 and oid(operands[0]) and all(
+            not v.startswith('-') or v in ('-r', '-z', '--name-only', '--full-tree') for v in values[1:])
+    if len(values) == 4 and values[:2] == ('diff', '--name-only'):
+        return oid(values[2]) and oid(values[3])
+    if len(values) == 4 and values[:2] == ('merge-base', '--is-ancestor'):
+        return oid(values[2]) and oid(values[3])
+    return False
+
+
+def immutable_git_reader(namespace, original, repository_root):
+    from functools import wraps
+    @wraps(original)
+    def reader(*args):
+        # Foreign fixture repositories and environment overrides retain their
+        # original reader; no current observation or validation result is cached.
+        if (namespace.get('ROOT') == repository_root and not os.environ.get('GIT_DIR') and
+                not os.environ.get('GIT_WORK_TREE') and immutable_git_read(args)):
+            return _immutable_replay_command(repository_root, tuple(args))
+        return original(*args)
+    reader._pe7_immutable_cache = True
+    return reader
+
+
+def install_immutable_git_reads():
+    """Reuse the existing object cache for loaded test readers, without import hooks."""
+    import sys
+    repository_root = ROOT
+    for name, module in list(sys.modules.items()):
+        if module is None or not name.removeprefix('tests.').startswith(
+                ('test_pe4_', 'test_pe5_', 'test_pe6_', 'test_pe10_')): continue
+        namespace = vars(module); helper = namespace.get('git')
+        if (namespace.get('ROOT') == repository_root and callable(helper) and
+                getattr(helper, '__code__', None) and helper.__code__.co_flags & 0x04 and
+                not getattr(helper, '_pe7_immutable_cache', False)):
+            namespace['git'] = immutable_git_reader(namespace, helper, repository_root)

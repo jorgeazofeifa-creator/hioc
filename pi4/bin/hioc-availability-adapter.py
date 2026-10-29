@@ -40,7 +40,7 @@ def main(argv=None):
             entry = matches[0]
             keys(entry, ('issuer', 'key_id', 'assertion_key_file', 'client_spki_sha256', 'actors', 'enabled'))
             key = Path(private_file(entry['assertion_key_file'], secret=True)).read_bytes()
-            actors = {actor:{operation:frozenset(allowed) for operation,allowed in operations.items()}
+            actors = {actor:{operation:(allowed if type(allowed) is dict else frozenset(allowed)) for operation,allowed in operations.items()}
                       for actor,operations in entry['actors'].items()}
             return IssuerTrust(issuer, key_id, key, entry['client_spki_sha256'], actors, entry['enabled'])
         store = PolicyStore(args.home)

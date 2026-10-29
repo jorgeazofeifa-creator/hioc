@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import contextlib
 import hashlib
 import json
 import os
@@ -300,6 +301,30 @@ class PolicyService(legacy.AssetService):
         super().__init__(store)
         # Attachment resolver is local validated inventory authority, never a request field.
         self.attachment = attachment or (lambda key: inventory_attachment(store, key))
+
+    def authorize_population(self, operation, key, scope, *, locked=False):
+        """Explicit owner-accepted operation scope, never arbitrary-ID authority.
+
+        The protocol calls locked=True only from its writer-guard reauthorization.
+        Create conflict/replay checks remain in mutate_policy, under that guard.
+        """
+        from .availability_protocol import POPULATION_SCOPES
+        asset_id(key)
+        require(operation in POPULATION_SCOPES and scope == POPULATION_SCOPES[operation], 'FORBIDDEN')
+        context = contextlib.nullcontext() if locked else legacy.AssetLock(self.store.lock_path, shared=True)
+        with context:
+            require(not self.store.uncertain, 'COMMIT_UNKNOWN')
+            current = self.store.load_store()
+            require(current['schema_version'] == '2.0', 'UNSUPPORTED_SCHEMA')
+            require(self.store.durability_pair_confirmed(current), 'COMMIT_UNKNOWN')
+            exists = key in current['assets']
+            if operation == 'create':
+                # Existing records can reach exact durable receipt reconciliation;
+                # a fresh create can never overwrite them in mutate_policy.
+                return self.attachment(key) == 'strong'
+            if operation == 'get':
+                return exists or self.attachment(key) == 'strong'
+            return exists
 
     def _write_status(self, store):
         marker = None

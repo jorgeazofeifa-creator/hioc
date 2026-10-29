@@ -113,7 +113,7 @@ EXTRA_SMOKE=r'''
 # Import the exact existing provisioning glue; no CLI or production functions.
 import importlib.util,datetime,secrets
 helper=root/'tools/pe73_ha_provision.py'
-assert hashlib.sha256(helper.read_bytes()).hexdigest()=='2594d985f76d51b02365ca2ef98f02ac4372e566559be893762a41e6ccb39d89'
+assert hashlib.sha256(helper.read_bytes()).hexdigest()=='1840149979827c76f58e2c933ff70e7f1dfed90788ac97abf004b6218f0e56e8'
 spec=importlib.util.spec_from_file_location('pe73_pi3_api_smoke',helper)
 q=importlib.util.module_from_spec(spec);spec.loader.exec_module(q)
 q.crypto();q.native()
@@ -131,6 +131,11 @@ assert leaf.not_valid_before_utc<leaf.not_valid_after_utc
 assert len(x509.load_pem_x509_certificates(leaf.public_bytes(serialization.Encoding.PEM)))==1
 '''
 
+# The accepted isolated installer downloads its immutable historical toolkit.
+# Keep that smoke exact; EXTRA_SMOKE above owns only the current repository API.
+HISTORICAL_EXTRA_SMOKE=EXTRA_SMOKE.replace('1840149979827c76f58e2c933ff70e7f1dfed90788ac97abf004b6218f0e56e8',
+    '2594d985f76d51b02365ca2ef98f02ac4372e566559be893762a41e6ccb39d89')
+
 def profile(engine):
     """Private in-memory PI3 profile, never edits PI5 source or environment."""
     engine.ROOT=ROOT;engine.WHEELS=WHEELS
@@ -138,7 +143,7 @@ def profile(engine):
     engine.new_file=new_file;engine.fingerprint=fingerprint
     marker="print(json.dumps({'RESULT':'PASS_ISOLATED_CRYPTOGRAPHY_SMOKE'"
     require(engine.SMOKE.count(marker)==1,'ACCEPTED_SMOKE_BINDING_MISMATCH')
-    engine.SMOKE=engine.SMOKE.replace(marker,EXTRA_SMOKE+'\n'+marker)
+    engine.SMOKE=engine.SMOKE.replace(marker,HISTORICAL_EXTRA_SMOKE+'\n'+marker)
     return engine
 
 def prepare():

@@ -14,6 +14,11 @@ from .availability_contract import (
 ROUTES = {f'/pe7/v1/policy/{name}': name for name in ('get', 'create', 'update', 'result')}
 STATUS_ROUTE = '/pe7/v1/availability/status'
 ROUTES[STATUS_ROUTE] = 'availability_status'
+POPULATION_SCOPES = dict(get='eligible_or_existing', create='eligible_inventory',
+                         update='existing_assets', result='existing_assets',
+                         availability_status='existing_assets')
+
+
 ASSERTION_KEYS = ('issuer', 'audience', 'key_id', 'actor_id', 'context_id', 'request_id',
                   'issued_at', 'expires_at', 'method', 'path', 'payload_sha256')
 
@@ -24,7 +29,7 @@ class IssuerTrust:
     key_id: str
     key: bytes = field(repr=False)
     client_spki_sha256: str
-    # Explicit actor -> operation -> exact Asset-ID allowlist. No wildcard authority.
+    # Exact IDs or explicit amendment-bound population grants; never wildcards.
     actors: dict
     enabled: bool = False
 
@@ -37,7 +42,17 @@ class IssuerTrust:
         for actor, operations in self.actors.items():
             identifier(actor)
             require(type(operations) is dict and set(operations) <= set(ROUTES.values()), 'TRUST_INVALID')
-            for allowed in operations.values():
+            for operation, allowed in operations.items():
+                if type(allowed) is dict:
+                    require(set(allowed) == {'scope', 'amendment', 'acceptance_reference'} and
+                            allowed['scope'] == POPULATION_SCOPES[operation] and
+                            allowed['amendment'] == 'PE73_FULL_INVENTORY_ASSET_AUTHORIZATION_V1', 'TRUST_INVALID')
+                    reference = allowed['acceptance_reference']
+                    require(reference is None or type(reference) is str and 1 <= len(reference) <= 128, 'TRUST_INVALID')
+                    if reference is not None: identifier(reference)
+                    if self.enabled:
+                        require(reference is not None, 'FORBIDDEN')
+                    continue
                 require(type(allowed) in (set, frozenset) and 1 <= len(allowed) <= 4096, 'TRUST_INVALID')
                 for key in allowed:
                     asset_id(key)
@@ -60,13 +75,18 @@ class Protocol:
         self.status_reader = status_reader
         self.read_attempts = deque()
 
-    def _trust(self, assertion, peer, operation, key):
+    def _trust(self, assertion, peer, operation, key, *, locked=False, verify_population=True):
         trust = self.trust_lookup(assertion['issuer'], assertion['key_id'])
         require(isinstance(trust, IssuerTrust), 'TRUST_INVALID')
         trust.validate()
         require(trust.enabled is True and hmac.compare_digest(trust.client_spki_sha256, peer), 'TRUST_INVALID')
         require(trust.issuer == assertion['issuer'] and trust.key_id == assertion['key_id'], 'TRUST_INVALID')
-        require(key in trust.actors.get(assertion['actor_id'], {}).get(operation, ()), 'FORBIDDEN')
+        allowed = trust.actors.get(assertion['actor_id'], {}).get(operation, ())
+        if type(allowed) is dict:
+            if verify_population:
+                require(self.service.authorize_population(operation, key, allowed['scope'], locked=locked), 'FORBIDDEN')
+        else:
+            require(key in allowed, 'FORBIDDEN')
         return trust
 
     def handle(self, path, raw, peer_spki_sha256, *, method='POST', content_type='application/json',
@@ -100,13 +120,15 @@ class Protocol:
             else:
                 keys(payload, ('asset_id', 'store_epoch', 'expected_store_revision', 'expected_revision', 'operation_id', 'fields'))
             key = asset_id(payload['asset_id'])
-            trust = self._trust(assertion, peer_spki_sha256, operation, key)
+            trust = self._trust(assertion, peer_spki_sha256, operation, key, verify_population=False)
             expected = hmac.new(trust.key, canonical(dict(assertion=assertion, payload=payload)), hashlib.sha256).hexdigest()
             require(hmac.compare_digest(expected, envelope['signature']), 'TRUST_INVALID')
             issued, expiry = timestamp(assertion['issued_at']), timestamp(assertion['expires_at'])
             now = self.clock()
             require(isinstance(now, datetime) and now.tzinfo is not None, 'ASSERTION_EXPIRED')
             require(issued <= now < expiry and 0 < (expiry-issued).total_seconds() <= 30, 'ASSERTION_EXPIRED')
+            current = self._trust(assertion, peer_spki_sha256, operation, key)
+            require(hmac.compare_digest(current.key, trust.key), 'FORBIDDEN')
             with self.lock:
                 require(self.last_clock is None or now >= self.last_clock, 'ASSERTION_EXPIRED')
                 self.last_clock = now
@@ -129,8 +151,8 @@ class Protocol:
                     count = sum(identity == actor for _, identity in self.attempts)
                     require(count < 10 and len(self.attempts) < 100, 'RATE_LIMITED')
                     self.attempts.append((now, actor))
-            def reauthorize():
-                current = self._trust(assertion, peer_spki_sha256, operation, key)
+            def reauthorize(*, locked=False):
+                current = self._trust(assertion, peer_spki_sha256, operation, key, locked=locked)
                 instant = self.clock()
                 return (isinstance(instant, datetime) and instant.tzinfo is not None and
                         now <= instant < expiry and hmac.compare_digest(current.key, trust.key))
@@ -140,10 +162,12 @@ class Protocol:
                 require(reauthorize(), 'FORBIDDEN')
                 return validate_status(self.status_reader.read(key))
             if operation == 'get':
+                require(reauthorize(), 'FORBIDDEN')
                 return self.service.get_policy(key)
             if operation == 'result':
+                require(reauthorize(), 'FORBIDDEN')
                 return self.service.operation_result(key, payload['operation_id'], assertion['issuer'], assertion['actor_id'])
-            return self.service.mutate_policy(operation, payload, assertion['issuer'], assertion['actor_id'], reauthorize)
+            return self.service.mutate_policy(operation, payload, assertion['issuer'], assertion['actor_id'], lambda: reauthorize(locked=True))
         except PolicyError as error:
             if path == STATUS_ROUTE:
                 return dict(schema_version='1.0', result='error', error_code=error.code, retryable=False)

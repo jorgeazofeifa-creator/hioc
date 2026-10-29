@@ -134,7 +134,13 @@ def disabled_trust(ha, backend):
     for operations in entry['actors'].values():
         require(type(operations) is dict and bool(operations) and set(operations) <=
             {'get','create','update','result','availability_status'}, 'ACL_OPERATION_INVALID')
-        for ids in operations.values():
+        scopes=dict(get='eligible_or_existing',create='eligible_inventory',update='existing_assets',result='existing_assets',availability_status='existing_assets')
+        for operation,ids in operations.items():
+            if type(ids) is dict:
+                require(set(ids)=={'scope','amendment','acceptance_reference'} and ids['scope']==scopes[operation] and ids['amendment']=='PE73_FULL_INVENTORY_ASSET_AUTHORIZATION_V1'
+                    and (ids['acceptance_reference'] is None or type(ids['acceptance_reference']) is str
+                    and re.fullmatch('[A-Za-z0-9_-]{1,128}',ids['acceptance_reference'])), 'POPULATION_GRANT_INVALID')
+                continue
             require(type(ids) is list and bool(ids) and len(set(ids)) == len(ids) and
                 all(type(x) is str and re.fullmatch('dev_[0-9a-f]{16}', x) for x in ids), 'ACL_ASSET_INVALID')
     # Inactive packet only. Never inserted into active configuration.yaml or adapter config.

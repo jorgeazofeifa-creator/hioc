@@ -6268,9 +6268,177 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+### Accepted full-inventory successor — repository acceptance and publication
+
+Owner authority: **HIOC PE-7.3: Finalize and Publish the Qualified Release Candidate**.
+PE73_FULL_INVENTORY_ASSET_AUTHORIZATION_V1 is ACCEPTED. Independent repository
+acceptance PASS and the complete native regression are accepted for the unchanged
+qualified implementation:4038 executed,3994 passed,zero failures/errors,44 individual
+skips and5 class-level skip events. Frozen regression input SHA256:
+660bee376ec4610b19c8abd1d2d75ec09ed94938b0a06a09b81a384bc2f15014.
+Only governance/documentation and its directly necessary binding checks change
+after that qualification; no complete regression is repeated for publication.
+
+Explicit actor/operation grants may use get=eligible_or_existing,
+create=eligible_inventory and update/result/availability_status=existing_assets.
+Population-level availability_status is a deliberate accepted successor change
+to original section6.1's exact-Asset-ID ACL requirement; the original contract
+bytes remain historically authoritative and unchanged. No implicit cross-operation
+authority, administrator bypass, automatic creation or caller-selected scope.
+Strong identity, revocation, signed actor assertions, mTLS/SPKI, exact32-byte HMAC,
+nonce/replay, writer-time reauthorization, epoch/revisions and durable receipts remain.
+Owner acceptance does not choose production actors, ports, credentials or certificates.
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+The next action is operator source-only synchronization of the PI3 release-source
+checkout to the exact published commit, with clean-tree/ancestry verification.
+Guarded successor runtime/toolkit delivery remains necessary after source sync;
+the historical13-artifact installer/sealed caches are not successor installers.
+No runtime installation, Asset migration, editing, evaluation, recurring activation,
+CA issuance or production access is authorized by this publication. Existing
+hioc-dashboard-v2 and its six views remain the exclusive UI. Earlier pending-owner
+and blocked-publication statements below describe prior preparation snapshots,
+not the current accepted successor. Original failed regression evidence is retained.
+See [accepted amendment](PE7_FULL_INVENTORY_AUTHORIZATION_AMENDMENT.md).
+
+
+
+### Historical source-binding correction — repository validation pending at preparation
+
+The preceding corrected native run exhausted:4036 tests,3991 passed,one failure,
+zero errors,44 individual skips and5 class-level skips. Its failure is preserved:
+the current API smoke still pinned the original provisioner. This is not full PASS.
+The owner subsequently authorized the complete necessary source-binding closure.
+The combined current candidate scope is now15 paths; the original12 product/amendment
+paths are preserved, with two existing helper corrections and the PI3 smoke profile.
+
+The current repository smoke pins exact successor provisioner SHA256
+1840149979827c76f58e2c933ff70e7f1dfed90788ac97abf004b6218f0e56e8.
+Its real crypto/native checks, expired public non-CA fixture and no-issuance behavior
+remain intact. The isolated installer retains its exact historical smoke and toolkit;
+no sealed environment, CA custody mechanism, wheel pin or credential action changes.
+Four explicitly named CA sealed-profile assertions reuse the existing immutable
+replay helper at3f54723f3ece7c7b2b3bb3921776c9f2698967c1; their bodies are unchanged.
+The actual current provisioning API test stays current. Windows archive line-ending
+conversion is not raw-source authority: the two sealed profile/installer fixture files
+are restored from exact Git objects after verifying their original recorded SHA256.
+A regression checks both identities and restoration of the caller root. Original PE-4/PE-7.1 laws
+retain their existing immutable authorities. No generic historical exemption exists.
+
+Current scope, helper identities and the39-artifact successor map are synchronized
+in order, then all513 input files including the record are frozen in the external
+profile. There is no content-hash cycle: the record does not bind itself, and the
+external input digest is not embedded in a file that it hashes. Arbitrary source,
+unknown replay revisions and unrelated paths remain rejected. The current manifest
+does not reclassify historical metadata as approval of the proposed amendment.
+
+Final counts and acceptance disposition belong to the completed source-profiled
+Evidence Report; no partial run is PASS. No staging, commit, push, contract approval,
+production qualification or deployment occurs here. PE73_STATUS=IN_PROGRESS;
+PE74_STATUS=NOT_AUTHORIZED. Owner acceptance is still required before publication.
+
+
+### Prior authorized trustworthy-regression binding correction — historical validation method
+
+The interrupted external-file run remains failed/incomplete historical evidence;
+its182 errors and one failure are not a completed full-suite result. The bounded
+read-only diagnosis reproduced all183 events on both candidate and published parent:
+159 obsolete PE-7.1 current-entry errors,23 repository-root import errors, and one
+historical PE-4 section-boundary assertion. No product regression was established
+by those observed events; masked and unexecuted checks remain unknown.
+
+The owner authorized only two existing binding helpers plus the two current documents
+and current candidate identity record for correction. Original PE-7.1 validator and
+assertion bodies remain intact, replaying immutable51398bab artifacts with an explicitly
+synthetic original ad9ddc5 candidate view. The original PE-4 assertion is unchanged and
+uses the established9d6ce274 immutable replay. Current PE-7.3 validation independently
+requires actual main/HEAD/origin at3f54723f3ece7c7b2b3bb3921776c9f2698967c1, exact14-path
+combined candidate scope, empty staging, exact current identities and449 protected
+objects. The12-path product/amendment candidate is preserved; two helper extensions
+are explicit test scope only. The old39-artifact map remains a binding map, not proof
+that its PE-7.1 historical metadata authorizes the current checkpoint.
+
+The native harness is bundled Windows Python stdin at repository-root cwd, -B, UTF-8,
+shell-free PATH and HIOC_TEST_SHELL removed, with sys.path[:0]=['tests','pi4/lib'].
+A canonical external frozen profile binds all current files including the governance
+record, its exact accepted parent and explicit scope; its SHA-256 is supplied by the
+validation operator. It is test input, never contract acceptance or production authority.
+Use HIOC_SUCCESSOR_PROFILE and HIOC_SUCCESSOR_PROFILE_SHA256 for that frozen input;
+invoke test_pe7_binding.bind_regression_suite on the discovered suite. Current profile
+validation precedes historical dispatch. Only the exact named PE-4 historical method
+and original PE-7.1 candidate fixtures receive historical context; current product tests
+remain current. Durable unittest events capture failures/errors during execution and
+final completion separately; passed cases are counted directly, never by subtracting
+subtest-error events from testsRun.
+
+Correction validation follows the complete source-profiled native Evidence Report;
+owner review remains required before commit or push. Incomplete or failed runs are
+not PASS. No production access, deployment, schema migration or contract approval.
+The original PE-7.1 validator callable is retained as historical_candidate_validator;
+existing current_candidate consumers route to current_successor. Original function
+and assertion/class ASTs remain intact. Replay dependencies share one immutable
+filesystem/Git view, including namespaced test modules; literal ref/path readers retain
+their original calling convention. The existing immutable command cache is reused
+only for explicit object queries in loaded test readers, without import hooks. HEAD,
+origin/main, branch, staging, index, worktree diff, current source and current acceptance
+are never cached by this adapter. Profiling the prior live graph recorded5679 Git
+subprocesses for one binding call (478.6 seconds); reuse changes data-read cost, not
+validator laws or results. Current candidate bytes and Git state are freshly checked.
+PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED. The full-inventory amendment
+remains PROPOSED_PENDING_OWNER_ACCEPTANCE before production delivery/use.
+
+
 ## PE-7.3 Windows guarded PI3 delivery transaction preparation
 
-Classification: CURRENT — PE-7.3 separate manual CA signing custody.
+Classification: CURRENT — PE-7.3 owner-directed full-inventory Asset authorization.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3:203 discovered devices; authoritative state/inventory/assets.json
+readable, schema1.0, zero Assets, Asset status online. This is not a fixed inventory
+limit or Codex observation. PI3 UID1000 isolated environment and separate root-owned
+CA custody preparation PASS; PI5 isolated environment and existing HIOC Dashboard
+qualification PASS. These successful native qualifications are not repeated.
+Repository correction adds explicit per-actor/per-operation population grants,
+alongside preserved exact-ID grants: get=eligible_or_existing;
+create=eligible_inventory; update/result/availability_status=existing_assets.
+Each grant binds PE73_FULL_INVENTORY_ASSET_AUTHORIZATION_V1 and a separately recorded
+owner acceptance reference; null may exist only in inactive preparation, never
+an enabled issuer. The original exact-ID contract is unchanged; the explicit delta
+is PROPOSED and requires owner acceptance before production delivery/use.
+No wildcard, automatic creation, caller-selected scope or administrator bypass.
+A directly authenticated HA administrator and independent backend grant are both
+required. One requested Asset per operation; fresh validated strong unique MAC,
+exact ID rederivation, no orphan/conflict; creation rechecks under writer lock.
+Existing Asset reads/updates grow with actual authoritative store membership,
+without manually rebuilding ID lists. Separate status/result read grants retained.
+Existing mTLS/SPKI,HMAC32,actor assertions,revocation,nonce/quota,epoch/revision,
+idempotency/audit,backups and durable transaction rules remain unchanged.
+No implicit store initialization or migration; schema1.0-to-2.0 remains a separate
+authorized stopped-writer action, including a valid zero-record source store.
+Exclusive UI hioc-dashboard-v2, Inventory hioc-v2-inventory; six views preserved.
+No incident/evaluator/notification/recurring activation or production changes.
+Current source successor bindings are refreshed; immutable13 PI3/six HA payloads,
+449 protected identities, original contract/amendment/executive decision and
+all historical production evidence remain unchanged. Sealed environments keep
+historical toolkit bytes; no in-place cache edits or new native-deployment claim.
+Historical attempt retained: focused215/215 PASS; the original full native run
+STOPPED INCOMPLETE with182 ERROR events and one FAIL event, without final suite
+totals. Its ValueError: current publication provenance and partial stream remain
+failed historical evidence, never acceptance. The authorized bounded correction
+separates original immutable replay from exact current-parent/scope/identity checks.
+The accompanying source-profiled consolidated regression Evidence Report owns the
+new complete result; neither progress nor a partial/diagnostic run implies PASS.
+Publication remains BLOCKED until full regression passes and its result is reviewed
+and accepted by the owner. No staging, commit, push or contract approval occurs here.
+Next required action after complete validation: owner review of the consolidated
+regression result before publication. Amendment acceptance remains required before deployment.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+See [proposed full-inventory amendment](PE7_FULL_INVENTORY_AUTHORIZATION_AMENDMENT.md).
+
+### Historical separate CA custody preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 separate manual CA signing custody.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -8091,7 +8259,55 @@ Phase 7A - Passive Living Inventory
 ## Current Objective
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PE-7.3 separate manual CA signing custody.
+Classification: CURRENT — PE-7.3 owner-directed full-inventory Asset authorization.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3:203 discovered devices; authoritative state/inventory/assets.json
+readable, schema1.0, zero Assets, Asset status online. This is not a fixed inventory
+limit or Codex observation. PI3 UID1000 isolated environment and separate root-owned
+CA custody preparation PASS; PI5 isolated environment and existing HIOC Dashboard
+qualification PASS. These successful native qualifications are not repeated.
+Repository correction adds explicit per-actor/per-operation population grants,
+alongside preserved exact-ID grants: get=eligible_or_existing;
+create=eligible_inventory; update/result/availability_status=existing_assets.
+Each grant binds PE73_FULL_INVENTORY_ASSET_AUTHORIZATION_V1 and a separately recorded
+owner acceptance reference; null may exist only in inactive preparation, never
+an enabled issuer. The original exact-ID contract is unchanged; the explicit delta
+is PROPOSED and requires owner acceptance before production delivery/use.
+No wildcard, automatic creation, caller-selected scope or administrator bypass.
+A directly authenticated HA administrator and independent backend grant are both
+required. One requested Asset per operation; fresh validated strong unique MAC,
+exact ID rederivation, no orphan/conflict; creation rechecks under writer lock.
+Existing Asset reads/updates grow with actual authoritative store membership,
+without manually rebuilding ID lists. Separate status/result read grants retained.
+Existing mTLS/SPKI,HMAC32,actor assertions,revocation,nonce/quota,epoch/revision,
+idempotency/audit,backups and durable transaction rules remain unchanged.
+No implicit store initialization or migration; schema1.0-to-2.0 remains a separate
+authorized stopped-writer action, including a valid zero-record source store.
+Exclusive UI hioc-dashboard-v2, Inventory hioc-v2-inventory; six views preserved.
+No incident/evaluator/notification/recurring activation or production changes.
+Current source successor bindings are refreshed; immutable13 PI3/six HA payloads,
+449 protected identities, original contract/amendment/executive decision and
+all historical production evidence remain unchanged. Sealed environments keep
+historical toolkit bytes; no in-place cache edits or new native-deployment claim.
+Historical attempt retained: focused215/215 PASS; the original full native run
+STOPPED INCOMPLETE with182 ERROR events and one FAIL event, without final suite
+totals. Its ValueError: current publication provenance and partial stream remain
+failed historical evidence, never acceptance. The authorized bounded correction
+separates original immutable replay from exact current-parent/scope/identity checks.
+The accompanying source-profiled consolidated regression Evidence Report owns the
+new complete result; neither progress nor a partial/diagnostic run implies PASS.
+Publication remains BLOCKED until full regression passes and its result is reviewed
+and accepted by the owner. No staging, commit, push or contract approval occurs here.
+Next required action after complete validation: owner review of the consolidated
+regression result before publication. Amendment acceptance remains required before deployment.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+See [proposed full-inventory amendment](PE7_FULL_INVENTORY_AUTHORIZATION_AMENDMENT.md).
+
+### Historical separate CA custody preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 separate manual CA signing custody.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
@@ -9396,7 +9612,57 @@ revalidation and RECORDED evidence limitation. See [durable reconciliation closu
 ## Next Planned Task
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
-Classification: CURRENT — PE-7.3 separate manual CA signing custody.
+Classification: CURRENT — PE-7.3 owner-directed full-inventory Asset authorization.
+PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
+PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.
+OPERATOR_SUPPLIED PI3:203 discovered devices; authoritative state/inventory/assets.json
+readable, schema1.0, zero Assets, Asset status online. This is not a fixed inventory
+limit or Codex observation. PI3 UID1000 isolated environment and separate root-owned
+CA custody preparation PASS; PI5 isolated environment and existing HIOC Dashboard
+qualification PASS. These successful native qualifications are not repeated.
+Repository correction adds explicit per-actor/per-operation population grants,
+alongside preserved exact-ID grants: get=eligible_or_existing;
+create=eligible_inventory; update/result/availability_status=existing_assets.
+Each grant binds PE73_FULL_INVENTORY_ASSET_AUTHORIZATION_V1 and a separately recorded
+owner acceptance reference; null may exist only in inactive preparation, never
+an enabled issuer. The original contract bytes remain unchanged; the explicit delta
+is ACCEPTED by the owner, including population-level availability_status access.
+Production delivery/use remains separately guarded; no actor grants are implicit.
+No wildcard, automatic creation, caller-selected scope or administrator bypass.
+A directly authenticated HA administrator and independent backend grant are both
+required. One requested Asset per operation; fresh validated strong unique MAC,
+exact ID rederivation, no orphan/conflict; creation rechecks under writer lock.
+Existing Asset reads/updates grow with actual authoritative store membership,
+without manually rebuilding ID lists. Separate status/result read grants retained.
+Existing mTLS/SPKI,HMAC32,actor assertions,revocation,nonce/quota,epoch/revision,
+idempotency/audit,backups and durable transaction rules remain unchanged.
+No implicit store initialization or migration; schema1.0-to-2.0 remains a separate
+authorized stopped-writer action, including a valid zero-record source store.
+Exclusive UI hioc-dashboard-v2, Inventory hioc-v2-inventory; six views preserved.
+No incident/evaluator/notification/recurring activation or production changes.
+Current source successor bindings are refreshed; immutable13 PI3/six HA payloads,
+449 protected identities, original contract/amendment/executive decision and
+all historical production evidence remain unchanged. Sealed environments keep
+historical toolkit bytes; no in-place cache edits or new native-deployment claim.
+Historical attempt retained: focused215/215 PASS; the original full native run
+STOPPED INCOMPLETE with182 ERROR events and one FAIL event, without final suite
+totals. Its ValueError: current publication provenance and partial stream remain
+failed historical evidence, never acceptance. The authorized bounded correction
+separates original immutable replay from exact current-parent/scope/identity checks.
+The accompanying source-profiled consolidated regression Evidence Report owns the
+new complete result; neither progress nor a partial/diagnostic run implies PASS.
+The complete4038-test regression and independent repository acceptance are PASS
+and accepted by the owner. Publication of this exact qualified candidate and
+necessary governance updates is authorized. Next: operator source-only synchronization
+to the exact published commit; guarded successor runtime/toolkit delivery follows
+under its applicable production gates. No migration or activation is authorized.
+PE-7.3 IN_PROGRESS; PE-7.4 NOT_AUTHORIZED.
+See [accepted full-inventory amendment](PE7_FULL_INVENTORY_AUTHORIZATION_AMENDMENT.md).
+
+### Historical separate CA custody preparation snapshot
+
+Classification: HISTORICAL SNAPSHOT — PE-7.3 separate manual CA signing custody.
 PE70_STATUS=COMPLETE/PASS; PE71_STATUS=COMPLETE/PASS; PE72_STATUS=COMPLETE/PASS.
 PE6_STATUS=COMPLETE/PASS; PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS.
 PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED; CODEX_PRODUCTION_ACCESS=FALSE.

@@ -57,7 +57,12 @@ class IntegrityTests(unittest.TestCase):
     def test_toolkit_bytes_match_immutable_acceptance(self):
         self.assertEqual(len(e.TOOLKIT),7)
         for item in e.TOOLKIT:
-            self.assertEqual(e.checked((ROOT/'tools'/item['name']).read_bytes(),item),(ROOT/'tools'/item['name']).read_bytes())
+            # Sealed environments retain their accepted immutable toolkit even
+            # when a later repository authorization implementation succeeds it.
+            import subprocess
+            relative=item['url'].split('/hioc/',1)[1];revision,path=relative.split('/',1)
+            raw=subprocess.check_output(['git','--no-replace-objects','show',revision+':'+path],cwd=ROOT)
+            self.assertEqual(e.checked(raw,item),raw)
 
 class IsolationTests(unittest.TestCase):
     def test_installer_has_no_inherited_secrets_or_credential_config(self):

@@ -34,7 +34,7 @@ import uuid
 BASE = '686be8841f461eacd57a9076948acf632bbf7bea'
 PINS = {
  'pe73_ha_production':'86e4333ef2df1bf67b4621ccd6a3314f1322af00dafb42e9d3c5f0724e7bd23c',
- 'pe73_ha_delivery':'25ab8ca4140b9ddc73b60f8e921b426a234901ab6634d2239f865469505558ca',
+ 'pe73_ha_delivery':'3f7938ac351604ce27e70d60f3fd970964c2a8a3c0efae1449b8dbac46360be1',
  'pe73_ha_assess':'da4c97ef7e5acaf5840b9cbca03ee0cd888183e784a3f55bb8671b45b8372443',
  'pe73_ha_live_qualify':'ce4bbd30fdb268ec28637f990b85e9640d174a120eba971ed730f7ba94dfb845',
  'pe73_maintenance_window':'756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741',
@@ -42,6 +42,7 @@ PINS = {
 }
 LIMIT=1048576
 OPERATIONS={'get','create','update','result','availability_status'}
+POPULATION_SCOPES=dict(get='eligible_or_existing',create='eligible_inventory',update='existing_assets',result='existing_assets',availability_status='existing_assets')
 
 class Blocked(ValueError):pass
 def require(value,code):
@@ -136,7 +137,12 @@ def validate_plan(plan):
     for actor,operations in plan['actors'].items():
         require(type(actor)is str and re.fullmatch('[A-Za-z0-9_-]{1,128}',actor) and type(operations)is dict and bool(operations)
             and set(operations)<=OPERATIONS,'ACTOR_OPERATION_INVALID')
-        for ids in operations.values():
+        for operation,ids in operations.items():
+            if type(ids)is dict:
+                require(set(ids)=={'scope','amendment','acceptance_reference'} and ids['scope']==POPULATION_SCOPES[operation] and ids['amendment']=='PE73_FULL_INVENTORY_ASSET_AUTHORIZATION_V1'
+                    and (ids['acceptance_reference'] is None or type(ids['acceptance_reference'])is str
+                    and re.fullmatch('[A-Za-z0-9_-]{1,128}',ids['acceptance_reference'])),'POPULATION_GRANT_INVALID')
+                continue
             require(type(ids)is list and 1<=len(ids)<=256 and len(ids)==len(set(ids))
                 and all(type(x)is str and re.fullmatch('dev_[0-9a-f]{16}',x) for x in ids),'EXACT_ASSET_SCOPE_REQUIRED')
     from urllib.parse import urlsplit
@@ -373,8 +379,15 @@ def plan_wizard(toolkit):
     actors={}
     actor=getpass.getpass('Approved human HA operator ID (not printed): ').strip()
     operations=getpass.getpass('Approved comma-separated operations (get/create/update/result/availability_status): ').strip().split(',')
-    ids=getpass.getpass('Approved comma-separated exact existing dev_ Asset IDs: ').strip().split(',')
-    actors[actor]={x.strip():[i.strip() for i in ids] for x in operations}
+    mode=getpass.getpass('Authorization mode (exact/population): ').strip()
+    require(mode in ('exact','population'),'EXPLICIT_AUTHORIZATION_MODE_REQUIRED')
+    if mode=='exact':
+        ids=getpass.getpass('Approved comma-separated exact existing dev_ Asset IDs: ').strip().split(',')
+        actors[actor]={x.strip():[i.strip() for i in ids] for x in operations}
+    else:
+        reference=getpass.getpass('Owner acceptance reference for full-inventory amendment (blank keeps inactive/unapproved): ').strip() or None
+        require(all(x.strip() in POPULATION_SCOPES for x in operations),'ACTOR_OPERATION_INVALID')
+        actors[actor]={x.strip():{'scope':POPULATION_SCOPES[x.strip()],'amendment':'PE73_FULL_INVENTORY_ASSET_AUTHORIZATION_V1','acceptance_reference':reference} for x in operations}
     issuer=uuid.uuid4().hex
     plan={'backend_address':ask('Approved PI3 private bind IPv4'),'ha_address':ask('Approved HA source IPv4'),
         'backend_port':int(ask('Reserved disabled application port')),'guard_port':int(ask('Temporary observer port')),

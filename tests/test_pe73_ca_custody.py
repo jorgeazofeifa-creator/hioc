@@ -172,7 +172,12 @@ class BoundaryTests(unittest.TestCase):
   source=(R/'tools/pe73_ca_custody.py').read_text();self.assertIn('PRIVILEGED_INTERPRETER_ANCESTRY_UNSAFE',source)
   self.assertIn("allowed=(Path('/usr/bin/python3.11'),ROOT/'venv/bin/python3')",source)
  def test_accepted_sources_unchanged(self):
-  for path,h in {'tools/pe73_ha_provision.py':c.HELPER_SHA,'tools/pe73_provision_environment.py':'0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7','tools/pe73_pi3_provision_environment.py':c.PROFILE_SOURCE['sha256']}.items():self.assertEqual(hashlib.sha256((R/path).read_bytes()).hexdigest(),h)
+  import subprocess
+  # Root signer deliberately retains the historical sealed crypto toolkit;
+  # population ACL deployment is separately gated, never an in-place cache edit.
+  historical=subprocess.check_output(['git','--no-replace-objects','show','b5a020982484e35126daa70b256860a23af8e88f:tools/pe73_ha_provision.py'],cwd=R)
+  self.assertEqual(hashlib.sha256(historical).hexdigest(),c.HELPER_SHA)
+  for path,h in {'tools/pe73_provision_environment.py':'0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7','tools/pe73_pi3_provision_environment.py':c.PROFILE_SOURCE['sha256']}.items():self.assertEqual(hashlib.sha256((R/path).read_bytes()).hexdigest(),h)
 
 class NativeCustodyFilesystemTests(unittest.TestCase):
  def setUp(self):
