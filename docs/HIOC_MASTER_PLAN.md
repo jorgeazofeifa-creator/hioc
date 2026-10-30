@@ -2591,7 +2591,11 @@ The authoritative passive-enrichment roadmap is ordered and mandatory:
    Current PE-5.1 is an authorized private pure-library implementation candidate; broader runtime integration is NOT_STARTED / NOT AUTHORIZED. The following preparation status is historical at f3730ba5a8745361934ff822a9c29c16c9d0767b.
    Implementation remains NOT_STARTED. Selected next roadmap checkpoint by executive decision; Implementation Preparation is current and PREPARED_FOR_REVIEW. Runtime/production implementation requires separate authorization.
 6. **PE-6 - Classification & Metadata Quality** — PE-6.0 COMPLETE/PASS; PE-6.1 repository implementation COMPLETE/PASS. PE-6 IN_PROGRESS; no production deployment/execution. Next PE-6.2 requires separate authorization.
-7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — planned. This
+7. **PE-7 - Expected Availability & Permanent IoT Monitoring** — IN_PROGRESS.
+   PE-7.3 remains IN_PROGRESS: original runtime baseline recovery accepted from
+   OPERATOR_SUPPLIED evidence; successor feature delivery remains incomplete.
+   PE-7.4 remains NOT_AUTHORIZED; see current Implementation Status and Next Planned
+   Task. The phase scope and mandatory roadmap order are unchanged. This
    models Asset-layer expected-online intent for wall switches, smart switches,
    smart plugs, Sonoff devices, permanent lighting controls, and other
    infrastructure devices; correlates network and Home Assistant availability;
@@ -6270,6 +6274,41 @@ is a permanent Working Agreement completion requirement.
 
 ### PE-7.3 anchored controlled restoration — repository qualification PASS
 
+POST_RESTORATION_RECONCILIATION=PASS_OPERATOR_SUPPLIED_EVIDENCE.
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+OPERATOR_SUPPLIED: controlled restoration PASS_CONTROLLED_RESTORATION, exit0;
+transaction ROLLED_BACK, pending=null, window RELEASED. Independent runtime-baseline
+verification PASS:19 checks,0 failures,0 errors; all13 affected runtime artifacts
+match their verified baseline identities. Original scheduler restored; cron,
+nut-server, pihole-FTL and unbound observed active. Recovery claim and intent remain
+retained. This accepts recovery of the original runtime baseline, not completion of
+the successor full-inventory runtime delivery or all PE-7.3 integration/UI/trust work.
+
+Incident-engine/history status outputs were fresh in the supplied observation;
+inventory status aligned with its30-minute cycle. Platform status runs daily03:17
+local; older output alone is not failure. Service-association and HA-association
+outputs were observed; network-probe log was present with recent modification
+evidence. Cron launch records exist for seven observed HIOC jobs, not proof of
+successful completion of those jobs. No observation timestamps, raw receipt hashes,
+unreported output validity/freshness or comprehensive production-health claim is
+invented. These are OPERATOR_SUPPLIED observations, not Codex production access.
+
+Original KNOWN_CONSUMERS_NOT_DRAINED cause remains UNKNOWN. Successful restoration
+and later observations do not establish the original failing process/inspection
+condition or universal exclusion of cached modules, retained descriptors or manual
+launchers. Existing safety contracts, retained evidence and accepted full-inventory
+architecture remain unchanged. Next is the bounded PE-7.3 delivery-failure assessment
+and safe-resumption decision described in Next Planned Task; no redeployment,
+automatic recovery replay, migration, editing, evaluation, activation or PE-7.4
+authority follows from this reconciliation.
+See [completed restoration evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#completed-production-restoration-and-independent-baseline-verification).
+
+#### Historical repository qualification scope at c34a0e5
+
+The following preparation record is retained verbatim as the earlier repository-only
+scope. Its then-pending production outcome is superseded only by the supplied
+completed-restoration evidence above; its safety requirements remain in force.
+
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
 The accepted OPERATOR_SUPPLIED operational assessment records the successor
 transaction COMMITTING, pending=null, INSTALLATION_UNCERTAIN, installed5/restored0,
@@ -8467,6 +8506,25 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### PE-7.3 - Bounded delivery-failure assessment and safe-resumption decision
+
+Classification: CURRENT. Phase7A remains active; PE7_STATUS=IN_PROGRESS.
+BASELINE_RECOVERY=PASS_OPERATOR_SUPPLIED; PE73_STATUS=IN_PROGRESS;
+PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+The original runtime baseline is reported restored and independently checked;
+successful PE-7.3 feature delivery is not established. Review existing failed-delivery
+evidence and accepted tooling to identify the exact unresolved consumer-guard fact
+and the smallest safe resumption path. Do not infer the original cause from recovery
+success, later clear process samples, scheduler restoration or cron launch records.
+No production access, command, redeployment or safety-contract change is authorized
+by this documentation checkpoint. The accepted full-inventory amendment remains
+accepted; no architectural choice or unrelated roadmap phase is reopened.
+See [restoration outcome and limits](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#completed-production-restoration-and-independent-baseline-verification).
+
+### Historical PE-7.3 repository-preparation objective
+
+Historical snapshot retained below; its then-current/proposed/publication-blocked
+statements do not supersede the accepted amendment or current objective above.
 ### PE-7.3 - Guarded PI3 delivery transaction repository preparation
 
 Classification: CURRENT — PE-7.3 owner-directed full-inventory Asset authorization.
@@ -9820,19 +9878,25 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
-### CURRENT PE-7.3 controlled-restoration readiness assessment
+### CURRENT PE-7.3 delivery-failure assessment and safe-resumption decision
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
-After publication, exactly one operator action is source-only fast-forward
-synchronization of /home/jazofv1/hioc-release-source to the new immutable published
-commit/tree, followed by the new entry's read-only controlled-restoration readiness
-assessment. Do not combine source synchronization with restoration execution.
-No production lock/intent/journal/runtime/scheduler mutation belongs to that command.
-Actual controlled restoration requires separate explicit authorization after the
-fresh assessment is reviewed; any drift or incomplete evidence stops. Current
-production recovery has not been performed or accepted. Manual no-launch and
-retained-reader limitations remain explicit; universal exclusion is not established.
-See [current restoration evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-anchored-controlled-restoration--repository-qualification-pass).
+Next single recommended checkpoint: a bounded repository review of the existing
+failed successor delivery evidence and accepted consumer/transaction guards, using
+the accepted restored-baseline observations. Determine what is actually known about
+KNOWN_CONSUMERS_NOT_DRAINED, which mandatory fact remains unknown, and whether the
+existing delivery interfaces can safely admit a separately authorized future attempt
+with the terminal ROLLED_BACK/RELEASED transaction and retained claim/intent.
+Do not guess a PID/cause, repeat a broad audit, reuse old process samples as authority,
+rerun the restoration entry, overwrite/adopt the terminal transaction, or delete
+retained evidence. If existing evidence cannot resolve a mandatory prerequisite,
+identify only that precise gap and its minimum safe evidence requirement.
+This is an assessment/decision within PE-7.3, not a new numbered phase, implementation
+authorization or deployment command. Any later production attempt requires separate
+explicit authority and all fresh source/runtime/scheduler/process/journal/backup/
+security checks. Guarded integration/UI/trust delivery remains required; PE-7.4 and
+later migration, editing, evaluation and recurring activation remain separately gated.
+See [completed restoration evidence and limits](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#completed-production-restoration-and-independent-baseline-verification).
 
 ### Historical anchored PREPARED recovery assessment
 
@@ -11564,6 +11628,18 @@ Do not begin Active Discovery until Phase 7A has been completed.
 ---
 
 # Decision Log
+
+## PE-7.3 post-restoration governance reconciliation
+
+Decision: accept the owner-supplied successful controlled restoration and independent
+19-check baseline verification as OPERATOR_SUPPLIED recovery evidence only. Retain
+the recovery claim, intent, journals, original failure and complete preparation
+history. Recovery of the original runtime baseline does not close PE-7.3 feature
+delivery or authorize PE-7.4. Original KNOWN_CONSUMERS_NOT_DRAINED cause and universal
+caller exclusion remain unestablished. Next is the bounded delivery-failure
+assessment/safe-resumption decision in Next Planned Task, without deployment authority.
+No architecture, safety contract, accepted amendment or unrelated roadmap order is
+changed. See [detailed evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#completed-production-restoration-and-independent-baseline-verification).
 
 ## PE-5.1 separate caller-integration preparation authorization
 

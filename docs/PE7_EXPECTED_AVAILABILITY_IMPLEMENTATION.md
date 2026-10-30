@@ -6661,6 +6661,80 @@ Do not combine that command with recovery execution; stop after its receipt.
 
 ## PE-7.3 anchored controlled restoration — repository qualification PASS
 
+### Completed production restoration and independent baseline verification
+
+Evidence source: the owner's "HIOC PE-7.3: POST-RESTORATION GOVERNANCE
+RECONCILIATION" result summary. All production facts in this subsection are
+OPERATOR_SUPPLIED, including the separately reported independent verification;
+Codex did not access PI3/PI5 or independently inspect production. No raw original
+receipt, receipt digest, observation timestamp, final journal/intent digest or
+additional object metadata was supplied in this reconciliation request. None is
+reconstructed or invented. Repository publication/qualification is a separate
+IMMUTABLE_REPOSITORY_FACT, not proof of production observations.
+
+| Chronology | Retained evidence and meaning |
+| --- | --- |
+| Original successor attempt and PREPARED recovery | The preceding accepted sections preserve source/payload identities, PREPARED anchor, recovery claim, interrupted delivery and its original safety gates. KNOWN_CONSUMERS_NOT_DRAINED remains recorded; its actual original cause is UNKNOWN. |
+| Partial-installation assessment | The earlier assessment below records COMMITTING/pending-null/INSTALLATION_UNCERTAIN, installed5/restored0, verified13 backups/stages and recorded runtime/reduced scheduler. Its hashes remain historical admission anchors, not new terminal-state hashes. |
+| Controlled restoration | Reported PASS_CONTROLLED_RESTORATION, exit0. Transaction ROLLED_BACK, pending=null, maintenance window RELEASED. Recovery claim and controlled-restoration intent remain retained as designed. No historical evidence is removed or repurposed. |
+| Independent post-restoration verification | Reported PASS:19 checks,0 failures,0 errors. All13 affected runtime artifacts match their verified baseline identities; original scheduler restored. This is restoration of the original baseline, not installation of all successor runtime deltas. |
+
+Reported operational evidence after restoration:
+
+- cron, nut-server, pihole-FTL and unbound active.
+- Incident-engine and history status outputs fresh in the supplied observation.
+- Inventory status aligned with its30-minute scheduled cycle.
+- Platform status scheduled daily03:17 local time; older output alone is not evidence
+  of failure. No unreported platform invocation or successful completion is inferred.
+- Service-association and Home Assistant association outputs observed. The summary
+  does not supply new content digests, schema results or freshness conclusions for
+  those outputs; presence is not promoted into unreported semantic/health proof.
+- Network-probe log present with recent modification evidence; log modification
+  alone is not proof of probe success or comprehensive network health.
+- Cron launch records for all seven observed HIOC jobs. Job names beyond those
+  supplied, exact launch times and successful completion of all seven are not
+  inferred. A launch record is distinct from an engine's completion/status evidence.
+
+Recovery acceptance: PASS for the supplied bounded restoration and independent
+baseline verification evidence. PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE;
+PE74_STATUS=NOT_AUTHORIZED; PE7_STATUS=IN_PROGRESS. The accepted20f7 full-inventory
+release and architecture are not rejected or redesigned by rollback. Their complete
+production delivery, guarded HA integration/UI/trust requirements and later bounded
+feature acceptance remain distinct and unfinished; no migration, editing, evaluator,
+recurring activation or notification authority is granted here. The existing HIOC
+Dashboard v2 and its six views remain the exclusive accepted UI target.
+
+Preserved warnings: no universal exclusion of cached modules, retained descriptors,
+manual launchers or undiscovered independent callers has been proven. Original
+KNOWN_CONSUMERS_NOT_DRAINED cause remains UNKNOWN; later clean observations and
+successful restoration cannot retrospectively identify the failing PID, active
+consumer, incomplete inspection or other original condition. No safety gate is
+waived, rollback rerun, terminal journal adopted/overwritten, or claim/intent deleted.
+This record does not claim a comprehensive production audit, current freshness
+beyond the supplied observations, or proof of absence of transient activity.
+
+Next single recommended checkpoint: bounded assessment of the original PE-7.3
+delivery failure and safe-resumption decision using existing evidence and accepted
+tooling. Resolve the specific missing consumer-guard fact where evidence permits;
+assess admission against the restored baseline, terminal transaction and retained
+claim/intent. If a mandatory fact cannot be established, identify its exact minimum
+safe evidence requirement. Do not assume a technical cause, create a broad research
+phase, authorize deployment, or replay restoration. Any future production attempt
+requires separate explicit authority and unchanged fresh technical safety checks.
+
+This reconciliation changes documentation and its two directly affected identities
+in the existing governance map only. No runtime/helper/test/contract/amendment,
+payload, scheduler specification, historical record or production file changes.
+Documentation/governance validation is recorded separately from the historical
+354-test implementation qualification below; no application tests are run here.
+
+### Historical repository qualification scope at c34a0e5
+
+The following original qualification narrative is retained verbatim. Its statements
+that production restoration was then pending/not performed describe that Windows
+checkpoint only, not the completed OPERATOR_SUPPLIED outcome above. Its source pins,
+admission requirements, interruption rules and refusal gates remain unchanged.
+
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
 This is Windows repository implementation/qualification/publication only. Actual
 PI3 restoration, source synchronization and scheduler mutation are not performed
