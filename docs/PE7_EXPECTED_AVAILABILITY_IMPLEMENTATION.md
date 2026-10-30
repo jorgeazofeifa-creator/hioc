@@ -6587,3 +6587,74 @@ only /home/jazofv1/hioc-release-source to the exact published immutable commit a
 verify its tree/main/origin/clean state. Do not combine source synchronization with
 runtime delivery. A subsequent guarded native assessment and separately authorized
 maintenance sequence remain required. No PI3/PI5 access or production mutation by Codex.
+
+
+### PE-7.3 anchored PREPARED successor recovery — repository qualification PASS
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+OPERATOR_SUPPLIED: source commit cb7eef345fba9abd271b5265950c4a7132513a69;
+payload release 20f7f4c64fd32865f006ecfb2135ae6bbcada16c;
+manifest SHA256 e8b37aba46c2bbb56616366420fb4041353fb009ae17d158cf5937aa064ae7a7.
+PREPARE completed, then KNOWN_CONSUMERS_NOT_DRAINED stopped the attempt.
+Read-only inspection reported backups/pe73-full-inventory-delivery-v1,
+journal SHA256 d79f96f0838f2e4f10db611d2ac27cef09991c40175985bb879c184228ae84b3,
+PREPARED, pending=null, window=null, baseline13, installed0, all13 backups and13
+stages, three differing pairs and ten matching pairs. No runtime installation
+was recorded. A later complete process inspection found no known affected callers,
+universal_exclusion=false and UNCLASSIFIED_PID/cached-reader limitations.
+The earlier cause remains UNKNOWN: the accepted gate rejects active known consumers
+or incomplete inspection; a later clear observation cannot establish the earlier state.
+These production facts are OPERATOR_SUPPLIED, not Codex-observed or Windows proof.
+
+The bounded successor tools/pe73_successor_prepared_recovery.py leaves the accepted
+adapter, historical controller/provider, payload manifest and original EXCLUDED
+recovery unchanged. Its separate zero-argument inspection/execution entry points
+accept only the exact transaction/release/journal above; the CLI exposes inspection
+only. No arbitrary path, journal digest, sequence or external permission receipt.
+Native assessment requires exact repository/tool/manifest identities, original strict
+journal schema, safe descriptor-bound directory and file identities/owners/modes/ACLs,
+exact27 transaction entries, existing shared mutex, all13 stages/backups/runtime
+baselines, original COMMITTED/RELEASED predecessor, exact scheduler and fresh complete
+process inspection with zero known affected consumers. No assessment creates a lock,
+claim, window or native execution authority. Unknown or altered facts fail closed.
+
+The fixed continuation is PRESERVE -> EXCLUDE -> DRAIN -> ESTABLISH -> COMMIT ->
+AUTHORIZE_RELEASE -> RESTORE_SCHEDULER -> RELEASE. No PREPARE, no historical ATTACH,
+no fabricated window and no new transaction. A distinct anchored entry initializes
+the original per-operation sequence engine in its private namespace. Every operation
+still uses the accepted fresh native admission, grants, expiry/session/boot/context,
+source/runtime/journal checks and exact scheduler verification. The original PRESERVE
+operation creates the genuine maintenance window. Inside its admitted existing
+mutex, an exclusive durable prepared-recovery-claim.json records the exact anchor,
+fixed scope, session and admission identity before the first journal write. The claim
+remains after success or failure; a later invocation refuses any existing claim or
+unexpected/pending artifact. A race, uncertain claim write or partial operation stops;
+no retry, automatic rollback, scheduler restoration or consumer release is attempted.
+Primary failure and read-only inspection failure are retained separately and sanitized.
+Exactly three runtime files may be published; the other ten retain actual identities.
+
+Focused native Windows stdin validation:59 tests run,59 passed,0 failures,0 errors,
+0 skips,0 class-level skips:25 anchored-recovery tests,32 unchanged successor tests
+and2 exact historical EXCLUDED-resume regressions. Coverage includes every buffer,
+unsafe ownership/mode/hard-link, runtime/scheduler/process drift, pending/phase/authority,
+extra files, native admission, claim races, ordered continuation and14 interruption
+boundaries, with no subsequent automatic mutation. Windows temporary fixtures mock
+POSIX enumeration and map only one explicit synthetic journal to the supplied digest;
+they do not reconstruct the unavailable original journal bytes or establish production
+readiness. Actual native assessment must hash the real journal and enforce all gates.
+No full regression or broad discovery was run. Independent focused source/contract
+review found no blocking change to original transaction algorithms or authority.
+Original13 and successor13 payload identities,39 current bindings and449 protected
+identities are verified; only the two documentation hashes refresh the current map.
+Historical metadata, original contract/amendment and executive authorization wording
+remain unchanged. No synthetic result grants native production authority.
+
+Residual manual no-launch responsibility and cached/open-reader/independent-caller
+risks remain explicit under the adopted amendment; universal exclusion is not claimed
+or waived by this recovery entry. Actual recovery requires a separate operator
+decision after fresh assessment. No runtime, credential, migration, editing,
+evaluation, recurring activation or PE-7.4 authority is added. No PI3/PI5 access or
+production mutation by Codex. Next action after authorized Git publication: source-only
+synchronization of /home/jazofv1/hioc-release-source to the exact published commit/tree,
+then independent read-only anchored recovery assessment in the same operator command.
+Do not combine that command with recovery execution; stop after its receipt.
