@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 import types
 
-MANIFEST_SHA256 = 'e8b37aba46c2bbb56616366420fb4041353fb009ae17d158cf5937aa064ae7a7'
+MANIFEST_SHA256 = '80b9a9984e6ebb035c4b6c039c52b8612e0c820e11205286db4ef89bf3c536bf'
 RELEASE = '20f7f4c64fd32865f006ecfb2135ae6bbcada16c'
 HISTORICAL_TX = 'backups/pe73-pi3-delivery-v1'
 ROOT = Path(__file__).resolve().parents[1]
@@ -294,7 +294,7 @@ class GuardedFS:
         raise ValueError('SUCCESSOR_REMOVAL_FORBIDDEN')  # All thirteen existed before.
 
 
-def native_coordinator():
+def historical_native_coordinator():
     """Fresh read-only binding for a separately authorized normal sequence.
 
     Never call the historical EXCLUDED-resume shortcut for this new namespace.
@@ -323,13 +323,28 @@ def native_coordinator():
     return w, m, coordinator, context
 
 
+def native_coordinator():
+    """Current-baseline admission; historical native entry remains audit-only."""
+    import importlib.util
+    import subprocess
+    path=ROOT/'tools/pe73_verified_baseline.py'
+    result=subprocess.run(['/usr/bin/git','--no-optional-locks','--no-replace-objects','show',
+        'HEAD:tools/pe73_verified_baseline.py'],cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20,
+        env={'PATH':'/usr/bin:/bin','HOME':'/home/jazofv1','LANG':'C.UTF-8'})
+    require(result.returncode==0 and not path.is_symlink() and path.read_bytes()==result.stdout,'CURRENT_TOOLING_IDENTITY')
+    spec=importlib.util.spec_from_file_location('pe73_current_baseline_operations',path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    return module.native_coordinator()
+
+
 def native_assessment():
     """Only inspection: no mutex/create, scheduler write, admission or execution."""
     w, m, coordinator, context = native_coordinator()
     return {'RESULT': 'PASS_READ_ONLY_SUCCESSOR_DELIVERY_ASSESSMENT',
             'release': RELEASE, 'manifest_sha256': MANIFEST_SHA256,
             'context_sha256': sha(w.d.canonical(context)),
-            'predecessor': 'COMMITTED_RELEASED', 'payload_count': 13,
+            'baseline_sha256': context['baseline_sha256'],
+            'transaction_id': context['transaction_id'], 'payload_count': 13,
             'live_replacement_count': 3, 'unchanged_identity_count': 10,
             'manual_launch_control': 'PROCEDURAL_ONLY', 'universal_exclusion': False,
             'native_execution_authorized': False, 'production_mutated': False,

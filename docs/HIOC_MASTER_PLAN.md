@@ -6272,6 +6272,51 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+### PE-7.3 verified-baseline operations — executive-directed replacement
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+DEPLOYMENT_AUTHORIZED=FALSE. The owner authorized and this checkpoint implements
+the current-baseline operating contract described in the
+[implementation evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#current-verified-baseline-operations).
+The executive direction is preserved verbatim:
+
+> This directive supersedes existing historical validation, predecessor-binding, transaction, and governance requirements wherever those requirements impose unnecessary complexity without providing a demonstrable safety or functionality benefit.
+
+For routine successor delivery, current operation -> current verified baseline ->
+authorized independent transaction replaces recurring historical predecessor/journal/
+inode/ctime admission. The old fixed namespace, live predecessor identity and
+specific prior-attempt recovery anchors below remain historical audit/specialized
+recovery evidence, not prerequisites for a new approved transaction. Their history
+is preserved; original controller/provider and product payloads are unchanged.
+The exact contract is [CURRENT_VERIFIED_BASELINE_V1](../governance/pe7/pe73-verified-baseline-contract.json).
+
+An explicit, freshly validated owner-authorized transition must establish the
+current baseline; the accepted OPERATOR_SUPPLIED controlled restoration and19-check
+verification support that transition but neither an old journal nor this repository
+publication grants production permission. Baseline establishment is NOT performed
+or observed on PI3. Current artifact bytes/type/owner/mode, target, source, original
+scheduler/interface scope and approval/recovery provenance remain mandatory.
+Transaction-local identities protect races; historical inode/ctime equality is
+superseded after legitimate restoration. Active/uncertain attempts block overlap.
+Distinct private attempts preserve their backups, stages, journal and terminal
+evidence. Verified COMMITTED/RELEASED promotes a baseline; verified rollback clears
+only the active reservation and retains the prior approved semantic baseline.
+Uncertain publication, scheduler or release requires explicit transaction-scoped
+recovery; there is no automatic retry, rollback, cron restoration or release.
+
+Focused Windows fixture validation and current governance checks are recorded in
+the implementation evidence. Per-operation checks are current safety checks;
+broader protected-scope/provenance/compatibility checks apply at baseline changes;
+old journals and snapshots are audit-only. No routine full regression or recurring
+449-object historical traversal is required. Consumer completeness/known-active/
+boot/freshness guards, same-observation sanitized failure evidence, exact scheduler
+boundaries and manual-caller restrictions remain unchanged. No universal exclusion
+is claimed. The original KNOWN_CONSUMERS_NOT_DRAINED cause remains UNKNOWN.
+No PI3/PI5 access, runtime change, HA/trust activation or production operation.
+PE-7.3 feature/integration/UI/trust delivery remains incomplete.
+
+### Historical failure-time evidence checkpoint (retained)
+
 ### PE-7.3 failure-time consumer evidence hardening — repository qualification PASS
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
@@ -8522,6 +8567,20 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### CURRENT PE-7.3 verified-baseline delivery operations
+
+PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE;
+PE74_STATUS=NOT_AUTHORIZED; DEPLOYMENT_AUTHORIZED=FALSE.
+The executive-authorized Windows correction replaces history-dependent admission
+with the current approved semantic baseline and isolated transaction-local evidence.
+Repository qualification does not establish a production baseline or authorize
+delivery. Preserve accepted restoration, same-sample failure evidence and all
+manual-caller/consumer/scheduler safety limits. The authoritative operating contract
+and focused evidence are in
+[current verified-baseline operations](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#current-verified-baseline-operations).
+
+### Superseded current-objective snapshot (historical; preserved)
+
 ### PE-7.3 - Bounded delivery-failure assessment and safe-resumption decision
 
 Classification: CURRENT. Phase7A remains active; PE7_STATUS=IN_PROGRESS.
@@ -9894,6 +9953,24 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### CURRENT PE-7.3 separately authorized verified-baseline delivery
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+Next single action: separately authorize the operator's bounded source synchronization
+and current-baseline establishment/delivery procedure using this published tooling.
+This record itself authorizes no PI3 command, synchronization, lock, baseline write,
+maintenance or installation. Before mutation, prove current source/target/runtime/
+metadata/scheduler integrity, explicitly establish/approve the restored baseline,
+exclude any active uncertain attempt and satisfy every fresh consumer guard.
+Use a distinct transaction and its own backups/recovery evidence. A rejecting guard
+still stops; never infer exclusion from old clean samples, recovery success or
+procedural manual-caller responsibility. Any unexpected recovery needs explicit
+authority and exact current transaction validation. Guarded HA integration/UI/trust
+delivery remains required; no migration, editing, evaluation, recurring activation
+or PE-7.4 authority is granted.
+
+### Superseded next-task assessment snapshot (historical; preserved)
+
 ### CURRENT PE-7.3 delivery-failure assessment and safe-resumption decision
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.

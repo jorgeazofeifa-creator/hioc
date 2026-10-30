@@ -1,0 +1,47 @@
+{
+  "authorization": "SEPARATE_EXPLICIT_OWNER_WHOLE_PROCESS_APPROVAL_WITH_FRESH_TECHNICAL_GRANTS",
+  "authorized_release": "20f7f4c64fd32865f006ecfb2135ae6bbcada16c",
+  "baseline_record": "backups/pe73-current-baseline.json",
+  "deployment_authorized": false,
+  "historical_predecessors": "AUDIT_ONLY_NOT_ROUTINE_ADMISSION",
+  "initial_baseline_status": "UNESTABLISHED_IN_PRODUCTION",
+  "model": "CURRENT_VERIFIED_BASELINE_V1",
+  "original_scheduler_sha256": "3f56b904fc1dd40ccbfa3fdd61cb910c4d215e9ac28a9bf2dcdf3721c73b62a9",
+  "payload_manifest_sha256": "80b9a9984e6ebb035c4b6c039c52b8612e0c820e11205286db4ef89bf3c536bf",
+  "reduced_scheduler_sha256": "443485cfb47920db8d6263e5266eb9f68811e81c06390a983a7006aac581b930",
+  "scheduler_entry_count": 12,
+  "target": {
+    "gid": 1000,
+    "hostname": "nutandpihole",
+    "runtime_root": "/home/jazofv1/hioc",
+    "uid": 1000
+  },
+  "transaction_prefix": "backups/pe73-attempt-",
+  "uncertainty": "PRESERVE_ACTIVE_RESERVATION_NO_AUTOMATIC_RETRY_OR_RELEASE",
+  "validation": {
+    "baseline_transition": [
+      "protected_scope",
+      "provenance",
+      "approved_inventory",
+      "compatibility",
+      "explicit_approval"
+    ],
+    "historical_audit_only": [
+      "old_journals",
+      "old_inode_ctime",
+      "old_recovery_attempts"
+    ],
+    "per_operation": [
+      "current_baseline",
+      "source_release",
+      "target",
+      "transaction_isolation",
+      "transaction_local_identities",
+      "recovery_buffers",
+      "consumer_evidence",
+      "scheduler",
+      "terminal_integrity"
+    ]
+  },
+  "version": 1
+}

@@ -13,7 +13,7 @@ import types
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-ADAPTER_SHA = '8a7fd036e29bf616c4a62bd54128376a2bf79adad94824c41bb505c1f1e5f207'
+ADAPTER_SHA = '1dc47e5c3fd6ec5fd98d9414e39bb8e3dc8b80d03ddb32b29d6625e79f5ee05b'
 ADAPTER_COMMIT = 'cb7eef345fba9abd271b5265950c4a7132513a69'
 JOURNAL_SHA = 'd79f96f0838f2e4f10db611d2ac27cef09991c40175985bb879c184228ae84b3'
 TX = 'backups/pe73-full-inventory-delivery-v1'

@@ -85,6 +85,13 @@
     "pi4/lib/hioc/availability_protocol.py"
   ],
   "controller_sha256": "76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2",
+  "operations": {
+    "contract": "governance/pe7/pe73-verified-baseline-contract.json",
+    "current_baseline": "backups/pe73-current-baseline.json",
+    "historical_transaction_field": "AUDIT_AND_SPECIALIZED_RECOVERY_ONLY",
+    "model": "CURRENT_VERIFIED_BASELINE_V1",
+    "transaction_prefix": "backups/pe73-attempt-"
+  },
   "prior_release": "51398bab4e2293b578b2cdac2d0740c3738cab2f",
   "provider_sha256": "756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741",
   "release": "20f7f4c64fd32865f006ecfb2135ae6bbcada16c",

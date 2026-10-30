@@ -5,6 +5,199 @@ Status: PE-7.1 COMPLETE/PASS; independent focused recheck ACCEPT. Repository imp
 The final governance disposition below supersedes preparation-time status and next-action labels.
 Earlier narratives remain historical evidence, including the original independent REJECT.
 
+## Current verified-baseline operations
+
+### Authority and bounded scope
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED;
+DEPLOYMENT_AUTHORIZED=FALSE. This Windows implementation applies the executive
+directive to simplify normal operations, not the PE-7 application/trust contract.
+The controlling source is the current Master Plan and its linked
+[verified-baseline contract](../governance/pe7/pe73-verified-baseline-contract.json).
+The supplied directive's exact attachment SHA-256 is `32d9756ef4932c3006b11a8329329fc63bf57d017acf72f05872887e593255f9`.
+No production operation, baseline establishment, native qualification or future
+consumer admission is inferred from synthetic PASS.
+
+The sealed controller and maintenance provider, accepted full-inventory20f7 payload
+release, three replacement paths, ten unchanged artifacts,13-object inventory,
+original contract/amendments and all previous evidence remain intact. The existing
+successor manifest retains its artifact rows and historical transaction field;
+its operations field selects this replacement admission model. The old fixed
+namespace, historical live inode/ctime/predecessor check and previous-attempt anchors
+remain audit/specialized recovery only. The older narratives below preserve their
+original limitations and events; their former next-action labels do not govern a
+new current-baseline transaction.
+
+### Current authority, independent attempts and admission
+
+`tools/pe73_verified_baseline.py` composes the existing adapter, NativeFS,
+WindowController, WindowConsumers, MaintenanceCoordinator and shared failure
+recorder. It is the successor operating entry, not a new deployment service/broker.
+Its source binds the exact adapter and operating contract. The adapter verifies
+this entry against the published checkout; manifest/controller/provider/payload
+SHA-256 and Git-blob checks remain exact. The historical prepared/restoration helper
+pins refresh only through the acyclic adapter -> prepared -> restoration closure;
+their historical admission algorithms and historical controller/provider bytes stay
+unchanged. Source must remain the clean, expected-origin/root/branch synchronized
+published checkout; every operation rechecks checkout identity. The immutable13
+payload objects are read from20f7, never mutable working-tree product files.
+
+`backups/pe73-current-baseline.json` (private0600) is one closed authority record
+containing an APPROVED_VERIFIED baseline and either no active attempt or one exact
+active binding. It binds nutandpihole, /home/jazofv1/hioc,1000:1000, the approved
+source, all13 regular-file digests/modes/owners, PI3-artifact-only compatibility,
+the exact original12-entry scheduler, approval and recovery reference. It authorizes
+no feature activation. The initial state is UNESTABLISHED_IN_PRODUCTION.
+
+`native_operation(establishment=True).establish()` is an explicitly owner-authorized
+transition, never an automatic constructor/inspection effect. It freshly validates
+the restored prior13 artifacts and original scheduler under the existing mutex.
+The supplied restoration/19 checks are provenance, not a permission token or an
+invented historical fingerprint. Broader protected inventory/provenance and relevant
+compatibility qualification accompany baseline establishment/change. The baseline
+does not assert HA functionality, secret readiness or universal consumer exclusion.
+
+`native_operation().deploy()` uses the approved whole-process model and the existing
+PREPARE/PRESERVE/EXCLUDE/DRAIN/ESTABLISH/COMMIT/AUTHORIZE_RELEASE/
+RESTORE_SCHEDULER/RELEASE sequence. Each operation receives fresh technical grants;
+there are no extra discretionary prompts and no bypass of guards. New UUID attempts
+use `backups/pe73-attempt-<32 lowercase hex>`. Under the existing nonblocking global
+mutex, one atomic control update reserves the exact baseline digest, release,
+manifest, target, tooling commit/tree and current13 pre-transaction snapshots before
+private creation. Existing attempt paths never become a new attempt. Active or
+uncertain reservations stop overlap; terminal history never blocks a distinct ID.
+Terminal evidence and its exact next control transition persist before promotion.
+Only verified COMMITTED/pending-null/RELEASED with exact runtime and original cron
+can promote the target baseline. Verified rollback retains the prior semantic
+baseline, clears its active reservation and preserves all old transaction evidence.
+
+Current paths/type/permissions/owner/group/ACL/no-follow/hardlink security remain
+the original NativeFS checks. Legitimately changed historical inode/ctime is
+accepted only with approved current bytes/metadata. Current control, transaction
+binding and pre-transaction snapshots retain race protection. All13 stages and
+backups are validated; only the three changed payloads can be replaced. Byte-identical
+slots preserve their current identities. No baseline record, receipt or synthetic
+result supplies future native authority. The CLI is inspection-only. The existing
+programmatic sequence entry delegates to this complete deploy/finalize path.
+
+### Explicit transaction-scoped recovery and uncertainty
+
+`native_operation(transaction_id=..., recovery=True)` must match the sole active
+binding. Every entry checks current baseline/control, release, target, exact attempt
+metadata, strict journal, scheduler and buffers. It cannot select another attempt
+or adopt historical claims. Native boot/session/process proof is fresh; past boot
+and tooling identities remain provenance and cannot authorize the new session.
+
+`recover()` explicitly invokes existing ATTACH/DRAIN/ROLLBACK/release machinery for
+a known partial install. Initial rollback is the original algorithm; interrupted
+ROLLING_BACK continues only its validated reverse restored prefix with fresh
+authorization, all backups/current snapshots and repeated original consumer checks.
+Uncertain pending publication is first explicitly reconciled to exact old/new
+allowed bytes and metadata, with a private immutable observation/authority receipt;
+no writer attribution is inferred. Verified leftover temporaries are archived by
+anchored no-replace rename, not deleted or blindly republished. Unknown content or
+metadata, mismatched buffers/binding, extra entries and ambiguous states stop.
+
+`recover('RESUME_PREPARED')` is separate explicit authority for an unmodified
+PREPARED attempt; it does not repeat PREPARE/PRESERVE/EXCLUDE already completed.
+`recover('RELEASE')` is explicit completion of an already verified terminal runtime;
+it cannot install/roll back an uncertain runtime. A COMMITTED release-phase recovery
+cannot silently substitute release for requested rollback. Scheduler uncertainty
+requires `reconcile_scheduler()` separately; a known successful exclusion/readback
+is recorded without another cron command. A separately authorized restore of the
+exact reduced cron uses the unchanged native single-attempt installer after durable
+recovery intent and fresh evidence; failure never invokes it again automatically.
+
+`abort_preparation()` closes only a provably runtime/scheduler-unchanged reservation
+or private preparation. Partial private creation remains preserved. It never
+fabricates a rollback and cannot close an attempt with runtime effects. A terminal
+control-update interruption can complete only the persisted exact transition under
+fresh explicit authority. Full matching control temporaries can be archived before
+that completion; partial/unknown temporaries remain a refusal requiring evidence.
+Lost acknowledgement after completed control replacement requires read-only current
+state verification, not automatic replay or another inferred approval.
+
+| Failure boundary | Preserved outcome / required explicit action |
+| --- | --- |
+| Before active reservation | No new active attempt or runtime effect. |
+| Reservation / mkdir / backup / preparation | Active reservation blocks overlap; exact private abort only if original runtime/cron and pre-transaction snapshots prove no effects. |
+| Exclusion / lost acknowledgement | Active and uncertainty retained; inspect exact original/reduced cron; no retry. |
+| ATTACH / DRAIN / consumer guard | Original error and sanitized actual rejecting sample; no wait, rescan substitute, kill or automatic continuation. |
+| Commit / pending replace / journal | Exact pending/prefix, backups/stages and temporaries retained; explicit reconciliation then transaction-scoped rollback. |
+| Partial rollback | Reverse restored prefix retained; explicit validated continuation, never restart another transaction. |
+| Scheduler restoration / readback | One mutation attempt; uncertainty retained, no automatic restore/re-exclusion/release. |
+| Release / baseline promotion | No trusted promotion until runtime/cron/terminal verification; interrupted exact control transition remains separately recoverable. |
+
+### Proportionate validation and repository evidence
+
+Category A (every operation): current baseline/source/target/inventory metadata,
+transaction isolation/local identities, backup/stage recovery readiness, fresh
+consumer completeness/known-active/boot/age, exact scheduler and terminal verification.
+Category B (baseline establishment/change): protected scope, provenance, approval,
+compatibility and relevant restoration evidence. Category C (audit-only): old
+journals, predecessor chains, superseded inode/ctime and earlier attempts. Category C
+is not routine admission; repeated449-object/full-regression campaigns are removed
+from ordinary delivery. This baseline architecture change justifies one39/449
+preservation check and both13-payload-set checks at repository acceptance.
+
+Focused native Windows acceptance evidence: 42 tests, 42 passed,0 failures,
+0 errors,0 individual skips,0 class-level skips. Exact selection:
+`test_pe73_verified_baseline.BaselineTests` (25 freshly executed cases) and
+`test_pe73_consumer_guard_evidence.GuardEvidenceTests` (17 unchanged cases retained
+from the successful41-test frozen run). The affected25-case suite was rerun after
+review added phase-exact cron verification before recovery evidence writes.
+The earlier24 baseline cases are superseded, not counted twice. All runs use repository
+root, bundled Python, tests/pi4/lib imports, shell-free PATH, HIOC_TEST_SHELL cleared,
+UTF-8 and bytecode disabled. Direct unittest result counts and before/after source
+SHA-256 identities were captured; tested source bytes did not change. No broad
+discovery, full regression, production command or native scheduler execution.
+
+The new25 cases cover independent admission after verified rollback with retained
+history, duplicate/active IDs, legitimately changed historical inode/ctime,
+content/mode/owner/hardlink/unsafe-ID drift, unauthorized release/target/payload,
+transaction-local runtime/source/scheduler drift, active/incomplete/stale actual
+failure evidence, boot change/wrong recovery target, pending replacement and unknown
+content refusal, interrupted reverse rollback across fresh boot/session,
+exclusion/restore failure and explicit readback reconciliation, private reservation
+abort, promotion refusal for incomplete installation, stage/backup/control/extra-entry
+drift, exact interrupted control transition and temporary archival, explicit initial
+approval and Windows native refusal. The directly affected17 recorder tests retain
+actual-sample/error transparency, redaction, timing, no-extra-scan and historical
+prepared/restoration compatibility. All tests use isolated fixtures; their temporary
+filesystem effects are not production or evidence of native consumer exclusion.
+
+Independent focused source/contract inspection confirms reuse of sealed transaction
+and maintenance algorithms, no historical admission traversal on the current path,
+explicit recovery authority, no automatic mutation/retry/release, and coherent
+acyclic source bindings. Repository acceptance checks verify39 successor rows,
+449 protected identities, both13-artifact source sets, exact10-path scope,
+historical documentation preserved by reversible inserts, unchanged contract and
+approved amendments, parseable bindings/local references and git diff --check.
+The449-object check is performed for this baseline-model transition, not added to
+routine native admission.
+
+Frozen implementation identities:
+- Current-baseline operations SHA-256: `906f028323b9786a864b825998786e93b9dfb9be3ba82f9f4f84b7d565a0b97b`.
+- Focused baseline tests SHA-256: `f140f80ecb9f70363cb852f4372e18f91cb56b76858fb1d3c0fc05387ec7226f`.
+- Adapter SHA-256: `1dc47e5c3fd6ec5fd98d9414e39bb8e3dc8b80d03ddb32b29d6625e79f5ee05b`.
+- Operating contract SHA-256: `26ae2945cdc745732a5e40fcd0011bd6e7c21f3a8932a28f5c333f0754002bb6`.
+
+
+No production facts are fabricated. Native permissions, rename/fsync, live callers,
+current source/runtime/scheduler and actual control/transaction state still require
+fresh on-host verification during a separately authorized operation. Windows POSIX
+metadata seams are synthetic. Cached modules, retained file descriptors and manual
+launchers remain procedural residual risks; universal exclusion remains false.
+The original KNOWN_CONSUMERS_NOT_DRAINED cause remains UNKNOWN. Same-UID compromise
+is not solved by private files. There is no new privilege boundary/service, credential
+handling, payload or HA/Dashboard behavior. No production baseline was written and
+no current health/freshness claim is made.
+
+Next single action: separate owner authorization for bounded operator source
+synchronization and current-baseline establishment/delivery using the published
+tooling and fresh safety evidence. This checkpoint issues no production command.
+PE-7.3 remains IN_PROGRESS; PE-7.4 remains NOT_AUTHORIZED.
+
 ## Historical implementation preparation and validation narrative
 Baseline: `ad9ddc5ced903f8c922a12c08f843fba6fce907b`, main, synchronized and clean
 before mutation. The accepted [PE-7 contract](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION_CONTRACT.md)
