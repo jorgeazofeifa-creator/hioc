@@ -544,18 +544,19 @@ class BackendStateTests(unittest.TestCase):
         self.ops=Mock(boot_id='boot');self.ops.target_boot.return_value='boot'
         self.ops.scheduler.return_value=b'# synthetic restored cron\n'
         self.ops.processes.return_value={'inspection_complete':True,'known_active':[]}
+        self.manifest=json.loads((old.ROOT/'governance/pe7/pe73-successor-delivery.json').read_bytes())
         self.runtime=Mock()
         self.runtime.snapshot.side_effect=lambda name,mode:{'exists':False} if name=='config/pe7_availability.json' else {
-            'exists':True,'sha256':next(x['sha256'] for x in old.existing.d.MANIFEST if x['path']==name)}
+            'exists':True,'sha256':next(x['sha256'] for x in self.manifest['artifacts'] if x['path']==name)}
         self.provider=Mock();self.provider.NativeOps.return_value=self.ops
-        self.controller=Mock(MANIFEST=old.existing.d.MANIFEST);self.controller.NativeFS.return_value=self.runtime
+        self.controller=Mock(MODES=old.existing.d.MODES);self.controller.NativeFS.return_value=self.runtime
     def sibling(self,name):return self.provider if name=='pe73_maintenance_window' else self.controller
     def state(self):
         with patch.object(p,'sibling',side_effect=self.sibling):
             return p.NativeBackendState(self.files,'/private/pe73-delivery-lease.json','WHOLE_PROCESS_APPROVED',
                 p.d.sha(self.ops.scheduler.return_value),risk_acknowledgement=p.RISKS)
     def call(self,state):
-        with patch.object(p,'sibling',side_effect=self.sibling):return state()
+        with patch.object(p,'sibling',side_effect=self.sibling),patch.object(p,'current_runtime',return_value=(self.controller,self.manifest,{'fixture':'current-approved'})):return state()
     def test_actual_live_readers_and_13_identities_required(self):
         state=self.state();state.acquire();self.assertTrue(self.call(state)['disabled'])
         self.assertEqual(self.runtime.snapshot.call_count,14)

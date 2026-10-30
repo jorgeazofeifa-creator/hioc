@@ -325,10 +325,11 @@ class GuardServer:
             require(self.clock() < start + 900, 'GUARD_EXPIRED')
             request = receive(channel)
             require(set(request) == {'operation', 'reference', 'session', 'counter', 'nonce', 'packet_sha256'}
-                and request['operation'] == 'CHECK' and request['counter'] == count
+                and request['operation'] in {'CHECK','FINISH'} and request['counter'] == count
                 and request['reference'] == self.reference
                 and type(request['session']) is str and re.fullmatch('[0-9a-f]{64}', request['session'])
                 and type(request['nonce']) is str and re.fullmatch('[0-9a-f]{64}', request['nonce']), 'GUARD_REQUEST_INVALID')
+            require(request['operation']!='FINISH' or count>1, 'GUARD_FINISH_REQUIRES_CHECK')
             if session is None: session = request['session']
             require(session == request['session'], 'GUARD_SESSION_DRIFT')
             with self.trust.material() as (packet, _, key):
@@ -340,6 +341,7 @@ class GuardServer:
                 reply = {'session':session, 'counter':count, 'nonce':request['nonce'],
                     'state_sha256':digest(observed), 'independent_trust_sha256':self.trust.first}
                 send(channel, reply | {'key_proof':key_proof(key, request, reply)})
+                if request['operation']=='FINISH':return
         raise Stop('GUARD_CHECK_LIMIT')
 
 
@@ -352,14 +354,15 @@ class Peer:
         self.session, self.count, self.start = secrets.token_hex(32), 0, clock()
         self.baseline = None; self.stopped = False
 
-    def check(self, packet):
+    def check(self, packet, *, _operation='CHECK'):
+        require(_operation in {'CHECK','FINISH'} and (_operation!='FINISH' or self.count>0),'GUARD_OPERATION')
         require(not self.stopped and self.clock() < self.start + 900 and self.count < 128, 'GUARD_EXPIRED_OR_STOPPED')
         try:
             with self.trust.material() as (local, _, key):
                 require(local == packet, 'LOCAL_TRUST_PACKET_DRIFT')
                 peer_identity(self.channel, packet, 'ha')
                 self.count += 1
-                request = dict(operation='CHECK', reference=self.reference, session=self.session, counter=self.count,
+                request = dict(operation=_operation, reference=self.reference, session=self.session, counter=self.count,
                     nonce=secrets.token_hex(32), packet_sha256=digest(packet))
                 self.channel.settimeout(15); send(self.channel, request); result = receive(self.channel)
                 require(set(result) == {'session','counter','nonce','state_sha256','independent_trust_sha256','key_proof'}, 'GUARD_RESPONSE_INVALID')
@@ -370,10 +373,14 @@ class Peer:
                 require(all(type(x) is str and re.fullmatch('[0-9a-f]{64}', x) for x in stable), 'GUARD_RESPONSE_INVALID')
                 if self.baseline is None: self.baseline = stable
                 require(stable == self.baseline, 'BACKEND_LIVE_DRIFT')
+                if _operation=='FINISH':self.stopped=True
                 return self.session
         except BaseException:
             self.stopped = True
             raise
+
+    def finish(self, packet):
+        return self.check(packet,_operation='FINISH')
 
 
 class RouteProbe:
@@ -390,6 +397,16 @@ class RouteProbe:
         self.context = ssl.create_default_context(cafile=ca_file)
         self.context.minimum_version = ssl.TLSVersion.TLSv1_2
         self.connection = _connection
+
+    def endpoint(self):
+        """Read-only TLS/actual-peer preflight, before publication of an absent file."""
+        require(self.context.check_hostname and self.context.verify_mode==ssl.CERT_REQUIRED
+            and self.context.minimum_version>=ssl.TLSVersion.TLSv1_2,'EDITOR_TLS_POLICY_DRIFT')
+        connection=self.connection(self.host,self.port,context=self.context,timeout=15)
+        try:
+            connection.connect()
+            require(connection.sock.getpeername()[0]==self.expected_address,'HA_FRONTEND_PEER_ADDRESS_MISMATCH')
+        finally:connection.close()
 
     def __call__(self, url, expected):
         require(url == '/local/hioc-asset-editor.js' and re.fullmatch('[0-9a-f]{64}', expected), 'EDITOR_ROUTE_SCOPE')
@@ -500,6 +517,16 @@ class NativeHAState:
             'capability_identity':digest(capabilities)}
 
 
+def current_runtime():
+    """Fresh current authority, not historical predecessor snapshots or journals."""
+    current = sibling('pe73_verified_baseline')
+    window, manifest = current.adapter().load()
+    control = current.read_control(window, window.d.NativeFS(), manifest)
+    require(control['active'] is None and control['baseline']['payload_release'] == manifest['release'],
+        'CURRENT_PI3_BASELINE_OR_ACTIVE_TRANSACTION')
+    return window.d, manifest, control['baseline']
+
+
 class NativeBackendState:
     """Read-only PI3 state, immutable payload and scheduler/disabled guards.
 
@@ -533,11 +560,11 @@ class NativeBackendState:
         require(not re.search(rb'--pe7-(?:cycle|initialize)|hioc-availability-adapter|availability_server', scheduler), 'PE7_SCHEDULER_ENABLED')
         process = self.ops.processes()
         require(process['inspection_complete'] is True and not process['known_active'], 'BACKEND_CONSUMERS_NOT_DRAINED')
-        controller = sibling('hioc-pe73-pi3-delivery')
+        controller, manifest, baseline = current_runtime()
         runtime = controller.NativeFS()
         payload = []
-        for entry in controller.MANIFEST:
-            observed = runtime.snapshot(entry['path'], 0o755 if entry['path'].startswith('pi4/bin/') else 0o644)
+        for entry in manifest['artifacts']:
+            observed = runtime.snapshot(entry['path'], controller.MODES[entry['path']])
             require(observed['exists'] and observed['sha256'] == entry['sha256'], 'PI3_PAYLOAD_DRIFT')
             payload.append(observed)
         # Runtime engine's exact fixed JSON config is optional only when absent.
@@ -548,7 +575,7 @@ class NativeBackendState:
             require(type(value) is dict and value.get('enabled') is False
                 and value.get('notifications_enabled') is False, 'PE7_RUNTIME_ENABLED_OR_UNKNOWN')
         return {'boot':boot, 'scheduler_sha256':self.scheduler,
-            'lease':digest(self.record), 'payload':digest(payload), 'policy':policy, 'disabled':True,
+            'lease':digest(self.record), 'payload':digest(payload), 'baseline':digest(baseline), 'policy':policy, 'disabled':True,
             'exclusion':RISKS}
 
 
@@ -559,11 +586,16 @@ class DeliveryAPI:
     delivery adapter admits each write once, only after exact durable intent in
     the existing transaction. No service calls, reload, restart or .storage API.
     """
-    def __init__(self, proxy, fs):
+    def __init__(self, proxy, fs, *, read_only=False):
         self.proxy, self.fs = proxy, fs
+        self.read_only=read_only
+        if read_only:
+            journal=fs.load()
+            require(journal['state']=='DELIVERED_DISABLED' and journal['pending'] is None and
+                journal['dashboard']==d.DASHBOARD and journal['resource'] is not None,'READ_ONLY_TERMINAL_REQUIRED')
         self.qualifier = LIVE
         self.sent = set(); self.stopped = False
-        self.dashboard_observed = False; self.resources_observed = False
+        self.dashboard_observed = read_only; self.resources_observed = read_only
         proxy.deadline = time.monotonic() + 900
 
     def _request(self, kind, fields):
@@ -600,7 +632,7 @@ class DeliveryAPI:
                 self.resources_observed = True
             if kind == 'lovelace/resources/list': self._resources(result)
             return result
-        require(kind in d.MUTATIONS and kind not in self.sent, 'DELIVERY_MUTATION_OUTSIDE_SCOPE_OR_RETRY')
+        require(not self.read_only and kind in d.MUTATIONS and kind not in self.sent, 'DELIVERY_MUTATION_OUTSIDE_SCOPE_OR_RETRY')
         journal = self.fs.load()
         require(journal['dashboard'] == d.DASHBOARD and journal.get('whole_process_reference')
             and journal.get('route') == {'url':'/local/hioc-asset-editor.js',
@@ -622,7 +654,7 @@ class DeliveryAPI:
         require(type(rows) is list and len(rows) <= 256 and all(type(row) is dict
             and type(row.get('url')) is str and 0 < len(row['url']) <= 2048
             and type(row.get('type')) is str for row in rows), 'LIVE_RESOURCE_SCHEMA_INVALID')
-        own = self.fs.load().get('resource') if 'lovelace/resources/create' in self.sent else None
+        own = self.fs.load().get('resource') if self.read_only or 'lovelace/resources/create' in self.sent else None
         for row in rows:
             path = unquote(urlsplit(row['url']).path)
             conflict = path == '/local/hioc-asset-editor.js' or path.lower().endswith('/hioc-asset-editor.js')

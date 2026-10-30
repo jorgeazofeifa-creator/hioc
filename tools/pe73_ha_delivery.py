@@ -76,6 +76,16 @@ def path(value):
     return value
 
 
+def configure_transaction(transaction_id):
+    """One process-local independent namespace; never adopts a completed attempt."""
+    global TX, TRUST_BUNDLE, BOOTSTRAP
+    require(type(transaction_id) is str and re.fullmatch('[0-9a-f]{32}',transaction_id), 'TRANSACTION_ID_INVALID')
+    require(TX == 'backups/pe73-ha-delivery-v1', 'TRANSACTION_ALREADY_CONFIGURED')
+    TX='backups/pe73-ha-attempt-'+transaction_id
+    TRUST_BUNDLE=TX+'/trust.disabled.json'
+    BOOTSTRAP='.pe73-ha-directory-intent-'+transaction_id+'.json'
+
+
 def artifacts(read_object):
     """Reader must return immutable Git blob bytes, not checkout-normalized files."""
     result = {}
@@ -225,7 +235,7 @@ class Delivery:
         # All facts checked BEFORE creating transaction, staging files or API mutations.
         self.fs.begin(TX)
         journal = dict(schema_version='1.0', state='PREPARING', pending=None, installed=[], dashboard=plan['dashboard'],
-                       resource=None, api_after=None, route=None, observation=observed, source_release=RELEASE)
+                       resource=None, api_after=None, route=None, observation=observed, source_release=RELEASE, transaction=TX)
         self.last = copy.deepcopy(journal)
         self.fs.save(journal)
         if hasattr(self.fs, 'provision_directories'):
@@ -443,7 +453,7 @@ class _ScopedHAFileSystem:
         if str(PurePosixPath(self._root)/'backups') not in self._dirs:
             return
         with self._directory('backups') as fd:
-            try:info=self._ops.stat('pe73-ha-delivery-v1',dir_fd=fd,follow_symlinks=False)
+            try:info=self._ops.stat(PurePosixPath(TX).name,dir_fd=fd,follow_symlinks=False)
             except FileNotFoundError:pass
             else:
                 require(stat.S_ISDIR(info.st_mode) and info.st_uid==info.st_gid==0 and
@@ -587,9 +597,9 @@ class _ScopedHAFileSystem:
             finally:self._bootstrapping=False
             self._create_directory('backups',0o700)
         with self._directory('backups') as fd:
-            self._ops.mkdir('pe73-ha-delivery-v1',0o700,dir_fd=fd)
+            self._ops.mkdir(PurePosixPath(TX).name,0o700,dir_fd=fd)
             self._ops.fsync(fd)
-            value=self._ops.stat('pe73-ha-delivery-v1',dir_fd=fd,follow_symlinks=False)
+            value=self._ops.stat(PurePosixPath(TX).name,dir_fd=fd,follow_symlinks=False)
             require(stat.S_ISDIR(value.st_mode) and value.st_uid==value.st_gid==0
                     and stat.S_IMODE(value.st_mode)==0o700, 'PRIVATE_DIRECTORY_SECURITY')
             self._dirs[str(PurePosixPath(self._root)/TX)]=_anchor(value)

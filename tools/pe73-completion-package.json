@@ -1,0 +1,90 @@
+{
+  "files": {
+    "governance/pe7/pe73-successor-delivery.json": {
+      "git_blob": "9a6d9b974e99bb42266d09f28ec7b4ccd6962425",
+      "sha256": "80b9a9984e6ebb035c4b6c039c52b8612e0c820e11205286db4ef89bf3c536bf"
+    },
+    "governance/pe7/pe73-verified-baseline-contract.json": {
+      "git_blob": "a3551dab43658b6f1d13452c16878a3ff5777dfc",
+      "sha256": "26ae2945cdc745732a5e40fcd0011bd6e7c21f3a8932a28f5c333f0754002bb6"
+    },
+    "payloads/homeassistant/custom_components/hioc_operator/__init__.py": {
+      "git_blob": "aba3acac0b0674fbb6421026ab6832b67ce60ca8",
+      "sha256": "ebf4d61bdc2bdd1d5757d420c0fd520c08101ff665976d8128c105eb8ad2547d"
+    },
+    "payloads/homeassistant/custom_components/hioc_operator/manifest.json": {
+      "git_blob": "1575e986a22fede52eb2a88de05706a0b8c7227a",
+      "sha256": "ab5b8cc72802cd1330c07162569eb83072081f9043666b8e065e73be734c5bb0"
+    },
+    "payloads/homeassistant/custom_components/hioc_operator/services.yaml": {
+      "git_blob": "eef7d43cc0f03824e83e2a8b3a922afaff3d0c02",
+      "sha256": "22e558f73800f4250ece8e136a745ddac2700c13007b6a3689d70876d11b91e1"
+    },
+    "payloads/homeassistant/dashboards/hioc_dashboard_v2.yaml": {
+      "git_blob": "3eca99a1010b912534626821482e74a6a11822ca",
+      "sha256": "aa675cd1fdd0164064f6f28c909dd06dde4a29f3c89fae14a014a5b11dddcb34"
+    },
+    "payloads/homeassistant/packages/hioc_incident_center.yaml": {
+      "git_blob": "031d3583b6c1fdc14eb431d7b5b1818dd37d8c3e",
+      "sha256": "910668e283dcd158664e720eed591a98b2e44ac79303a752c1f8f16a31fa722b"
+    },
+    "payloads/homeassistant/www/hioc-asset-editor.js": {
+      "git_blob": "472b5fa4345f296cee27980a5a9266ae84553a85",
+      "sha256": "f8ff3c590a111545f9dac452c8c93eb9b1abc97694d1b90a77e92f9fd039f52c"
+    },
+    "tools/hioc-pe73-pi3-delivery.py": {
+      "git_blob": "2e485c1cb1f40735a3645f84b45b272b683a97b2",
+      "sha256": "76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2"
+    },
+    "tools/pe73_ca_custody.py": {
+      "git_blob": "29baab59c95520d87da949fd37f1d2fef9431848",
+      "sha256": "b0d0a6a47f50e294204beac40946b7a446979bb5577ea08d13ea79b0c85bc4c9"
+    },
+    "tools/pe73_completion.py": {
+      "git_blob": "3413bfabe4d294ac46a0026e9d754afc154b52ab",
+      "sha256": "e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450"
+    },
+    "tools/pe73_ha_assess.py": {
+      "git_blob": "fa982856b6ff877f2f528b6da6d61b8ae9c7f4e9",
+      "sha256": "da4c97ef7e5acaf5840b9cbca03ee0cd888183e784a3f55bb8671b45b8372443"
+    },
+    "tools/pe73_ha_delivery.py": {
+      "git_blob": "c84d41fc85725dbe4cc61957d5ec7b6b40d81538",
+      "sha256": "3b36ce056f8b43b119a3a5fd489e06d7511bad3cf9eab5bcd2fab7dfd8bb9480"
+    },
+    "tools/pe73_ha_live_qualify.py": {
+      "git_blob": "9aeb9b6ef4574bb17d0346e23c962ab42d4fa59a",
+      "sha256": "ce4bbd30fdb268ec28637f990b85e9640d174a120eba971ed730f7ba94dfb845"
+    },
+    "tools/pe73_ha_production.py": {
+      "git_blob": "de9b99cecb754cf6ad8b3e32a4e7dcea281091a0",
+      "sha256": "2426d3cc16c4a9e7dc9614480cb6ac9a6d4d48eabe31ed700faebaafab835275"
+    },
+    "tools/pe73_ha_provision.py": {
+      "git_blob": "0b634aafd598a1b242e426758f8dbb8fbd73e2ea",
+      "sha256": "2e6dfabdadf41de7c988c5963c2e7454a28318e5621adfeaeae7098e63a025b1"
+    },
+    "tools/pe73_maintenance_window.py": {
+      "git_blob": "16ad5ed65622c143de5ed5ce0c58e9b2916e8895",
+      "sha256": "756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741"
+    },
+    "tools/pe73_pi3_provision_environment.py": {
+      "git_blob": "0b736f098d698f7bceff660e53001d89a25024e5",
+      "sha256": "4b8c1df7b0c9ab11b810f6961dc62e7ef67d35e1c509e6f5cc07b727c2f83bc8"
+    },
+    "tools/pe73_provision_environment.py": {
+      "git_blob": "0f8782556612c26e32474be3f432b21c5797a61d",
+      "sha256": "0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7"
+    },
+    "tools/pe73_successor_delivery.py": {
+      "git_blob": "933a620e79c7a37390c3f9bef5c5d3e417eb0137",
+      "sha256": "1dc47e5c3fd6ec5fd98d9414e39bb8e3dc8b80d03ddb32b29d6625e79f5ee05b"
+    },
+    "tools/pe73_verified_baseline.py": {
+      "git_blob": "9e2acb884d0e4ed13675de1d21b1b1601d5e3134",
+      "sha256": "906f028323b9786a864b825998786e93b9dfb9be3ba82f9f4f84b7d565a0b97b"
+    }
+  },
+  "payload_release": "20f7f4c64fd32865f006ecfb2135ae6bbcada16c",
+  "version": 1
+}

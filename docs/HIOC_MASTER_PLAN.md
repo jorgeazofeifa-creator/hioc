@@ -6272,6 +6272,44 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+### PE-7.3 completed PI3 successor and remaining HA delivery implementation
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+PI3_SUCCESSOR_DELIVERY=COMPLETE/PASS_OPERATOR_SUPPLIED.
+REMAINING_REPOSITORY_IMPLEMENTATION=COMPLETE_PENDING_PRODUCTION_DELIVERY.
+The executive master assignment authorizes completing and publishing the remaining
+engineering/package under standing project authority. Ordinary implementation,
+documentation and the predefined operator sequence do not require repeated approval
+ceremonies. Technical gates and uncertainty stops remain; Codex has no Pi access.
+
+OPERATOR_SUPPLIED: source4c63ddf22f9fb615c10c46d02e9ef242f4b5b02a,
+tree48fd804bd53e3fcdb3a5458a571e9d08adf6809c; initial approved baseline
+7fc7622eb4244004a010f0baaf91cc1b. Transaction050d0241fa67426c92e1ffe88a95817b
+COMMITTED; terminal kindVERIFIED_TERMINAL; journal SHA256
+2a71daca177ec0e224e74157d9c9aea512ce9a934fa210e97fe61f8b10d6afa5.
+Promoted approved baselinea1b692bad44745feabcace25981bf69b, release
+20f7f4c64fd32865f006ecfb2135ae6bbcada16c; active=null; next-control SHA256
+9ca7c54fcc86a4694bd8402790d7c4bbc96ae172109d5439139bc6ce0aabde39.
+PASS_PE73_PRODUCTION_VERIFICATION establishes13/13 runtime artifact integrity,
+original scheduler restored, no active transaction and no recovery required.
+No historical terminal record/baseline/claim is rewritten or inferred from Windows.
+No completed PI3 installation, restoration or dependency setup is repeated.
+
+Full PE-7.3 scope remains guarded artifact/integration/UI/trust delivery. The existing
+HA integration, actual editor, authenticated services, data semantics, private trust
+and backup publisher are reused, not rebuilt. The native HA backend guard now reads
+the current approved promoted baseline and13 successor payloads; its obsolete
+pre-successor manifest assumption is corrected. Independent HA transactions and
+read-only post-installation verification use the exact current transaction state.
+The [complete operator delivery package](PE73_REMAINING_DELIVERY.md) binds immutable
+source/payloads, preserves six Dashboard views and prepares inactive trust delivery.
+Repository tests do not establish live HA installation. Remaining HA delivery,
+resource/editor installation, paired trust and export/backup verification are
+IMPLEMENTED_NOT_DEPLOYED until actual operator evidence returns. No PE-7.4 activation.
+See [complete coverage and evidence report](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#remaining-pe-73-completion-evidence-and-contract-coverage).
+
+### Historical verified-baseline repository checkpoint (preserved)
+
 ### PE-7.3 verified-baseline operations — executive-directed replacement
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
@@ -8567,6 +8605,19 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+### CURRENT PE-7.3 remaining guarded HA integration/UI/trust delivery
+
+PI3 successor delivery and promoted baseline are accepted OPERATOR_SUPPLIED PASS.
+Do not redeploy its13 artifacts, repeat its transaction or replace its baseline.
+Remaining repository implementation/package is complete; live HA delivery is pending.
+Use the existing HIOC Dashboard v2/Inventory and six-view layout only. Execute the
+[prepared operator sequence](PE73_REMAINING_DELIVERY.md), beginning with operation1
+on PI3, under standing project authority and fresh technical safety checks. No Codex
+Pi access, implicit production result, migration, editing/evaluation or recurring
+activation. PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED.
+
+### Historical objective before completed PI3 delivery (preserved)
+
 ### CURRENT PE-7.3 verified-baseline delivery operations
 
 PE7_STATUS=IN_PROGRESS; PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE;
@@ -9953,6 +10004,21 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+### CURRENT PE-7.3 operator execution of the completed delivery package
+
+Next single operator action: operation1 of [remaining delivery](PE73_REMAINING_DELIVERY.md)
+on PI3 NUT&PIHOLE as jazofv1, preparing new inactive runtime trust requests only.
+It does not repeat the successful PI3 deployment, create another baseline or issue
+a CA certificate. Policy values are entered privately on the host; operation and
+transaction references are generated internally, with no new architecture choice.
+Subsequent bounded machine-specific operations are already prepared in that package;
+stop and return each actual result before proceeding. After all remaining delivery
+verification succeeds, one final documentation/Git closure suffices. No repeated
+owner-approval loop or historical dependency is introduced. PE73_STATUS=IN_PROGRESS;
+PE74_STATUS=NOT_AUTHORIZED; no migration, editing, evaluation or recurring activation.
+
+### Historical next-task snapshot before successful PI3 delivery (preserved)
+
 ### CURRENT PE-7.3 separately authorized verified-baseline delivery
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.

@@ -33,8 +33,8 @@ import uuid
 
 BASE = '686be8841f461eacd57a9076948acf632bbf7bea'
 PINS = {
- 'pe73_ha_production':'86e4333ef2df1bf67b4621ccd6a3314f1322af00dafb42e9d3c5f0724e7bd23c',
- 'pe73_ha_delivery':'3f7938ac351604ce27e70d60f3fd970964c2a8a3c0efae1449b8dbac46360be1',
+ 'pe73_ha_production':'2426d3cc16c4a9e7dc9614480cb6ac9a6d4d48eabe31ed700faebaafab835275',
+ 'pe73_ha_delivery':'3b36ce056f8b43b119a3a5fd489e06d7511bad3cf9eab5bcd2fab7dfd8bb9480',
  'pe73_ha_assess':'da4c97ef7e5acaf5840b9cbca03ee0cd888183e784a3f55bb8671b45b8372443',
  'pe73_ha_live_qualify':'ce4bbd30fdb268ec28637f990b85e9640d174a120eba971ed730f7ba94dfb845',
  'pe73_maintenance_window':'756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741',

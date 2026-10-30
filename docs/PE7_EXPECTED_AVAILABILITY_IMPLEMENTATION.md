@@ -5,6 +5,149 @@ Status: PE-7.1 COMPLETE/PASS; independent focused recheck ACCEPT. Repository imp
 The final governance disposition below supersedes preparation-time status and next-action labels.
 Earlier narratives remain historical evidence, including the original independent REJECT.
 
+## Remaining PE-7.3 completion evidence and contract coverage
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+Repository implementation and reproducible delivery preparation are complete;
+remaining production installation/verification is PENDING, not inferred from tests.
+The current Master Plan records the exact OPERATOR_SUPPLIED PI3 success and promoted
+baseline. Source4c63ddf/tree48fd804; initial7fc7622eb4244004a010f0baaf91cc1b;
+transaction050d0241fa67426c92e1ffe88a95817b COMMITTED/VERIFIED_TERMINAL;
+journal2a71daca177ec0e224e74157d9c9aea512ce9a934fa210e97fe61f8b10d6afa5;
+promoteda1b692bad44745feabcace25981bf69b APPROVED_VERIFIED; active=null;
+next-control9ca7c54fcc86a4694bd8402790d7c4bbc96ae172109d5439139bc6ce0aabde39.
+PASS_PE73_PRODUCTION_VERIFICATION:13/13 exact runtime artifacts, original scheduler,
+no active transaction/recovery. These are operator observations, not Codex access.
+
+### Complete contractual coverage
+
+| Mandatory PE-7.3 requirement | Implementation / focused tests | Production classification |
+| --- | --- | --- |
+| PI3 exact guarded runtime delivery and baseline promotion | Existing successor/verified-baseline controller; accepted42 focused evidence; no source changes to them | COMPLETE: supplied transaction and13-artifact verification above |
+| Supported HA integration and truthful observed/expected/stale/unknown semantics | homeassistant/custom_components/hioc_operator; pi4/lib/hioc/availability*, asset_policy; test_pe7_ha, test_pe7_evaluation and security tests | IMPLEMENTED_NOT_DEPLOYED for HA; PE-7.4 functional evaluation remains later |
+| Actual manual Asset editor and independent toggles/type/read state | Existing homeassistant/www/hioc-asset-editor.js and service interfaces; test_pe7_dashboard executes actual JS/DOM interactions; HA identity/security tests | IMPLEMENTED_NOT_DEPLOYED; no UI save/migration claimed |
+| Exclusive live HIOC Dashboard v2 delivery with six views preserved | Existing pe73_ha_delivery additive Inventory card, DeliveryAPI journal-bound resource/create/config/save; publisher and completion tests | IMPLEMENTED_NOT_DEPLOYED; accepted prior API/layout qualification reused, fresh continuity still required |
+| Ownership, Core filesystem identity, exact file scope and interruption protection | Existing NativeProbe/_ScopedHAFileSystem, durable directory creation,4 public files,2 references; HA OS publisher/native-negative tests | IMPLEMENTED_NOT_DEPLOYED; old filesystem qualification is evidence, not mutation authority |
+| mTLS, signed actor assertion/HMAC, independent ACL, exact actor grants and revocation | Existing runtime protocol/integration, disabled_trust, TrustSide/Peer/GuardServer, accepted population amendment; real Windows TLS, issuance, key-pair, privacy and replay tests | IMPLEMENTED_NOT_DEPLOYED; actual keys/subjects/ports/actor grants remain locally bound inputs, not guessed |
+| Offline CA inaccessible to UID1000 runtime; local PI5 private key custody | Existing root-only CA vault and separate signing venv; current completion runner uses public CSR/cert pipe, UID1000 server key and32-byte HMAC, PI5 local client key | IMPLEMENTED_NOT_DEPLOYED; existing environments/custody preparation retained; no issuance claimed |
+| Export/backup, exact readback and transaction-appropriate restore | Existing Delivery.prepare private Dashboard/resources/file backups, fsync, exact restore gates; new exports/independent verify tests | IMPLEMENTED_NOT_DEPLOYED; operator package specifies original-API restoration and no automatic recovery |
+| Disabled delivery/no scheduler, migration, edits, evaluator or notifications | Native role/lease/API guards, exact original cron, private inactive packets, read-only verification; existing negative tests | PI3 preservation COMPLETE; remaining HA inactivity must be established in actual delivery receipts |
+| Production verification, original receipt/evidence and formal closure | New finite runner/immutable package and independent verify; final Evidence Report structure below | UNDETERMINED/PENDING for remaining HA production; PE-7.3 not closed |
+
+All original PE-7 sections5/6/7/13 requirements remain authoritative. Later P-matrix
+functional Asset saves/evaluation and A-matrix recurring/notification evidence belong
+to PE-7.4/7.5; no such execution is fabricated or added as a PE-7.3 admission gate.
+
+### Cohesive implementation and dependency closure
+
+`tools/pe73_completion.py` is a finite entry over existing mechanisms, not a new
+publisher/CA/service. It verifies the exact immutable package and each accepted venv
+seal without changing either environment or system/Core Python. Privileged issuance
+uses only the root-owned current toolkit and existing root signing environment;
+the historical frozen toolkit/environment remains intact. The old co-located CA
+backend-init path is not used. No root process executes a UID1000-owned interpreter.
+The updated current provisioner pins the exact production/publisher source; the
+current PI3 API smoke pin follows it while historical smoke/CA assertions replay
+their existing immutable authority. No historical assertion or expected hash changes.
+
+NativeBackendState now verifies the current baseline, active=null, promoted20f7
+payload and13 actual current artifacts, not historical inode/ctime or predecessor
+journals. Its scheduler/process/disabled checks remain. Finite trust FINISH is
+authenticated with the same session/counter/nonce/HMAC and live independent state;
+it closes only the observer, never releases consumers, deletes a lease or changes
+the scheduler. New HA transaction IDs are distinct from PI3 and use the generated
+whole-process reference; no historical HA directory must be reused. Existing native
+directory creation/security, transaction backups, one-attempt API writes and lost-ACK
+stops remain. Read-only verification accepts only the exact DELIVERED_DISABLED
+journal, own resource and additive Dashboard state and cannot send mutation requests.
+
+`tools/pe73_completion_commands.py` builds the deterministic public
+`release/pe73-completion-package.zip` plus its SHA/Git-blob manifest. It ships13 tools,
+2 operating contracts and6 immutable HA payload/reference files; no keys, ACLs,
+production packets or tests are packaged. Current20f7 contains the same six HA bytes
+as their accepted51398 payload revision; nothing is rebuilt or silently updated.
+Three bootstrap commands safely install this code-only toolkit under new private
+role-owned directories, verifying immutable Git object/archive/source identities.
+Subsequent complete commands use those exact installed identities. No unpublished
+files or current directory assumption, external dependencies, Core package changes,
+Dashboard selection or new frontend is required. Full instructions and failure/restore
+boundaries: [operator package](PE73_REMAINING_DELIVERY.md).
+
+### Validation and independent repository acceptance
+
+Consolidated focused native Windows result: 372 executed, 372 passed,
+0 failures,0 errors,0 individual skips,0 class-level skips. Counts come directly
+from the completed unittest result. No complete repository regression or broad
+historical discovery. Tested source/package bytes were frozen before and after.
+
+Exact selection: test_pe73_completion, test_pe73_ha_delivery,
+test_pe73_ha_production, test_pe73_ha_provision, test_pe73_ca_custody,
+test_pe73_pi3_provision_environment.ActualAPIWindowsTests,
+test_pe7_evaluation.EvaluationTests, test_pe7_ha.HAIdentityTests,
+test_pe7_ha.ObservationRoleTests, test_pe7_dashboard.DashboardTests,
+test_pe7_security.SecurityTests. Established bundled Windows interpreter,
+repository-root stdin harness, UTF-8/-B, shell-free Git PATH, HIOC_TEST_SHELL cleared,
+sys.path[:0]=['tests','pi4/lib']. Suite construction uses only these explicit names;
+test_pe7_binding.bind_regression_suite applies its existing named immutable toolkit
+replay. The first development run stopped at a historical profile-pin assertion;
+its unchanged body/expected identity passes at the existing immutable authority.
+The actual current provisioner API smoke runs against current source separately.
+No historical validator, expected hash, replay framework or security gate was relaxed.
+
+Coverage includes actual JS editor interactions, HA actor/connection/revocation,
+freshness/unknown/qualified-outage semantics, disabled policies, strong identity,
+real Windows loopback mutual TLS and cryptographic APIs, private-key custody,
+HMAC/ACL/peer drift, no secret output, exact publication/export/backup/restore,
+HA OS directory/provenance/ACL/type/owner/link/security and interruption cases.
+New tests cover the actual current baseline/no-active-transaction admission,
+independent HA transaction namespace, explicit population grants, native environment
+refusal, finite authenticated FINISH, immutable archive/source correspondence,
+complete command syntax/pipeline/status capture, pre-write TLS/peer checks and
+strictly read-only post-install resource verification. Loopback/mocks/Windows POSIX
+metadata fixtures are repository evidence, not live Home Assistant acceptance.
+
+Focused independent source review confirms the finite runner composes the existing
+publisher/trust/custody algorithms; no second CA, broker, runtime service or product
+behavior is added. Current source pins and all operational package dependencies
+close together. Incremental baseline-byte/manifest verification preserves39 successor
+bindings,449 protected identities, all13 completed PI3 payloads and all6 HA payload/
+reference identities. Original contract/amendments, sealed PI3 controllers/providers,
+verified-baseline implementation and all prior transaction evidence remain unchanged.
+Historical narratives are preserved by reversible new sections. Diff integrity,
+local references, exact fourteen-path scope and secret-free package contents pass.
+The complete application regression was not run and is not claimed.
+
+Operator bundle SHA-256: `3bde8b3bd5afb87c785edefeb6323eba2ea6baba4d64cb59a8163ef70f6dcddf`.
+Manifest SHA-256: `b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b`.
+Current runner SHA-256: `e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450`.
+
+
+### Final production Evidence Report structure
+
+| Field | Current evidence / required actual result |
+| --- | --- |
+| Deployment: PI3 release / transaction / promoted baseline | COMPLETE/PASS OPERATOR_SUPPLIED:20f7 /050d0241fa67426c92e1ffe88a95817b /a1b692bad44745feabcace25981bf69b |
+| Deployment: remaining HA integration | PENDING operator PASS_PE73_HA_DELIVERED_DISABLED |
+| Dashboard/resource | PENDING exact4 files, served editor, one resource and additive card with six views preserved |
+| Trust installation | PENDING actual local certificates/inactive packets plus live mTLS/HMAC and independent backend ACL |
+| Export/backup verification | PENDING exact private exports and relevant file backup readback |
+| Intended behavior | Accepted expected/observed/freshness/unknown semantics, explicit Asset controls, persistence/ACK/security; no activation claimed |
+| Invariants | Runtime/scheduler/transaction isolation, configuration/resource preservation, trust/permissions and no unintended PE-7.4 activation; remaining live checks PENDING |
+| Independent remaining production acceptance | PENDING separate read-only PASS_PE73_HA_INDEPENDENT_INSTALLATION_VERIFICATION and actual guard/exit receipts |
+| Warnings | Operator-only observations; no universal exclusion; original consumer failure remains UNKNOWN and audit-only, not a new delivery gate |
+| Overall PE-7.3 result | IN_PROGRESS until remaining actual production evidence passes |
+
+No production command was executed by Codex. Successful PI3 artifacts, baseline,
+terminal record, scheduler and current source tree are not mutated or replaced.
+The next operator action is operation1 of the completed delivery package. Standing
+project authority covers ordinary execution; technical drift/uncertainty stops the
+affected operation. Do not repeat executive approval requests for the normal sequence.
+After actual remaining production PASS, only concise evidence reconciliation and
+one final documentation/Git closure is needed. No new broad implementation review,
+historical gate or speculative production assessment is introduced.
+
+### Historical verified-baseline implementation checkpoint (preserved)
+
 ## Current verified-baseline operations
 
 ### Authority and bounded scope
