@@ -5,6 +5,58 @@ Status: PE-7.1 COMPLETE/PASS; independent focused recheck ACCEPT. Repository imp
 The final governance disposition below supersedes preparation-time status and next-action labels.
 Earlier narratives remain historical evidence, including the original independent REJECT.
 
+## Remaining-delivery sealed-environment compatibility correction
+
+PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED.
+The operator-supplied failed707ce93 prepare-backend evidence and exact root-cause,
+alternatives, retained-state admission and all role mappings are recorded in
+[the revised operator package](PE73_REMAINING_DELIVERY.md#production-compatibility-correction-preparation-stopped-before-trust-creation).
+The failure is a missing installer-module lookup in an environment whose accepted
+seal intentionally excludes those modules. The immutable package now supplies only
+the accepted verifier code; the existing environment is not modified or resealed.
+Root signing still requires its separate root-controlled interpreter/custody and
+cannot run a UID1000-owned environment. All private-state and uncertain-operation
+refusals remain. First next production step is a separately authorized assessment,
+not repeating preparation. Actual production compatibility remains unobserved.
+
+Executed focused plus applicable regression: 457 run, 457 passed,
+0 failures,0 errors,0 individual skips,0 class-level skips; complete direct unittest
+counts and unchanged tested package/source bytes. Exact explicit selection:
+test_pe73_completion, test_pe73_ha_delivery, test_pe73_ha_production, test_pe73_ha_provision, test_pe73_ca_custody, test_pe73_pi3_provision_environment, test_pe73_provision_environment, test_pe7_evaluation.EvaluationTests, test_pe7_ha.HAIdentityTests, test_pe7_ha.ObservationRoleTests, test_pe7_dashboard.DashboardTests, test_pe7_security.SecurityTests.
+Bundled Windows Python -B stdin, repository cwd, PATH=C:\Program Files\Git\cmd,
+HIOC_TEST_SHELL cleared, sys.path[:0]=['tests','pi4/lib']; existing named historical
+replay via test_pe7_binding.bind_regression_suite, no broad discovery/full suite.
+The initial development run had five new Windows fixture errors (four missing
+mocked POSIX constants and one missing fixture plan field); fixed in tests only.
+The second development run caught a duplicate automatic_retry receipt keyword in
+the new assessment; removing the duplicate retains the shared false default.
+All44 completion tests then passed before the final affected regression run.
+The final complete run supersedes those development results without erasing them.
+
+Coverage: original seven-tool PI3/PI5 seal without installers; CA's two additional
+sealed modules; wrong inventory/source pins; changed/missing files; original
+owner/mode/ACL/link checks; UID/GID/interpreter/Python/version drift; all action
+environment admission; existing/partial sessions, unknown private candidates,
+inventory drift, exact failed toolkit and uncertain partial-write preservation;
+one attempt, no cleanup/retry; archive/manifest/source correspondence and generated
+command syntax. Existing actual crypto APIs, custody, local TLS, HA publisher,
+provenance, privacy, Asset/editor and refusal tests run in the applicable selection.
+Native Pi environments are represented by controlled fixtures, not accessed.
+
+Focused independent source review confirms all operations retain their existing
+algorithms. Engine/profile/system environments, production publisher/provisioner,
+historical controllers/provider, contract/amendments and runtime payloads remain
+byte-identical. Only runner, command generator, focused tests, regenerated package,
+three documentation files and the two necessary doc identity rows change.
+39 successor bindings,449 protected identities and13 payloads verify unchanged
+except the two explicitly updated documentation rows. Historical narratives remain.
+
+Manifest SHA256 `752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f`;
+archive SHA256 `81f8cb0013c49afce0fe40ce54bbfe80036e2110d6b777c85833200cb90ee8f0`;
+runner SHA256 `2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6`.
+No production/environment/CA/trust/scheduler mutation, no automatic retry, no
+production validation claim, no PE-7.3 closure or PE-7.4 authorization.
+
 ## Remaining PE-7.3 completion evidence and contract coverage
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.

@@ -28,15 +28,16 @@ def module(name):
     spec=importlib.util.spec_from_file_location('pe73_completion_'+name,path)
     value=importlib.util.module_from_spec(spec);spec.loader.exec_module(value);return value
 
-def toolkit(expected):
-    raw=(ROOT/MANIFEST).read_bytes();require(sha(raw)==expected,'TOOLKIT_MANIFEST_IDENTITY')
+def toolkit(expected,root=None):
+    root=ROOT if root is None else root
+    raw=(root/MANIFEST).read_bytes();require(sha(raw)==expected,'TOOLKIT_MANIFEST_IDENTITY')
     value=json.loads(raw)
     require(set(value)=={'version','payload_release','files'} and value['version']==1 and
         value['payload_release']=='20f7f4c64fd32865f006ecfb2135ae6bbcada16c','TOOLKIT_SCOPE')
     for name,row in value['files'].items():
         require(re.fullmatch(r'(?:tools|governance/pe7|payloads)/[A-Za-z0-9_./-]+',name) and
             '..' not in Path(name).parts,'TOOLKIT_PATH')
-        path=ROOT/name;info=path.lstat();raw=path.read_bytes()
+        path=root/name;info=path.lstat();raw=path.read_bytes()
         require(stat.S_ISREG(info.st_mode) and info.st_nlink==1 and info.st_uid==os.getuid()
             and not stat.S_IMODE(info.st_mode)&0o022 and len(raw)<=LIMIT and sha(raw)==row['sha256']
             and hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()==row['git_blob'],'TOOLKIT_FILE_IDENTITY')
@@ -50,30 +51,88 @@ def environment(role):
     require(sys.platform=='linux' and os.getuid()==os.geteuid()==os.getgid()==os.getegid()==uid
         and Path(sys.prefix)==root/'venv','ISOLATED_TARGET_IDENTITY')
     q=module('pe73_ha_provision');binding=q.native()
-    files=binding.PrivateFiles(str(root),(uid,uid));raw=files.read(str(root/'ready.json'))
-    seal=json.loads(raw)
-    require(set(seal)=={'schema','source_python','python_version','files','versions'} and seal['schema']==1,'ENVIRONMENT_SEAL_SHAPE')
-    # The accepted immutable installer/profile is read from the existing environment.
-    # Its source identity is already in the sealed file map, not downloaded anew.
-    def sealed(name):
-        path=root/'tools'/name;data=path.read_bytes();entry=seal['files'].get('tools/'+name,{})
-        require(entry.get('sha256')==sha(data) and path.lstat().st_uid==uid
-            and not stat.S_IMODE(path.lstat().st_mode)&0o022 and not path.is_symlink(),'SEALED_ENVIRONMENT_TOOL')
-        spec=importlib.util.spec_from_file_location('pe73_sealed_'+name.replace('.','_'),path)
-        m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
-    engine=sealed('pe73_provision_environment.py')
-    if role in {'pi3','ca'}:
-        profile=sealed('pe73_pi3_provision_environment.py')
-        if role=='pi3':engine=profile.profile(engine)
-        else:
-            engine.ROOT=root;engine.WHEELS=profile.WHEELS
+    files=binding.PrivateFiles(str(root),(uid,uid))
+    try:raw=files.read(str(root/'ready.json'))
+    except FileNotFoundError:raise Stop('ENVIRONMENT_READY_MISSING') from None
+    try:seal=json.loads(raw)
+    except (ValueError,TypeError):raise Stop('ENVIRONMENT_SEAL_SHAPE') from None
+    require(type(seal)is dict and set(seal)=={'schema','source_python','python_version','files','versions'}
+        and seal['schema']==1 and type(seal['files'])is dict,'ENVIRONMENT_SEAL_SHAPE')
+    # The installers are immutable package code, NOT members of the original
+    # PI3/PI5 environment seals. Never import or copy a missing environment tool.
+    engine=module('pe73_provision_environment')
+    profile=module('pe73_pi3_provision_environment')
+    require(sha((ROOT/'tools/pe73_provision_environment.py').read_bytes())==
+        profile.ENGINE_SOURCE['sha256'],'ENVIRONMENT_VERIFIER_IDENTITY')
+    if role=='pi3':
+        profile.target();engine=profile.profile(engine)
+    elif role=='ca':
+        module('pe73_ca_custody').target();engine.ROOT=root;engine.WHEELS=profile.WHEELS
+    else:engine.target()
     engine.owned_directory(root,0o700)
-    require(seal=={'schema':1,'source_python':sha(Path('/usr/bin/python3').resolve().read_bytes()),
-        'python_version':list(sys.version_info[:3]),'files':engine.fingerprint(root),'versions':engine.VERSIONS},'ACCEPTED_ENVIRONMENT_DRIFT')
+    verify_environment(seal,engine,root,role)
     if role=='pi3':binding.sibling('pe73_maintenance_window').NativeOps().target_boot()
     if role=='ca':module('pe73_ca_custody').target()
     q.crypto()
     return q,binding
+
+def verify_environment(seal,engine,root,role):
+    """Read-only original seal comparison using the accepted fingerprint algorithm."""
+    require(seal['source_python']==sha(Path('/usr/bin/python3').resolve().read_bytes()),'ENVIRONMENT_PYTHON_EXECUTABLE_DRIFT')
+    require(seal['python_version']==list(sys.version_info[:3]),'ENVIRONMENT_PYTHON_VERSION_DRIFT')
+    require(seal['versions']==engine.VERSIONS,'ENVIRONMENT_DEPENDENCY_VERSION_DRIFT')
+    # The original installer explicitly selected these historical source objects.
+    # ready.json alone cannot approve arbitrary replacement provisioning sources.
+    expected={item['name']:item['sha256'] for item in engine.TOOLKIT}
+    if role=='ca':
+        custody=module('pe73_ca_custody')
+        expected.update({custody.PROFILE_SOURCE['name']:custody.PROFILE_SOURCE['sha256'],
+            'pe73_provision_environment.py':module('pe73_pi3_provision_environment').ENGINE_SOURCE['sha256']})
+    require({name.removeprefix('tools/') for name in seal['files'] if name.startswith('tools/')}==set(expected),
+        'ENVIRONMENT_SEALED_TOOL_INVENTORY')
+    for name,identity in expected.items():
+        require(seal['files'].get('tools/'+name,{}).get('sha256')==identity,'ENVIRONMENT_SEALED_SOURCE_IDENTITY')
+    for name in seal['files']:
+        require(type(name)is str and not Path(name).is_absolute() and '..' not in Path(name).parts,'ENVIRONMENT_SEAL_PATH')
+        require(os.path.lexists(root/name),'ENVIRONMENT_SEALED_FILE_MISSING')
+    try:observed=engine.fingerprint(root)
+    except FileNotFoundError:raise Stop('ENVIRONMENT_SEALED_FILE_MISSING') from None
+    require(observed==seal['files'],'ENVIRONMENT_FINGERPRINT_MISMATCH')
+
+FAILED_MANIFEST='b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b'
+
+def assess_backend(q,binding):
+    """No key generation/writes. Refuse any retained context or trust candidate.
+
+    Combined with the proven pre-mutation failure path, this establishes whether
+    a fresh operation can be considered; it never retries prepare-backend.
+    """
+    profile=module('pe73_pi3_provision_environment')
+    home=PI3_ENV.parent;runtime=home/'hioc'
+    old=home/('.hioc-pe73-completion-'+FAILED_MANIFEST[:16])
+    profile.owned_directory(old,0o700)
+    toolkit(FAILED_MANIFEST,old)
+    for parent in (home,runtime):
+        admitted=profile.owned_directory(parent)
+        fd=os.open(parent,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+        try:
+            before=os.fstat(fd)
+            require(binding.identity(admitted)==binding.identity(before),'PREPARATION_INVENTORY_DRIFT')
+            names=os.listdir(fd)
+            require(len(names)<=4096,'PREPARATION_INVENTORY_LIMIT')
+            require(not any(name.startswith('hioc_pe73_') for name in names),'EXISTING_PRIVATE_STATE_REQUIRES_REVIEW')
+            for name in names:
+                if name.startswith('.hioc-pe73-completion-'):
+                    candidate=parent/name;profile.owned_directory(candidate,0o700)
+                    require(not os.path.lexists(candidate/'session'),'EXISTING_SESSION_NO_RETRY')
+            after=os.fstat(fd);named=parent.lstat()
+            require(binding.identity(before)==binding.identity(after)==binding.identity(named),'PREPARATION_INVENTORY_DRIFT')
+        finally:os.close(fd)
+    return result('PASS_READ_ONLY_PE73_PREPARATION_COMPATIBILITY',
+        failed_toolkit_verified=True,environment_fingerprint='PASS',retained_preparation_candidates=0,
+        trust_material_created=False,production_runtime_modified=False,
+        preparation_executed=False,next_action_requires_separate_authorization=True)
+
 
 def session(binding,create=False):
     """One private context in the new toolkit, not a production authority record."""
@@ -155,6 +214,7 @@ def transfer(operation,expected,port,payload=b''):
     return result.stdout
 
 def prepare_backend(q,binding):
+    assess_backend(q,binding)  # Fresh admission, not a retry inferred from session absence.
     require(not (ROOT/'session').exists(),'EXISTING_SESSION_NO_RETRY')
     value=plan(q);c=module('pe73_ca_custody');values=c.runtime_material(q,value)
     context(binding,create=dict(parent=value['backend_parent'],plan_sha256=sha(canonical(value)),reference=value['reference'],ssh_port=None))
@@ -273,6 +333,7 @@ def run(action,expected):
     toolkit(expected)
     role='ca' if action.startswith('sign-') else 'pi5' if action in {'ha-request','ha-complete','deliver-ha','verify-ha'} else 'pi3'
     q,binding=environment(role)
+    if action=='assess-backend':return assess_backend(q,binding)
     if action=='prepare-backend':return prepare_backend(q,binding)
     if action=='ha-request':return ha_request(q,binding,expected)
     if action.startswith('sign-'):return signer(q,binding,action)
@@ -302,7 +363,7 @@ def run(action,expected):
     return result('PASS_FINITE_PE73_TRUST_GUARD')
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=('prepare-backend','ha-request','sign-server','import-server','sign-client','import-client','complete-backend','ha-complete','guard-backend','deliver-ha','verify-ha','pipe-plan','pipe-request','pipe-bundle'))
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=('assess-backend','prepare-backend','ha-request','sign-server','import-server','sign-client','import-client','complete-backend','ha-complete','guard-backend','deliver-ha','verify-ha','pipe-plan','pipe-request','pipe-bundle'))
     parser.add_argument('--manifest-sha',required=True);args=parser.parse_args()
     try:
         value=run(args.action,args.manifest_sha)

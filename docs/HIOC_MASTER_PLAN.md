@@ -6272,6 +6272,25 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+### PE-7.3 remaining-delivery compatibility correction — current
+
+PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED.
+OPERATOR_SUPPLIED: release707ce936571f749b24d76f03cd7ba641f231c8fb operation1
+failed exit1 before any observed session/trust preparation. The accepted PI3 seal
+omits both installer modules; the old completion runner tried to import them there.
+Repository source establishes this pre-mutation failure path; the original generic
+receipt has no traceback, and unrelated prerequisites are not inferred valid.
+Current immutable package uses the accepted existing fingerprint algorithms without
+changing any Pi environment or seal. Exact historical tools, full fingerprints,
+source Python/versions, owners/modes/ACLs/links and role targets remain mandatory.
+The successful13-artifact PI3 deployment/baseline/scheduler remain preserved.
+First next action is the [read-only compatibility and retained-state assessment](PE73_REMAINING_DELIVERY.md#first-next-step-compatibility-and-retained-state-assessment-only),
+under separate operator execution authority. It does not retry preparation; existing
+or uncertain private state refuses. No Pi access or production mutation by Codex.
+Focused and applicable regression completed without failures/errors; see exact
+[evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#remaining-delivery-sealed-environment-compatibility-correction).
+No change to trust architecture, original contract, historical evidence or roadmap.
+
 ### PE-7.3 completed PI3 successor and remaining HA delivery implementation
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
@@ -8605,6 +8624,17 @@ Phase 7A - Passive Living Inventory
 | DHCP Service Health & Capacity Monitoring | ⏳ Planned |
 
 ## Current Objective
+
+### CURRENT PE-7.3 preparation compatibility before remaining HA delivery
+
+The failed operation1 is retained as OPERATOR_SUPPLIED evidence. First establish
+the corrected environment and retained-state assessment, without generating trust
+material or retrying preparation; see [the bounded operator procedure](PE73_REMAINING_DELIVERY.md#first-next-step-compatibility-and-retained-state-assessment-only).
+Production execution remains separately authorized. Successful prior PI3 runtime
+delivery remains intact. PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED.
+
+### Historical remaining-delivery objective before the preparation failure (preserved)
+
 ### CURRENT PE-7.3 remaining guarded HA integration/UI/trust delivery
 
 PI3 successor delivery and promoted baseline are accepted OPERATOR_SUPPLIED PASS.
@@ -10004,6 +10034,19 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
+
+### CURRENT PE-7.3 compatibility assessment before any preparation retry
+
+Next single operator action: separately authorize the PI3 jazofv1 compatibility/
+retained-state assessment in [remaining delivery](PE73_REMAINING_DELIVERY.md#first-next-step-compatibility-and-retained-state-assessment-only).
+Its public source bootstrap is distinct from the strictly read-only assessment.
+It creates no keys, session, CA, runtime artifact or scheduler state. Review the
+actual sanitized result/exit status before authorizing fresh prepare-backend.
+Any unexpected private/session state or environment drift stops without cleanup
+or automatic recovery. PE73_STATUS=IN_PROGRESS; PE74_STATUS=NOT_AUTHORIZED.
+
+### Historical next-action statement before the failed preparation (preserved)
+
 ### CURRENT PE-7.3 operator execution of the completed delivery package
 
 Next single operator action: operation1 of [remaining delivery](PE73_REMAINING_DELIVERY.md)

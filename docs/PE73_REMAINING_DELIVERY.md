@@ -50,6 +50,174 @@ An incomplete/unsafe existing toolkit is retained and refused, never cleaned.
 The actual production data are held in new0700 role-owned private parents with0600
 single-link files and existing no-follow/ACL/ancestry/readback protections.
 
+## Production compatibility correction: preparation stopped before trust creation
+
+OPERATOR_SUPPLIED, failed release707ce936571f749b24d76f03cd7ba641f231c8fb:
+prepare-backend returned FAIL_STOP_PE73_COMPLETION, generic
+INPUT_IDENTITY_CAPABILITY_OR_UNCERTAIN_OPERATION, exit1. Toolkit and accepted
+UID1000 environment existed with safe observed modes; inspected toolkit/runtime
+sessions were absent. The existing schema1 ready seal passed UID/prefix/schema/
+Python-version/source-Python checks, then FileNotFoundError occurred. Neither
+tools/pe73_provision_environment.py nor tools/pe73_pi3_provision_environment.py
+existed in that environment or its sealed inventory. No retry was performed.
+
+IMMUTABLE_REPOSITORY_FACT: the accepted PI3 profile at
+7027ca033fb0b8f2839ba1f3f65893d0c25d001f (SHA256
+f55543e7207dc7bd9b23e7262f1b17c17fcc568afdf64d8aad6335321f6f93f1)
+loads the engine at513d511fe255e11a875145543f62fa5dca2169a1 in memory.
+The original profile implementation was introduced at
+39b8b239c8b2399d984ac5c6be1436a5e49e1558. Accepted setup/source identity and
+OPERATOR_SUPPLIED PASS are retained in the existing implementation history.
+The installer prepare() stores only the seven TOOLKIT sources,
+wheels, locked requirements and venv before fingerprinting every non-ready object.
+It never stores either installer. PI5 uses the same seven-tool inventory; the root
+CA custody installer deliberately adds both installer/profile objects. Therefore
+the old completion environment() reaches the missing engine read before policy
+input, runtime_material(), context creation or create_parent(). This reproduces
+the concrete compatibility failure path; the failed process supplied no traceback,
+so no claim is made that every other prerequisite was valid.
+
+Selected Alternative A: the immutable current package already contains the exact
+accepted engine (0e5d41b05729907ad1e629c8d77bf57a25890f600f7e2fcf29071c106fa0b3d7)
+and the PI3 profile. Use their existing read-only fingerprint/ancestry algorithms
+from that verified package, not an assumed copy inside the environment. The full
+original ready seal, Python executable/version, dependency versions and every
+file/link/mode identity still must match. Historical sealed toolkit source pins
+are additionally checked against the original installer's TOOLKIT, with the exact
+two CA-only additions. Never refresh or manufacture a ready seal. PI3 remains
+1000:1000; PI5 and manual signing retain their distinct root-only targets. No
+environment install, source copy, wheel installation, upgrade or mutation occurs.
+
+Alternative B is unnecessary: no new cryptographic capability or dependency is
+needed, and another venv adds installation/migration risk without resolving any
+missing runtime API. Copying installer files into the existing environment is
+rejected because it changes the accepted fingerprint. No alternate trust engine,
+CA mechanism or permissive fallback is introduced.
+
+Read-only environment diagnostics distinguish missing ready/sealed files, wrong
+tool inventory/source identity, Python executable/version/dependency drift and
+full fingerprint mismatch. Existing owner/mode/link/ACL/target/capability errors
+remain fail-closed public codes. No private traceback or exception text is emitted.
+
+The nine operations share this corrected role verification. Preparation/import/
+backend completion/observer use PI3; client generation/completion/delivery/readback
+use PI5; issuance alone uses root CA custody. Existing transfer source pins,
+independent HA transaction namespace, disabled packets, native consumer checks,
+backups and one-attempt publication remain unchanged. Unknown native prerequisites
+are still evaluated on host. No operation is considered completed by these tests.
+
+### First next step: compatibility and retained-state assessment only
+
+Target PI3 NUT&PIHOLE, jazofv1, no sudo. Separate operator execution authorization
+is required; this publication does not retry operation1. The command below installs
+only a new immutable public code bundle, verifies the accepted environment, verifies
+the exact failed toolkit, and performs bounded anchored home/runtime inventories.
+It refuses any old/new session (including partial state), any hioc_pe73_ private
+candidate, unsafe identity or changing inventory. It reads no credential contents,
+generates no key, and creates no trust/session/CA material. It does not inspect or
+replace the completed13 runtime payloads, scheduler or successful transaction.
+
+Expected RESULT=PASS_READ_ONLY_PE73_PREPARATION_COMPATIBILITY and exit0; the receipt
+must state preparation_executed=false, trust_material_created=false and
+retained_preparation_candidates=0. It is a read-only assessment after the code-only
+bootstrap, not preparation permission. Retain and review the receipt before a
+separately authorized fresh prepare-backend. Any FAIL, existing/unknown state,
+nonzero exit or lost acknowledgement stops; no automatic retry or cleanup. A later
+assessment revalidates state; it never repeats the trust operation.
+
+```bash
+/usr/bin/python3 -I -S -B - <<'PE73'
+UID=1000
+HOME='/home/jazofv1'
+ENV='/home/jazofv1/.hioc-pe73-provision-environment'
+ACTION='assess-backend'
+MSHA='752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f'
+BLOB='3ed00862304bd3e30efea7807f6a471b2d5ee37d'
+SHA='81f8cb0013c49afce0fe40ce54bbfe80036e2110d6b777c85833200cb90ee8f0'
+SIZE=159651
+import base64,hashlib,io,json,os,pathlib,stat,subprocess,sys,urllib.request,zipfile
+def need(ok):
+    if not ok:raise ValueError("SOURCE_OR_PRIVATE_TOOLKIT_NOT_ESTABLISHED")
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+try:
+    need(sys.platform=="linux" and os.getuid()==os.geteuid()==os.getgid()==os.getegid()==UID)
+    root=pathlib.Path(HOME)/(".hioc-pe73-completion-"+MSHA[:16])
+    for parent in [pathlib.Path(HOME),*pathlib.Path(HOME).parents]:
+        info=parent.lstat();need(stat.S_ISDIR(info.st_mode) and info.st_uid in (0,UID) and not stat.S_IMODE(info.st_mode)&0o7022);need(not ({"system.posix_acl_access","system.posix_acl_default"}&set(os.listxattr(parent,follow_symlinks=False))))
+    if not os.path.lexists(root):
+        url="https://api.github.com/repos/jorgeazofeifa-creator/hioc/git/blobs/"+BLOB
+        request=urllib.request.Request(url,headers={"User-Agent":"HIOC-PE73-Immutable-Delivery","Accept":"application/vnd.github+json"})
+        with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(request,timeout=30) as response:
+            need(response.geturl()==url);value=json.loads(response.read(4000001))
+        need(value["sha"]==BLOB and value["encoding"]=="base64")
+        raw=base64.b64decode(value["content"].replace("\n",""),validate=True)
+        need(len(raw)==SIZE and sha(raw)==SHA)
+        archive=zipfile.ZipFile(io.BytesIO(raw));names=archive.namelist()
+        need(len(names)==len(set(names)) and sum(x.file_size for x in archive.infolist())<16000000)
+        manifest=archive.read("tools/pe73-completion-package.json");need(sha(manifest)==MSHA)
+        files=json.loads(manifest)["files"];need(set(names)==set(files)|{"tools/pe73-completion-package.json"})
+        payloads={}
+        for name in names:
+            part=pathlib.PurePosixPath(name);need(not part.is_absolute() and ".." not in part.parts and "\\" not in name)
+            need((archive.getinfo(name).external_attr>>16)&0o170000==0o100000)
+            data=archive.read(name);need(len(data)<=1048576)
+            if name in files:need(sha(data)==files[name]["sha256"])
+            payloads[name]=data
+        os.mkdir(root,0o700)
+        for name,data in payloads.items():
+            path=root/name;path.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
+            fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+            try:
+                with os.fdopen(fd,"wb",closefd=False) as stream:stream.write(data);stream.flush();os.fsync(fd)
+            finally:os.close(fd)
+        for directory in sorted([x for x in root.rglob("*") if x.is_dir()]+[root],key=lambda p:len(p.parts),reverse=True):
+            fd=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+            try:os.fsync(fd)
+            finally:os.close(fd)
+        fd=os.open(root.parent,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        try:os.fsync(fd)
+        finally:os.close(fd)
+    info=root.lstat();need(stat.S_ISDIR(info.st_mode) and info.st_uid==info.st_gid==UID and stat.S_IMODE(info.st_mode)==0o700)
+    manifest=(root/"tools/pe73-completion-package.json").read_bytes();need(sha(manifest)==MSHA)
+    for name,row in json.loads(manifest)["files"].items():
+        path=root/name
+        for parent in [path.parent,*path.parent.parents]:
+            if parent==root.parent:break
+            info=parent.lstat();need(stat.S_ISDIR(info.st_mode) and info.st_uid==UID and not stat.S_IMODE(info.st_mode)&0o7022);need(not ({"system.posix_acl_access","system.posix_acl_default"}&set(os.listxattr(parent,follow_symlinks=False))))
+        info=path.lstat();need(stat.S_ISREG(info.st_mode) and info.st_nlink==1 and info.st_uid==info.st_gid==UID and stat.S_IMODE(info.st_mode)==0o600 and sha(path.read_bytes())==row["sha256"])
+    command=[ENV+"/venv/bin/python3","-I","-B",str(root/"tools/pe73_completion.py"),ACTION,"--manifest-sha",MSHA]
+    result=subprocess.run(command,check=False,close_fds=True)
+    raise SystemExit(result.returncode)
+except Exception:
+    print(json.dumps({"RESULT":"FAIL_STOP_IMMUTABLE_TOOLKIT_OR_ENVIRONMENT","automatic_retry":False,"retained_state":"PRESERVED","STOP_REQUIRED":True}))
+    raise SystemExit(1)
+PE73
+pe73_status=$?
+printf "PE73_EXIT_STATUS=%s\n" "$pe73_status"
+```
+
+The subsequent nine commands below are prepared, not an instruction to execute
+them now. Operation1 reruns the complete fresh admission check before generating
+anything; session absence alone is insufficient. Each mutation is single-attempt
+and non-repeatable after failure or uncertain acknowledgement. Return one receipt
+and status at a time. The failed toolkit/environment remain unchanged.
+
+| Operation | User / privilege | Persistent state / expected status / next permitted action |
+| --- | --- | --- |
+|1 prepare-backend|PI3 jazofv1, no sudo|New UID1000 private plan/server key/CSR/HMAC and toolkit session; PASS_PI3_TRUST_REQUEST_PREPARATION/0; only then2.|
+|2 sign-server + import-server|PI3 root signing only via sudo, UID1000 importer|New encrypted root CA/server issuance, public cert imported; both statuses0, PASS_PUBLIC_CERTIFICATE_IMPORTED; then3.|
+|3 ha-request|PI5 Terminal root, no sudo|Local private client key/CSR/session, public CSR transferred; PASS_PI5_LOCAL_CLIENT_KEY_REQUEST/0; then4.|
+|4 sign-client + import-client|PI3 root signing only via sudo, UID1000 importer|Same existing CA, client issuance/public cert import; both statuses0, PASS_PUBLIC_CERTIFICATE_IMPORTED; then5.|
+|5 complete-backend|PI3 jazofv1, no sudo|Inactive packet and matching transfer bundle; PASS_RUNTIME_DISABLED_TRUST_COMPLETION/0; then6.|
+|6 ha-complete|PI5 Terminal root, no sudo|Matching inactive trust files/packet, local key retained; PASS_HA_DISABLED_TRUST_PROVISIONING/0; then7.|
+|7 guard-backend|PI3 jazofv1, no sudo|Private finite observer lease; WAITING is not completion; paired8 then PASS_FINITE_PE73_TRUST_GUARD/0.|
+|8 deliver-ha|PI5 Terminal root, no sudo|Exact private transaction/backups/exports, four pinned files, own resource/additive card; PASS_PE73_HA_DELIVERED_DISABLED/0; then9.|
+|9 verify-ha|PI5 Terminal root, no sudo|Read-only terminal verification, no new lease; PASS_PE73_HA_INDEPENDENT_INSTALLATION_VERIFICATION/0; return evidence for governance closure.|
+
+No mutation step is automatically repeated or recovered. Operation9 may reobserve
+only an unchanged valid terminal state. No migration, activation, product service,
+credential reuse, baseline replacement, cron operation or PE-7.4 authority exists.
+
 ## Operations
 
 ### 1. Prepare PI3 runtime trust requests
@@ -64,10 +232,10 @@ UID=1000
 HOME='/home/jazofv1'
 ENV='/home/jazofv1/.hioc-pe73-provision-environment'
 ACTION='prepare-backend'
-MSHA='b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b'
-BLOB='7a7178cf95848746e20f1da61f4ea90180d96888'
-SHA='3bde8b3bd5afb87c785edefeb6323eba2ea6baba4d64cb59a8163ef70f6dcddf'
-SIZE=158584
+MSHA='752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f'
+BLOB='3ed00862304bd3e30efea7807f6a471b2d5ee37d'
+SHA='81f8cb0013c49afce0fe40ce54bbfe80036e2110d6b777c85833200cb90ee8f0'
+SIZE=159651
 import base64,hashlib,io,json,os,pathlib,stat,subprocess,sys,urllib.request,zipfile
 def need(ok):
     if not ok:raise ValueError("SOURCE_OR_PRIVATE_TOOLKIT_NOT_ESTABLISHED")
@@ -136,15 +304,15 @@ Target: **PI3 NUT&PIHOLE / manual root signing**.
 Root custody must be prepared and unused for this new plan. The CA is encrypted in the root-only vault; only the public response crosses the local pipe to jazofv1. The importer independently validates plan/CSR/certificate bindings. Enter the CA passphrase only at the controlling terminal. Both pipeline statuses must be0 and the importer must report PASS_PUBLIC_CERTIFICATE_IMPORTED. Existing/partial CA state refuses; never rerun issuance.
 
 ```bash
-sudo /usr/bin/python3 -I -S -B - <<'PE73' | /home/jazofv1/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /home/jazofv1/.hioc-pe73-completion-b2a05139dd686273/tools/pe73_completion.py e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450 import-server --manifest-sha b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b
+sudo /usr/bin/python3 -I -S -B - <<'PE73' | /home/jazofv1/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /home/jazofv1/.hioc-pe73-completion-752f6bb01ab45de5/tools/pe73_completion.py 2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6 import-server --manifest-sha 752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f
 UID=0
 HOME='/root'
 ENV='/root/.hioc-pe73-ca-signing-environment'
 ACTION='sign-server'
-MSHA='b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b'
-BLOB='7a7178cf95848746e20f1da61f4ea90180d96888'
-SHA='3bde8b3bd5afb87c785edefeb6323eba2ea6baba4d64cb59a8163ef70f6dcddf'
-SIZE=158584
+MSHA='752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f'
+BLOB='3ed00862304bd3e30efea7807f6a471b2d5ee37d'
+SHA='81f8cb0013c49afce0fe40ce54bbfe80036e2110d6b777c85833200cb90ee8f0'
+SIZE=159651
 import base64,hashlib,io,json,os,pathlib,stat,subprocess,sys,urllib.request,zipfile
 def need(ok):
     if not ok:raise ValueError("SOURCE_OR_PRIVATE_TOOLKIT_NOT_ESTABLISHED")
@@ -218,10 +386,10 @@ UID=0
 HOME='/root'
 ENV='/root/.hioc-pe73-provision-environment'
 ACTION='ha-request'
-MSHA='b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b'
-BLOB='7a7178cf95848746e20f1da61f4ea90180d96888'
-SHA='3bde8b3bd5afb87c785edefeb6323eba2ea6baba4d64cb59a8163ef70f6dcddf'
-SIZE=158584
+MSHA='752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f'
+BLOB='3ed00862304bd3e30efea7807f6a471b2d5ee37d'
+SHA='81f8cb0013c49afce0fe40ce54bbfe80036e2110d6b777c85833200cb90ee8f0'
+SIZE=159651
 import base64,hashlib,io,json,os,pathlib,stat,subprocess,sys,urllib.request,zipfile
 def need(ok):
     if not ok:raise ValueError("SOURCE_OR_PRIVATE_TOOLKIT_NOT_ESTABLISHED")
@@ -290,7 +458,7 @@ Target: **PI3 NUT&PIHOLE / manual root signing**.
 Uses the same root-only CA and exact stored plan/CSR. No runtime key/HMAC is read by the signer. Both pipeline statuses must be0; importer RESULT=PASS_PUBLIC_CERTIFICATE_IMPORTED. No repeat after lost acknowledgement.
 
 ```bash
-sudo /root/.hioc-pe73-ca-signing-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /root/.hioc-pe73-completion-b2a05139dd686273/tools/pe73_completion.py e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450 sign-client --manifest-sha b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b | /home/jazofv1/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /home/jazofv1/.hioc-pe73-completion-b2a05139dd686273/tools/pe73_completion.py e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450 import-client --manifest-sha b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b
+sudo /root/.hioc-pe73-ca-signing-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /root/.hioc-pe73-completion-752f6bb01ab45de5/tools/pe73_completion.py 2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6 sign-client --manifest-sha 752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f | /home/jazofv1/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /home/jazofv1/.hioc-pe73-completion-752f6bb01ab45de5/tools/pe73_completion.py 2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6 import-client --manifest-sha 752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f
 pe73_status=( "${PIPESTATUS[@]}" )
 printf "PE73_SIGNER_EXIT=%s PE73_IMPORT_EXIT=%s\n" "${pe73_status[0]}" "${pe73_status[1]}"
 ```
@@ -302,7 +470,7 @@ Target: **PI3 NUT&PIHOLE / jazofv1**.
 Validates public chains/pins and writes the inactive independent backend packet and HA transfer bundle last. Expected RESULT=PASS_RUNTIME_DISABLED_TRUST_COMPLETION. No product adapter is started and no active runtime configuration is written.
 
 ```bash
-/home/jazofv1/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /home/jazofv1/.hioc-pe73-completion-b2a05139dd686273/tools/pe73_completion.py e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450 complete-backend --manifest-sha b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b
+/home/jazofv1/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /home/jazofv1/.hioc-pe73-completion-752f6bb01ab45de5/tools/pe73_completion.py 2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6 complete-backend --manifest-sha 752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f
 pe73_status=$?
 printf "PE73_EXIT_STATUS=%s\n" "$pe73_status"
 ```
@@ -314,7 +482,7 @@ Target: **PI5 HA / Terminal root**.
 Uses the authenticated pipe to obtain the matching chain/HMAC/independent ACL packet; validates its own local client key and writes the disabled packet last. Expected RESULT=PASS_HA_DISABLED_TRUST_PROVISIONING. No configuration.yaml change, integration reload or restart.
 
 ```bash
-/root/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /root/.hioc-pe73-completion-b2a05139dd686273/tools/pe73_completion.py e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450 ha-complete --manifest-sha b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b
+/root/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /root/.hioc-pe73-completion-752f6bb01ab45de5/tools/pe73_completion.py 2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6 ha-complete --manifest-sha 752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f
 pe73_status=$?
 printf "PE73_EXIT_STATUS=%s\n" "$pe73_status"
 ```
@@ -326,7 +494,7 @@ Target: **PI3 NUT&PIHOLE / jazofv1, leave foreground session open**.
 Freshly verifies current approved baseline/no active transaction, payload integrity, original scheduler, disabled PE-7 roles and native consumer conditions. It creates only its private observer lease and listens for one authenticated PI5 session. WAITING_FOR_ONE_AUTHENTICATED_PI5_SESSION is readiness, not success. Leave this terminal open, then execute operation8 on PI5. Expected terminal RESULT=PASS_FINITE_PE73_TRUST_GUARD after authenticated FINISH; no consumer release or automatic lease deletion occurs.
 
 ```bash
-/home/jazofv1/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /home/jazofv1/.hioc-pe73-completion-b2a05139dd686273/tools/pe73_completion.py e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450 guard-backend --manifest-sha b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b
+/home/jazofv1/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /home/jazofv1/.hioc-pe73-completion-752f6bb01ab45de5/tools/pe73_completion.py 2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6 guard-backend --manifest-sha 752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f
 pe73_status=$?
 printf "PE73_EXIT_STATUS=%s\n" "$pe73_status"
 ```
@@ -338,7 +506,7 @@ Target: **PI5 HA / Terminal root, while the finite PI3 guard waits**.
 Performs live native/Core filesystem proof, frontend TLS proof, exact Dashboard/resource continuity, mTLS/HMAC/independent ACL checks and fresh guard observations. A distinct HA transaction preserves exact private Dashboard/resource exports and file backups before mutation. Publishes four pinned files and verifies the served editor before exactly one resource/create and one additive Inventory card save. Preserves all six views/layout/unrelated resources. Expected RESULT=PASS_PE73_HA_DELIVERED_DISABLED. Trust identities, exports and terminal journal binding remain private; no service activation/migration/evaluation occurs.
 
 ```bash
-/root/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /root/.hioc-pe73-completion-b2a05139dd686273/tools/pe73_completion.py e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450 deliver-ha --manifest-sha b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b
+/root/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /root/.hioc-pe73-completion-752f6bb01ab45de5/tools/pe73_completion.py 2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6 deliver-ha --manifest-sha 752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f
 pe73_status=$?
 printf "PE73_EXIT_STATUS=%s\n" "$pe73_status"
 ```
@@ -350,7 +518,7 @@ Target: **PI5 HA / Terminal root**.
 Starts a separate process, creates no lease and performs no publication. Verifies exact terminal journal/trust/context, actual four installed files/modes, full live additive Dashboard/resource state, private export/backups and exact HTTPS-served editor content. Checks hioc_operator remains unloaded and its services absent. Expected RESULT=PASS_PE73_HA_INDEPENDENT_INSTALLATION_VERIFICATION. It does not claim PE-7.4 UI saves or monitoring behavior has run.
 
 ```bash
-/root/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /root/.hioc-pe73-completion-b2a05139dd686273/tools/pe73_completion.py e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450 verify-ha --manifest-sha b2a05139dd686273959310a749a29b13a7332b0aa26ae693b713eba693eaf81b
+/root/.hioc-pe73-provision-environment/venv/bin/python3 -I -B -c 'import hashlib,sys; p=sys.argv[1]; r=open(p,'"'"'rb'"'"').read(1048577); assert len(r)<=1048576 and hashlib.sha256(r).hexdigest()==sys.argv[2]; sys.argv=[p,*sys.argv[3:]]; exec(compile(r,p,'"'"'exec'"'"'),{'"'"'__name__'"'"':'"'"'__main__'"'"','"'"'__file__'"'"':p})' /root/.hioc-pe73-completion-752f6bb01ab45de5/tools/pe73_completion.py 2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6 verify-ha --manifest-sha 752f6bb01ab45de58ef303636e8d69aae834c75f2c0ba05aba20e043cc60af8f
 pe73_status=$?
 printf "PE73_EXIT_STATUS=%s\n" "$pe73_status"
 ```

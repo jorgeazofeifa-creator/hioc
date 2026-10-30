@@ -99,6 +99,15 @@ def installed(role,action):
     args=[env+'/venv/bin/python3','-I','-B','-c',wrapper,source,sha((ROOT/'tools/pe73_completion.py').read_bytes()),action,'--manifest-sha',msha]
     return ('sudo ' if role=='ca' else '')+shlex.join(args)
 
+def assessment():
+    """First post-failure action only; installs public code and assesses read-only.
+
+    Does not retry trust preparation or create a session/credential. Production
+    execution still requires separate authority and receipt review.
+    """
+    return status(bootstrap('pi3','assess-backend'))
+
+
 def commands():
     def pipe(block,right):
         first,rest=block.split('\n',1);return first+' | '+right+'\n'+rest

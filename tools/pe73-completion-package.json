@@ -41,8 +41,8 @@
       "sha256": "b0d0a6a47f50e294204beac40946b7a446979bb5577ea08d13ea79b0c85bc4c9"
     },
     "tools/pe73_completion.py": {
-      "git_blob": "3413bfabe4d294ac46a0026e9d754afc154b52ab",
-      "sha256": "e47bf736ccdc449d51eea9f397cb91e3c11a781239f3a27135c32084ce841450"
+      "git_blob": "3e5a2365f1c2ac1592253f058082d3920dc1f824",
+      "sha256": "2bcf0e5cec2d6b657a6970d39ef7d630b4c4c05c6d27469ae3b9e6c7d61e33c6"
     },
     "tools/pe73_ha_assess.py": {
       "git_blob": "fa982856b6ff877f2f528b6da6d61b8ae9c7f4e9",
