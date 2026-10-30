@@ -6658,3 +6658,187 @@ production mutation by Codex. Next action after authorized Git publication: sour
 synchronization of /home/jazofv1/hioc-release-source to the exact published commit/tree,
 then independent read-only anchored recovery assessment in the same operator command.
 Do not combine that command with recovery execution; stop after its receipt.
+
+## PE-7.3 anchored controlled restoration — repository qualification PASS
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+This is Windows repository implementation/qualification/publication only. Actual
+PI3 restoration, source synchronization and scheduler mutation are not performed
+or authorized by this checkpoint. There is no Codex PI3/PI5 access.
+
+### Accepted assessment and scope
+
+OPERATOR_SUPPLIED assessment PASS_READ_ONLY_OPERATIONAL_EVIDENCE_COLLECTION,
+exit0: backups/pe73-full-inventory-delivery-v1; COMMITTING, pending=null;
+INSTALLATION_UNCERTAIN; installed exactly the first5 delivery entries, restored0.
+Journal SHA256 ddd309c9db6e2773e619971773da834aedf42458b860bade941d91e97be57a11.
+Retained prepared-recovery-claim.json SHA256
+23476ae2f940b5730f129e1a854234179d8618f9a82571e7caae02b062200129.
+All13 backups/stages and current recorded runtime snapshots verified; reduced cron
+matched. Three consecutive complete process observations had known_active=[] and
+universal_exclusion=false. cron, pihole-FTL, unbound and nut-server were observed
+active in that supplied assessment. PE-5 output was UNAVAILABLE and expired.
+These are supplied historical observations, not current Codex health assertions.
+Four status indicators returned JOURNAL_INVALID through an unsuitable canonical
+transaction parser: their source-specific validity remains UNKNOWN, not proven
+file corruption. No engine status is promoted into restoration authority.
+
+The five installed slots are availability_contract.py, availability.py,
+availability_incidents.py, availability_observation.py, availability_protocol.py.
+Only availability_protocol.py differs from the prior13 payload. The other4 installed
+slots are no-ops and remaining8 runtime identities must remain untouched. Restore
+prior payload bytes/modes, not the old inode/ctime of the protocol replacement.
+The current journal release remains20f7f4c64fd32865f006ecfb2135ae6bbcada16c;
+it is not rewritten to51398bab4e2293b578b2cdac2d0740c3738cab2f.
+
+### Mechanism and dependency closure
+
+New [entry](../tools/pe73_successor_restoration.py) SHA256 8e7fc7f9de8895b1f97c03b109251c0ff336bb3b3fe0344b37b9426158b02d85.
+New [tests](../tests/test_pe73_successor_restoration.py) SHA256 33de10170f05da19be00dba2c12ef8ee387945cdcb0a53ddda40b0e50fc4d28c.
+The new entry pins sealed PREPARED tooling
+e40cb499aaeb87d1fc64fc40026f998739a6910c95b9ed20efc8eeb4db378af2,
+which pins successor adapter
+cb6d84c2c4b2181fc1af6e03fee3685a0d364146f528466483b6b20751dcc394.
+The adapter verifies manifest e8b37aba46c2bbb56616366420fb4041353fb009ae17d158cf5937aa064ae7a7,
+historical controller76b422edc73ed87baba94fef6fcfa8e197a564d4d8f57c95dba6b8a1624907d2
+and provider756eb3ad2c43047a60a43398afb4c34d165dad8729803099dc367da90f1bd741.
+Both13 immutable payload sets retain exact SHA256 and Git blob verification.
+Only verified dependency loading, fixed source/transaction enumeration and schema
+constants are reused from PREPARED recovery, never its admission or continuation.
+Original controller/provider/adapter/recovery/manifest/contract bytes are unchanged.
+
+Original native source-root/main/origin/cleanliness/HEAD/ancestry checks remain;
+the new entry additionally requires accepted8e7b668e055226c55d3bc4d9a473431bd9b3e6b6
+ancestry. The operator launcher binds the exact published commit/tree and entry
+bytes; there is no circular future-HEAD allowlist, arbitrary receipt/path/hash
+permission input or mutable payload source. The original strict historical
+COMMITTED/RELEASED journal is validated and its actual snapshot remains guarded.
+Its obsolete live runtime inode set is not incorrectly required: the current
+successor journal governs current runtime snapshots and all thirteen prior backups.
+
+### Admission and fixed execution
+
+READ-ONLY ADMISSION -> ATTACH -> DRAIN -> ROLLBACK -> VERIFY RESTORATION
+(read-only) -> AUTHORIZE_RELEASE -> RESTORE_SCHEDULER -> RELEASE -> FINAL
+INDEPENDENT READ-ONLY VERIFICATION. No PREPARE, PRESERVE, EXCLUDE, ESTABLISH,
+COMMIT or second transaction. A small fixed driver calls original coordinator
+context/execute and native admissions; original rollback performs all restoration.
+The generic install-verification routine and normal deployment result table are
+not reused for rollback, whose result intentionally has no journal_sha256 field.
+
+Admission requires exact supplied journal/claim digests, strict complete core/window
+schemas, installed first5/restored0/pendingNone/rollback_authorizationNone, expected
+phase/operator, exact29 transaction entries, existing safe original mutex, all13
+stage bytes, all13 prior backup digests/modes, actual current runtime snapshots,
+original twelve-entry/reduced nine-entry scheduler bindings and no pending runtime
+publication temporaries. Original NativeFS supplies descriptor/no-follow, ancestry,
+UID/GID/mode/regular-file/link/ACL/durability checks. Claim canonical closed schema,
+old PREPARED anchor/actions, reference/digest/UUID bindings are checked; old boot,
+session and PID are historical provenance, not fresh execution permission.
+
+Repeat admission under the original mutex after native ATTACH admission and before
+any write. Exclusive controlled-restoration-intent.json (0600, file/parent fsync,
+readback) binds initial journal, retained claim digest/snapshot, source commit/tree,
+fixed six mutating operations, fresh session/boot/PID, nonce and admission reference/
+authorization digest. The intent is attempt provenance, not a second state machine
+or permission source. It remains immutable; partial intent, creation race, existing
+intent or any second execution refuses. After creation exactly30 entries are allowed.
+Claim, intent, historical journal, directory, backup/stage, scheduler-backup and
+mutex identities are guarded. Original journal-next exists only inside the original
+atomic journal operation; any leftover or other unexpected entry blocks progression.
+
+Each operation retains source/runtime/journal/context/scope/boot/session/expiry,
+fresh process completeness/no-known-consumer and original per-operation technical
+authorization checks. Whole-process3600s/per-operation300s conventions are retained;
+no new product TTL. ATTACH clears old drain while retaining installation uncertainty;
+DRAIN records fresh evidence without advancing that phase. Every reverse publication
+keeps original repeated consumer checks. A transparent recorder delegates exactly
+once, returns the same observation object and propagates the same exception; only
+the actual last guard sample/action is projected through the existing sanitizer.
+No second process inspection is substituted for the failing sample. Primary failure
+and secondary journal inspection failure remain separate; private exceptions are
+not printed. A fresh scheduler observation is separately ORIGINAL, REDUCED,
+UNEXPECTED or UNKNOWN after failure; uncertainty never implies cron is still paused.
+
+Rollback verification requires ROLLED_BACK/pendingNone/restored5, actual journal
+snapshots and all13 prior digests/modes, with twelve baseline identities identical.
+No release authorization or scheduler restoration before that read-only verification.
+Final readback freshly rechecks journal, every runtime artifact, retained evidence,
+source and exact original scheduler; no cached result or state-label-only acceptance.
+
+### Interruption and refusal behavior
+
+| Boundary | Required stopping behavior |
+| --- | --- |
+| Read-only admission | No intent, lock acquisition or mutation; missing evidence refuses. |
+| Intent open/write/fsync/readback | Retain partial/complete intent; no retry/adoption/journal mutation after failure. |
+| ATTACH/DRAIN journal publication | Retain exact old/new journal/session/drain uncertainty; no automatic continuation. |
+| ROLLING_BACK / per-path ROLLBACK_INTENT | Recorded pending/prefix governs; no inference from apparent file contents. |
+| Consumer arrival before/between restorations | KNOWN_CONSUMERS_NOT_DRAINED unchanged; no wait/retry/kill/release. |
+| Temporary publication / replace / readback / RESTORED record | Preserve evidence/temp/pending/partial prefix; no partial-rollback replay. |
+| Baseline verification / terminal ROLLED_BACK record | No release authority without confirmed full restoration. |
+| AUTHORIZE_RELEASE record | No scheduler change after uncertain authorization. |
+| RESTORE_UNCERTAIN / cron timeout / lost acknowledgement | One attempt only; actual scheduler may be reduced/original/UNKNOWN; no retry/re-exclusion. |
+| Original cron readback then journal failure | Jobs may run; no false claim of continued exclusion or automatic release. |
+| RELEASE check or journal failure | Manual restriction remains; no retry, cron edit or implicit release. |
+| Durable completion with output loss | No successful receipt inferred; separate read-only evidence review, never automatic rerun. |
+
+A legitimate affected cron consumer can begin after scheduler restoration and cause
+the final RELEASE guard to refuse. All13 baseline bytes must already be restored
+before cron is restored; no automatic re-exclusion or consumer release follows.
+Interruption may require a new separately authorized recovery design; this entry
+deliberately cannot adopt an existing intent or a partially restored transaction.
+
+### Validation and independent repository acceptance
+
+Established native Windows stdin harness, repository root, bundled Python, documented
+shell-free PATH, HIOC_TEST_SHELL cleared, tests/pi4/lib imports. Exact focused and
+directly affected regression total: 354 run, 354 passed,
+0 failures,0 errors,0 individual skips,0 class-level skips.
+Additional whole-command synthetic validation:7 scenarios PASS, including source
+drift/dirty/remote-move/readiness refusal and safe contract-code reporting, with no
+runtime mutation or deployment mutex acquisition. One fresh-provider/new-boot
+attachment scenario also PASS with unchanged claim and original rollback reuse.
+These additional scenarios are reported separately from unittest totals.
+New restoration tests:52; unchanged controller/provider/successor/
+PREPARED regression tests:302. No full repository regression
+or broad discovery. Final source/test identities above match the recorded runs.
+
+Negative coverage includes every13 backup and13 stage corruption, historical five-path
+configuration refusal, journal/claim/schema/identity/phase/prefix/pending/authority,
+source/runtime/scheduler/boot/session/expiry drift, unsafe ownership/group/modes/
+type/hard-links/ACL/no-follow assumptions, extra entries/temporaries/mutex contention,
+intent races/partial write/readback/duplicates, transparent process result/exception,
+incomplete/stale/active scans, consumer arrival after the protocol restore and after
+cron restoration, all journal rollback/release boundaries, publication failure,
+baseline verification, scheduler timeout/lost ack/unavailable readback, and separate
+primary/secondary outcomes. Actual original strict historical validation is checked
+independently of obsolete live inode equality; original rollback source is unchanged.
+POSIX/native admission seams are explicit Windows fixtures; unavailable production
+journal/claim bytes are not reconstructed. Fixture constants use actual fixture
+digests, never claimed production capture preimages. Synthetic PASS is not native
+qualification, caller exclusion, source synchronization or execution authority.
+
+Focused independent source/contract review confirms original algorithm/grant reuse,
+fixed rollback scope, first-write admission, immutable retained evidence, scheduler
+uncertainty and no automatic recovery. All39 current bindings and449 protected
+identities verify; only affected two documentation identities refresh the existing
+record. Historical metadata, contracts/amendments and owner instruction remain intact.
+
+### Limits, deferred hardening and next action
+
+The supplied three clean process samples cannot authorize future mutation. Manual
+no-launch responsibility, cached modules/open descriptors and independent callers
+remain procedural residual risks under the adopted amendment; universal exclusion
+is neither established nor waived. No new broker/privileged service, expanded cron
+exclusion, consumer-discovery redesign, polling/retry or alternative rollback is
+implemented. Broader discovery versus the three excluded jobs, ambiguous/churning
+process observations, historical failure-observation loss and repeated narrow recovery
+entries are deferred architectural findings, separate from this bounded restoration.
+
+Next single operator action after publication: exact source-only fast-forward sync
+of /home/jazofv1/hioc-release-source, then inspect-restoration read-only readiness.
+No production intent/lock/journal/runtime/scheduler mutation in that command. Actual
+restoration requires separate explicit authorization after readiness review. Existing
+services, credentials, policy, Dashboard v2, payloads, migration and PE-7.4 remain
+outside this checkpoint. Production restoration is NOT performed or claimed complete.

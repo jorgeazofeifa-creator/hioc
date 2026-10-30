@@ -6268,6 +6268,47 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+### PE-7.3 anchored controlled restoration — repository qualification PASS
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+The accepted OPERATOR_SUPPLIED operational assessment records the successor
+transaction COMMITTING, pending=null, INSTALLATION_UNCERTAIN, installed5/restored0,
+journal ddd309c9db6e2773e619971773da834aedf42458b860bade941d91e97be57a11
+and retained claim 23476ae2f940b5730f129e1a854234179d8618f9a82571e7caae02b062200129.
+All13 backups/stages and the recorded runtime/reduced scheduler matched. Three
+complete samples reported no known active consumers, universal_exclusion=false.
+These observations are historical OPERATOR_SUPPLIED evidence, not Codex access,
+fresh execution authority, universal exclusion, production health or restored state.
+
+The approved separate controlled-restoration entry reuses the sealed original
+rollback algorithm in its thirteen-artifact successor configuration. Fixed sequence:
+read-only admission -> ATTACH -> DRAIN -> ROLLBACK -> read-only restoration
+verification -> AUTHORIZE_RELEASE -> RESTORE_SCHEDULER -> RELEASE -> final
+independent readback. No PREPARE/PRESERVE/EXCLUDE/ESTABLISH/COMMIT repetition.
+Exact initial bytes, phases, five-entry prefix, filesystem identities/security,
+source provenance, all buffers, historical journal and fresh native process evidence
+are mandatory. The retained claim is immutable historical provenance, not permission.
+One exclusive controlled-restoration-intent.json is created inside admitted ATTACH's
+existing mutex before the first journal mutation. It remains after any outcome;
+every second attempt refuses. No adoption of interrupted/partially restored state.
+
+Repository qualification is PASS_SYNTHETIC, not native restoration authorization.
+The command-line entry is read-only. Actual restoration requires separate explicit
+operator authorization after reviewing fresh readiness evidence. Original technical
+grants, scheduler intent/single attempt/readback, rollback journal and process
+guards remain unchanged. Failure/uncertainty stops with no automatic retry, rollback,
+scheduler restoration or release. Scheduler observation after failure may be original,
+reduced, unexpected or UNKNOWN; no paused-state assumption. Only the protocol file
+needs physical restoration; twelve runtime identities are preserved. A restored
+protocol inode/ctime is newly recorded, not claimed to equal its original identity.
+
+See [controlled restoration evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-anchored-controlled-restoration--repository-qualification-pass)
+for exact pins, tests, interruption limits and deferred hardening. Historical
+contracts, deployment/acceptance evidence, owner wording, payloads and sealed tools
+are preserved. No PI3/PI5 access, source synchronization, production mutation,
+credential operation, migration, editing/evaluation/activation or PE-7.4 authority
+is performed or inferred by this Windows repository checkpoint.
+
 ### PE-7.3 anchored PREPARED successor recovery — repository qualification PASS
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
@@ -9779,7 +9820,21 @@ Durable Post-Run Reconciliation is PASS/CLOSED with explicit UNAVAILABLE origina
 revalidation and RECORDED evidence limitation. See [durable reconciliation closure](PE4_HOME_ASSISTANT_ASSOCIATION_DURABLE_POST_RUN_RECONCILIATION_CLOSURE.md).
 
 ## Next Planned Task
-### CURRENT PE-7.3 anchored PREPARED recovery assessment
+### CURRENT PE-7.3 controlled-restoration readiness assessment
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+After publication, exactly one operator action is source-only fast-forward
+synchronization of /home/jazofv1/hioc-release-source to the new immutable published
+commit/tree, followed by the new entry's read-only controlled-restoration readiness
+assessment. Do not combine source synchronization with restoration execution.
+No production lock/intent/journal/runtime/scheduler mutation belongs to that command.
+Actual controlled restoration requires separate explicit authorization after the
+fresh assessment is reviewed; any drift or incomplete evidence stops. Current
+production recovery has not been performed or accepted. Manual no-launch and
+retained-reader limitations remain explicit; universal exclusion is not established.
+See [current restoration evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-anchored-controlled-restoration--repository-qualification-pass).
+
+### Historical anchored PREPARED recovery assessment
 
 PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
 The OPERATOR_SUPPLIED successor attempt stopped after PREPARE at the exact d79f96f0
