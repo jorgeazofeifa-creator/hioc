@@ -19,7 +19,7 @@ import types
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-PREPARED_SHA = 'e40cb499aaeb87d1fc64fc40026f998739a6910c95b9ed20efc8eeb4db378af2'
+PREPARED_SHA = '11d8a7642123a2fe7c546c29a10b9bf630b6a28745f9451cf644e8287d00c766'
 SOURCE_ANCESTOR = '8e7b668e055226c55d3bc4d9a473431bd9b3e6b6'
 JOURNAL_SHA = 'ddd309c9db6e2773e619971773da834aedf42458b860bade941d91e97be57a11'
 CLAIM_SHA = '23476ae2f940b5730f129e1a854234179d8618f9a82571e7caae02b062200129'
@@ -87,38 +87,8 @@ def _claim(fs, d, p):
     return before
 
 
-class _Recorder:
-    """Delegate once, return the identical object, and propagate the same exception.
-
-    Only the last actual sample is retained, not a second diagnostic process scan.
-    The existing process_evidence function controls sanitized public projection.
-    """
-    def __init__(self, ops):
-        self.delegate = ops.processes
-        self.last = None
-        self.failure = None
-        self.calls = 0
-        self.action = 'READ_ONLY_ADMISSION'
-
-    def __call__(self):
-        self.calls += 1
-        self.last, self.failure = None, None
-        try:
-            result = self.delegate()
-            self.last = result
-            return result
-        except BaseException as error:
-            self.failure = _safe(error)
-            raise
-
-    def receipt(self, w):
-        try:
-            value = w.process_evidence(self.last) if self.last is not None else None
-            return {'action': self.action, 'delegations': self.calls,
-                    'actual_guard_observation': value, 'inspection_failure': self.failure}
-        except BaseException:
-            return {'action': self.action, 'delegations': self.calls,
-                    'actual_guard_observation': None, 'inspection_failure': 'PROCESS_EVIDENCE_INVALID'}
+# Shared implementation of the original restoration recorder; exact dependencies verified.
+_Recorder = _dependencies()[1]._Recorder
 
 
 def _history(adapter, h, source, fs):
@@ -151,7 +121,7 @@ def _binding():
     require(type(c.provider.ops) is w.NativeOps, 'RESTORATION_NATIVE_OPS_REQUIRED')
     c.controller.fs = adapter.GuardedFS(c.controller.fs, w, manifest, history)
     recorder = _Recorder(c.provider.ops)
-    c.provider.ops.processes = recorder
+    recorder.install(w, c)
     return w, manifest, c, p, source, recorder
 
 
@@ -193,8 +163,9 @@ def _admit(w, c, p):
             sha(c.provider.reduced) == REDUCED_CRON_SHA, 'RESTORATION_SCHEDULER_BINDING')
     c.provider._cron()
     context = c.context('ATTACH')
-    require(context['process_observation']['inspection_complete'] and
-            not context['process_observation']['known_active'], 'KNOWN_CONSUMERS_NOT_DRAINED')
+    p._record_guard(w, c, 'restoration._admit', lambda: require(
+        context['process_observation']['inspection_complete'] and
+        not context['process_observation']['known_active'], 'KNOWN_CONSUMERS_NOT_DRAINED'))
     require(c.controller.inspect()['live_state_established'], 'RESTORATION_RUNTIME_DRIFT')
     _temporaries(w, fs)
     fs.guard()
@@ -410,7 +381,7 @@ def _failure(c, w, recorder, error, action, attempted):
     return {'RESULT': 'FAIL_STOP_CONTROLLED_RESTORATION', 'failed_action': action,
         'primary_failure': _safe(error), 'inspection': journal, 'inspection_failure': secondary,
         'scheduler_observation_after_failure': scheduler, 'mutation_attempted': attempted,
-        'process_guard': recorder.receipt(w) if recorder else None,
+        'process_guard': getattr(error, 'process_guard', None) or (recorder.receipt(w) if recorder else None),
         'claim_and_intent_must_be_retained': True, 'automatic_retry': False,
         'automatic_rollback': False, 'automatic_scheduler_restoration': False,
         'automatic_release': False, 'manual_caller_restriction': 'MAINTAIN_UNTIL_EXPLICIT_VERIFIED_RELEASE',
@@ -449,6 +420,7 @@ if __name__ == '__main__':
         status = 0
     except BaseException as error:
         receipt = {'RESULT': 'FAIL_STOP_READ_ONLY_RESTORATION_READINESS', 'failure_code': _safe(error),
+            'process_guard': getattr(error, 'process_guard', None),
             'production_mutated': False, 'native_execution_authorized': False, 'STOP_REQUIRED': True}
         status = 1
     print(json.dumps(receipt, sort_keys=True), flush=True)

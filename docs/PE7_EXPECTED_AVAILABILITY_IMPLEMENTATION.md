@@ -6661,6 +6661,81 @@ Do not combine that command with recovery execution; stop after its receipt.
 
 ## PE-7.3 anchored controlled restoration — repository qualification PASS
 
+### PE-7.3 failure-time consumer evidence hardening — repository qualification PASS
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+This is diagnostic observability only. No production access, deployment/resumption
+permission, new recovery entry, policy amendment or historical root-cause conclusion.
+The dd5d7a3 reconciliation and OPERATOR_SUPPLIED ROLLED_BACK/pending-null/RELEASED
+outcome remain accepted. Original KNOWN_CONSUMERS_NOT_DRAINED cause remains UNKNOWN;
+new instrumentation cannot reconstruct previously unrecorded failing observations.
+
+Reuse: the controlled-restoration _Recorder is shared in the existing successor
+adapter and reused by prepared recovery and restoration. No parallel framework or
+change to the sealed historical controller/maintenance-provider source is introduced.
+Instance wrappers delegate the original _processes, context and execute calls and
+return the exact original result/exception. The process scanner is invoked once per
+existing call. A diagnostic snapshot is taken without replacing its returned object.
+The existing clock is observed only when the original code calls it; the scanner's
+own timestamp call is discarded for guard-evaluation reporting. No second scan or
+extra clock read is used to reconstruct a rejection.
+
+On rejection the first failure receipt is frozen before propagation; later scans
+and journal inspections cannot overwrite it. The receipt contains fixed failure
+stage/action, ordered first failed predicate (boot identity, inspection completeness,
+known-consumer absence or freshness), observation/evaluation timestamps and age where
+the guard actually evaluated freshness, hashed observed/expected boot identities,
+bounded PID/start/command-hash records and approved limitation codes. Freshness is
+null when the original conjunction short-circuited. Predicate values describe the
+captured facts; they do not claim every term of a short-circuited guard was evaluated.
+Unexpected limitation strings are redacted; malformed/extra-field evidence is not
+projected. No raw argv, environment, credentials or private exception text is emitted.
+Invalid diagnostic evidence is labeled UNESTABLISHED/PROCESS_EVIDENCE_INVALID and
+never replaces the original failure or permits admission.
+
+Public reporting: original exceptions retain their type and code and carry optional
+process_guard metadata. Existing read-only CLI failure receipts and prepared-recovery
+and restoration failure receipts expose this metadata, including failures before
+native binding returns. Successful admission/output and transaction algorithms are
+unchanged. First-rejection evidence belongs to that stopped attempt, not authority
+for a subsequent attempt. No diagnostic file, journal field, lock or scheduler effect
+is introduced; no automatic retry, wait, kill, rollback, restoration or release.
+
+Dependency closure: prepared recovery pins the exact updated adapter; restoration
+pins the exact updated prepared helper and shares its verified adapter recorder.
+Historical pins and evidence below remain historical, not overwritten. The immutable
+payload release, both 13-file payload sets, 39 successor bindings, 449 protected
+identities, original controller/provider, contract/amendments, retained claims/intent
+and production baseline evidence remain unchanged. Only the two current-document
+identities in the existing governance map refresh.
+
+Focused native Windows validation: 20 run, 20 passed,
+0 failures, 0 errors,
+0 skips, 0 class-level skips.
+Selection: test_pe73_consumer_guard_evidence plus three existing exact-source and
+algorithm-preservation tests from successor delivery and controlled restoration. Native
+bundled Windows Python stdin harness at repository root, shell-free PATH,
+HIOC_TEST_SHELL cleared, sys.path[:0]=['tests','pi4/lib']; no broad discovery/full suite.
+An initial 14-test development run had 13 passes and one new-fixture expectation
+failure (one journal slot expected, five observed because the first four are no-op
+preserved entries). That expectation was corrected to the exact five-entry prefix;
+no guard or transaction behavior was relaxed. An expanded affected-module run was deliberately stopped before completion because
+its remaining legacy restoration cases exceeded this observability scope. No complete
+result or PASS is claimed for that interrupted run. A final context-operation label
+correction and exact dependent pins were validated by the bounded selection above.
+Final executable bytes match the focused run. Static source/diff review and identity checks passed.
+
+Current code/test SHA-256 identities:
+- `tools/pe73_successor_delivery.py`: `8a7fd036e29bf616c4a62bd54128376a2bf79adad94824c41bb505c1f1e5f207`.
+- `tools/pe73_successor_prepared_recovery.py`: `11d8a7642123a2fe7c546c29a10b9bf630b6a28745f9451cf644e8287d00c766`.
+- `tools/pe73_successor_restoration.py`: `d251da8b4583b75996e0d137ae5c808b817c4e7bbd663dbe033fb725a37159b4`.
+- `tests/test_pe73_consumer_guard_evidence.py`: `5e0dd3aff424fee5ba1afd2591dff6e879dd2f77d9be154ca082963bd09628ec`.
+
+Next remains the bounded original-delivery-failure assessment and safe-resumption
+decision, using retained evidence. If historical samples are unavailable, report
+that limitation; this checkpoint does not authorize obtaining them by retrying
+production delivery. No operator deployment command is supplied here.
+
 ### Completed production restoration and independent baseline verification
 
 Evidence source: the owner's "HIOC PE-7.3: POST-RESTORATION GOVERNANCE

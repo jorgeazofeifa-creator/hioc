@@ -6,6 +6,9 @@ No historical controller/provider bytes or transaction algorithms are rewritten.
 """
 from __future__ import annotations
 import contextlib
+import copy
+import functools
+import re
 import hashlib
 import json
 from pathlib import Path
@@ -24,6 +27,144 @@ def require(value, code):
 
 def sha(raw):
     return hashlib.sha256(raw).hexdigest()
+
+
+
+class _Recorder:
+    """Shared restoration recorder: delegate once; freeze the first rejecting sample.
+
+    Instrumentation is evidence only. Original methods, exceptions, clock calls,
+    predicates, native admission and transaction effects remain authoritative.
+    """
+    def __init__(self, ops):
+        self.ops, self.delegate = ops, ops.processes
+        self.last = self.failure = self.frozen = self.evaluated_at = None
+        self.calls = 0
+        self.action = 'READ_ONLY_ADMISSION'
+
+    def __call__(self):
+        self.calls += 1
+        self.last = self.failure = self.evaluated_at = None
+        try:
+            result = self.delegate()
+            # Snapshot diagnostic fields before another reader could mutate them.
+            try:
+                self.last = copy.deepcopy(result)
+            except BaseException:
+                self.failure = 'PROCESS_EVIDENCE_INVALID'
+            self.evaluated_at = None  # Discard the scan's own timestamp call.
+            return result  # Exact delegate object, never the diagnostic copy.
+        except BaseException:
+            self.failure = 'PROCESS_INSPECTION_FAILED'
+            raise
+
+    def _projection(self, w):
+        if self.last is None:
+            return None
+        v = w.process_evidence(self.last)
+        codes = []
+        for code in v['limitations']:
+            if re.fullmatch(r'(?:UNCLASSIFIED|VANISHED|INCOMPLETE_PROCESS_CLASSIFICATION|PROCESS_IDENTITY_OR_ARGUMENT_DRIFT)_PID_[0-9]{1,10}', code) or code in {
+                'CACHED_MODULES_AND_RETAINED_DESCRIPTORS_NOT_UNIVERSALLY_OBSERVABLE',
+                'CACHED_MODULES_UNKNOWN'}:
+                codes.append(code)
+            else:
+                codes.append('REDACTED_LIMITATION')
+        return {'boot_id_sha256': sha(v['boot_id'].encode()),
+            'observed_at': v['observed_at'], 'inspection_complete': v['inspection_complete'],
+            'known_active': copy.deepcopy(v['known_active']),
+            'limitations': codes, 'universal_exclusion': False}
+
+    def freeze(self, w, stage, mode, expected_boot):
+        if self.frozen is not None:
+            return
+        try:
+            v = self._projection(w)
+            predicates = {}
+            if v is not None:
+                if mode in {'PROCESSES', 'CONTEXT'}:
+                    predicates['boot_identity'] = self.last['boot_id'] == expected_boot
+                if mode != 'CONTEXT':
+                    predicates['inspection_completeness'] = v['inspection_complete']
+                    predicates['known_consumers_absent'] = not v['known_active']
+                if mode in {'PROCESSES', 'CONTEXT'}:
+                    predicates['observation_freshness'] = (0 <= self.evaluated_at - v['observed_at'] <= 30
+                        if type(self.evaluated_at) is int else None)
+            first = next((k for k, value in predicates.items() if value is False), 'UNESTABLISHED')
+            self.frozen = {'action': self.action, 'failure_stage': stage,
+                'failed_predicate': first, 'predicate_values': predicates,
+                'delegations': self.calls, 'actual_guard_observation': v,
+                'evaluated_at': self.evaluated_at if mode in {'PROCESSES','CONTEXT'} else None,
+                'observation_age_seconds': (self.evaluated_at - v['observed_at']
+                    if mode in {'PROCESSES','CONTEXT'} and v is not None and type(self.evaluated_at) is int else None),
+                'expected_boot_id_sha256': sha(expected_boot.encode()),
+                'inspection_failure': self.failure}
+        except BaseException:
+            self.frozen = {'action': self.action, 'failure_stage': stage,
+                'failed_predicate': 'UNESTABLISHED', 'actual_guard_observation': None,
+                'inspection_failure': 'PROCESS_EVIDENCE_INVALID'}
+
+    def guard(self, w, stage, mode, call):
+        boot = self.ops.boot_id
+        try:
+            return call()
+        except BaseException as error:
+            code = getattr(error, 'code', None)
+            if code is None and type(error) is ValueError:
+                code = str(error)
+            if code in {'KNOWN_CONSUMERS_NOT_DRAINED','PROCESS_EVIDENCE_STALE',
+                        'PROCESS_INSPECTION_INCOMPLETE','KNOWN_CONSUMERS_ACTIVE'}:
+                self.freeze(w, stage, mode, boot)
+            if self.frozen is not None:
+                try:
+                    error.process_guard = self.receipt(w)
+                except BaseException:
+                    pass
+            raise  # Same exception, no retry, scan, mutation or recovery.
+
+    def install(self, w, coordinator):
+        ops = self.ops
+        existing = getattr(ops, '_pe73_guard_recorder', None)
+        if existing is not None:
+            return existing
+        ops._pe73_guard_recorder = self
+        ops.processes = self
+        now = ops.now
+        def clock():
+            value = now()
+            self.evaluated_at = value
+            return value  # Record an existing call; never call the clock again.
+        ops.now = clock
+        def wrap(original, stage, mode):
+            @functools.wraps(original)
+            def observed(*args, **kwargs):
+                if stage in {'MaintenanceCoordinator.execute', 'MaintenanceCoordinator.context'} and args and args[0] in w.ACTIONS | {'PREPARE'}:
+                    self.action = args[0]
+                return self.guard(w, stage, mode, lambda: original(*args, **kwargs))
+            return observed
+        provider = coordinator.provider
+        provider._processes = wrap(provider._processes, 'WindowConsumers._processes', 'PROCESSES')
+        coordinator.context = wrap(coordinator.context, 'MaintenanceCoordinator.context', 'CONTEXT')
+        coordinator.execute = wrap(coordinator.execute, 'MaintenanceCoordinator.execute', 'ADMISSION')
+        return self
+
+    def receipt(self, w):
+        if self.frozen is not None:
+            return copy.deepcopy(self.frozen)
+        try:
+            return {'action': self.action, 'delegations': self.calls,
+                'actual_guard_observation': self._projection(w), 'inspection_failure': self.failure,
+                'failure_stage': None, 'failed_predicate': None}
+        except BaseException:
+            return {'action': self.action, 'delegations': self.calls,
+                'actual_guard_observation': None, 'inspection_failure': 'PROCESS_EVIDENCE_INVALID',
+                'failure_stage': None, 'failed_predicate': None}
+
+
+def record_guard(w, coordinator, stage, call):
+    """Observe an existing admission predicate; absence of a recorder changes nothing."""
+    recorder = getattr(coordinator.provider.ops, '_pe73_guard_recorder', None)
+    return recorder.guard(w, stage, 'ADMISSION', call) if recorder else call()
 
 
 def load(root=ROOT, *, successor=True):
@@ -172,10 +313,12 @@ def native_coordinator():
     coordinator.controller.fs = GuardedFS(coordinator.controller.fs, w, m, history)
     require(not coordinator.controller.fs.transaction_present(),
             'SUCCESSOR_TRANSACTION_REQUIRES_SEPARATE_RECOVERY')
+    _Recorder(coordinator.provider.ops).install(w, coordinator)
     context = coordinator.context('PREPARE')
     processes = w.process_evidence(coordinator.provider.ops.processes())
-    require(processes['inspection_complete'], 'PROCESS_INSPECTION_INCOMPLETE')
-    require(not processes['known_active'], 'KNOWN_CONSUMERS_ACTIVE')
+    record_guard(w, coordinator, 'native_coordinator', lambda: (
+        require(processes['inspection_complete'], 'PROCESS_INSPECTION_INCOMPLETE'),
+        require(not processes['known_active'], 'KNOWN_CONSUMERS_ACTIVE')))
     coordinator.controller.fs.guard()
     return w, m, coordinator, context
 
@@ -205,5 +348,6 @@ if __name__ == '__main__':
         print(json.dumps({'RESULT': 'FAIL_STOP',
                           'failure_code': error.code if hasattr(error, 'code') else
                           str(error) if type(error) is ValueError else 'READ_ONLY_ASSESSMENT_FAILED',
+                          'process_guard': getattr(error, 'process_guard', None),
                           'production_mutated': False, 'STOP_REQUIRED': True}, sort_keys=True))
     raise SystemExit(code)

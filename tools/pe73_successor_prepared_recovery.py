@@ -13,7 +13,7 @@ import types
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-ADAPTER_SHA = 'cb6d84c2c4b2181fc1af6e03fee3685a0d364146f528466483b6b20751dcc394'
+ADAPTER_SHA = '8a7fd036e29bf616c4a62bd54128376a2bf79adad94824c41bb505c1f1e5f207'
 ADAPTER_COMMIT = 'cb7eef345fba9abd271b5265950c4a7132513a69'
 JOURNAL_SHA = 'd79f96f0838f2e4f10db611d2ac27cef09991c40175985bb879c184228ae84b3'
 TX = 'backups/pe73-full-inventory-delivery-v1'
@@ -79,6 +79,11 @@ def _base_entries():
         'stage-' + str(i) for i in range(13)}
 
 
+def _record_guard(w, coordinator, stage, call):
+    recorder = getattr(coordinator.provider.ops, '_pe73_guard_recorder', None)
+    return recorder.guard(w, stage, 'ADMISSION', call) if recorder else call()
+
+
 def _validate(w, coordinator, owned_claim=None):
     """No mutation; all predicates must hold again during execution admission."""
     d, c, p = w.d, coordinator.controller, coordinator.provider
@@ -102,8 +107,8 @@ def _validate(w, coordinator, owned_claim=None):
     p._cron(original=True)
     context = coordinator.context('PRESERVE')
     processes = context['process_observation']
-    require(processes['inspection_complete'] and not processes['known_active'],
-            'KNOWN_CONSUMERS_NOT_DRAINED')
+    _record_guard(w, coordinator, 'prepared._validate', lambda: require(
+        processes['inspection_complete'] and not processes['known_active'], 'KNOWN_CONSUMERS_NOT_DRAINED'))
     require(c.inspect()['live_state_established'], 'RECOVERY_RUNTIME_DRIFT')
     fresh = d.preflight(c.fs, c.source, p)
     require(all(value[k] == fresh[k] for k in fresh), 'RECOVERY_PREFLIGHT_DRIFT')
@@ -138,6 +143,7 @@ def _native_binding():
     coordinator = w.MaintenanceCoordinator.native(original, inventory)
     require(type(coordinator.provider.ops) is w.NativeOps, 'RECOVERY_NATIVE_OPS_REQUIRED')
     coordinator.controller.fs = adapter.GuardedFS(coordinator.controller.fs, w, m, history)
+    adapter._Recorder(coordinator.provider.ops).install(w, coordinator)
     proof = _validate(w, coordinator)
     return w, m, coordinator, proof, source
 
@@ -288,6 +294,7 @@ def run_prepared_recovery():
                 secondary = _safe_code(error)
         return {'RESULT': 'FAIL_STOP_ANCHORED_PREPARED_SUCCESSOR_RECOVERY',
                 'failed_action': action, 'primary_failure': _safe_code(primary),
+                'process_guard': getattr(primary, 'process_guard', None),
                 'mutation_attempted': attempted, 'inspection': inspection,
                 'inspection_failure': secondary, 'claim_must_not_be_removed': True,
                 'automatic_retry': False, 'automatic_rollback': False,
@@ -304,7 +311,8 @@ if __name__ == '__main__':
         status = 0
     except BaseException as error:
         print(json.dumps({'RESULT': 'FAIL_STOP_READ_ONLY_PREPARED_RECOVERY_ASSESSMENT',
-                          'failure_code': _safe_code(error), 'production_mutated': False,
+                          'failure_code': _safe_code(error),
+                          'process_guard': getattr(error, 'process_guard', None), 'production_mutated': False,
                           'STOP_REQUIRED': True}, sort_keys=True), flush=True)
         status = 1
     raise SystemExit(status)

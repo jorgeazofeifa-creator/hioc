@@ -6272,6 +6272,22 @@ is a permanent Working Agreement completion requirement.
 
 # Implementation Status
 
+### PE-7.3 failure-time consumer evidence hardening — repository qualification PASS
+
+PE73_STATUS=IN_PROGRESS; PE73_COMPLETE=FALSE; PE74_STATUS=NOT_AUTHORIZED.
+The existing restoration recorder is shared across the successor delivery, prepared
+recovery and restoration paths. It preserves sanitized metadata from the actual
+rejecting guard sample, first failed predicate and evaluated freshness evidence;
+no second scan, extra clock read, raw arguments or private exception disclosure.
+Original exceptions/error codes, sealed controller/provider, guard conjunctions,
+source pins, authorization, transaction and interruption protections are preserved.
+No diagnostic result grants deployment or recovery authority. OPERATOR_SUPPLIED
+baseline restoration remains accepted; original failure cause remains UNKNOWN.
+Focused validation and exact current source pins are recorded in the
+[implementation evidence](PE7_EXPECTED_AVAILABILITY_IMPLEMENTATION.md#pe-73-failure-time-consumer-evidence-hardening--repository-qualification-pass).
+No full regression or production action. Next remains the bounded failure assessment
+and safe-resumption decision; PE-7.3 feature delivery is not complete.
+
 ### PE-7.3 anchored controlled restoration — repository qualification PASS
 
 POST_RESTORATION_RECONCILIATION=PASS_OPERATOR_SUPPLIED_EVIDENCE.
